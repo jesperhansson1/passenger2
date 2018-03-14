@@ -4,6 +4,8 @@ import android.app.Application;
 
 import com.squareup.leakcanary.LeakCanary;
 
+import timber.log.Timber;
+
 public class PassengerApplication extends Application {
     public void onCreate() {
         super.onCreate();
@@ -13,5 +15,7 @@ public class PassengerApplication extends Application {
             return;
         }
         LeakCanary.install(this);
+
+        Timber.plant(new Timber.DebugTree());
     }
 }
