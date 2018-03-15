@@ -19,6 +19,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         return sPassengerRepository;
     }
 
+    private PassengerRepository() {}
 
     @Override
     public LiveData<User> getUser() {
@@ -46,7 +47,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     }
 
     @Override
-    public void addDriveRequest(DriveRequest DriveRequest) {
+    public void addDriveRequest(DriveRequest driveRequest) {
 
     }
 }
