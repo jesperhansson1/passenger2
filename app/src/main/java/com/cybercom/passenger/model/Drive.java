@@ -6,9 +6,9 @@ public class Drive {
     private String mStartLocation;
     private String mEndLocation;
     private String mNotificationTokenId;
-    private String mAvailableSeats;
+    private int mAvailableSeats;
 
-    public Drive(String time, String startLocation, String endLocation, String notificationTokenId, String availableSeats) {
+    public Drive(String time, String startLocation, String endLocation, String notificationTokenId, int availableSeats) {
         this.mTime = time;
         this.mStartLocation = startLocation;
         this.mEndLocation = endLocation;
@@ -48,11 +48,11 @@ public class Drive {
         this.mNotificationTokenId = notificationTokenId;
     }
 
-    public String getAvailableSeats() {
+    public int getAvailableSeats() {
         return mAvailableSeats;
     }
 
-    public void setAvailableSeats(String availableSeats) {
+    public void setAvailableSeats(int availableSeats) {
         this.mAvailableSeats = availableSeats;
     }
 }
