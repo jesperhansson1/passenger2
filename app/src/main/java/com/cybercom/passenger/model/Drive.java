@@ -1,14 +1,16 @@
 package com.cybercom.passenger.model;
 
+import android.location.Location;
+
 public class Drive {
 
-    private String mTime;
-    private String mStartLocation;
-    private String mEndLocation;
+    private long mTime;
+    private Location mStartLocation;
+    private Location mEndLocation;
     private String mNotificationTokenId;
     private int mAvailableSeats;
 
-    public Drive(String time, String startLocation, String endLocation, String notificationTokenId, int availableSeats) {
+    public Drive(long time, Location startLocation, Location endLocation, String notificationTokenId, int availableSeats) {
         this.mTime = time;
         this.mStartLocation = startLocation;
         this.mEndLocation = endLocation;
@@ -16,27 +18,27 @@ public class Drive {
         this.mAvailableSeats = availableSeats;
     }
 
-    public String getTime() {
+    public long getTime() {
         return mTime;
     }
 
-    public void setTime(String time) {
+    public void setTime(long time) {
         this.mTime = time;
     }
 
-    public String getStartLocation() {
+    public Location getStartLocation() {
         return mStartLocation;
     }
 
-    public void setStartLocation(String startLocation) {
+    public void setStartLocation(Location startLocation) {
         this.mStartLocation = startLocation;
     }
 
-    public String getEndLocation() {
+    public Location getEndLocation() {
         return mEndLocation;
     }
 
-    public void setEndLocation(String endLocation) {
+    public void setEndLocation(Location endLocation) {
         this.mEndLocation = endLocation;
     }
 
