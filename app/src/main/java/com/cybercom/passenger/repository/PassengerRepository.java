@@ -78,7 +78,24 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
     @Override
     public LiveData<List<Drive>> getDrives() {
-        return null;
+        final MutableLiveData<List<Drive>> drivesList = new MutableLiveData<>();
+        final List<Drive> tempDrivesList = new ArrayList<>();
+
+        mDrivesReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    tempDrivesList.add(snapshot.getValue(Drive.class));
+                }
+                drivesList.setValue(tempDrivesList);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+        return drivesList;
     }
 
     @Override
