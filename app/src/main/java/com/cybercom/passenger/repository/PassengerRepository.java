@@ -11,18 +11,19 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
 import java.util.List;
-import java.util.UUID;
 
 public class PassengerRepository implements PassengerRepositoryInterface {
 
-    private static final String USERS_REFERENCE = "users";
+    private static final String REFERENCE_USERS = "users";
     private static final String USER_CHILD_TYPE = "type";
     private static final String MOCK_USER = "userone";
+    private static final String MOCK_DRIVE = "driveone";
+    private static final String REFERENCE_DRIVES = "drives";
 
     private static PassengerRepository sPassengerRepository;
-    private DatabaseReference mUserReference;
+    private DatabaseReference mUsersReference;
+    private DatabaseReference mDrivesReference;
 
     public static PassengerRepository getInstance(){
         if (sPassengerRepository == null) {
@@ -32,8 +33,9 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     }
 
     private PassengerRepository() {
-        FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
-        mUserReference = mFirebaseDatabase.getReference(USERS_REFERENCE);
+        FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
+        mUsersReference = firebaseDatabase.getReference(REFERENCE_USERS);
+        mDrivesReference = firebaseDatabase.getReference(REFERENCE_DRIVES);
     }
 
     @Override
@@ -41,7 +43,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
         final MutableLiveData<User> user = new MutableLiveData<>();
 
-         mUserReference.child(MOCK_USER).addValueEventListener(new ValueEventListener() {
+         mUsersReference.child(MOCK_USER).addValueEventListener(new ValueEventListener() {
              @Override
              public void onDataChange(DataSnapshot dataSnapshot) {
                  user.setValue(dataSnapshot.getValue(User.class));
@@ -58,24 +60,24 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
     @Override
     public void updateUserType(int type) {
-        mUserReference.child(MOCK_USER).child(USER_CHILD_TYPE).setValue(type);
+        mUsersReference.child(MOCK_USER).child(USER_CHILD_TYPE).setValue(type);
     }
 
     @Override
     public void createUser(User user) {
-        mUserReference.child(MOCK_USER).setValue(user);
+        mUsersReference.child(MOCK_USER).setValue(user);
     }
 
     @Override
     public LiveData<List<Drive>> getDrives() {
 
-        
+
         return null;
     }
 
     @Override
     public void addDrive(Drive drive) {
-
+        mDrivesReference.child(MOCK_DRIVE).setValue(drive);
     }
 
     @Override
