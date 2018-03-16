@@ -17,12 +17,11 @@ import java.util.List;
 public class PassengerRepository implements PassengerRepositoryInterface {
 
     private static final String USERS_REFERENCE = "users";
+    private static final String USER_CHILD_TYPE = "type";
+    private static final String MOCK_USER = "userone";
 
     private static PassengerRepository sPassengerRepository;
-    private FirebaseDatabase mFirebaseDatabase;
     private DatabaseReference mUserReference;
-
-
 
     public static PassengerRepository getInstance(){
         if (sPassengerRepository == null) {
@@ -32,7 +31,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     }
 
     private PassengerRepository() {
-        mFirebaseDatabase = FirebaseDatabase.getInstance();
+        FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
         mUserReference = mFirebaseDatabase.getReference(USERS_REFERENCE);
     }
 
@@ -41,7 +40,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
         final MutableLiveData<User> user = new MutableLiveData<>();
 
-         mUserReference.child("userone").addValueEventListener(new ValueEventListener() {
+         mUserReference.child(MOCK_USER).addValueEventListener(new ValueEventListener() {
              @Override
              public void onDataChange(DataSnapshot dataSnapshot) {
                  user.setValue(dataSnapshot.getValue(User.class));
@@ -58,7 +57,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
     @Override
     public void updateUserType(int type) {
-
+        mUserReference.child(MOCK_USER).child(USER_CHILD_TYPE).setValue(type);
     }
 
     @Override
