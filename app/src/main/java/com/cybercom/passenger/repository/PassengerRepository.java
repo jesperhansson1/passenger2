@@ -13,6 +13,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.List;
+import java.util.UUID;
 
 public class PassengerRepository implements PassengerRepositoryInterface {
 
@@ -62,11 +63,13 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
     @Override
     public void createUser(User user) {
-
+        mUserReference.child(MOCK_USER).setValue(user);
     }
 
     @Override
     public LiveData<List<Drive>> getDrives() {
+
+        
         return null;
     }
 
