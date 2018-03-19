@@ -2,31 +2,31 @@ package com.cybercom.passenger.model;
 
 public class Position {
 
-    private String mLatitude;
-    private String mLongitude;
+    private double mLatitude;
+    private double mLongitude;
 
     public Position(){
 
     }
 
-    public Position(String latitude, String longitude){
+    public Position(double latitude, double longitude){
         mLatitude = latitude;
         mLongitude = longitude;
     }
 
-    public String getLatitude() {
+    public double getLatitude() {
         return mLatitude;
     }
 
-    public void setLatitude(String latitude) {
+    public void setLatitude(double latitude) {
         mLatitude = latitude;
     }
 
-    public String getLongitude() {
+    public double getLongitude() {
         return mLongitude;
     }
 
-    public void setLongitude(String longitude) {
+    public void setLongitude(double longitude) {
         mLongitude = longitude;
     }
 

@@ -5,15 +5,15 @@ import android.location.Location;
 public class Drive {
 
     private long mTime;
-    private Location mStartLocation;
-    private Location mEndLocation;
+    private Position mStartLocation;
+    private Position mEndLocation;
     private String mNotificationTokenId;
     private int mAvailableSeats;
 
     public Drive() {
     }
 
-    public Drive(long time, Location startLocation, Location endLocation, String notificationTokenId, int availableSeats) {
+    public Drive(long time, Position startLocation, Position endLocation, String notificationTokenId, int availableSeats) {
         mTime = time;
         mStartLocation = startLocation;
         mEndLocation = endLocation;
@@ -29,19 +29,19 @@ public class Drive {
         mTime = time;
     }
 
-    public Location getStartLocation() {
+    public Position getStartLocation() {
         return mStartLocation;
     }
 
-    public void setStartLocation(Location startLocation) {
+    public void setStartLocation(Position startLocation) {
         mStartLocation = startLocation;
     }
 
-    public Location getEndLocation() {
+    public Position getEndLocation() {
         return mEndLocation;
     }
 
-    public void setEndLocation(Location endLocation) {
+    public void setEndLocation(Position endLocation) {
         mEndLocation = endLocation;
     }
 

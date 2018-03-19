@@ -1,5 +1,7 @@
 package com.cybercom.passenger.model;
 
+import android.location.Location;
+
 public class DriveRequest {
 
     private long mTime;
@@ -9,7 +11,6 @@ public class DriveRequest {
     private int mExtraPassengers;
 
     public DriveRequest(){
-
     }
 
     public DriveRequest(long time, Position startLocation, Position endLocation, String notificationTokenId, int extraPassengers) {
