@@ -14,6 +14,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class PassengerRepository implements PassengerRepositoryInterface {
 
@@ -22,8 +23,6 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private static final String REFERENCE_DRIVE_REQUESTS = "driveRequests";
     private static final String REFERENCE_USERS_CHILD_TYPE = "type";
     private static final String MOCK_USER = "userone";
-    private static final String MOCK_DRIVE = "driveone";
-    private static final String MOCK_DRIVEREQUEST = "driverequestone";
 
     private static PassengerRepository sPassengerRepository;
     private DatabaseReference mUsersReference;
@@ -98,11 +97,15 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
     @Override
     public void addDrive(Drive drive) {
-        mDrivesReference.child(MOCK_DRIVE).setValue(drive);
+        mDrivesReference.child(generateRandomUUID()).setValue(drive);
     }
 
     @Override
     public void addDriveRequest(DriveRequest driveRequest) {
-        mDriveRequestsReference.child(MOCK_DRIVEREQUEST).setValue(driveRequest);
+        mDriveRequestsReference.child(generateRandomUUID()).setValue(driveRequest);
+    }
+
+    private String generateRandomUUID(){
+        return UUID.randomUUID().toString();
     }
 }
