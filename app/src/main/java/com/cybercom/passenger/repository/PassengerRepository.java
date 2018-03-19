@@ -25,12 +25,10 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private static final String MOCK_DRIVE = "driveone";
     private static final String MOCK_DRIVEREQUEST = "driverequestone";
 
-
     private static PassengerRepository sPassengerRepository;
     private DatabaseReference mUsersReference;
     private DatabaseReference mDrivesReference;
     private DatabaseReference mDriveRequestsReference;
-
 
     public static PassengerRepository getInstance() {
         if (sPassengerRepository == null) {
