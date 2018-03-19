@@ -19,5 +19,5 @@ public interface PassengerRepositoryInterface {
 
     void addDrive(Drive drive);
 
-    void addDriveRequest(DriveRequest DriveRequest);
+    void addDriveRequest(DriveRequest driveRequest);
 }

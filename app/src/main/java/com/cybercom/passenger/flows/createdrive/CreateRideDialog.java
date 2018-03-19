@@ -14,13 +14,14 @@ import android.widget.Toast;
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
+import com.cybercom.passenger.model.Position;
 
 public class CreateRideDialog extends Dialog implements android.view.View.OnClickListener {
 
     private Activity mActivityOrigin;
     public Dialog mDialogDrive;
     private String[] mlocationValueArray;
-    private Location mStartLocation,mEndLocation;
+    private Position mStartLocation,mEndLocation;
     private String mRide;
 
     public CreateRideDialog(Activity activity, String ride) {
@@ -50,12 +51,12 @@ public class CreateRideDialog extends Dialog implements android.view.View.OnClic
         spinnerStartLoc.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(final AdapterView<?> parent, final View view, final int position, final long id) {
-                mStartLocation = getLocation(mlocationValueArray[position]);
+                mStartLocation = getPosition(mlocationValueArray[position]);
             }
 
             @Override
             public void onNothingSelected(final AdapterView<?> parent) {
-                mStartLocation = getLocation(mlocationValueArray[0]);
+                mStartLocation = getPosition(mlocationValueArray[0]);
             }
         });
 
@@ -66,12 +67,12 @@ public class CreateRideDialog extends Dialog implements android.view.View.OnClic
 
             @Override
             public void onItemSelected(final AdapterView<?> parent, final View view, final int position, final long id) {
-                mEndLocation = getLocation(mlocationValueArray[position]);
+                mEndLocation = getPosition(mlocationValueArray[position]);
             }
 
             @Override
             public void onNothingSelected(final AdapterView<?> parent) {
-                mEndLocation = getLocation(mlocationValueArray[0]);
+                mEndLocation = getPosition(mlocationValueArray[0]);
             }
         });
 
@@ -103,6 +104,16 @@ public class CreateRideDialog extends Dialog implements android.view.View.OnClic
         loc.setLatitude(lat);
         loc.setLongitude(lang);
         return loc;
+    }
+
+    private Position getPosition(String locationValue)
+    {
+        double lat,lang;
+        String[] locArr = locationValue.split(",");
+        lat = Double.valueOf(locArr[0]);
+        lang = Double.valueOf(locArr[1]);
+        Position position = new Position(lat,lang);
+        return position;
     }
 
     private void createRide(){

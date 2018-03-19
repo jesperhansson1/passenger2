@@ -4,42 +4,45 @@ import android.location.Location;
 
 public class Drive {
 
-    private Long mTime;
-    private Location mStartLocation;
-    private Location mEndLocation;
+    private long mTime;
+    private Position mStartLocation;
+    private Position mEndLocation;
     private String mNotificationTokenId;
     private int mAvailableSeats;
 
-    public Drive(Long time, Location startLocation, Location endLocation, String notificationTokenId, int availableSeats) {
-        this.mTime = time;
-        this.mStartLocation = startLocation;
-        this.mEndLocation = endLocation;
-        this.mNotificationTokenId = notificationTokenId;
-        this.mAvailableSeats = availableSeats;
+    public Drive() {
     }
 
-    public Long getTime() {
+    public Drive(long time, Position startLocation, Position endLocation, String notificationTokenId, int availableSeats) {
+        mTime = time;
+        mStartLocation = startLocation;
+        mEndLocation = endLocation;
+        mNotificationTokenId = notificationTokenId;
+        mAvailableSeats = availableSeats;
+    }
+
+    public long getTime() {
         return mTime;
     }
 
-    public void setTime(Long time) {
-        this.mTime = time;
+    public void setTime(long time) {
+        mTime = time;
     }
 
-    public Location getStartLocation() {
+    public Position getStartLocation() {
         return mStartLocation;
     }
 
-    public void setStartLocation(Location startLocation) {
-        this.mStartLocation = startLocation;
+    public void setStartLocation(Position startLocation) {
+        mStartLocation = startLocation;
     }
 
-    public Location getEndLocation() {
+    public Position getEndLocation() {
         return mEndLocation;
     }
 
-    public void setEndLocation(Location endLocation) {
-        this.mEndLocation = endLocation;
+    public void setEndLocation(Position endLocation) {
+        mEndLocation = endLocation;
     }
 
     public String getNotificationTokenId() {
@@ -47,7 +50,7 @@ public class Drive {
     }
 
     public void setNotificationTokenId(String notificationTokenId) {
-        this.mNotificationTokenId = notificationTokenId;
+        mNotificationTokenId = notificationTokenId;
     }
 
     public int getAvailableSeats() {
@@ -55,6 +58,17 @@ public class Drive {
     }
 
     public void setAvailableSeats(int availableSeats) {
-        this.mAvailableSeats = availableSeats;
+        mAvailableSeats = availableSeats;
+    }
+
+    @Override
+    public String toString() {
+        return "Drive{" +
+                "mTime=" + mTime +
+                ", mStartLocation=" + mStartLocation +
+                ", mEndLocation=" + mEndLocation +
+                ", mNotificationTokenId='" + mNotificationTokenId + '\'' +
+                ", mAvailableSeats=" + mAvailableSeats +
+                '}';
     }
 }

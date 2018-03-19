@@ -9,43 +9,57 @@ public class User {
     private String mLastName;
     private String mNotificationTokenId;
     private int mType;
+    
+    public User(){
+
+    }
 
     public User(String firstName, String lastName, String notificationTokenId, int type) {
-        this.mFirstName = firstName;
-        this.mLastName = lastName;
-        this.mNotificationTokenId = notificationTokenId;
-        this.mType = type;
+        mFirstName = firstName;
+        mLastName = lastName;
+        mNotificationTokenId = notificationTokenId;
+        mType = type;
     }
 
     public String getFirstName() {
         return mFirstName;
     }
 
-    public void setFirstName(String mFirstName) {
-        this.mFirstName = mFirstName;
+    public void setFirstName(String firstName) {
+        mFirstName = firstName;
     }
 
     public String getLastName() {
         return mLastName;
     }
 
-    public void setLastName(String mLastName) {
-        this.mLastName = mLastName;
+    public void setLastName(String lastName) {
+        mLastName = lastName;
     }
 
     public String getNotificationTokenId() {
         return mNotificationTokenId;
     }
 
-    public void setNotificationTokenId(String mNotificationTokenId) {
-        this.mNotificationTokenId = mNotificationTokenId;
+    public void setNotificationTokenId(String notificationTokenId) {
+        mNotificationTokenId = notificationTokenId;
     }
 
     public int getType() {
         return mType;
     }
 
-    public void setType(int mType) {
-        this.mType = mType;
+    public void setType(int type) {
+        mType = type;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "mFirstName='" + mFirstName + '\'' +
+                ", mLastName='" + mLastName + '\'' +
+                ", mNotificationTokenId='" + mNotificationTokenId + '\'' +
+                ", mType=" + mType +
+                '}';
     }
 }
