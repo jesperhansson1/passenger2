@@ -50,7 +50,7 @@ public class Drive {
     }
 
     public void setNotificationTokenId(String notificationTokenId) {
-        this.mNotificationTokenId = notificationTokenId;
+        mNotificationTokenId = notificationTokenId;
     }
 
     public int getAvailableSeats() {
