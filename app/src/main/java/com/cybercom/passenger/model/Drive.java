@@ -10,12 +10,15 @@ public class Drive {
     private String mNotificationTokenId;
     private int mAvailableSeats;
 
+    public Drive() {
+    }
+
     public Drive(long time, Location startLocation, Location endLocation, String notificationTokenId, int availableSeats) {
-        this.mTime = time;
-        this.mStartLocation = startLocation;
-        this.mEndLocation = endLocation;
-        this.mNotificationTokenId = notificationTokenId;
-        this.mAvailableSeats = availableSeats;
+        mTime = time;
+        mStartLocation = startLocation;
+        mEndLocation = endLocation;
+        mNotificationTokenId = notificationTokenId;
+        mAvailableSeats = availableSeats;
     }
 
     public long getTime() {
@@ -23,7 +26,7 @@ public class Drive {
     }
 
     public void setTime(long time) {
-        this.mTime = time;
+        mTime = time;
     }
 
     public Location getStartLocation() {
@@ -31,7 +34,7 @@ public class Drive {
     }
 
     public void setStartLocation(Location startLocation) {
-        this.mStartLocation = startLocation;
+        mStartLocation = startLocation;
     }
 
     public Location getEndLocation() {
@@ -39,7 +42,7 @@ public class Drive {
     }
 
     public void setEndLocation(Location endLocation) {
-        this.mEndLocation = endLocation;
+        mEndLocation = endLocation;
     }
 
     public String getNotificationTokenId() {
@@ -47,7 +50,7 @@ public class Drive {
     }
 
     public void setNotificationTokenId(String notificationTokenId) {
-        this.mNotificationTokenId = notificationTokenId;
+        mNotificationTokenId = notificationTokenId;
     }
 
     public int getAvailableSeats() {
@@ -55,6 +58,17 @@ public class Drive {
     }
 
     public void setAvailableSeats(int availableSeats) {
-        this.mAvailableSeats = availableSeats;
+        mAvailableSeats = availableSeats;
+    }
+
+    @Override
+    public String toString() {
+        return "Drive{" +
+                "mTime=" + mTime +
+                ", mStartLocation=" + mStartLocation +
+                ", mEndLocation=" + mEndLocation +
+                ", mNotificationTokenId='" + mNotificationTokenId + '\'' +
+                ", mAvailableSeats=" + mAvailableSeats +
+                '}';
     }
 }

@@ -1,21 +1,23 @@
 package com.cybercom.passenger.model;
 
-import android.location.Location;
-
 public class DriveRequest {
 
     private long mTime;
-    private Location mStartLocation;
-    private Location mEndLocation;
+    private Position mStartLocation;
+    private Position mEndLocation;
     private String mNotificationTokenId;
     private int mExtraPassengers;
 
-    public DriveRequest(long time, Location startLocation, Location endLocation, String notificationTokenId, int extraPassengers) {
-        this.mTime = time;
-        this.mStartLocation = startLocation;
-        this.mEndLocation = endLocation;
-        this.mNotificationTokenId = notificationTokenId;
-        this.mExtraPassengers = extraPassengers;
+    public DriveRequest(){
+
+    }
+
+    public DriveRequest(long time, Position startLocation, Position endLocation, String notificationTokenId, int extraPassengers) {
+        mTime = time;
+        mStartLocation = startLocation;
+        mEndLocation = endLocation;
+        mNotificationTokenId = notificationTokenId;
+        mExtraPassengers = extraPassengers;
     }
 
     public long getTime() {
@@ -23,23 +25,23 @@ public class DriveRequest {
     }
 
     public void setTime(long time) {
-        this.mTime = time;
+        mTime = time;
     }
 
-    public Location getStartLocation() {
+    public Position getStartLocation() {
         return mStartLocation;
     }
 
-    public void setStartLocation(Location startLocation) {
-        this.mStartLocation = startLocation;
+    public void setStartLocation(Position startLocation) {
+        mStartLocation = startLocation;
     }
 
-    public Location getEndLocation() {
+    public Position getEndLocation() {
         return mEndLocation;
     }
 
-    public void setEndLocation(Location endLocation) {
-        this.mEndLocation = endLocation;
+    public void setEndLocation(Position endLocation) {
+        mEndLocation = endLocation;
     }
 
     public String getNotificationTokenId() {
@@ -47,7 +49,7 @@ public class DriveRequest {
     }
 
     public void setNotificationTokenId(String notificationTokenId) {
-        this.mNotificationTokenId = notificationTokenId;
+        mNotificationTokenId = notificationTokenId;
     }
 
     public int getExtraPassengers() {
@@ -55,6 +57,17 @@ public class DriveRequest {
     }
 
     public void setExtraPassengers(int extraPassengers) {
-        this.mExtraPassengers = extraPassengers;
+        mExtraPassengers = extraPassengers;
+    }
+
+    @Override
+    public String toString() {
+        return "DriveRequest{" +
+                "mTime=" + mTime +
+                ", mStartLocation=" + mStartLocation +
+                ", mEndLocation=" + mEndLocation +
+                ", mNotificationTokenId='" + mNotificationTokenId + '\'' +
+                ", mExtraPassengers=" + mExtraPassengers +
+                '}';
     }
 }
