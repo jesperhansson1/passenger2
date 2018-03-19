@@ -5,7 +5,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.Switch;
@@ -30,51 +29,46 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void addUI(){
-        final Switch mSwitchRide = findViewById(R.id.switch_ride);
-        final FloatingActionButton mFloatRide = findViewById(R.id.button_createRide);
-        mFloatRide.setImageResource(R.drawable.passenger);
-        mSwitchRide.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        final Switch switchRide = findViewById(R.id.switch_ride);
+        final FloatingActionButton floatRide = findViewById(R.id.button_createRide);
+        floatRide.setImageResource(R.drawable.passenger);
+        switchRide.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton arg0, boolean isChecked) {
                 if(isChecked){
-                    mFloatRide.setImageResource(R.drawable.driver);
+                    floatRide.setImageResource(R.drawable.driver);
                 }
                 else
                 {
-                    mFloatRide.setImageResource(R.drawable.passenger);
+                    floatRide.setImageResource(R.drawable.passenger);
                 }
-
             }
         });
-        mFloatRide.setOnClickListener(new View.OnClickListener() {
+        floatRide.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                 if(mSwitchRide.isChecked()){
+                 if(switchRide.isChecked()){
                     showCreateDriveDialog();
                 }
                 else
                 {
                     showCreateDriveRequestDialog();
                 }
-
-
-            }
+           }
         });
     }
 
-
-
     public void showCreateDriveDialog()
     {
-        CreateRideDialog mCreateRideDialog = new CreateRideDialog(MainActivity.this, "Create Drive");
-        mCreateRideDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.WHITE));
-        mCreateRideDialog.show();
+        CreateRideDialog createRideDialog = new CreateRideDialog(MainActivity.this, "Create Drive");
+        createRideDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.WHITE));
+        createRideDialog.show();
     }
 
     public void showCreateDriveRequestDialog()
     {
-        CreateRideDialog mCreateRideDialog = new CreateRideDialog(MainActivity.this, "Request");
-        mCreateRideDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.WHITE));
-        mCreateRideDialog.show();
+        CreateRideDialog createRideDialog = new CreateRideDialog(MainActivity.this, "Request");
+        createRideDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.WHITE));
+        createRideDialog.show();
     }
 }

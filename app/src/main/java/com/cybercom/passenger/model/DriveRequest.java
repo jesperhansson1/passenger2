@@ -1,14 +1,16 @@
 package com.cybercom.passenger.model;
 
+import android.location.Location;
+
 public class DriveRequest {
 
-    private String mTime;
-    private String mStartLocation;
-    private String mEndLocation;
+    private Long mTime;
+    private Location mStartLocation;
+    private Location mEndLocation;
     private String mNotificationTokenId;
-    private String mExtraPassengers;
+    private int mExtraPassengers;
 
-    public DriveRequest(String time, String startLocation, String endLocation, String notificationTokenId, String extraPassengers) {
+    public DriveRequest(Long time, Location startLocation, Location endLocation, String notificationTokenId, int extraPassengers) {
         this.mTime = time;
         this.mStartLocation = startLocation;
         this.mEndLocation = endLocation;
@@ -16,27 +18,27 @@ public class DriveRequest {
         this.mExtraPassengers = extraPassengers;
     }
 
-    public String getTime() {
+    public Long getTime() {
         return mTime;
     }
 
-    public void setTime(String time) {
+    public void setTime(Long time) {
         this.mTime = time;
     }
 
-    public String getStartLocation() {
+    public Location getStartLocation() {
         return mStartLocation;
     }
 
-    public void setStartLocation(String startLocation) {
+    public void setStartLocation(Location startLocation) {
         this.mStartLocation = startLocation;
     }
 
-    public String getEndLocation() {
+    public Location getEndLocation() {
         return mEndLocation;
     }
 
-    public void setEndLocation(String endLocation) {
+    public void setEndLocation(Location endLocation) {
         this.mEndLocation = endLocation;
     }
 
@@ -48,11 +50,11 @@ public class DriveRequest {
         this.mNotificationTokenId = notificationTokenId;
     }
 
-    public String getExtraPassengers() {
+    public int getExtraPassengers() {
         return mExtraPassengers;
     }
 
-    public void setExtraPassengers(String extraPassengers) {
+    public void setExtraPassengers(int extraPassengers) {
         this.mExtraPassengers = extraPassengers;
     }
 }

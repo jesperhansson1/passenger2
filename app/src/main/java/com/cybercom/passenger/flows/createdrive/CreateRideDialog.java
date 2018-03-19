@@ -22,12 +22,11 @@ public class CreateRideDialog extends Dialog implements android.view.View.OnClic
     private String[] mlocationValueArray;
     private Location mStartLocation,mEndLocation;
     private String mRide;
-    public CreateRideDialog(Activity mActivity, String mRide) {
 
-        super(mActivity);
-        // TODO Auto-generated constructor stub
-        this.mActivityOrigin = mActivity;
-        this.mRide = mRide;
+    public CreateRideDialog(Activity activity, String ride) {
+       super(activity);
+        this.mActivityOrigin = activity;
+        this.mRide = ride;
     }
 
     @Override
@@ -36,19 +35,19 @@ public class CreateRideDialog extends Dialog implements android.view.View.OnClic
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.dialog_drive);
 
-        String[] mlocatonArray = mActivityOrigin.getApplicationContext().getResources().getStringArray(R.array.location_array);
+        String[] locatonArray = mActivityOrigin.getApplicationContext().getResources().getStringArray(R.array.location_array);
         mlocationValueArray = mActivityOrigin.getApplicationContext().getResources().getStringArray(R.array.location_value);
 
-        Button mButtonCreateDrive = findViewById(R.id.button_ride);
-        Button mButtonCancel = findViewById(R.id.button_cancel);
-        mButtonCreateDrive.setOnClickListener(this);
-        mButtonCancel.setOnClickListener(this);
-        mButtonCreateDrive.setText(this.mRide);
+        Button buttonCreateDrive = findViewById(R.id.button_ride);
+        Button buttonCancel = findViewById(R.id.button_cancel);
+        buttonCreateDrive.setOnClickListener(this);
+        buttonCancel.setOnClickListener(this);
+        buttonCreateDrive.setText(this.mRide);
 
-        Spinner mSpinnerStartLoc = findViewById(R.id.spinner_startLocation);
-        CustomAdapter mcustomAdapterStartLoc=new CustomAdapter(getContext(), mlocatonArray);
-        mSpinnerStartLoc.setAdapter(mcustomAdapterStartLoc);
-        mSpinnerStartLoc.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        Spinner spinnerStartLoc = findViewById(R.id.spinner_startLocation);
+        CustomAdapter customAdapterStartLoc=new CustomAdapter(getContext(), locatonArray);
+        spinnerStartLoc.setAdapter(customAdapterStartLoc);
+        spinnerStartLoc.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(final AdapterView<?> parent, final View view, final int position, final long id) {
                 mStartLocation = getLocation(mlocationValueArray[position]);
@@ -60,10 +59,10 @@ public class CreateRideDialog extends Dialog implements android.view.View.OnClic
             }
         });
 
-        Spinner mSpinnerEndLoc = findViewById(R.id.spinner_endLocation);
-        CustomAdapter mcustomAdapterEndLoc =new CustomAdapter(getContext(), mlocatonArray);
-        mSpinnerEndLoc.setAdapter(mcustomAdapterEndLoc);
-        mSpinnerEndLoc.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        Spinner spinnerEndLoc = findViewById(R.id.spinner_endLocation);
+        CustomAdapter customAdapterEndLoc =new CustomAdapter(getContext(), locatonArray);
+        spinnerEndLoc.setAdapter(customAdapterEndLoc);
+        spinnerEndLoc.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
             @Override
             public void onItemSelected(final AdapterView<?> parent, final View view, final int position, final long id) {
@@ -94,29 +93,29 @@ public class CreateRideDialog extends Dialog implements android.view.View.OnClic
     }
 
 
-    private Location getLocation(String mLocationValue)
+    private Location getLocation(String locationValue)
     {
-        double mLat,mLong;
-        String[] mLocArr = mLocationValue.split(",");
-        mLat = Double.valueOf(mLocArr[0]);
-        mLong = Double.valueOf(mLocArr[1]);
-        Location mloc = new Location("mabc");
-        mloc.setLatitude(mLat);
-        mloc.setLongitude(mLong);
-        return mloc;
+        double lat,lang;
+        String[] locArr = locationValue.split(",");
+        lat = Double.valueOf(locArr[0]);
+        lang = Double.valueOf(locArr[1]);
+        Location loc = new Location("mabc");
+        loc.setLatitude(lat);
+        loc.setLongitude(lang);
+        return loc;
     }
 
     private void createRide(){
-        Long mcurrentTime = System.currentTimeMillis();
-        int mSeatsAvailable = 1;
+        Long currentTimeMillis = System.currentTimeMillis();
+        int seats = 1;
 
         if (mRide.matches("Create Drive")){
-            Drive mDrive = new Drive(mcurrentTime,mStartLocation,mEndLocation,String.valueOf(mcurrentTime),mSeatsAvailable);
-            Toast.makeText(getContext(),"Your drive is created from "+ mDrive.getStartLocation().toString() + " to " + mDrive.getEndLocation().toString(), Toast.LENGTH_LONG).show();
+            Drive drive = new Drive(currentTimeMillis,mStartLocation,mEndLocation,String.valueOf(currentTimeMillis),seats);
+            Toast.makeText(getContext(),"Your drive is created from "+ drive.getStartLocation().toString() + " to " + drive.getEndLocation().toString(), Toast.LENGTH_LONG).show();
         }
         if(mRide.matches("Request")){
-            DriveRequest mDriveRequest = new DriveRequest(mcurrentTime,mStartLocation,mEndLocation,String.valueOf(mcurrentTime),mSeatsAvailable);
-            Toast.makeText(getContext(),"Your drive request is created from "+ mDriveRequest.getStartLocation().toString() + " to " + mDriveRequest.getEndLocation().toString(),Toast.LENGTH_LONG).show();
+            DriveRequest driveRequest = new DriveRequest(currentTimeMillis,mStartLocation,mEndLocation,String.valueOf(currentTimeMillis),seats);
+            Toast.makeText(getContext(),"Your drive request is created from "+ driveRequest.getStartLocation().toString() + " to " + driveRequest.getEndLocation().toString(),Toast.LENGTH_LONG).show();
         }
     }
 
