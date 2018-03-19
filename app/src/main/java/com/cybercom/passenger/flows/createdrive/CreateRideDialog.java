@@ -15,6 +15,7 @@ import com.cybercom.passenger.R;
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Position;
+import com.cybercom.passenger.repository.PassengerRepository;
 
 public class CreateRideDialog extends Dialog implements android.view.View.OnClickListener {
 
@@ -112,8 +113,7 @@ public class CreateRideDialog extends Dialog implements android.view.View.OnClic
         String[] locArr = locationValue.split(",");
         lat = Double.valueOf(locArr[0]);
         lang = Double.valueOf(locArr[1]);
-        Position position = new Position(lat,lang);
-        return position;
+        return new Position(lat,lang);
     }
 
     private void createRide(){
@@ -122,12 +122,21 @@ public class CreateRideDialog extends Dialog implements android.view.View.OnClic
 
         if (mRide.matches("Create Drive")){
             Drive drive = new Drive(currentTimeMillis,mStartLocation,mEndLocation,String.valueOf(currentTimeMillis),seats);
+            addToDriveToDatabase(drive);
             Toast.makeText(getContext(),"Your drive is created from "+ drive.getStartLocation().toString() + " to " + drive.getEndLocation().toString(), Toast.LENGTH_LONG).show();
         }
         if(mRide.matches("Request")){
             DriveRequest driveRequest = new DriveRequest(currentTimeMillis,mStartLocation,mEndLocation,String.valueOf(currentTimeMillis),seats);
+            addToDriveRequestToDatabase(driveRequest);
             Toast.makeText(getContext(),"Your drive request is created from "+ driveRequest.getStartLocation().toString() + " to " + driveRequest.getEndLocation().toString(),Toast.LENGTH_LONG).show();
         }
     }
 
+    private void addToDriveToDatabase(Drive drive){
+        (PassengerRepository.getInstance()).addDrive(drive);
+    }
+
+    private void addToDriveRequestToDatabase(DriveRequest driveRequest){
+        (PassengerRepository.getInstance()).addDriveRequest(driveRequest);
+    }
 }
