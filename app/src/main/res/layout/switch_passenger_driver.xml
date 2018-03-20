@@ -12,22 +12,28 @@
             android:id="@+id/label_passenger"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/pad_2dp"
             android:layout_weight="1"
             android:text="@string/passenger"
-            android:textAlignment="viewEnd" />
+            android:textAlignment="viewEnd"
+            android:textColor="@color/colorBlue" />
 
         <Switch
             android:id="@+id/switch_ride"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:theme="@style/switch_passenger_driver"
+            />
 
         <TextView
             android:id="@+id/label_driver"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/pad_2dp"
             android:layout_weight="1"
             android:text="@string/driver"
-            android:textAlignment="viewStart" />
+            android:textAlignment="viewStart"
+            android:textColor="@color/colorBlue" />
     </LinearLayout>
 </android.support.constraint.ConstraintLayout>
