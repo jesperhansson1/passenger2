@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:padding="8dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#00000000">
+
+    <android.support.constraint.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/driver_confimation_back">
+
+        <TextView
+            android:id="@+id/driver_confirmation_title"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="16dp"
+            android:text="@string/driver_confirmation_share_your_ride"
+            android:textAppearance="@style/TextAppearance.AppCompat.Large"
+            android:textColor="@color/colorBlue"
+            android:textStyle="normal"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/driver_confirmation_drive_cost"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="24dp"
+            android:text="@string/driver_confirmation_drive_cost"
+            android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+            android:textColor="@color/colorBlue"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/driver_confirmation_title" />
+
+        <ImageView
+            android:id="@+id/driver_confirmation_passenger_thumbnail"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginTop="24dp"
+            app:layout_constraintStart_toStartOf="@+id/driver_confirmation_title"
+            app:layout_constraintTop_toBottomOf="@+id/driver_confirmation_title"
+            app:srcCompat="@drawable/cage"
+            android:contentDescription="@string/content_description_passenger_thumbnail"/>
+
+        <TextView
+            android:id="@+id/driver_confirmation_passenger_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="@string/driver_confirmation_passenger_name"
+            android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="@+id/driver_confirmation_passenger_thumbnail"
+            app:layout_constraintStart_toEndOf="@+id/driver_confirmation_passenger_thumbnail" />
+
+        <RatingBar
+            android:id="@+id/ratingBar"
+            style="?android:attr/ratingBarStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:numStars="5"
+            android:progressTint="@color/colorStarsRatingbar"
+            android:rating="5"
+            app:layout_constraintBottom_toTopOf="@+id/driver_confirmation_passenger_name"
+            app:layout_constraintStart_toStartOf="@+id/driver_confirmation_passenger_name" />
+
+        <TextView
+            android:id="@+id/driver_confirmation_start_position"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="@string/driver_confirmation_start_position"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            app:layout_constraintBottom_toBottomOf="@+id/driver_confirmation_start_location_icon"
+            app:layout_constraintStart_toEndOf="@+id/driver_confirmation_start_location_icon"
+            app:layout_constraintTop_toTopOf="@+id/driver_confirmation_start_location_icon" />
+
+        <ImageView
+            android:id="@+id/driver_confirmation_start_location_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:layout_constraintStart_toStartOf="@+id/driver_confirmation_passenger_thumbnail"
+            app:layout_constraintTop_toBottomOf="@+id/driver_confirmation_passenger_thumbnail"
+            app:srcCompat="@drawable/circle_outline"
+            android:contentDescription="@string/content_description_start_location_icon"/>
+
+        <ImageView
+            android:id="@+id/driver_confirmation_dots_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="@+id/driver_confirmation_start_location_icon"
+            app:layout_constraintTop_toBottomOf="@+id/driver_confirmation_start_location_icon"
+            app:srcCompat="@drawable/dots_vertical"
+            android:contentDescription="@string/content_description_three_vertical_dots"
+            />
+
+        <ImageView
+            android:id="@+id/driver_confirmation_end_icon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            app:layout_constraintStart_toStartOf="@+id/driver_confirmation_dots_icon"
+            app:layout_constraintTop_toBottomOf="@+id/driver_confirmation_dots_icon"
+            app:srcCompat="@drawable/ic_place_black_24dp"
+            android:contentDescription="@string/content_description_end_location_icon"/>
+
+        <TextView
+            android:id="@+id/driver_confirmation_end_position"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="@string/driver_confirmation_end_position"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            app:layout_constraintBottom_toBottomOf="@+id/driver_confirmation_end_icon"
+            app:layout_constraintStart_toEndOf="@+id/driver_confirmation_end_icon"
+            app:layout_constraintTop_toBottomOf="@+id/driver_confirmation_dots_icon" />
+
+        <Button
+            android:id="@+id/driver_confirmation_decline_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="24dp"
+            android:background="@drawable/button_border_round"
+            android:text="@string/driver_confirmation_decline"
+            android:textColor="@color/colorRed"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/driver_confirmation_accept_button"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/driver_confirmation_end_icon" />
+
+        <Button
+            android:id="@+id/driver_confirmation_accept_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="24dp"
+            android:layout_marginStart="16dp"
+            android:background="@drawable/button_corner_round"
+            android:text="@string/driver_confirmation_accept"
+            android:textColor="@color/colorWhite"
+            app:layout_constraintBottom_toBottomOf="@+id/driver_confirmation_decline_button"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/driver_confirmation_decline_button"
+            />
+
+
+
+    </android.support.constraint.ConstraintLayout>
+</FrameLayout>
