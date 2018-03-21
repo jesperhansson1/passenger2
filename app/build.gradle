@@ -9,7 +9,7 @@ android {
     compileSdkVersion 27
     defaultConfig {
         applicationId "com.cybercom.passenger"
-        minSdkVersion 24
+        minSdkVersion 21
         targetSdkVersion 27
         versionCode 1
         versionName "0.01"

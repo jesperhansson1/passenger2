@@ -41,20 +41,18 @@ public class MainActivity extends AppCompatActivity {
 
         viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
 
-        // Here, thisActivity is the current activity
         if (ContextCompat.checkSelfPermission(this.getApplication(),
                 android.Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
-            System.out.println("Permission was not granted");
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    android.Manifest.permission.ACCESS_FINE_LOCATION)) {
-                System.out.println("We are inside the 'shouldShowRequestPermissionRationale' section");
-            } else {
+//            TODO: Handle the case when the user denied permission and chose 'do not ask again'
+//            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+//                    android.Manifest.permission.ACCESS_FINE_LOCATION)) {
+//            }
+//            else {
                 ActivityCompat.requestPermissions(this,
                         new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                         MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
-                System.out.println("Request permission");
-            }
+//            }
         } else {
             viewModel.getLocation();
         }
@@ -67,16 +65,13 @@ public class MainActivity extends AppCompatActivity {
             case MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION: {
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    System.out.println("Permission was granted!!");
                     viewModel.getLastLocation();
                 } else {
-                    System.out.println("Permission was denied! 😞");
                 }
                 return;
             }
         }
     }
-
 
     public void addUI(){
         changeLabelFontStyle(false);

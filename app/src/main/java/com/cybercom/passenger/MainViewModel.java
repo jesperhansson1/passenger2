@@ -32,7 +32,6 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     public void getLocation(){
-        System.out.println("Permission has already been accepted");
         getLastLocation();
     }
 
@@ -44,9 +43,7 @@ public class MainViewModel extends AndroidViewModel {
                     public void onComplete(@NonNull Task<Location> task) {
                         if (task.isSuccessful() && task.getResult() != null) {
                             mLastLocation = task.getResult();
-                            Timber.d("permission coord: %d %d", mLastLocation.getLatitude(), mLastLocation.getLongitude());
                         } else {
-                            Log.w("TAG", "permission getLastLocation:exception", task.getException());
                         }
                     }
                 });
