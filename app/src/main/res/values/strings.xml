@@ -6,6 +6,20 @@
     <string name="driver">Driver</string>
     <string name="passenger">Passenger</string>
     <string name="ride">Ride Detail</string>
+
+    <string name="driver_confirmation_share_your_ride">This person wants to share your ride</string>
+    <string name="driver_confirmation_drive_cost">45</string>
+    <string name="driver_confirmation_passenger_name">Nicolas Cage</string>
+    <string name="driver_confirmation_decline">Decline</string>
+    <string name="driver_confirmation_accept">Accept</string>
+    <string name="driver_confirmation_start_position">Dockplatsen 14</string>
+    <string name="driver_confirmation_end_position">Dockplatsen 16</string>
+    <string name="must_implements_confirmation_listener">Must implement ConfirmationListener</string>
+    <string name="content_description_passenger_thumbnail">Passenger thumbnail</string>
+    <string name="content_description_start_location_icon">Start location icon</string>
+    <string name="content_description_end_location_icon">End location icon</string>
+    <string name="content_description_three_vertical_dots">Three vertical dots</string>
+
     <string-array name="location_array">
         <item>Malmö</item>
         <item>Helsingborg</item>
