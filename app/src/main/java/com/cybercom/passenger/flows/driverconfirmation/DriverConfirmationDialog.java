@@ -22,6 +22,10 @@ public class DriverConfirmationDialog extends DialogFragment implements View.OnC
         void onDriverConfirmation(Boolean isAccepted);
     }
 
+    public static DriverConfirmationDialog getInstance() {
+        return new DriverConfirmationDialog();
+    }
+
     private ConfirmationListener mConfirmationListener;
 
     @Nullable
@@ -29,26 +33,32 @@ public class DriverConfirmationDialog extends DialogFragment implements View.OnC
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        View mRootView = inflater.inflate(R.layout.driver_confirmation_dialog, container,
+        View rootView = inflater.inflate(R.layout.driver_confirmation_dialog, container,
                 false);
 
-        Button mAcceptButton = mRootView.findViewById(R.id.driver_confirmation_accept_button);
-        mAcceptButton.setOnClickListener(this);
+        Button acceptButton = rootView.findViewById(R.id.driver_confirmation_accept_button);
+        acceptButton.setOnClickListener(this);
 
-        Button mDeclineButton = mRootView.findViewById(R.id.driver_confirmation_decline_button);
-        mDeclineButton.setOnClickListener(this);
+        Button declineButton = rootView.findViewById(R.id.driver_confirmation_decline_button);
+        declineButton.setOnClickListener(this);
 
-        return mRootView;
+        return rootView;
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        getDialog().getWindow().setLayout(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
-        getDialog().getWindow().setGravity(Gravity.BOTTOM);
-        getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        if (getDialog().getWindow() != null) {
+            getDialog().getWindow().setLayout(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT);
+
+            getDialog().getWindow().setGravity(Gravity.BOTTOM);
+            getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }else{
+            dismiss();
+        }
+
     }
 
     @Override

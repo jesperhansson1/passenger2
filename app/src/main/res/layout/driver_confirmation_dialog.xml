@@ -11,7 +11,7 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/driver_confimation_back">
+        android:background="@drawable/driver_confirmation_back">
 
         <TextView
             android:id="@+id/driver_confirmation_title"
