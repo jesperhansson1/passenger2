@@ -2,13 +2,12 @@ package com.cybercom.passenger;
 
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
+import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.location.Location;
 import android.os.Looper;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
-import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.repository.PassengerRepository;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -18,8 +17,6 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 
-import java.util.List;
-
 import timber.log.Timber;
 
 
@@ -27,15 +24,17 @@ public class MainViewModel extends AndroidViewModel {
 
     private FusedLocationProviderClient mFusedLocationClient;
     public Location mLastLocation;
-    private PassengerRepository mPassengerRepository;
-
+    public PassengerRepository mPassengerRepository = PassengerRepository.getInstance();
+    private MutableLiveData<Location> mMyLocation = new MutableLiveData<>();
     private LocationCallback mLocationCallback;
-    LocationRequest mLocationRequest;
+    private LocationRequest mLocationRequest;
+
+//    public Location getMyLocation;
+//    public Location location;
 
     public MainViewModel(@NonNull Application application) {
         super(application);
         mFusedLocationClient = new FusedLocationProviderClient(application);
-        mPassengerRepository = PassengerRepository.getInstance();
 
         mLocationCallback = new LocationCallback() {
             @Override
@@ -44,13 +43,15 @@ public class MainViewModel extends AndroidViewModel {
                     return;
                 }
                 for (Location location : locationResult.getLocations()) {
-                    // Get location update here
-                    Timber.d("Get updated location: %f %f", location.getLatitude(), location.getLongitude());
+                    mMyLocation.setValue(location);
                 }
             }
         };
-
         createLocationRequest();
+    }
+
+    public LiveData<Location> getUpdatedLocationLiveData(){
+        return mMyLocation;
     }
 
     public void getLocation(){
@@ -65,7 +66,6 @@ public class MainViewModel extends AndroidViewModel {
                     public void onComplete(@NonNull Task<Location> task) {
                         if (task.isSuccessful() && task.getResult() != null) {
                             mLastLocation = task.getResult();
-                        } else {
                         }
                     }
                 }).addOnFailureListener(new OnFailureListener() {
@@ -83,7 +83,7 @@ public class MainViewModel extends AndroidViewModel {
                 Looper.myLooper());
     }
 
-    protected void createLocationRequest() {
+    private void createLocationRequest() {
         mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(10000);
         mLocationRequest.setFastestInterval(5000);
