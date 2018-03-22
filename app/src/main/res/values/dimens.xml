@@ -6,10 +6,10 @@
     <dimen name="pad_8dp">8dp</dimen>
     <dimen name="pad_10dp">10dp</dimen>
     <dimen name="pad_12dp">12dp</dimen>
-    <dimen name="pad_12sp">12dp</dimen>
     <dimen name="pad_20dp">20dp</dimen>
     <dimen name="pad_24dp">24dp</dimen>
     <dimen name="pad_30dp">30dp</dimen>
     <dimen name="pad_108dp">108dp</dimen>
+    <dimen name="pad_12sp">12sp</dimen>
 
 </resources>

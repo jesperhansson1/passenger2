@@ -1,12 +1,10 @@
 package com.cybercom.passenger.flows.main;
 
-import android.graphics.Color;
+import android.app.DialogFragment;
 import android.graphics.Typeface;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
-import android.view.Gravity;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.Switch;
@@ -14,13 +12,14 @@ import android.widget.TextView;
 
 import com.crashlytics.android.Crashlytics;
 import com.cybercom.passenger.R;
-import com.cybercom.passenger.flows.createdrive.CreateRideDialog;
+import com.cybercom.passenger.flows.createdrive.CreateRideDialogFragment;
 
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
 
 public class MainActivity extends AppCompatActivity {
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,12 +52,13 @@ public class MainActivity extends AppCompatActivity {
         floatRide.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(switchRide.isChecked()){
-                    showCreateDriveDialog();
+
+
+                if(switchRide.isChecked()) {
+                    showCreateDriveDialog(CreateRideDialogFragment.TYPE_RIDE);
                 }
-                else
-                {
-                    showCreateDriveRequestDialog();
+                else {
+                    showCreateDriveDialog(CreateRideDialogFragment.TYPE_REQUEST);
                 }
            }
         });
@@ -77,19 +77,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void showCreateDriveDialog()
+    public void showCreateDriveDialog(int type)
     {
-        CreateRideDialog createRideDialog = new CreateRideDialog(MainActivity.this, "Create Drive");
-        createRideDialog.getWindow().setGravity(Gravity.BOTTOM);
-        createRideDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        createRideDialog.show();
+        DialogFragment dialogFragment = CreateRideDialogFragment.newInstance(type);
+        dialogFragment.show(getFragmentManager(), CreateRideDialogFragment.TAG);
     }
 
-    public void showCreateDriveRequestDialog()
-    {
-        CreateRideDialog createRideDialog = new CreateRideDialog(MainActivity.this, "Request");
-        createRideDialog.getWindow().setGravity(Gravity.BOTTOM);
-        createRideDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        createRideDialog.show();
-    }
 }
