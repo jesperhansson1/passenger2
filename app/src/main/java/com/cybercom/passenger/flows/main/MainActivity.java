@@ -13,13 +13,12 @@ import android.widget.TextView;
 import com.crashlytics.android.Crashlytics;
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.createdrive.CreateRideDialogFragment;
+import com.cybercom.passenger.flows.progressfindingcar.FindingCarProgressDialog;
 
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
-
-public class MainActivity extends AppCompatActivity {
-
+public class MainActivity extends AppCompatActivity implements FindingCarProgressDialog.FindingCarListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +26,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Timber.i("First log info");
         Fabric.with(this, new Crashlytics());
+
+
         addUI();
     }
 
@@ -83,4 +84,8 @@ public class MainActivity extends AppCompatActivity {
         dialogFragment.show(getFragmentManager(), CreateRideDialogFragment.TAG);
     }
 
+    @Override
+    public void onCancelPressed(Boolean isCancelPressed) {
+
+    }
 }
