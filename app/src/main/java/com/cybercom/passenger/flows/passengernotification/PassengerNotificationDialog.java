@@ -15,7 +15,6 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.cybercom.passenger.R;
-import com.cybercom.passenger.flows.main.MainActivity;
 
 import timber.log.Timber;
 
