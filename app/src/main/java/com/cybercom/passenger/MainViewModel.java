@@ -44,9 +44,8 @@ public class MainViewModel extends AndroidViewModel {
                     return;
                 }
                 for (Location location : locationResult.getLocations()) {
-                    // Update UI with location data
-                    // ...
-                    System.out.println("Get updated location: " + location.getLatitude() + " " + location.getLongitude());
+                    // Get location update here
+                    Timber.d("Get updated location: %f %f", location.getLatitude(), location.getLongitude());
                 }
             }
         };
