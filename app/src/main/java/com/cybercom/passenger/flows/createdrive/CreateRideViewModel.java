@@ -18,15 +18,15 @@ public class CreateRideViewModel extends ViewModel {
         return new Position(lat,lang);
     }
 
-    public void createRide(String ride, Position startLocation, Position endLocation){
+    public void createRide(int type, Position startLocation, Position endLocation){
         Long currentTimeMillis = System.currentTimeMillis();
         int seats = 1;
 
-        if (ride.matches("Create Drive")){
+        if (type == CreateRideDialogFragment.TYPE_RIDE) {
             Drive drive = new Drive(currentTimeMillis,startLocation,endLocation,String.valueOf(currentTimeMillis),seats);
             (PassengerRepository.getInstance()).addDrive(drive);
          }
-        if(ride.matches("Request")){
+        if(type == CreateRideDialogFragment.TYPE_REQUEST){
             DriveRequest driveRequest = new DriveRequest(currentTimeMillis,startLocation,endLocation,String.valueOf(currentTimeMillis),seats);
             (PassengerRepository.getInstance()).addDriveRequest(driveRequest);
         }

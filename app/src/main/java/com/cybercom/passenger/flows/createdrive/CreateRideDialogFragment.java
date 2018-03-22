@@ -17,27 +17,32 @@ import android.widget.Spinner;
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.model.Position;
 
-public class CreateRideDialog extends DialogFragment{
+public class CreateRideDialogFragment extends DialogFragment{
+
+    public static final String TAG = "CREATE_RIDE_DIALOG";
+    public static final int TYPE_RIDE = 0;
+    public static final int TYPE_REQUEST = 0;
 
     private String[] mlocationValueArray;
     private Position mStartLocation,mEndLocation;
-    private String mRide;
 
     private CreateRideViewModel mCreateRideViewModel;
+    private int mType;
 
-    public CreateRideDialog(){
-
-    }
-
-    public static CreateRideDialog newInstance(String ride) {
-        CreateRideDialog createRideDialog = new CreateRideDialog();
-        createRideDialog.setRide(ride);
+    public static CreateRideDialogFragment newInstance(int type) {
+        CreateRideDialogFragment createRideDialog = new CreateRideDialogFragment();
+        Bundle args = new Bundle();
+        args.putInt("type", type);
+        createRideDialog.setArguments(args);
         return createRideDialog;
     }
 
-    public void setRide(String ride){
-        mRide = ride;
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mType = getArguments().getInt("type");
     }
+
 
     @Nullable
     @Override
@@ -46,15 +51,22 @@ public class CreateRideDialog extends DialogFragment{
 
         mCreateRideViewModel = ViewModelProviders.of((FragmentActivity) getActivity()).get(CreateRideViewModel.class);
 
-        Button button_drive = (Button)view.findViewById(R.id.button_ride);
-        button_drive.setText(mRide);
+        Button button_drive = view.findViewById(R.id.button_ride);
+
+        if (mType == TYPE_RIDE) {
+            button_drive.setText(R.string.create_ride);
+        } else {
+            button_drive.setText(R.string.create_ride_request);
+        }
+
         button_drive.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
-                mCreateRideViewModel.createRide(mRide,mStartLocation,mEndLocation);
+                mCreateRideViewModel.createRide(mType,mStartLocation,mEndLocation);
                 dismiss();
             }
         });
+
         view.findViewById(R.id.button_cancel).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
@@ -62,10 +74,10 @@ public class CreateRideDialog extends DialogFragment{
             }
         });
 
-        String[] locatonArray = view.getContext().getResources().getStringArray(R.array.location_array);
+        String[] locationArray = view.getContext().getResources().getStringArray(R.array.location_array);
         mlocationValueArray = view.getContext().getResources().getStringArray(R.array.location_value);
         Spinner spinnerStartLoc = view.findViewById(R.id.spinner_startLocation);
-        CustomAdapter customAdapterStartLoc=new CustomAdapter(view.getContext(), locatonArray);
+        CustomAdapter customAdapterStartLoc=new CustomAdapter(view.getContext(), locationArray);
         spinnerStartLoc.setAdapter(customAdapterStartLoc);
         spinnerStartLoc.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -80,7 +92,7 @@ public class CreateRideDialog extends DialogFragment{
         });
 
         Spinner spinnerEndLoc = view.findViewById(R.id.spinner_endLocation);
-        CustomAdapter customAdapterEndLoc =new CustomAdapter(view.getContext(), locatonArray);
+        CustomAdapter customAdapterEndLoc =new CustomAdapter(view.getContext(), locationArray);
         spinnerEndLoc.setAdapter(customAdapterEndLoc);
         spinnerEndLoc.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
@@ -95,7 +107,9 @@ public class CreateRideDialog extends DialogFragment{
             }
         });
 
-        getDialog().getWindow().setGravity(Gravity.BOTTOM);
+        if (getDialog().getWindow() != null) {
+            getDialog().getWindow().setGravity(Gravity.BOTTOM);
+        }
 
         return view;
     }
