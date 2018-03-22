@@ -20,7 +20,7 @@ import timber.log.Timber;
 
 public class PassengerNotificationDialog extends DialogFragment implements View.OnClickListener {
 
-    public interface PassengerNotificationListener{
+    public interface PassengerNotificationListener {
         void onCancelPressed(Boolean isCancelPressed);
     }
 
@@ -62,7 +62,6 @@ public class PassengerNotificationDialog extends DialogFragment implements View.
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-
 
         if (context instanceof PassengerNotificationListener) {
             mPassengerNotificationListener = (PassengerNotificationListener) context;
