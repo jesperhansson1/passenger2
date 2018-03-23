@@ -35,7 +35,7 @@ public class PassengerNotificationDialog extends DialogFragment implements View.
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.passenger_notification_dialog, container,
+        View rootView = inflater.inflate(R.layout.dialog_passenger_notification, container,
                 false);
 
         Button cancelButton = rootView.findViewById(R.id.passenger_notification_cancel_button);

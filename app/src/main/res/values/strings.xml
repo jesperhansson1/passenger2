@@ -34,13 +34,14 @@
     <string name="finding_driver_cancel">Cancel</string>
     <string name="must_implement_finding_car_listener">Must implement FindingCarListener</string>
     <string name="finding_car_price">Price 45</string>
+    <string name="create_drive_cancel">Cancel</string>
 
 
     <string-array name="location_array">
         <item>Malmö</item>
         <item>Helsingborg</item>
         <item>Stockholm</item>
-        <item>Goteborg</item>
+        <item>Göteborg</item>
     </string-array>
     <string-array name="location_value">
         <item>55.604981,13.003822</item>

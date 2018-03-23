@@ -34,7 +34,7 @@ public class FindingCarProgressDialog extends DialogFragment implements View.OnC
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.finding_car_progress_dialog, container,
+        View rootView = inflater.inflate(R.layout.dialog_progress_finding_car, container,
                 false);
 
         Button cancelButton = rootView.findViewById(R.id.finding_car_cancel);

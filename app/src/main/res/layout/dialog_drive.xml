@@ -1,126 +1,139 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_marginBottom="@dimen/pad_20dp"
-    android:background="@drawable/dialog_corner_round">
+    android:padding="@dimen/activity_margin_half"
+    android:background="@android:color/transparent">
 
-    <LinearLayout
+    <android.support.constraint.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        android:background="@drawable/driver_confirmation_back">
 
 
         <TextView
             android:id="@+id/label_ride"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/pad_5dp"
-            android:layout_marginStart="@dimen/pad_5dp"
+            android:layout_marginStart="@dimen/activity_margin_half_double"
+            android:layout_marginTop="@dimen/activity_margin"
             android:text="@string/ride"
-            android:textStyle="bold" />
+            android:textAppearance="@style/TextAppearance.AppCompat.Large"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <View
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/pad_2dp"
-            android:background="@color/colorBlue" />
+            android:id="@+id/view_title_divider"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_marginEnd="@dimen/activity_margin_none"
+            android:layout_marginTop="@dimen/activity_margin"
+            android:background="@color/colorLightGrey"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/label_ride" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginBottom="@dimen/pad_5dp"
-            android:layout_marginTop="@dimen/pad_5dp"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/label_startLocation"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/pad_20dp"
-                android:layout_marginTop="@dimen/pad_2dp"
-                android:layout_weight="1"
-                android:gravity="start|center"
-                android:text="@string/start_location"
-                android:textStyle="bold" />
-
-            <Spinner
-                android:id="@+id/spinner_startLocation"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/pad_2dp"
-                android:layout_weight="1"
-                android:gravity="start|center" />
-
-        </LinearLayout>
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/pad_1dp"
-            android:background="@color/colorLightBlue" />
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_marginBottom="@dimen/pad_5dp"
-            android:layout_marginTop="@dimen/pad_5dp"
+        <TextView
+            android:id="@+id/label_startLocation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/activity_margin"
             android:layout_weight="1"
-            android:orientation="horizontal">
+            android:textColor="@color/colorBlue"
+            android:text="@string/start_location"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            app:layout_constraintStart_toStartOf="@+id/label_ride"
+            app:layout_constraintTop_toBottomOf="@+id/view_title_divider" />
 
-            <TextView
-                android:id="@+id/label_endLocation"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/pad_20dp"
-                android:layout_marginTop="@dimen/pad_2dp"
-                android:gravity="start|center"
-                android:text="@string/end_location"
-                android:textStyle="bold" />
+        <Spinner
+            android:id="@+id/spinner_startLocation"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/activity_margin_half_double"
+            android:layout_marginStart="@dimen/activity_margin_half"
+            android:layout_marginTop="@dimen/activity_margin_none"
+            app:layout_constraintBottom_toBottomOf="@+id/label_startLocation"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/label_startLocation"
+            app:layout_constraintTop_toTopOf="@+id/label_startLocation" />
 
-            <Spinner
-                android:id="@+id/spinner_endLocation"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/pad_2dp" />
+        <TextView
+            android:id="@+id/label_endLocation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/activity_margin_none"
+            android:layout_marginTop="@dimen/activity_margin"
+            android:layout_weight="1"
+            android:textColor="@color/colorBlue"
+            android:text="@string/end_location"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            app:layout_constraintStart_toStartOf="@+id/label_startLocation"
+            app:layout_constraintTop_toBottomOf="@+id/label_startLocation" />
 
-        </LinearLayout>
+        <Spinner
+            android:id="@+id/spinner_endLocation"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/activity_margin_half_double"
+            android:layout_marginStart="@dimen/activity_margin_none"
+            android:layout_marginTop="@dimen/activity_margin_none"
+            app:layout_constraintBottom_toBottomOf="@+id/label_endLocation"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/spinner_startLocation"
+            app:layout_constraintTop_toTopOf="@+id/label_endLocation" />
 
+        <View
+            android:id="@+id/view_bottom_divider"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_marginEnd="@dimen/activity_margin_none"
+            android:layout_marginTop="@dimen/activity_margin"
+            android:background="@color/colorLightGrey"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/label_endLocation" />
 
 
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:id="@+id/create_drive_button_bar"
+            style="?attr/buttonBarStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/activity_margin_none"
+            android:layout_marginEnd="@dimen/activity_margin_half_double"
+            android:layout_marginTop="@dimen/activity_margin_none"
             android:orientation="horizontal"
-            android:layout_marginTop="@dimen/pad_5dp">
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/view_bottom_divider">
 
             <Button
                 android:id="@+id/button_cancel"
+                style="?attr/buttonBarButtonStyle"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_marginEnd="@dimen/pad_5dp"
-                android:layout_weight="1"
-                android:background="@drawable/button_border_round"
-                android:text="@android:string/cancel"
-                android:textColor="@color/colorRed"
-                android:textSize="@dimen/pad_12sp" />
+                android:layout_height="wrap_content"
+                android:text="@string/create_drive_cancel"
+                android:textColor="@color/colorGrey" />
 
             <Button
                 android:id="@+id/button_ride"
+                style="?attr/buttonBarButtonStyle"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_marginStart="@dimen/pad_5dp"
-                android:layout_weight="1"
-                android:background="@drawable/button_corner_round"
-                android:textColor="@color/colorWhite"
-                tools:text="@string/create_ride"
-                android:textSize="@dimen/pad_12sp" />
-
-
+                android:layout_height="wrap_content"
+                android:text="@string/create_ride"
+                android:textColor="@color/colorBlue" />
         </LinearLayout>
 
-    </LinearLayout>
 
-</android.support.constraint.ConstraintLayout>
+
+    </android.support.constraint.ConstraintLayout>
+
+
+
+</FrameLayout>

@@ -45,7 +45,7 @@ public class DriverConfirmationDialog extends DialogFragment implements View.OnC
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.driver_confirmation_dialog, container,
+        View rootView = inflater.inflate(R.layout.dialog_driver_confirmation, container,
                 false);
 
         Button acceptButton = rootView.findViewById(R.id.driver_confirmation_accept_button);

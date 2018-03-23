@@ -1,6 +1,8 @@
 package com.cybercom.passenger.flows.createdrive;
 
 import android.arch.lifecycle.ViewModelProviders;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -42,7 +44,6 @@ public class CreateRideDialogFragment extends DialogFragment{
         super.onCreate(savedInstanceState);
         mType = getArguments().getInt("type");
     }
-
 
     @Nullable
     @Override
@@ -107,11 +108,21 @@ public class CreateRideDialogFragment extends DialogFragment{
             }
         });
 
-        if (getDialog().getWindow() != null) {
-            getDialog().getWindow().setGravity(Gravity.BOTTOM);
-        }
-
         return view;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (getDialog().getWindow() != null) {
+            getDialog().getWindow().setLayout(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT);
+
+            getDialog().getWindow().setGravity(Gravity.BOTTOM);
+            getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        } else {
+            dismiss();
+        }
+    }
 }

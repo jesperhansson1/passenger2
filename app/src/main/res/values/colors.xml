@@ -8,6 +8,7 @@
     <color name="colorLightBlue">#98e3fc</color>
     <color name="colorRed">#FF0000</color>
     <color name="colorGrey">#8B000000</color>
+    <color name="colorLightGrey">#61000000</color>
     <color name="colorStarsRatingbar">#FEB37E</color>
 
 
@@ -15,5 +16,6 @@
     <color name="disable_foreground_grey">#42221f1f</color>
     <color name="disable_thumb_grey">#1c000000</color>
     <color name="enable_thumb_blue">#ff0099cc</color>
+    <color name="colorBlack">#000000</color>
 
 </resources>
