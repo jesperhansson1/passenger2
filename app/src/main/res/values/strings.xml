@@ -30,6 +30,10 @@
     <string name="passenger_notification_license_plate">ABC 123</string>
     <string name="passenger_notification_cancel">Cancel</string>
     <string name="content_description_passenger_notification_thumbnail">Passenger notification thumbnail</string>
+    <string name="finding_car_info">Searching for a car...</string>
+    <string name="finding_driver_cancel">Cancel</string>
+    <string name="must_implement_finding_car_listener">Must implement FindingCarListener</string>
+    <string name="finding_car_price">Price 45</string>
 
 
     <string-array name="location_array">

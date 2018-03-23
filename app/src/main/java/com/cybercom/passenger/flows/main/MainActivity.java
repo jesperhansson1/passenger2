@@ -25,7 +25,6 @@ import com.cybercom.passenger.flows.createdrive.CreateRideDialogFragment;
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
-
 public class MainActivity extends AppCompatActivity {
 
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 0;
