@@ -1,9 +1,16 @@
 package com.cybercom.passenger.flows.main;
 
 import android.app.DialogFragment;
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
+import android.content.pm.PackageManager;
 import android.graphics.Typeface;
+import android.location.Location;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.CompoundButton;
@@ -11,14 +18,17 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.crashlytics.android.Crashlytics;
+import com.cybercom.passenger.MainViewModel;
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.createdrive.CreateRideDialogFragment;
-import com.cybercom.passenger.flows.progressfindingcar.FindingCarProgressDialog;
 
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
-public class MainActivity extends AppCompatActivity implements FindingCarProgressDialog.FindingCarListener {
+public class MainActivity extends AppCompatActivity {
+
+    private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 0;
+    MainViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,9 +36,55 @@ public class MainActivity extends AppCompatActivity implements FindingCarProgres
         setContentView(R.layout.activity_main);
         Timber.i("First log info");
         Fabric.with(this, new Crashlytics());
-
-
         addUI();
+
+        viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
+
+        if (ContextCompat.checkSelfPermission(this.getApplication(),
+                android.Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+//            TODO: Handle the case when the user denied permission and chose 'do not ask again'
+//            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+//                    android.Manifest.permission.ACCESS_FINE_LOCATION)) {
+//            }
+//            else {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                        MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
+//            }
+        } else {
+            viewModel.getLocation();
+        }
+
+        viewModel.getUpdatedLocationLiveData().observe(this, new Observer<Location>() {
+            @Override
+            public void onChanged(@Nullable Location location) {
+//                TODO: Need to handle if there is no data och display info. Need to send this location to spinner
+                if(location == null){
+                    Timber.d("get updated --> null");
+                } else{
+                    Timber.d("get updated location activity: %s", location);
+                }
+            }
+        });
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        viewModel.startLocationUpdates();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION: {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    viewModel.getLastLocation();
+                }
+            }
+        }
     }
 
     public void addUI(){
@@ -53,8 +109,6 @@ public class MainActivity extends AppCompatActivity implements FindingCarProgres
         floatRide.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-
                 if(switchRide.isChecked()) {
                     showCreateDriveDialog(CreateRideDialogFragment.TYPE_RIDE);
                 }
@@ -82,10 +136,5 @@ public class MainActivity extends AppCompatActivity implements FindingCarProgres
     {
         DialogFragment dialogFragment = CreateRideDialogFragment.newInstance(type);
         dialogFragment.show(getFragmentManager(), CreateRideDialogFragment.TAG);
-    }
-
-    @Override
-    public void onCancelPressed(Boolean isCancelPressed) {
-
     }
 }
