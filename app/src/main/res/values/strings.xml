@@ -15,7 +15,7 @@
     <string name="driver_confirmation_accept">Accept</string>
     <string name="driver_confirmation_start_position">Dockplatsen 14</string>
     <string name="driver_confirmation_end_position">Dockplatsen 16</string>
-    <string name="must_implements_confirmation_listener">Must implement ConfirmationListener</string>
+    <string name="must_implement_confirmation_listener">Must implement ConfirmationListener</string>
     <string name="must_implement_passenger_notification_listener">Must implement passenger notification listener</string>
     <string name="content_description_passenger_thumbnail">Passenger thumbnail</string>
     <string name="content_description_start_location_icon">Start location icon</string>

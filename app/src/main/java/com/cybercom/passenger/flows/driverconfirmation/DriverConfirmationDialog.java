@@ -18,15 +18,27 @@ import com.cybercom.passenger.R;
 
 public class DriverConfirmationDialog extends DialogFragment implements View.OnClickListener {
 
+    public static final String TAG = "DRIVER_CONFIRMATION_DIALOG";
+    public static final String PASSENGER_NAME = "PASSENGER_NAME";
+
     public interface ConfirmationListener {
         void onDriverConfirmation(Boolean isAccepted);
     }
 
-    public static DriverConfirmationDialog getInstance() {
-        return new DriverConfirmationDialog();
+    public static DriverConfirmationDialog getInstance(String name) {
+        DriverConfirmationDialog driverConfirmationDialog = new DriverConfirmationDialog();
+        Bundle args = new Bundle();
+        args.putString(PASSENGER_NAME, name);
+        driverConfirmationDialog.setArguments(args);
+        return driverConfirmationDialog;
     }
 
     private ConfirmationListener mConfirmationListener;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
 
     @Nullable
     @Override
@@ -55,7 +67,7 @@ public class DriverConfirmationDialog extends DialogFragment implements View.OnC
 
             getDialog().getWindow().setGravity(Gravity.BOTTOM);
             getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        }else{
+        } else {
             dismiss();
         }
 
@@ -68,7 +80,7 @@ public class DriverConfirmationDialog extends DialogFragment implements View.OnC
         if (context instanceof ConfirmationListener) {
             mConfirmationListener = (ConfirmationListener) context;
         } else {
-            Toast.makeText(context, R.string.must_implements_confirmation_listener,
+            Toast.makeText(context, R.string.must_implement_confirmation_listener,
                     Toast.LENGTH_SHORT).show();
             dismiss();
         }

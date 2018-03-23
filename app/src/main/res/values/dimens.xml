@@ -12,4 +12,13 @@
     <dimen name="pad_108dp">108dp</dimen>
     <dimen name="pad_12sp">12sp</dimen>
 
+
+
+    <dimen name="activity_margin_none">0dp</dimen>
+    <dimen name="activity_margin_half_half">4dp</dimen>
+    <dimen name="activity_margin_half">8dp</dimen>
+    <dimen name="activity_margin">16dp</dimen>
+    <dimen name="activity_margin_half_double">24dp</dimen>
+    <dimen name="activity_margin_double">32dp</dimen>
+
 </resources>
