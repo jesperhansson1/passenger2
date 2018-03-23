@@ -17,9 +17,6 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 
-import timber.log.Timber;
-
-
 public class MainViewModel extends AndroidViewModel {
 
     private FusedLocationProviderClient mFusedLocationClient;
@@ -28,9 +25,6 @@ public class MainViewModel extends AndroidViewModel {
     private MutableLiveData<Location> mMyLocation = new MutableLiveData<>();
     private LocationCallback mLocationCallback;
     private LocationRequest mLocationRequest;
-
-//    public Location getMyLocation;
-//    public Location location;
 
     public MainViewModel(@NonNull Application application) {
         super(application);

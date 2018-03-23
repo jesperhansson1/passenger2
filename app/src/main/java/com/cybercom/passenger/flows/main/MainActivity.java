@@ -3,21 +3,15 @@ package com.cybercom.passenger.flows.main;
 import android.app.DialogFragment;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
-import android.content.IntentSender;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.graphics.Typeface;
-import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
 import android.os.Bundle;
-import android.os.Looper;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.view.Gravity;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.Switch;
@@ -27,18 +21,6 @@ import com.crashlytics.android.Crashlytics;
 import com.cybercom.passenger.MainViewModel;
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.createdrive.CreateRideDialogFragment;
-import com.google.android.gms.common.api.ResolvableApiException;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationSettingsRequest;
-import com.google.android.gms.location.LocationSettingsResponse;
-import com.google.android.gms.location.SettingsClient;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
@@ -78,15 +60,14 @@ public class MainActivity extends AppCompatActivity {
         viewModel.getUpdatedLocationLiveData().observe(this, new Observer<Location>() {
             @Override
             public void onChanged(@Nullable Location location) {
-                //Timber.d("Value from viewmodel: %Location: ", location);
+//                TODO: Need to handle if there is no data och display info. Need to send this location to spinner
                 if(location == null){
-                    System.out.println("get updated --> null");
+                    Timber.d("get updated --> null");
                 } else{
-                    System.out.println("get updated location activity: " + location);
+                    Timber.d("get updated location activity: %s", location);
                 }
             }
         });
-
     }
     @Override
     protected void onResume() {
@@ -157,5 +138,4 @@ public class MainActivity extends AppCompatActivity {
         DialogFragment dialogFragment = CreateRideDialogFragment.newInstance(type);
         dialogFragment.show(getFragmentManager(), CreateRideDialogFragment.TAG);
     }
-
 }
