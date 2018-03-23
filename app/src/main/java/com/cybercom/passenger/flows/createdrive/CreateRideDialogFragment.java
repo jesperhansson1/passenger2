@@ -1,6 +1,7 @@
 package com.cybercom.passenger.flows.createdrive;
 
 import android.arch.lifecycle.ViewModelProviders;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -17,22 +18,26 @@ import android.widget.Spinner;
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.model.Position;
 
+import timber.log.Timber;
+
 public class CreateRideDialogFragment extends DialogFragment{
 
     public static final String TAG = "CREATE_RIDE_DIALOG";
     public static final int TYPE_RIDE = 0;
-    public static final int TYPE_REQUEST = 0;
+    public static final int TYPE_REQUEST = 1;
 
     private String[] mlocationValueArray;
     private Position mStartLocation,mEndLocation;
 
     private CreateRideViewModel mCreateRideViewModel;
     private int mType;
+    public String getMyLocation;
 
-    public static CreateRideDialogFragment newInstance(int type) {
+    public static CreateRideDialogFragment newInstance(int type, String location) {
         CreateRideDialogFragment createRideDialog = new CreateRideDialogFragment();
         Bundle args = new Bundle();
         args.putInt("type", type);
+        args.putString("loc", location);
         createRideDialog.setArguments(args);
         return createRideDialog;
     }
@@ -41,6 +46,7 @@ public class CreateRideDialogFragment extends DialogFragment{
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mType = getArguments().getInt("type");
+        getMyLocation = getArguments().getString("loc");
     }
 
 
@@ -82,7 +88,9 @@ public class CreateRideDialogFragment extends DialogFragment{
         spinnerStartLoc.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(final AdapterView<?> parent, final View view, final int position, final long id) {
+                mlocationValueArray[0] = getMyLocation;
                 mStartLocation = mCreateRideViewModel.getPosition(mlocationValueArray[position]);
+                Timber.d("Spinner value: %s",  mlocationValueArray[position]);
             }
 
             @Override

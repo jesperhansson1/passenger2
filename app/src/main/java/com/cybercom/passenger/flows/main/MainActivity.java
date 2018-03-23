@@ -30,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 0;
     MainViewModel viewModel;
+    public String getStringValueFromLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,18 +58,9 @@ public class MainActivity extends AppCompatActivity {
             viewModel.getLocation();
         }
 
-        viewModel.getUpdatedLocationLiveData().observe(this, new Observer<Location>() {
-            @Override
-            public void onChanged(@Nullable Location location) {
-//                TODO: Need to handle if there is no data och display info. Need to send this location to spinner
-                if(location == null){
-                    Timber.d("get updated --> null");
-                } else{
-                    Timber.d("get updated location activity: %s", location);
-                }
-            }
-        });
+        getViewModel();
     }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -86,6 +78,28 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
+    }
+
+    public void getViewModel(){
+        viewModel.getUpdatedLocationLiveData().observe(this, new Observer<Location>() {
+            @Override
+            public void onChanged(@Nullable Location location) {
+//                TODO: Need to handle if there is no data och display info. Need to send this location to spinner
+                if(location == null){
+                    Timber.d("get updated --> null");
+                } else{
+                     getStringValueFromLocation(location);
+                }
+            }
+        });
+    }
+
+    public void getStringValueFromLocation(Location location){
+        double latD = location.getLatitude();
+        double lngD = location.getLongitude();
+        String lat = String.valueOf(latD);
+        String lng = String.valueOf(lngD);
+        getStringValueFromLocation = lat + "," + lng;
     }
 
     public void addUI(){
@@ -111,10 +125,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if(switchRide.isChecked()) {
-                    showCreateDriveDialog(CreateRideDialogFragment.TYPE_RIDE);
+                    showCreateDriveDialog(CreateRideDialogFragment.TYPE_RIDE, getStringValueFromLocation);
                 }
                 else {
-                    showCreateDriveDialog(CreateRideDialogFragment.TYPE_REQUEST);
+                    showCreateDriveDialog(CreateRideDialogFragment.TYPE_REQUEST, getStringValueFromLocation);
                 }
            }
         });
@@ -133,9 +147,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void showCreateDriveDialog(int type)
+    public void showCreateDriveDialog(int type, String location)
     {
-        DialogFragment dialogFragment = CreateRideDialogFragment.newInstance(type);
+        DialogFragment dialogFragment = CreateRideDialogFragment.newInstance(type, location);
         dialogFragment.show(getFragmentManager(), CreateRideDialogFragment.TAG);
     }
 }
