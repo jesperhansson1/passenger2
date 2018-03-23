@@ -7,6 +7,8 @@ import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.repository.PassengerRepository;
 
+import timber.log.Timber;
+
 public class CreateRideViewModel extends ViewModel {
 
     public Position getPosition(String locationValue)
@@ -31,5 +33,4 @@ public class CreateRideViewModel extends ViewModel {
             (PassengerRepository.getInstance()).addDriveRequest(driveRequest);
         }
     }
-
 }

@@ -21,6 +21,7 @@ import com.crashlytics.android.Crashlytics;
 import com.cybercom.passenger.MainViewModel;
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.createdrive.CreateRideDialogFragment;
+import com.cybercom.passenger.helpers.LocationHelper;
 
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
@@ -29,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 0;
     MainViewModel viewModel;
+    Location mLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,18 +58,9 @@ public class MainActivity extends AppCompatActivity {
             viewModel.getLocation();
         }
 
-        viewModel.getUpdatedLocationLiveData().observe(this, new Observer<Location>() {
-            @Override
-            public void onChanged(@Nullable Location location) {
-//                TODO: Need to handle if there is no data och display info. Need to send this location to spinner
-                if(location == null){
-                    Timber.d("get updated --> null");
-                } else{
-                    Timber.d("get updated location activity: %s", location);
-                }
-            }
-        });
+        getViewModel();
     }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -85,6 +78,20 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
+    }
+
+    public void getViewModel(){
+        viewModel.getUpdatedLocationLiveData().observe(this, new Observer<Location>() {
+            @Override
+            public void onChanged(@Nullable Location location) {
+//                TODO: Need to handle if there is no data och display info. Need to send this location to spinner
+                if(location == null){
+                    Timber.d("get updated --> null");
+                } else{
+                    mLocation = location;
+                }
+            }
+        });
     }
 
     public void addUI(){
@@ -110,10 +117,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if(switchRide.isChecked()) {
-                    showCreateDriveDialog(CreateRideDialogFragment.TYPE_RIDE);
+                    showCreateDriveDialog(CreateRideDialogFragment.TYPE_RIDE, LocationHelper.convertLocationToDisplayString(mLocation));
                 }
                 else {
-                    showCreateDriveDialog(CreateRideDialogFragment.TYPE_REQUEST);
+                    showCreateDriveDialog(CreateRideDialogFragment.TYPE_REQUEST, LocationHelper.convertLocationToDisplayString(mLocation));
                 }
            }
         });
@@ -132,9 +139,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void showCreateDriveDialog(int type)
+    public void showCreateDriveDialog(int type, String location)
     {
-        DialogFragment dialogFragment = CreateRideDialogFragment.newInstance(type);
+        DialogFragment dialogFragment = CreateRideDialogFragment.newInstance(type, location);
         dialogFragment.show(getFragmentManager(), CreateRideDialogFragment.TAG);
     }
 }
