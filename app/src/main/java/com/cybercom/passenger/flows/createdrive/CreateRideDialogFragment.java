@@ -1,7 +1,6 @@
 package com.cybercom.passenger.flows.createdrive;
 
 import android.arch.lifecycle.ViewModelProviders;
-import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -31,7 +30,7 @@ public class CreateRideDialogFragment extends DialogFragment{
 
     private CreateRideViewModel mCreateRideViewModel;
     private int mType;
-    public String getMyLocation;
+    public String mLocation;
 
     public static CreateRideDialogFragment newInstance(int type, String location) {
         CreateRideDialogFragment createRideDialog = new CreateRideDialogFragment();
@@ -46,7 +45,7 @@ public class CreateRideDialogFragment extends DialogFragment{
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mType = getArguments().getInt("type");
-        getMyLocation = getArguments().getString("loc");
+        mLocation = getArguments().getString("loc");
     }
 
 
@@ -88,7 +87,7 @@ public class CreateRideDialogFragment extends DialogFragment{
         spinnerStartLoc.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(final AdapterView<?> parent, final View view, final int position, final long id) {
-                mlocationValueArray[0] = getMyLocation;
+                mlocationValueArray[0] = mLocation;
                 mStartLocation = mCreateRideViewModel.getPosition(mlocationValueArray[position]);
                 Timber.d("Spinner value: %s",  mlocationValueArray[position]);
             }

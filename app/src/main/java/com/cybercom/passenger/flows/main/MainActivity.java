@@ -21,6 +21,7 @@ import com.crashlytics.android.Crashlytics;
 import com.cybercom.passenger.MainViewModel;
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.createdrive.CreateRideDialogFragment;
+import com.cybercom.passenger.helpers.LocationHelper;
 
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
@@ -30,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 0;
     MainViewModel viewModel;
-    public String getStringValueFromLocation;
+    Location mLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,18 +89,10 @@ public class MainActivity extends AppCompatActivity {
                 if(location == null){
                     Timber.d("get updated --> null");
                 } else{
-                     getStringValueFromLocation(location);
+                    mLocation = location;
                 }
             }
         });
-    }
-
-    public void getStringValueFromLocation(Location location){
-        double latD = location.getLatitude();
-        double lngD = location.getLongitude();
-        String lat = String.valueOf(latD);
-        String lng = String.valueOf(lngD);
-        getStringValueFromLocation = lat + "," + lng;
     }
 
     public void addUI(){
@@ -125,10 +118,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if(switchRide.isChecked()) {
-                    showCreateDriveDialog(CreateRideDialogFragment.TYPE_RIDE, getStringValueFromLocation);
+                    showCreateDriveDialog(CreateRideDialogFragment.TYPE_RIDE, LocationHelper.convertLocationToDisplayString(mLocation));
                 }
                 else {
-                    showCreateDriveDialog(CreateRideDialogFragment.TYPE_REQUEST, getStringValueFromLocation);
+                    showCreateDriveDialog(CreateRideDialogFragment.TYPE_REQUEST, LocationHelper.convertLocationToDisplayString(mLocation));
                 }
            }
         });
