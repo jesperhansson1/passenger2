@@ -101,9 +101,11 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         return drivesList;
     }
 
-    public Drive findBestRideMatch(final DriveRequest driveRequest) {
+    public LiveData<Drive> findBestRideMatch(final DriveRequest driveRequest) {
         final DriveRequest getDriveRequest = new DriveRequest(driveRequest.getTime(), driveRequest.getStartLocation(),
                 driveRequest.getEndLocation(), driveRequest.getNotificationTokenId(), driveRequest.getExtraPassengers());
+
+        final MutableLiveData<Drive> bestDriveMatch  = new MutableLiveData<>();
 
         mDrivesReference.addValueEventListener(new ValueEventListener() {
             @Override
@@ -116,39 +118,39 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     Drive drive = snapshot.getValue(Drive.class);
 
-                    if (drive != null && Math.abs(getDriveRequest.getTime() - drive.getTime()) < (900 * 60 * 1000)) { // 200, 500, 900
+                    if (drive != null && Math.abs(getDriveRequest.getTime() - drive.getTime()) < (900 * 60 * 1000)) {
                             Location.distanceBetween(driveRequest.getStartLocation().getLatitude(), driveRequest.getStartLocation().getLongitude(),
                                     drive.getStartLocation().getLatitude(), drive.getStartLocation().getLongitude(), distance);
 
-                        Timber.d("Drives Under time frame");
+                        Timber.d("Drives: distance: %s, driveRequest: lat: %s, lng: %s, drive: lat %s, lng %s",
+                                distance[0], driveRequest.getStartLocation().getLatitude(), driveRequest.getStartLocation().getLongitude(),
+                                drive.getStartLocation().getLatitude(), drive.getStartLocation().getLongitude());
+
                             if(distance[0] < 700){
                                 if (bestMatch == null) {
                                     bestMatch = drive;
                                     bestDistance = distance[0];
-                                    Timber.d("Drives: best match %s", bestMatch);
-                                    Timber.d("Drives: best distance  %s", distance[0]);
-
                                 }
                                 shortestDistance = distance[0];
 
                                 if(shortestDistance <= bestDistance){
                                     bestMatch = drive;
                                     bestDistance = shortestDistance;
-                                    Timber.d("Drives --> NEW Best distance and Best match: %s %s", bestDistance, bestMatch);
                                 }
                             }
                     } else{
-                        Timber.d("Drives Was out of time frame!");
+                        Timber.d("Drives: Out of time frame!");
                     }
                 }
-                Timber.d("Drives BESTMATCH!!!!!: %s", bestMatch);
+                Timber.d("Drives: Best match:  distance: %s, Drive: %s", distance[0], bestMatch);
+                bestDriveMatch.setValue(bestMatch);
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
             }
         });
-        return null;
+        return bestDriveMatch;
     }
 
     @Override
