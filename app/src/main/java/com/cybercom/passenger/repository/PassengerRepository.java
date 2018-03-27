@@ -105,80 +105,49 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         final DriveRequest getDriveRequest = new DriveRequest(driveRequest.getTime(), driveRequest.getStartLocation(),
                 driveRequest.getEndLocation(), driveRequest.getNotificationTokenId(), driveRequest.getExtraPassengers());
 
-       final ArrayList getTime = new ArrayList<>();
-       final ArrayList<Position> getStartLocation = new ArrayList();
-       final ArrayList<Position> getEndLocation = new ArrayList();
-
-       final ArrayList filterTimeDrives = new ArrayList<>();
-       final ArrayList<Position> filterStartLocation = new ArrayList();
-       final ArrayList<Position> filtertEndLocation = new ArrayList();
-        final ArrayList sortDistanceBetween = new ArrayList<>();
-
-
-
-
         mDrivesReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Drive bestMatch = null;
+                float bestDistance = 0;
+                float shortestDistance;
+                float[] distance = new float[2];
 
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     Drive drive = snapshot.getValue(Drive.class);
 
-                    /*
-                    if (getDriveRequest != null && Math.abs( getDriveRequest.getTime() - Long.parseLong(getTime.get(i).toString())) < (60 * 60 * 1000)) {
-                        if (bestMatch == null) {
-                            bestMatch = drive;
-                            // räkna ut straäckn till startLocation ( DriveRequets.startLocation , drive.startLocation)
-                            // long shortestDistance = ...;
-                        }
+                    if (drive != null && Math.abs(getDriveRequest.getTime() - drive.getTime()) < (900 * 60 * 1000)) { // 200, 500, 900
+                            Location.distanceBetween(driveRequest.getStartLocation().getLatitude(), driveRequest.getStartLocation().getLongitude(),
+                                    drive.getStartLocation().getLatitude(), drive.getStartLocation().getLongitude(), distance);
 
-                        // Räkna ut sträckan mellan startpunkterna jämför med shortsDistance
+                        Timber.d("Drives Under time frame");
+                            if(distance[0] < 700){
+                                if (bestMatch == null) {
+                                    bestMatch = drive;
+                                    bestDistance = distance[0];
+                                    Timber.d("Drives: best match %s", bestMatch);
+                                    Timber.d("Drives: best distance  %s", distance[0]);
 
-                        // om kortare sätt ny bestMatch = drive
-                        // samt shortestDistance = ny sträcka
+                                }
+                                shortestDistance = distance[0];
 
-
-                        getTime.add(drive.getTime());
+                                if(shortestDistance <= bestDistance){
+                                    bestMatch = drive;
+                                    bestDistance = shortestDistance;
+                                    Timber.d("Drives --> NEW Best distance and Best match: %s %s", bestDistance, bestMatch);
+                                }
+                            }
+                    } else{
+                        Timber.d("Drives Was out of time frame!");
                     }
-                    getStartLocation.add(drive.getStartLocation());
-                    */
                 }
-
-                    for (int i = 0; i < getTime.size(); i++) {
-
-                        if (getDriveRequest != null && Math.abs( getDriveRequest.getTime() - Long.parseLong(getTime.get(i).toString())) < (60 * 60 * 1000)) {
-                            filterTimeDrives.add(getTime.get(i));
-                            filterStartLocation.add(getStartLocation.get(i));
-                        }
-                    }
-
-                if(filterTimeDrives.size() == 1){
-                    Timber.d("HELLOOO one drive");
-                    //if there is only one drive, send to viewmodel
-                } else if (filterTimeDrives.size() == 0){
-                    Timber.d("HELLOOO No drive matched!");
-                } else {
-                    Timber.d("HELLOOO More than one drive");
-                    //if there are more than one, calculate the distance!
-                    float[] distance = new float[filterTimeDrives.size()];
-
-                    for(int i = 0; i < filterStartLocation.size(); i++){
-                        Location.distanceBetween(driveRequest.getStartLocation().getLatitude(), driveRequest.getStartLocation().getLongitude(),
-                                filterStartLocation.get(i).getLatitude(), filterStartLocation.get(i).getLongitude(), distance);
-                        sortDistanceBetween.add(distance[i]);
-                    }
-                    Collections.sort(sortDistanceBetween);
-                    System.out.println("dist " + sortDistanceBetween);
-                }
+                Timber.d("Drives BESTMATCH!!!!!: %s", bestMatch);
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
             }
         });
-
         return null;
     }
 
