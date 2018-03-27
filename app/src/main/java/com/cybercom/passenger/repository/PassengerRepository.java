@@ -160,7 +160,6 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
     @Override
     public void addDriveRequest(DriveRequest driveRequest) {
-        findBestRideMatch(driveRequest);
         mDriveRequestsReference.child(generateRandomUUID()).setValue(driveRequest);
     }
 
