@@ -30,6 +30,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private static final String REFERENCE_USERS_CHILD_TYPE = "type";
     private static final String MOCK_USER = "userone";
 
+    private static final int DRIVE_REQUEST_MATCH_TIME_THRESHOLD = 15 * 60 * 60 * 1000;
+
     private static PassengerRepository sPassengerRepository;
     private DatabaseReference mUsersReference;
     private DatabaseReference mDrivesReference;
@@ -102,8 +104,6 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     }
 
     public LiveData<Drive> findBestRideMatch(final DriveRequest driveRequest) {
-        final DriveRequest getDriveRequest = new DriveRequest(driveRequest.getTime(), driveRequest.getStartLocation(),
-                driveRequest.getEndLocation(), driveRequest.getNotificationTokenId(), driveRequest.getExtraPassengers());
 
         final MutableLiveData<Drive> bestDriveMatch  = new MutableLiveData<>();
 
@@ -111,14 +111,13 @@ public class PassengerRepository implements PassengerRepositoryInterface {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Drive bestMatch = null;
-                float bestDistance = 0;
-                float shortestDistance;
+                float shortestDistance = 0;
                 float[] distance = new float[2];
 
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     Drive drive = snapshot.getValue(Drive.class);
 
-                    if (drive != null && Math.abs(getDriveRequest.getTime() - drive.getTime()) < (900 * 60 * 1000)) {
+                    if (drive != null && Math.abs(driveRequest.getTime() - drive.getTime()) < DRIVE_REQUEST_MATCH_TIME_THRESHOLD) {
                             Location.distanceBetween(driveRequest.getStartLocation().getLatitude(), driveRequest.getStartLocation().getLongitude(),
                                     drive.getStartLocation().getLatitude(), drive.getStartLocation().getLongitude(), distance);
 
@@ -129,13 +128,11 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                             if(distance[0] < 700){
                                 if (bestMatch == null) {
                                     bestMatch = drive;
-                                    bestDistance = distance[0];
+                                    shortestDistance = distance[0];
                                 }
-                                shortestDistance = distance[0];
-
-                                if(shortestDistance <= bestDistance){
+                                else if(distance[0] < shortestDistance){
                                     bestMatch = drive;
-                                    bestDistance = shortestDistance;
+                                    shortestDistance = distance[0];
                                 }
                             }
                     } else{
