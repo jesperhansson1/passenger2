@@ -35,7 +35,7 @@
     <string name="must_implement_finding_car_listener">Must implement FindingCarListener</string>
     <string name="finding_car_price">Price 45</string>
     <string name="create_drive_cancel">Cancel</string>
-
+    <string name="signup_title">Sign Up</string>
 
     <string-array name="location_array">
         <item>My Location</item>
