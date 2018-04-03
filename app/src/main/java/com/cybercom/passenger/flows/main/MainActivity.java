@@ -22,6 +22,7 @@ import com.cybercom.passenger.MainViewModel;
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.createdrive.CreateRideDialogFragment;
 import com.cybercom.passenger.helpers.LocationHelper;
+import com.cybercom.passenger.helpers.NotificationChannelHelper;
 
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
@@ -38,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Timber.i("First log info");
         Fabric.with(this, new Crashlytics());
+        new NotificationChannelHelper(this);
         addUI();
 
         viewModel = ViewModelProviders.of(this).get(MainViewModel.class);

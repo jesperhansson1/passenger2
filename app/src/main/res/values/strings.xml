@@ -35,6 +35,7 @@
     <string name="must_implement_finding_car_listener">Must implement FindingCarListener</string>
     <string name="finding_car_price">Price 45</string>
     <string name="create_drive_cancel">Cancel</string>
+    <string name="notification_primary_channel_name">Passenger primary channel</string>
 
 
     <string-array name="location_array">

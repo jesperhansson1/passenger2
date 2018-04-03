@@ -11,6 +11,7 @@ import android.support.v4.app.NotificationCompat;
 
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.main.MainActivity;
+import com.cybercom.passenger.helpers.NotificationChannelHelper;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
@@ -42,7 +43,8 @@ public class PassengerMessagingService extends FirebaseMessagingService {
 
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder =
-                new NotificationCompat.Builder(this, "343")
+                new NotificationCompat.Builder(this,
+                        NotificationChannelHelper.PRIMARY_CHANNEL_ID)
                         .setAutoCancel(true)
                         .setSmallIcon(R.mipmap.ic_launcher)
                         .setContentIntent(pendingIntent)
