@@ -2,6 +2,10 @@ package com.cybercom.passenger.model;
 
 public class User {
 
+    public static final int TYPE_DRIVER = 0;
+    public static final int TYPE_PASSENGER = 1;
+    private String mNotificationTokenId;
+    private int mType;
     private String mPhone;
     private String mPassword;
     private String mEmail;
@@ -14,20 +18,46 @@ public class User {
 
     }
 
-    public User(String phone, String password, String email, String personalNumber, String fullName, String imageLink, String gender) {
-        this.mPhone = phone;
-        this.mPassword = password;
-        this.mEmail = email;
-        this.mPersonalNumber = personalNumber;
-        this.mFullName = fullName;
-        this.mImageLink = imageLink;
-        this.mGender = gender;
+    public User(String notificationTokenId, int type, String phone, String password,
+                String email, String personalNumber, String fullName, String imageLink,
+                String gender) {
+        mNotificationTokenId = notificationTokenId;
+        mType = type;
+        mPhone = phone;
+        mPassword = password;
+        mEmail = email;
+        mPersonalNumber = personalNumber;
+        mFullName = fullName;
+        mImageLink = imageLink;
+        mGender = gender;
+    }
+
+    public String getPhone() {
+        return mPhone;
+    }
+
+    public void setPhone(String phone) {
+        mPhone = phone;
+    }
+
+    public String getPassword() {
+        return mPassword;
+    }
+
+    public void setPassword(String password) {
+        mPassword = password;
+    }
+
+    public String getEmail() {
+        return mEmail;
     }
 
     @Override
     public String toString() {
         return "User{" +
-                "mPhone='" + mPhone + '\'' +
+                "mNotificationTokenId='" + mNotificationTokenId + '\'' +
+                ", mType=" + mType +
+                ", mPhone='" + mPhone + '\'' +
                 ", mPassword='" + mPassword + '\'' +
                 ", mEmail='" + mEmail + '\'' +
                 ", mPersonalNumber='" + mPersonalNumber + '\'' +
@@ -37,28 +67,8 @@ public class User {
                 '}';
     }
 
-    public String getPhone() {
-        return mPhone;
-    }
-
-    public void setPhone(String phone) {
-        this.mPhone = phone;
-    }
-
-    public String getPassword() {
-        return mPassword;
-    }
-
-    public void setPassword(String password) {
-        this.mPassword = password;
-    }
-
-    public String getEmail() {
-        return mEmail;
-    }
-
     public void setEmail(String email) {
-        this.mEmail = email;
+        mEmail = email;
     }
 
     public String getPersonalNumber() {
@@ -66,7 +76,7 @@ public class User {
     }
 
     public void setPersonalNumber(String personalNumber) {
-        this.mPersonalNumber = personalNumber;
+        mPersonalNumber = personalNumber;
     }
 
     public String getFullName() {
@@ -74,7 +84,7 @@ public class User {
     }
 
     public void setFullName(String fullName) {
-        this.mFullName = fullName;
+        mFullName = fullName;
     }
 
     public String getImageLink() {
@@ -82,7 +92,7 @@ public class User {
     }
 
     public void setImageLink(String imageLink) {
-        this.mImageLink = imageLink;
+        mImageLink = imageLink;
     }
 
     public String getGender() {
@@ -90,7 +100,23 @@ public class User {
     }
 
     public void setGender(String gender) {
-        this.mGender = gender;
+        mGender = gender;
+    }
+
+    public String getNotificationTokenId() {
+        return mNotificationTokenId;
+    }
+
+    public void setNotificationTokenId(String notificationTokenId) {
+        mNotificationTokenId = notificationTokenId;
+    }
+
+    public int getType() {
+        return mType;
+    }
+
+    public void setType(int type) {
+        mType = type;
     }
 
 
