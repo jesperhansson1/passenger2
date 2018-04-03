@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">passenger</string>
     <string name="create_ride">Create Ride</string>
-    <string name="create_ride_request">Create Ride</string>
+    <string name="create_ride_request">Ride Request</string>
     <string name="start_location">Start Location</string>
     <string name="end_location">End Location</string>
     <string name="driver">Driver</string>
@@ -35,6 +35,13 @@
     <string name="must_implement_finding_car_listener">Must implement FindingCarListener</string>
     <string name="finding_car_price">Price 45</string>
     <string name="create_drive_cancel">Cancel</string>
+    <string name="security">Security</string>
+    <string name="mail_example">luftluft@mail.com</string>
+    <string name="password">Password</string>
+    <string name="email">Email</string>
+    <string name="forgot_password">Forgot Password</string>
+    <string name="signin">Sign in</string>
+    <string name="login">Login</string>
 
 
     <string-array name="location_array">
