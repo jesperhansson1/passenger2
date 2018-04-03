@@ -36,6 +36,17 @@
     <string name="finding_car_price">Price 45</string>
     <string name="create_drive_cancel">Cancel</string>
     <string name="signup_title">Sign Up</string>
+    <string name="full_name">Full name</string>
+    <string name="personal_number">Personal number</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="phone">Phone</string>
+    <string name="next">Next</string>
+    <string name="hint_full_name">Enter name</string>
+    <string name="hint_personal_number">831026-3388</string>
+    <string name="hint_email">my@email.com</string>
+    <string name="hint_password">Enter password</string>
+    <string name="hint_phone">12345</string>
 
     <string-array name="location_array">
         <item>My Location</item>
