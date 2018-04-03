@@ -13,6 +13,8 @@
     <dimen name="pad_30dp">30dp</dimen>
     <dimen name="pad_108dp">108dp</dimen>
     <dimen name="pad_12sp">12sp</dimen>
+    <dimen name="space_normal">10dp</dimen>
+
 
 
 
