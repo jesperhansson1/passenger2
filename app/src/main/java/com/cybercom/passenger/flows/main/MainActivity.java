@@ -21,8 +21,10 @@ import com.crashlytics.android.Crashlytics;
 import com.cybercom.passenger.MainViewModel;
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.createdrive.CreateRideDialogFragment;
+import com.cybercom.passenger.flows.driverconfirmation.DriverConfirmationDialog;
 import com.cybercom.passenger.helpers.LocationHelper;
 import com.cybercom.passenger.helpers.NotificationChannelHelper;
+import com.cybercom.passenger.model.Notification;
 
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
@@ -44,6 +46,13 @@ public class MainActivity extends AppCompatActivity {
 
         viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
 
+
+        if (savedInstanceState == null) {
+            if (getIntent().getExtras() != null) {
+                viewModel.setNotification(getIntent().getExtras());
+            }
+        }
+
         if (ContextCompat.checkSelfPermission(this.getApplication(),
                 android.Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -52,15 +61,30 @@ public class MainActivity extends AppCompatActivity {
 //                    android.Manifest.permission.ACCESS_FINE_LOCATION)) {
 //            }
 //            else {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                        MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
-//            }
+            ActivityCompat.requestPermissions(this,
+                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                    MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
+//            }h
         } else {
             viewModel.getLocation();
         }
 
         getViewModel();
+        notificationObserver();
+    }
+
+    private void notificationObserver() {
+        viewModel.getNotification().observe(this, new Observer<Notification>() {
+            @Override
+            public void onChanged(@Nullable Notification notification) {
+                if (notification != null) {
+                    DriverConfirmationDialog.getInstance(notification.getFullName())
+                            .show(getSupportFragmentManager()
+                                    , DriverConfirmationDialog.TAG);
+                    viewModel.deleteNotification();
+                }
+            }
+        });
     }
 
     @Override
@@ -82,21 +106,21 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void getViewModel(){
+    public void getViewModel() {
         viewModel.getUpdatedLocationLiveData().observe(this, new Observer<Location>() {
             @Override
             public void onChanged(@Nullable Location location) {
 //                TODO: Need to handle if there is no data och display info. Need to send this location to spinner
-                if(location == null){
+                if (location == null) {
                     Timber.d("get updated --> null");
-                } else{
+                } else {
                     mLocation = location;
                 }
             }
         });
     }
 
-    public void addUI(){
+    public void addUI() {
         changeLabelFontStyle(false);
         final Switch switchRide = findViewById(R.id.switch_ride);
         final FloatingActionButton floatRide = findViewById(R.id.button_createRide);
@@ -104,12 +128,10 @@ public class MainActivity extends AppCompatActivity {
         switchRide.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton arg0, boolean isChecked) {
-                if(isChecked){
+                if (isChecked) {
                     floatRide.setImageResource(R.drawable.driver);
                     changeLabelFontStyle(true);
-                }
-                else
-                {
+                } else {
                     floatRide.setImageResource(R.drawable.passenger);
                     changeLabelFontStyle(false);
                 }
@@ -118,32 +140,28 @@ public class MainActivity extends AppCompatActivity {
         floatRide.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(switchRide.isChecked()) {
+                if (switchRide.isChecked()) {
                     showCreateDriveDialog(CreateRideDialogFragment.TYPE_RIDE, LocationHelper.convertLocationToDisplayString(mLocation));
-                }
-                else {
+                } else {
                     showCreateDriveDialog(CreateRideDialogFragment.TYPE_REQUEST, LocationHelper.convertLocationToDisplayString(mLocation));
                 }
-           }
+            }
         });
     }
 
-    public void changeLabelFontStyle(boolean driverValue)
-    {
-        if(driverValue){
-            ((TextView)findViewById(R.id.label_driver)).setTypeface(Typeface.DEFAULT_BOLD);
-            ((TextView)findViewById(R.id.label_passenger)).setTypeface(Typeface.DEFAULT);
-        }
-        else
-        {
-            ((TextView)findViewById(R.id.label_passenger)).setTypeface(Typeface.DEFAULT_BOLD);
-            ((TextView)findViewById(R.id.label_driver)).setTypeface(Typeface.DEFAULT);
+    public void changeLabelFontStyle(boolean driverValue) {
+        if (driverValue) {
+            ((TextView) findViewById(R.id.label_driver)).setTypeface(Typeface.DEFAULT_BOLD);
+            ((TextView) findViewById(R.id.label_passenger)).setTypeface(Typeface.DEFAULT);
+        } else {
+            ((TextView) findViewById(R.id.label_passenger)).setTypeface(Typeface.DEFAULT_BOLD);
+            ((TextView) findViewById(R.id.label_driver)).setTypeface(Typeface.DEFAULT);
         }
     }
 
-    public void showCreateDriveDialog(int type, String location)
-    {
+    public void showCreateDriveDialog(int type, String location) {
         DialogFragment dialogFragment = CreateRideDialogFragment.newInstance(type, location);
         dialogFragment.show(getFragmentManager(), CreateRideDialogFragment.TAG);
     }
+
 }

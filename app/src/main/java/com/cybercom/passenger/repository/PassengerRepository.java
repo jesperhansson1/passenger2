@@ -6,7 +6,7 @@ import android.location.Location;
 
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
-import com.cybercom.passenger.model.Position;
+import com.cybercom.passenger.model.Notification;
 import com.cybercom.passenger.model.User;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -14,10 +14,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.sql.Driver;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import timber.log.Timber;
@@ -36,6 +35,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private DatabaseReference mUsersReference;
     private DatabaseReference mDrivesReference;
     private DatabaseReference mDriveRequestsReference;
+
+    private MutableLiveData<Notification> mNotification = new MutableLiveData<>();
 
     public static PassengerRepository getInstance() {
         if (sPassengerRepository == null) {
@@ -105,7 +106,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
     public LiveData<Drive> findBestRideMatch(final DriveRequest driveRequest) {
 
-        final MutableLiveData<Drive> bestDriveMatch  = new MutableLiveData<>();
+        final MutableLiveData<Drive> bestDriveMatch = new MutableLiveData<>();
 
         mDrivesReference.addValueEventListener(new ValueEventListener() {
             @Override
@@ -118,24 +119,23 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                     Drive drive = snapshot.getValue(Drive.class);
 
                     if (drive != null && Math.abs(driveRequest.getTime() - drive.getTime()) < DRIVE_REQUEST_MATCH_TIME_THRESHOLD) {
-                            Location.distanceBetween(driveRequest.getStartLocation().getLatitude(), driveRequest.getStartLocation().getLongitude(),
-                                    drive.getStartLocation().getLatitude(), drive.getStartLocation().getLongitude(), distance);
+                        Location.distanceBetween(driveRequest.getStartLocation().getLatitude(), driveRequest.getStartLocation().getLongitude(),
+                                drive.getStartLocation().getLatitude(), drive.getStartLocation().getLongitude(), distance);
 
                         Timber.d("Drives: distance: %s, driveRequest: lat: %s, lng: %s, drive: lat %s, lng %s",
                                 distance[0], driveRequest.getStartLocation().getLatitude(), driveRequest.getStartLocation().getLongitude(),
                                 drive.getStartLocation().getLatitude(), drive.getStartLocation().getLongitude());
 
-                            if(distance[0] < 700){
-                                if (bestMatch == null) {
-                                    bestMatch = drive;
-                                    shortestDistance = distance[0];
-                                }
-                                else if(distance[0] < shortestDistance){
-                                    bestMatch = drive;
-                                    shortestDistance = distance[0];
-                                }
+                        if (distance[0] < 700) {
+                            if (bestMatch == null) {
+                                bestMatch = drive;
+                                shortestDistance = distance[0];
+                            } else if (distance[0] < shortestDistance) {
+                                bestMatch = drive;
+                                shortestDistance = distance[0];
                             }
-                    } else{
+                        }
+                    } else {
                         Timber.d("Drives: Out of time frame!");
                     }
                 }
@@ -160,7 +160,26 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         mDriveRequestsReference.child(generateRandomUUID()).setValue(driveRequest);
     }
 
-    private String generateRandomUUID(){
+    private String generateRandomUUID() {
         return UUID.randomUUID().toString();
     }
+
+    public void setNotification(Map<String, String> payload) {
+        //TODO Convert payload to Notification object and send upstream
+
+        Notification notification = new Notification(payload.get("sender"));
+
+        mNotification.postValue(notification);
+
+    }
+
+    public LiveData<Notification> getNotification() {
+        return mNotification;
+    }
+
+    public void deleteNotification(){
+        mNotification.postValue(null);
+    }
+
+
 }

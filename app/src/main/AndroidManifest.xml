@@ -34,5 +34,11 @@
             android:name="io.fabric.ApiKey"
             android:value="38256c6824587d6fb8c72978c282a112ba5e1a55"
             />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_message" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/colorAccent" />
     </application>
 </manifest>
