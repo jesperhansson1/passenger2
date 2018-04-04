@@ -13,7 +13,10 @@
     <dimen name="pad_30dp">30dp</dimen>
     <dimen name="pad_108dp">108dp</dimen>
     <dimen name="pad_12sp">12sp</dimen>
+    <dimen name="pad_24sp">24sp</dimen>
+    <dimen name="pad_20sp">20sp</dimen>
     <dimen name="space_normal">10dp</dimen>
+    <dimen name="space_double">20dp</dimen>
 
 
 
@@ -24,5 +27,6 @@
     <dimen name="activity_margin">16dp</dimen>
     <dimen name="activity_margin_half_double">24dp</dimen>
     <dimen name="activity_margin_double">32dp</dimen>
-
+    <dimen name="pad_50dp">50dp</dimen>
+    <dimen name="size_100dp">100dp</dimen>
 </resources>
