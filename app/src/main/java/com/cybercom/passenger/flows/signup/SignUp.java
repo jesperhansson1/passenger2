@@ -20,9 +20,9 @@ public class SignUp extends AppCompatActivity implements View.OnClickListener {
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle(R.string.signup_title);
 
-        mRadioButtonMale = findViewById(R.id.maleRadioButton);
+        mRadioButtonMale = findViewById(R.id.radiobutton_signup_maleRadioButton);
         mRadioButtonMale.setOnClickListener(this);
-        mRadioButtonFemale = findViewById(R.id.femaleRadioButton);
+        mRadioButtonFemale = findViewById(R.id.radiobutton_signup_femaleRadioButton);
         mRadioButtonFemale.setOnClickListener(this);
 
         mRadioButtonMale.setBackgroundColor(getResources().getColor(R.color.colorBlue));
@@ -37,7 +37,7 @@ public class SignUp extends AppCompatActivity implements View.OnClickListener {
     @Override
     public void onClick(View v) {
         switch(v.getId()) {
-            case R.id.maleRadioButton:
+            case R.id.radiobutton_signup_maleRadioButton:
                 // Do something
                 mRadioButtonMale.setBackgroundColor(getResources().getColor(R.color.colorBlue));
                 mRadioButtonMale.setTextColor(getResources().getColor(R.color.colorWhite));
@@ -47,7 +47,7 @@ public class SignUp extends AppCompatActivity implements View.OnClickListener {
                 mRadioButtonFemale.setTextColor(getResources().getColor(R.color.colorBlue));
                 mRadioButtonFemale.setButtonDrawable(R.drawable.ic_woman_blue);
                 break;
-            case R.id.femaleRadioButton:
+            case R.id.radiobutton_signup_femaleRadioButton:
                 // Do something
                 mRadioButtonFemale.setBackgroundColor(getResources().getColor(R.color.colorBlue));
                 mRadioButtonFemale.setTextColor(getResources().getColor(R.color.colorWhite));
