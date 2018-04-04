@@ -5,10 +5,8 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.RadioButton;
-
 import com.cybercom.passenger.R;
 
-import timber.log.Timber;
 
 public class SignUp extends AppCompatActivity implements View.OnClickListener {
 
@@ -34,21 +32,10 @@ public class SignUp extends AppCompatActivity implements View.OnClickListener {
 
         mRadioButtonMale.setButtonDrawable(R.drawable.ic_male_white);
         mRadioButtonFemale.setButtonDrawable(R.drawable.ic_woman_blue);
-
-        if(mRadioButtonMale.isChecked()){
-            Timber.d("Radio Button MALE");
-        } else if(mRadioButtonFemale.isChecked()){
-            Timber.d("Radio Button FEMALE");
-        }
     }
 
     @Override
     public void onClick(View v) {
-        if(mRadioButtonMale.isChecked()){
-            Timber.d("Radio Button MALE");
-        } else if(mRadioButtonFemale.isChecked()){
-            Timber.d("Radio Button FEMALE");
-        }
         switch(v.getId()) {
             case R.id.maleRadioButton:
                 // Do something
