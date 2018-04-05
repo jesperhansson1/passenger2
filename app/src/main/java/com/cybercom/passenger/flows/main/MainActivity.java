@@ -3,6 +3,7 @@ package com.cybercom.passenger.flows.main;
 import android.app.DialogFragment;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.location.Location;
@@ -21,6 +22,7 @@ import com.crashlytics.android.Crashlytics;
 import com.cybercom.passenger.MainViewModel;
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.createdrive.CreateRideDialogFragment;
+import com.cybercom.passenger.flows.login.Login;
 import com.cybercom.passenger.helpers.LocationHelper;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -28,11 +30,14 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
+
 
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 0;
     MainViewModel viewModel;
@@ -46,6 +51,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         Timber.i("First log info");
         Fabric.with(this, new Crashlytics());
         addUI();
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (user != null) {
+            // User is signed in
+            Timber.d("user signed in!");
+        } else {
+            // No user is signed in
+            Timber.d("user NOT signed in!");
+            Intent intent = new Intent(this, Login.class);
+
+            startActivity(intent);
+        }
 
         viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
 
