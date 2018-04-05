@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cybercom.passenger.R;
@@ -20,15 +21,20 @@ public class DriverConfirmationDialog extends DialogFragment implements View.OnC
 
     public static final String TAG = "DRIVER_CONFIRMATION_DIALOG";
     public static final String PASSENGER_NAME = "PASSENGER_NAME";
+    public static final String PASSENGER_START_LOCATION = "PASSENGER_START_LOCATION";
+    public static final String PASSENGER_END_LOCATION = "PASSENGER_END_LOCATION";
 
     public interface ConfirmationListener {
         void onDriverConfirmation(Boolean isAccepted);
     }
 
-    public static DriverConfirmationDialog getInstance(String name) {
+    public static DriverConfirmationDialog getInstance(String name, String startLocation
+            , String endLocation) {
         DriverConfirmationDialog driverConfirmationDialog = new DriverConfirmationDialog();
         Bundle args = new Bundle();
         args.putString(PASSENGER_NAME, name);
+        args.putString(PASSENGER_START_LOCATION, startLocation);
+        args.putString(PASSENGER_END_LOCATION, endLocation);
         driverConfirmationDialog.setArguments(args);
         return driverConfirmationDialog;
     }
@@ -53,6 +59,23 @@ public class DriverConfirmationDialog extends DialogFragment implements View.OnC
 
         Button declineButton = rootView.findViewById(R.id.driver_confirmation_decline_button);
         declineButton.setOnClickListener(this);
+
+        TextView driverConfirmationPassengerName
+                = rootView.findViewById(R.id.driver_confirmation_passenger_name);
+        TextView driverConfirmationPassengerStartLocation
+                = rootView.findViewById(R.id.driver_confirmation_start_position);
+        TextView driverConfirmationPassengerEndLocation
+                = rootView.findViewById(R.id.driver_confirmation_end_position);
+
+        if (getArguments() != null) {
+            driverConfirmationPassengerName
+                    .setText(getArguments().getString(PASSENGER_NAME));
+            driverConfirmationPassengerStartLocation
+                    .setText(getArguments().getString(PASSENGER_START_LOCATION));
+            driverConfirmationPassengerEndLocation
+                    .setText(getArguments().getString(PASSENGER_END_LOCATION));
+        }
+
 
         return rootView;
     }
