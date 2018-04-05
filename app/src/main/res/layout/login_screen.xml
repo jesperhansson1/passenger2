@@ -6,16 +6,25 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <include
+        android:id="@+id/toolbar"
+        layout="@layout/passenger_toolbar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/pad_12dp"
         android:layout_marginStart="@dimen/pad_12dp"
-        android:layout_marginTop="@dimen/pad_12dp"
+        android:layout_marginTop="50dp"
         android:orientation="vertical"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@+id/toolbar">
 
         <TextView
             android:id="@+id/textview_loginscreen_email"
@@ -34,7 +43,9 @@
             android:inputType="textPersonName"
             android:padding="@dimen/pad_5dp" />
 
-        <Space android:layout_width="wrap_content" android:layout_height="@dimen/space_normal" />
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/space_normal" />
 
 
         <TextView
@@ -61,7 +72,9 @@
                 android:padding="@dimen/pad_2dp" />
         </android.support.design.widget.TextInputLayout>
 
-        <Space android:layout_width="wrap_content" android:layout_height="@dimen/space_normal" />
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/space_normal" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -90,7 +103,9 @@
 
         </LinearLayout>
 
-        <Space android:layout_width="wrap_content" android:layout_height="@dimen/space_normal" />
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/space_normal" />
 
         <Button
             android:id="@+id/button_loginscreen_login"

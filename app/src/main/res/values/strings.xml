@@ -58,6 +58,8 @@
     <string name="hint_password">Enter password</string>
     <string name="hint_phone">12345</string>
 
+    <string name="login_title">Login</string>
+
     <string-array name="location_array">
         <item>My Location</item>
         <item>Malmö</item>
