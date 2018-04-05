@@ -1,10 +1,8 @@
 package com.cybercom.passenger.flows.login;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -23,7 +21,7 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
 
     FirebaseAuth mAuth;
     EditText mEmail,mPassword;
-    Button mLogin;
+    Button mLogin, mSignup;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,8 +32,8 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
         mPassword = findViewById(R.id.edittext_loginscreen_password);
         mLogin = findViewById(R.id.button_loginscreen_login);
         mLogin.setOnClickListener(this);
-
-
+        mSignup = findViewById(R.id.button_loginscreen_signup);
+        mSignup.setOnClickListener(this);
     }
 
     @Override
@@ -43,7 +41,6 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
         String email = mEmail.getText().toString();
         String password = mPassword.getText().toString();
         mAuth = FirebaseAuth.getInstance();
-
 
         switch (v.getId()){
             case R.id.button_loginscreen_login:
@@ -61,11 +58,14 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
                                     Toast.makeText(Login.this, "Authentication failed.",
                                             Toast.LENGTH_SHORT).show();
                                 }
-
-                                // ...
                             }
                         });
                 break;
+            case R.id.button_loginscreen_signup:
+                Timber.d("clicked signup");
+                /*Intent intent = new Intent(this, Signup.class);
+                startActivity(intent);*/
+                    break;
         }
     }
 
