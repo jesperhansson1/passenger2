@@ -7,8 +7,6 @@ public class User {
     private String mNotificationTokenId;
     private int mType;
     private String mPhone;
-    private String mPassword;
-    private String mEmail;
     private String mPersonalNumber;
     private String mFullName;
     private String mImageLink;
@@ -18,14 +16,11 @@ public class User {
 
     }
 
-    public User(String notificationTokenId, int type, String phone, String password,
-                String email, String personalNumber, String fullName, String imageLink,
+    public User(String notificationTokenId, int type, String phone, String personalNumber, String fullName, String imageLink,
                 String gender) {
         mNotificationTokenId = notificationTokenId;
         mType = type;
         mPhone = phone;
-        mPassword = password;
-        mEmail = email;
         mPersonalNumber = personalNumber;
         mFullName = fullName;
         mImageLink = imageLink;
@@ -40,26 +35,12 @@ public class User {
         mPhone = phone;
     }
 
-    public String getPassword() {
-        return mPassword;
-    }
-
-    public void setPassword(String password) {
-        mPassword = password;
-    }
-
-    public String getEmail() {
-        return mEmail;
-    }
-
     @Override
     public String toString() {
         return "User{" +
                 "mNotificationTokenId='" + mNotificationTokenId + '\'' +
                 ", mType=" + mType +
                 ", mPhone='" + mPhone + '\'' +
-                ", mPassword='" + mPassword + '\'' +
-                ", mEmail='" + mEmail + '\'' +
                 ", mPersonalNumber='" + mPersonalNumber + '\'' +
                 ", mFullName='" + mFullName + '\'' +
                 ", mImageLink='" + mImageLink + '\'' +
@@ -67,9 +48,6 @@ public class User {
                 '}';
     }
 
-    public void setEmail(String email) {
-        mEmail = email;
-    }
 
     public String getPersonalNumber() {
         return mPersonalNumber;

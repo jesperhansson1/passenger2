@@ -13,7 +13,7 @@ public interface PassengerRepositoryInterface {
 
     void updateUserType(int type);
 
-    void createUser(User user);
+    void createUser(String userId, User user);
 
     LiveData<List<Drive>> getDrives();
 
