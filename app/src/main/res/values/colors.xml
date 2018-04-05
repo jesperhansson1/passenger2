@@ -17,5 +17,6 @@
     <color name="disable_thumb_grey">#1c000000</color>
     <color name="enable_thumb_blue">#ff0099cc</color>
     <color name="colorBlack">#000000</color>
+    <color name="halfWhite">#00f5f3f3</color>
 
 </resources>
