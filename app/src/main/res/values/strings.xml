@@ -42,6 +42,10 @@
     <string name="forgot_password">Forgot Password</string>
     <string name="signin">Sign in</string>
     <string name="login">Login</string>
+    <string name="send_me_password">Send me password</string>
+    <string name="we_sent_password_to">We sent password to</string>
+    <string name="open_mail_client">Open mail client</string>
+
 
 
     <string-array name="location_array">
