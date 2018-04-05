@@ -8,6 +8,7 @@ import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -23,6 +24,8 @@ import java.util.UUID;
 import timber.log.Timber;
 
 public class PassengerRepository implements PassengerRepositoryInterface {
+
+    FirebaseAuth auth;
 
     private static final String REFERENCE_USERS = "users";
     private static final String REFERENCE_DRIVES = "drives";
@@ -77,8 +80,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     }
 
     @Override
-    public void createUser(User user) {
-        mUsersReference.child(MOCK_USER).setValue(user);
+    public void createUser(String userId, User user) {
+        mUsersReference.child(userId).setValue(user);
     }
 
     @Override
