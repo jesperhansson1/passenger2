@@ -80,10 +80,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     }
 
     @Override
-    public void createUser(User user) {
-
-        Timber.d("Next user from repository %s", user);
-        mUsersReference.child(MOCK_USER).setValue(user);
+    public void createUser(String userId, User user) {
+        mUsersReference.child(userId).setValue(user);
     }
 
     @Override

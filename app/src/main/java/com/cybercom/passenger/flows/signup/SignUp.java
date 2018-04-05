@@ -19,15 +19,19 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import timber.log.Timber;
 
 public class SignUp extends AppCompatActivity implements View.OnClickListener {
-    FirebaseAuth mAuth;
 
+    FirebaseAuth mAuth;
     SignUpViewModel viewModel;
 
     RadioButton mRadioButtonMale, mRadioButtonFemale;
     Button mNextButton;
-    EditText mPassword, mEmail;
+    EditText mPassword, mEmail, mFullName, mPersonalNumber, mPhone;
+    String mSaveRadioButtonAnswer;
+    private static final String GENDER_MALE = "Male";
+    private static final String GENDER_FEMALE = "Female";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,16 +46,18 @@ public class SignUp extends AppCompatActivity implements View.OnClickListener {
 
         viewModel = ViewModelProviders.of(this).get(SignUpViewModel.class);
 
+        mPassword = findViewById(R.id.edittext_signup_password);
+        mEmail = findViewById(R.id.edittext_signup_email);
+        mFullName = findViewById(R.id.edittext_signup_fullName);
+        mPersonalNumber = findViewById(R.id.edittext_signup_personalNumer);
+        mPhone = findViewById(R.id.edittext_signup_phone);
+
         mRadioButtonMale = findViewById(R.id.radiobutton_signup_maleRadioButton);
         mRadioButtonMale.setOnClickListener(this);
         mRadioButtonFemale = findViewById(R.id.radiobutton_signup_femaleRadioButton);
         mRadioButtonFemale.setOnClickListener(this);
         mNextButton = findViewById(R.id.button_signup_next);
         mNextButton.setOnClickListener(this);
-
-        mPassword = findViewById(R.id.edittext_signup_password);
-        mEmail = findViewById(R.id.edittext_signup_email);
-
 
         mRadioButtonMale.setBackgroundColor(getResources().getColor(R.color.colorBlue));
         mRadioButtonMale.setTextColor(getResources().getColor(R.color.colorWhite));
@@ -60,8 +66,6 @@ public class SignUp extends AppCompatActivity implements View.OnClickListener {
 
         mRadioButtonMale.setButtonDrawable(R.drawable.ic_male_white);
         mRadioButtonFemale.setButtonDrawable(R.drawable.ic_woman_blue);
-
-
     }
 
     @Override
@@ -69,6 +73,7 @@ public class SignUp extends AppCompatActivity implements View.OnClickListener {
         switch(v.getId()) {
             case R.id.radiobutton_signup_maleRadioButton:
                 // Do something
+                mSaveRadioButtonAnswer = GENDER_MALE;
                 mRadioButtonMale.setBackgroundColor(getResources().getColor(R.color.colorBlue));
                 mRadioButtonMale.setTextColor(getResources().getColor(R.color.colorWhite));
                 mRadioButtonMale.setButtonDrawable(R.drawable.ic_male_white);
@@ -79,6 +84,7 @@ public class SignUp extends AppCompatActivity implements View.OnClickListener {
                 break;
             case R.id.radiobutton_signup_femaleRadioButton:
                 // Do something
+                mSaveRadioButtonAnswer = GENDER_FEMALE;
                 mRadioButtonFemale.setBackgroundColor(getResources().getColor(R.color.colorBlue));
                 mRadioButtonFemale.setTextColor(getResources().getColor(R.color.colorWhite));
                 mRadioButtonFemale.setButtonDrawable(R.drawable.ic_woman_white);
@@ -89,11 +95,12 @@ public class SignUp extends AppCompatActivity implements View.OnClickListener {
                 break;
 
             case R.id.button_signup_next:
-                /*User user = new User("Hej", "wärlden", "s",0);
-                viewModel.createUser(user);*/
                 FirebaseUser user = mAuth.getInstance().getCurrentUser();
                 String email = mEmail.getText().toString();
                 String password = mPassword.getText().toString();
+                String fullName = mFullName.getText().toString();
+                String personalNumber = mPersonalNumber.getText().toString();
+                String phone = mPhone.getText().toString();
 
                 mAuth.createUserWithEmailAndPassword(email, password)
                         .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
@@ -101,18 +108,17 @@ public class SignUp extends AppCompatActivity implements View.OnClickListener {
                             public void onComplete(@NonNull Task<AuthResult> task) {
                                 if (task.isSuccessful()) {
                                     // Sign in success, update UI with the signed-in user's information
-                                    Log.d("TAG", "createUserWithEmail:success");
+                                    Timber.d("createUserWithEmail:success");
 
                                 } else {
                                     // If sign in fails, display a message to the user.
-                                    Log.w("TAG", "createUserWithEmail:failure", task.getException());
+                                    Timber.w("createUserWithEmail:failure %s", task.getException());
                                 }
                             }
                         });
 
-
                 if(user != null){
-                    viewModel.createUser(new User(email, mAuth.getUid(), "s",0));
+                    viewModel.createUser(user.getUid(), new User("notificationId", User.TYPE_PASSENGER, phone, personalNumber, fullName, null, mSaveRadioButtonAnswer));
                 }
                 break;
         }

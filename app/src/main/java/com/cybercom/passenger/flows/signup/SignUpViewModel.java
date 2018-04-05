@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.repository.PassengerRepository;
+import com.google.firebase.auth.FirebaseUser;
 
 import timber.log.Timber;
 
@@ -16,8 +17,8 @@ public class SignUpViewModel extends AndroidViewModel {
         super(application);
     }
 
-    public void createUser(User user){
+    public void createUser(String userId, User user){
         Timber.d("Next user from viewmodel %s", user);
-        repository.createUser(user);
+        repository.createUser(userId, user);
     }
 }
