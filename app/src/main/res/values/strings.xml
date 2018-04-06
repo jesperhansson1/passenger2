@@ -59,6 +59,8 @@
     <string name="hint_phone">12345</string>
 
     <string name="login_title">Login</string>
+    <string name="mainactivity_title">Passenger</string>
+
 
     <string-array name="location_array">
         <item>My Location</item>

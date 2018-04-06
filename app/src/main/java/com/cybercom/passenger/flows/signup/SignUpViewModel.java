@@ -33,7 +33,6 @@ public class SignUpViewModel extends AndroidViewModel {
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
                             FirebaseUser user = mAuth.getInstance().getCurrentUser();
-
                             Timber.d("createUserWithEmail:success %s", user);
                             userMutableLiveData.setValue(user);
                         } else {

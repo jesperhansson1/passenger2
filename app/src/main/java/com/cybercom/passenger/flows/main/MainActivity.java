@@ -13,10 +13,14 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
 import com.cybercom.passenger.MainViewModel;
@@ -32,37 +36,41 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.squareup.haha.perflib.Main;
 
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
 
-
+    FirebaseUser user;
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 0;
     MainViewModel viewModel;
     Location mLocation;
     private GoogleMap mGoogleMap;
+    Menu loginMenu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Toolbar toolbar = findViewById(R.id.my_toolbar);
+        toolbar.setTitleTextColor(getResources().getColor(R.color.colorWhite));
+        setSupportActionBar(toolbar);
         Timber.i("First log info");
         Fabric.with(this, new Crashlytics());
         addUI();
 
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        user = FirebaseAuth.getInstance().getCurrentUser();
 
         if (user != null) {
             // User is signed in
             Timber.d("user signed in!");
+            getSupportActionBar().setTitle(user.getEmail());
         } else {
             // No user is signed in
             Timber.d("user NOT signed in!");
-            Intent intent = new Intent(this, Login.class);
-
-            startActivity(intent);
+            getSupportActionBar().setTitle(R.string.mainactivity_title);
         }
 
         viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
@@ -88,6 +96,31 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map_activitymap_googlemap);
         mapFragment.getMapAsync(this);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_mainactivity_login, menu);
+        loginMenu = menu;
+
+        if (user != null) {
+            loginMenu.findItem(R.id.menu_action_login).setVisible(false);
+        } else {
+            loginMenu.findItem(R.id.menu_action_login).setVisible(true);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int menuId = item.getItemId();
+        //noinspection SimplifiableIfStatement
+        if (menuId == R.id.menu_action_login) {
+            Intent intent = new Intent(this, Login.class);
+            startActivity(intent);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
