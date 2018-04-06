@@ -17,7 +17,7 @@ public interface PassengerRepositoryInterface {
 
     LiveData<List<Drive>> getDrives();
 
-    void addDrive(Drive drive);
+    String addDrive(Drive drive);
 
     void addDriveRequest(DriveRequest driveRequest);
 }

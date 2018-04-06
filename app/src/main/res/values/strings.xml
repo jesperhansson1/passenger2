@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">passenger</string>
     <string name="create_ride">Create Ride</string>
-    <string name="create_ride_request">Ride Request</string>
+    <string name="create_ride_request">Request Ride</string>
     <string name="start_location">Start Location</string>
     <string name="end_location">End Location</string>
     <string name="driver">Driver</string>
@@ -43,8 +43,8 @@
     <string name="send_me_password">Send me password</string>
     <string name="we_sent_password_to">We sent password to</string>
     <string name="open_mail_client">Open mail client</string>
-
-
+    <string name="dialog_create_drive_header">Create Ride</string>
+    <string name="dialog_request_drive_header">Request Ride</string>
     <string name="signup_title">Sign Up</string>
     <string name="full_name">Full name</string>
     <string name="personal_number">Personal number</string>

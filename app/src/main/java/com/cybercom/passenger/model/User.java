@@ -4,6 +4,8 @@ public class User {
 
     public static final int TYPE_DRIVER = 0;
     public static final int TYPE_PASSENGER = 1;
+
+    private String mUserId;
     private String mNotificationTokenId;
     private int mType;
     private String mPhone;
@@ -16,8 +18,9 @@ public class User {
 
     }
 
-    public User(String notificationTokenId, int type, String phone, String personalNumber, String fullName, String imageLink,
+    public User(String userId, String notificationTokenId, int type, String phone, String personalNumber, String fullName, String imageLink,
                 String gender) {
+        mUserId = userId;
         mNotificationTokenId = notificationTokenId;
         mType = type;
         mPhone = phone;
@@ -38,7 +41,8 @@ public class User {
     @Override
     public String toString() {
         return "User{" +
-                "mNotificationTokenId='" + mNotificationTokenId + '\'' +
+                "mUserId='" + mUserId + '\'' +
+                ", mNotificationTokenId='" + mNotificationTokenId + '\'' +
                 ", mType=" + mType +
                 ", mPhone='" + mPhone + '\'' +
                 ", mPersonalNumber='" + mPersonalNumber + '\'' +
@@ -89,54 +93,12 @@ public class User {
         mNotificationTokenId = notificationTokenId;
     }
 
-    public int getType() {
-        return mType;
+    public String getUserIdId() {
+        return mUserId;
     }
 
-    public void setType(int type) {
-        mType = type;
-    }
-
-
-    /*
-
-    public static final int TYPE_DRIVER = 0;
-    public static final int TYPE_PASSENGER = 1;
-
-    private String mFirstName;
-    private String mLastName;
-    private String mNotificationTokenId;
-    private int mType;
-
-    public User(String firstName, String lastName, String notificationTokenId, int type) {
-        mFirstName = firstName;
-        mLastName = lastName;
-        mNotificationTokenId = notificationTokenId;
-        mType = type;
-    }
-
-    public String getFirstName() {
-        return mFirstName;
-    }
-
-    public void setFirstName(String firstName) {
-        mFirstName = firstName;
-    }
-
-    public String getLastName() {
-        return mLastName;
-    }
-
-    public void setLastName(String lastName) {
-        mLastName = lastName;
-    }
-
-    public String getNotificationTokenId() {
-        return mNotificationTokenId;
-    }
-
-    public void setNotificationTokenId(String notificationTokenId) {
-        mNotificationTokenId = notificationTokenId;
+    public void setUserId(String userId) {
+        mUserId = userId;
     }
 
     public int getType() {
@@ -146,16 +108,5 @@ public class User {
     public void setType(int type) {
         mType = type;
     }
-
-    @Override
-    public String toString() {
-        return "User{" +
-                "mFirstName='" + mFirstName + '\'' +
-                ", mLastName='" + mLastName + '\'' +
-                ", mNotificationTokenId='" + mNotificationTokenId + '\'' +
-                ", mType=" + mType +
-                '}';
-    }*/
-
 
 }
