@@ -17,8 +17,8 @@ import com.google.firebase.auth.FirebaseUser;
 import timber.log.Timber;
 
 public class SignUpViewModel extends AndroidViewModel {
-    FirebaseAuth mAuth;
-    PassengerRepository repository = PassengerRepository.getInstance();
+    private FirebaseAuth mAuth;
+    private PassengerRepository repository = PassengerRepository.getInstance();
 
     public SignUpViewModel(@NonNull Application application) {
         super(application);
@@ -44,7 +44,6 @@ public class SignUpViewModel extends AndroidViewModel {
     }
 
     public void createUser(String userId, User user){
-        Timber.d("USER creatUser in viewmodel");
         repository.createUser(userId, user);
     }
 }

@@ -20,7 +20,6 @@ import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
 import com.cybercom.passenger.MainViewModel;
@@ -36,19 +35,18 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.squareup.haha.perflib.Main;
 
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
 
-    FirebaseUser user;
+    FirebaseUser mUser;
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 0;
-    MainViewModel viewModel;
+    MainViewModel mViewModel;
     Location mLocation;
     private GoogleMap mGoogleMap;
-    Menu loginMenu;
+    Menu mLoginMenu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,19 +59,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         Fabric.with(this, new Crashlytics());
         addUI();
 
-        user = FirebaseAuth.getInstance().getCurrentUser();
+        mUser = FirebaseAuth.getInstance().getCurrentUser();
 
-        if (user != null) {
-            // User is signed in
-            Timber.d("user signed in!");
-            getSupportActionBar().setTitle(user.getEmail());
+        if (mUser != null) {
+            getSupportActionBar().setTitle(mUser.getEmail());
         } else {
-            // No user is signed in
-            Timber.d("user NOT signed in!");
             getSupportActionBar().setTitle(R.string.mainactivity_title);
         }
 
-        viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
+        mViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
 
         if (ContextCompat.checkSelfPermission(this.getApplication(),
                 android.Manifest.permission.ACCESS_FINE_LOCATION)
@@ -88,7 +82,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
 //            }
         } else {
-            viewModel.getLocation();
+            mViewModel.getLocation();
         }
 
         getViewModel();
@@ -101,12 +95,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_mainactivity_login, menu);
-        loginMenu = menu;
+        mLoginMenu = menu;
 
-        if (user != null) {
-            loginMenu.findItem(R.id.menu_action_login).setVisible(false);
+        if (mUser != null) {
+            mLoginMenu.findItem(R.id.menu_action_login).setVisible(false);
         } else {
-            loginMenu.findItem(R.id.menu_action_login).setVisible(true);
+            mLoginMenu.findItem(R.id.menu_action_login).setVisible(true);
         }
         return true;
     }
@@ -126,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     protected void onResume() {
         super.onResume();
-        viewModel.startLocationUpdates();
+        mViewModel.startLocationUpdates();
     }
 
     @Override
@@ -136,14 +130,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             case MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION: {
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    viewModel.getLastLocation();
+                    mViewModel.getLastLocation();
                 }
             }
         }
     }
 
     public void getViewModel(){
-        viewModel.getUpdatedLocationLiveData().observe(this, new Observer<Location>() {
+        mViewModel.getUpdatedLocationLiveData().observe(this, new Observer<Location>() {
             @Override
             public void onChanged(@Nullable Location location) {
 //                TODO: Need to handle if there is no data och display info. Need to send this location to spinner
