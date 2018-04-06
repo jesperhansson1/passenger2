@@ -21,10 +21,12 @@ import com.cybercom.passenger.MainViewModel;
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.createdrive.CreateRideDialogFragment;
 import com.cybercom.passenger.flows.driverconfirmation.DriverConfirmationDialog;
+
+import com.cybercom.passenger.model.Notification;
 import com.cybercom.passenger.flows.passengernotification.PassengerNotificationDialog;
+
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
-import com.cybercom.passenger.model.Notification;
 import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.utils.LocationHelper;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -51,6 +53,12 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
         Fabric.with(this, new Crashlytics());
 
         mMainViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
+
+        if (savedInstanceState == null) {
+            if (getIntent().getExtras() != null) {
+                mMainViewModel.getIncomingNotifications();
+            }
+        }
 
         if (ContextCompat.checkSelfPermission(this.getApplication(),
                 android.Manifest.permission.ACCESS_FINE_LOCATION)
@@ -101,7 +109,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
                 // TODO: Need to handle if there is no data och display info. Need to send this location to spinner
                 if(location == null){
                     Timber.d("get updated --> null");
-                } else{
+                } else {
                     mLocation = location;
                 }
             }
@@ -123,12 +131,10 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
         switchRide.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton arg0, boolean isChecked) {
-                if(isChecked){
+                if (isChecked) {
                     floatRide.setImageResource(R.drawable.driver);
                     changeLabelFontStyle(true);
-                }
-                else
-                {
+                } else {
                     floatRide.setImageResource(R.drawable.passenger);
                     changeLabelFontStyle(false);
                 }
@@ -137,26 +143,22 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
         floatRide.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(switchRide.isChecked()) {
+                if (switchRide.isChecked()) {
                     showCreateDriveDialog(CreateRideDialogFragment.TYPE_RIDE, LocationHelper.convertLocationToDisplayString(mLocation));
-                }
-                else {
+                } else {
                     showCreateDriveDialog(CreateRideDialogFragment.TYPE_REQUEST, LocationHelper.convertLocationToDisplayString(mLocation));
                 }
-           }
+            }
         });
     }
 
-    public void changeLabelFontStyle(boolean driverValue)
-    {
-        if(driverValue){
-            ((TextView)findViewById(R.id.label_driver)).setTypeface(Typeface.DEFAULT_BOLD);
-            ((TextView)findViewById(R.id.label_passenger)).setTypeface(Typeface.DEFAULT);
-        }
-        else
-        {
-            ((TextView)findViewById(R.id.label_passenger)).setTypeface(Typeface.DEFAULT_BOLD);
-            ((TextView)findViewById(R.id.label_driver)).setTypeface(Typeface.DEFAULT);
+    public void changeLabelFontStyle(boolean driverValue) {
+        if (driverValue) {
+            ((TextView) findViewById(R.id.label_driver)).setTypeface(Typeface.DEFAULT_BOLD);
+            ((TextView) findViewById(R.id.label_passenger)).setTypeface(Typeface.DEFAULT);
+        } else {
+            ((TextView) findViewById(R.id.label_passenger)).setTypeface(Typeface.DEFAULT_BOLD);
+            ((TextView) findViewById(R.id.label_driver)).setTypeface(Typeface.DEFAULT);
         }
     }
 
@@ -204,7 +206,6 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
                 break;
         }
 
-
     }
 
     private void showDriverConfirmationDialogFragment(Drive drive, DriveRequest driveRequest) {
@@ -230,4 +231,5 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     public void onCancelPressed(Boolean isCancelPressed) {
         Timber.i("Canceled pressed! ");
     }
+
 }

@@ -18,9 +18,7 @@ public class User {
 
     }
 
-    public User(String notificationTokenId, int type, String phone, String personalNumber, String fullName, String imageLink,
-    public User(String userId, String notificationTokenId, int type, String phone, String password,
-                String email, String personalNumber, String fullName, String imageLink,
+    public User(String userId, String notificationTokenId, int type, String phone, String personalNumber, String fullName, String imageLink,
                 String gender) {
         mUserId = userId;
         mNotificationTokenId = notificationTokenId;

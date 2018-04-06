@@ -5,6 +5,7 @@ import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.location.Location;
+
 import android.os.Looper;
 import android.support.annotation.NonNull;
 
@@ -18,10 +19,14 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.Task;
 
 public class MainViewModel extends AndroidViewModel {
 
     private FusedLocationProviderClient mFusedLocationClient;
+    private Location mLastLocation;
     private PassengerRepository mPassengerRepository = PassengerRepository.getInstance();
     private MutableLiveData<Location> mMyLocation = new MutableLiveData<>();
     private LocationCallback mLocationCallback;
@@ -46,8 +51,26 @@ public class MainViewModel extends AndroidViewModel {
         createLocationRequest();
     }
 
-    public LiveData<Location> getUpdatedLocationLiveData(){
+    public LiveData<Location> getUpdatedLocationLiveData() {
         return mMyLocation;
+    }
+
+    @SuppressWarnings("MissingPermission")
+    public void getLastLocation() {
+        mFusedLocationClient.getLastLocation()
+                .addOnCompleteListener(new OnCompleteListener<Location>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Location> task) {
+                        if (task.isSuccessful() && task.getResult() != null) {
+                            mLastLocation = task.getResult();
+                        }
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     @SuppressWarnings("MissingPermission")
@@ -110,5 +133,6 @@ public class MainViewModel extends AndroidViewModel {
 
     public void sendRejectPassengerNotificaiton() {
         // TODO: implement
+
     }
 }
