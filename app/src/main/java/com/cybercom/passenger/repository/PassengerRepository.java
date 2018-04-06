@@ -6,7 +6,6 @@ import android.location.Location;
 
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
-import com.cybercom.passenger.model.Notification;
 import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.repository.databasemodel.utils.DatabaseModelHelper;
@@ -122,7 +121,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
     public LiveData<Drive> findBestRideMatch(final Position startLocation, final Position endLocation, final long time) {
 
-        final MutableLiveData<Drive> bestDriveMatch  = new MutableLiveData<>();
+        final MutableLiveData<Drive> bestDriveMatch = new MutableLiveData<>();
 
         mDrivesReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -142,17 +141,16 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                                 distance[0], startLocation.getLatitude(), startLocation.getLongitude(),
                                 drive.getStartLocation().getLatitude(), drive.getStartLocation().getLongitude());
 
-                            if(distance[0] < 700){
-                                if (bestMatch == null) {
-                                    bestMatch = drive;
-                                    shortestDistance = distance[0];
-                                }
-                                else if(distance[0] < shortestDistance){
-                                    bestMatch = drive;
-                                    shortestDistance = distance[0];
-                                }
+                        if (distance[0] < 700) {
+                            if (bestMatch == null) {
+                                bestMatch = drive;
+                                shortestDistance = distance[0];
+                            } else if (distance[0] < shortestDistance) {
+                                bestMatch = drive;
+                                shortestDistance = distance[0];
                             }
-                    } else{
+                        }
+                    } else {
                         Timber.d("Drives: Out of time frame!");
                     }
                 }
@@ -221,7 +219,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         return notification;
     }
 
-    private String generateRandomUUID(){
+    private String generateRandomUUID() {
         return UUID.randomUUID().toString();
     }
 }

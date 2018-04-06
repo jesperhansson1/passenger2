@@ -45,8 +45,6 @@
     <string name="open_mail_client">Open mail client</string>
     <string name="dialog_create_drive_header">Create Ride</string>
     <string name="dialog_request_drive_header">Request Ride</string>
-
-
     <string name="signup_title">Sign Up</string>
     <string name="full_name">Full name</string>
     <string name="personal_number">Personal number</string>
