@@ -7,7 +7,10 @@ import android.location.Location;
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Notification;
+import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
+import com.cybercom.passenger.repository.databasemodel.utils.DatabaseModelHelper;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -16,18 +19,26 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import timber.log.Timber;
 
 public class PassengerRepository implements PassengerRepositoryInterface {
 
+    FirebaseAuth auth;
+
+    private static final String REFERENCE_NOTIFICATIONS = "notifications";
     private static final String REFERENCE_USERS = "users";
     private static final String REFERENCE_DRIVES = "drives";
     private static final String REFERENCE_DRIVE_REQUESTS = "driveRequests";
     private static final String REFERENCE_USERS_CHILD_TYPE = "type";
     private static final String MOCK_USER = "userone";
+
+    // TODO: remove these
+    public static User gPassenger;
+    public static User gDriver;
+
+    private static String token;
 
     private static final int DRIVE_REQUEST_MATCH_TIME_THRESHOLD = 15 * 60 * 60 * 1000;
 
@@ -35,6 +46,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private DatabaseReference mUsersReference;
     private DatabaseReference mDrivesReference;
     private DatabaseReference mDriveRequestsReference;
+    private DatabaseReference mNotificationsReference;
 
     private MutableLiveData<Notification> mNotification = new MutableLiveData<>();
 
@@ -46,10 +58,16 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     }
 
     private PassengerRepository() {
+        token = generateRandomUUID();
+
+        // TODO: Remove these
+        gDriver = new User("userId", "tokenId", User.TYPE_DRIVER, "phonenumber" , "personalnumber", "Nicolas Cage", "imagelink", "male");
+        gPassenger = new User("userId", "tokenId", User.TYPE_PASSENGER, "phonenumber" ,"personalnumber", "John Travolta", "imagelink", "male");
         FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
         mUsersReference = firebaseDatabase.getReference(REFERENCE_USERS);
         mDrivesReference = firebaseDatabase.getReference(REFERENCE_DRIVES);
         mDriveRequestsReference = firebaseDatabase.getReference(REFERENCE_DRIVE_REQUESTS);
+        mNotificationsReference = firebaseDatabase.getReference(REFERENCE_NOTIFICATIONS);
     }
 
     @Override
@@ -78,8 +96,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     }
 
     @Override
-    public void createUser(User user) {
-        mUsersReference.child(MOCK_USER).setValue(user);
+    public void createUser(String userId, User user) {
+        mUsersReference.child(userId).setValue(user);
     }
 
     @Override
@@ -104,26 +122,26 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         return drivesList;
     }
 
-    public LiveData<Drive> findBestRideMatch(final DriveRequest driveRequest) {
+    public LiveData<Drive> findBestRideMatch(final Position startLocation, final Position endLocation, final long time) {
 
         final MutableLiveData<Drive> bestDriveMatch = new MutableLiveData<>();
 
-        mDrivesReference.addValueEventListener(new ValueEventListener() {
+        mDrivesReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Drive bestMatch = null;
+                com.cybercom.passenger.repository.databasemodel.Drive bestMatch = null;
                 float shortestDistance = 0;
                 float[] distance = new float[2];
 
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    Drive drive = snapshot.getValue(Drive.class);
+                    com.cybercom.passenger.repository.databasemodel.Drive drive = snapshot.getValue(com.cybercom.passenger.repository.databasemodel.Drive.class);
 
-                    if (drive != null && Math.abs(driveRequest.getTime() - drive.getTime()) < DRIVE_REQUEST_MATCH_TIME_THRESHOLD) {
-                        Location.distanceBetween(driveRequest.getStartLocation().getLatitude(), driveRequest.getStartLocation().getLongitude(),
-                                drive.getStartLocation().getLatitude(), drive.getStartLocation().getLongitude(), distance);
+                    if (drive != null && Math.abs(time - drive.getTime()) < DRIVE_REQUEST_MATCH_TIME_THRESHOLD) {
+                            Location.distanceBetween(startLocation.getLatitude(), startLocation.getLongitude(),
+                                    drive.getStartLocation().getLatitude(), drive.getStartLocation().getLongitude(), distance);
 
                         Timber.d("Drives: distance: %s, driveRequest: lat: %s, lng: %s, drive: lat %s, lng %s",
-                                distance[0], driveRequest.getStartLocation().getLatitude(), driveRequest.getStartLocation().getLongitude(),
+                                distance[0], startLocation.getLatitude(), startLocation.getLongitude(),
                                 drive.getStartLocation().getLatitude(), drive.getStartLocation().getLongitude());
 
                         if (distance[0] < 700) {
@@ -140,7 +158,30 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                     }
                 }
                 Timber.d("Drives: Best match:  distance: %s, Drive: %s", distance[0], bestMatch);
-                bestDriveMatch.setValue(bestMatch);
+
+
+                if (bestMatch != null) {
+                    final com.cybercom.passenger.repository.databasemodel.Drive finalBestMatch = bestMatch;
+
+//                    mUsersReference.child(finalBestMatch.getDriverId()).addListenerForSingleValueEvent(new ValueEventListener() {
+                    //TODO: Remove hardcoded user id and replace with finalBestMatch.getDriverId()
+                    mUsersReference.child("-L9KinSlVL0pmSQnzpBs").addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            User driver = dataSnapshot.getValue(User.class);
+                            bestDriveMatch.setValue(new Drive(driver, finalBestMatch.getTime(),
+                                    finalBestMatch.getStartLocation(), finalBestMatch.getEndLocation(),
+                                    finalBestMatch.getAvailableSeats()));
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
+                } else {
+                    bestDriveMatch.setValue(null);
+                }
             }
 
             @Override
@@ -151,35 +192,40 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     }
 
     @Override
-    public void addDrive(Drive drive) {
-        mDrivesReference.child(generateRandomUUID()).setValue(drive);
+    public String addDrive(Drive drive) {
+        com.cybercom.passenger.repository.databasemodel.Drive fDrive = DatabaseModelHelper.convertDrive(drive);
+
+        DatabaseReference ref = mDrivesReference.push();
+        ref.setValue(fDrive);
+
+        return ref.getKey();
     }
 
     @Override
     public void addDriveRequest(DriveRequest driveRequest) {
-        mDriveRequestsReference.child(generateRandomUUID()).setValue(driveRequest);
+        com.cybercom.passenger.repository.databasemodel.DriveRequest fDriveRequest =
+                DatabaseModelHelper.convertDriveRequest(driveRequest);
+
+        mDriveRequestsReference.push().setValue(fDriveRequest);
+    }
+
+    public void sendNotification(Notification notification) {
+        com.cybercom.passenger.repository.databasemodel.Notification dataBaseNotification =
+                DatabaseModelHelper.convertNotification(notification);
+
+        mNotificationsReference.push().setValue(dataBaseNotification);
+    }
+
+    public LiveData<Notification> receiveIncomingNotifications() {
+        final MutableLiveData<Notification> notification = new MutableLiveData<>();
+        // TODO: Implement
+        return notification;
     }
 
     private String generateRandomUUID() {
         return UUID.randomUUID().toString();
     }
 
-    public void setNotification(Map<String, String> payload) {
-        //TODO Convert payload to Notification object and send upstream
-
-        Notification notification = new Notification(payload.get("sender"));
-
-        mNotification.postValue(notification);
-
-    }
-
-    public LiveData<Notification> getNotification() {
-        return mNotification;
-    }
-
-    public void deleteNotification(){
-        mNotification.postValue(null);
-    }
 
 
 }

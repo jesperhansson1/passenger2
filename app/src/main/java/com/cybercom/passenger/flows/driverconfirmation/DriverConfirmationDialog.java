@@ -12,29 +12,31 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cybercom.passenger.R;
+import com.cybercom.passenger.model.Drive;
+import com.cybercom.passenger.model.DriveRequest;
 
 public class DriverConfirmationDialog extends DialogFragment implements View.OnClickListener {
 
     public static final String TAG = "DRIVER_CONFIRMATION_DIALOG";
-    public static final String PASSENGER_NAME = "PASSENGER_NAME";
-    public static final String PASSENGER_START_LOCATION = "PASSENGER_START_LOCATION";
-    public static final String PASSENGER_END_LOCATION = "PASSENGER_END_LOCATION";
+
+    public static final String DRIVE_KEY = "DRIVE";
+    public static final String DRIVE_REQUEST_KEY = "DRIVE_REQUEST";
+    private Drive mDrive;
+    private DriveRequest mDriveRequest;
+
 
     public interface ConfirmationListener {
-        void onDriverConfirmation(Boolean isAccepted);
+        void onDriverConfirmation(Boolean isAccepted, Drive drive, DriveRequest driveRequest);
     }
 
-    public static DriverConfirmationDialog getInstance(String name, String startLocation
-            , String endLocation) {
+    public static DriverConfirmationDialog getInstance(Drive drive, DriveRequest driveRequest) {
         DriverConfirmationDialog driverConfirmationDialog = new DriverConfirmationDialog();
         Bundle args = new Bundle();
-        args.putString(PASSENGER_NAME, name);
-        args.putString(PASSENGER_START_LOCATION, startLocation);
-        args.putString(PASSENGER_END_LOCATION, endLocation);
+        args.putSerializable(DRIVE_KEY, drive);
+        args.putSerializable(DRIVE_REQUEST_KEY, driveRequest);
         driverConfirmationDialog.setArguments(args);
         return driverConfirmationDialog;
     }
@@ -60,22 +62,11 @@ public class DriverConfirmationDialog extends DialogFragment implements View.OnC
         Button declineButton = rootView.findViewById(R.id.driver_confirmation_decline_button);
         declineButton.setOnClickListener(this);
 
-        TextView driverConfirmationPassengerName
-                = rootView.findViewById(R.id.driver_confirmation_passenger_name);
-        TextView driverConfirmationPassengerStartLocation
-                = rootView.findViewById(R.id.driver_confirmation_start_position);
-        TextView driverConfirmationPassengerEndLocation
-                = rootView.findViewById(R.id.driver_confirmation_end_position);
-
-        if (getArguments() != null) {
-            driverConfirmationPassengerName
-                    .setText(getArguments().getString(PASSENGER_NAME));
-            driverConfirmationPassengerStartLocation
-                    .setText(getArguments().getString(PASSENGER_START_LOCATION));
-            driverConfirmationPassengerEndLocation
-                    .setText(getArguments().getString(PASSENGER_END_LOCATION));
+        Bundle arguments = getArguments();
+        if (arguments != null) {
+            mDrive = (Drive) getArguments().getSerializable(DRIVE_KEY);
+            mDriveRequest = (DriveRequest) getArguments().getSerializable(DRIVE_REQUEST_KEY);
         }
-
 
         return rootView;
     }
@@ -113,12 +104,12 @@ public class DriverConfirmationDialog extends DialogFragment implements View.OnC
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.driver_confirmation_accept_button: {
-                mConfirmationListener.onDriverConfirmation(true);
+                mConfirmationListener.onDriverConfirmation(true, mDrive, mDriveRequest);
                 dismiss();
                 break;
             }
             case R.id.driver_confirmation_decline_button: {
-                mConfirmationListener.onDriverConfirmation(false);
+                mConfirmationListener.onDriverConfirmation(false, mDrive, mDriveRequest);
                 dismiss();
                 break;
             }
