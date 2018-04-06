@@ -1,22 +1,12 @@
 package com.cybercom.passenger.service;
 
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.Context;
-import android.content.Intent;
-import android.media.RingtoneManager;
-import android.net.Uri;
-import android.support.v4.app.NotificationCompat;
-
-import com.cybercom.passenger.R;
-import com.cybercom.passenger.flows.main.MainActivity;
-import com.cybercom.passenger.helpers.NotificationChannelHelper;
 import com.cybercom.passenger.repository.PassengerRepository;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
 import java.util.Map;
+
+import timber.log.Timber;
 
 public class PassengerMessagingService extends FirebaseMessagingService {
 
@@ -27,6 +17,7 @@ public class PassengerMessagingService extends FirebaseMessagingService {
         if (remoteMessage.getData().size() > 0) {
             Map<String, String> payload = remoteMessage.getData();
             sendNotificationToRepository(payload);
+            Timber.i(remoteMessage.getData().toString());
         }
     }
 
