@@ -23,7 +23,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".flows.signup.SignUp" />
+        <activity android:name=".flows.signup.SignUp"></activity>
+        <activity android:name=".flows.login.Login"></activity>
 
         <service android:name=".service.PassengerInstanceIdService">
             <intent-filter>
