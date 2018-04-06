@@ -97,7 +97,7 @@ public class SignUp extends AppCompatActivity implements View.OnClickListener {
                     @Override
                     public void onChanged(@Nullable FirebaseUser user) {
                         if(user != null){
-                            mViewModel.createUser(user.getUid(), new User("notificationId", User.TYPE_PASSENGER, phone, personalNumber, fullName, null, mSaveRadioButtonAnswer));
+//                            mViewModel.createUser(user.getUid(), new User("notificationId", User.TYPE_PASSENGER, phone, personalNumber, fullName, null, mSaveRadioButtonAnswer));
                         }
                     }
                 });
