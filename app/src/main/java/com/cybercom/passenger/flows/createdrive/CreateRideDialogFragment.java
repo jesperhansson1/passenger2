@@ -1,6 +1,7 @@
 package com.cybercom.passenger.flows.createdrive;
 
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -15,19 +16,29 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.Spinner;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.model.Position;
+import com.cybercom.passenger.utils.LocationHelper;
 
 import timber.log.Timber;
 
 public class CreateRideDialogFragment extends DialogFragment{
 
+    private CreateRideDialogFragmentListener mCreateRideDialogListener;
+
+    public interface CreateRideDialogFragmentListener {
+        void onCreateRide(int type, Position startLocation, Position endLocation);
+    }
+
+
     public static final String TAG = "CREATE_RIDE_DIALOG";
     public static final int TYPE_RIDE = 0;
     public static final int TYPE_REQUEST = 1;
 
-    private String[] mlocationValueArray;
+    private String[] mLocationValueArray;
     private Position mStartLocation,mEndLocation;
 
     private CreateRideViewModel mCreateRideViewModel;
@@ -59,16 +70,21 @@ public class CreateRideDialogFragment extends DialogFragment{
 
         Button button_drive = view.findViewById(R.id.button_ride);
 
+        TextView dialogLabel = view.findViewById(R.id.label_ride);
+
         if (mType == TYPE_RIDE) {
             button_drive.setText(R.string.create_ride);
+            dialogLabel.setText(R.string.dialog_create_drive_header);
         } else {
             button_drive.setText(R.string.create_ride_request);
+            dialogLabel.setText(R.string.dialog_request_drive_header);
+
         }
 
         button_drive.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
-                mCreateRideViewModel.createRide(mType,mStartLocation,mEndLocation);
+                mCreateRideDialogListener.onCreateRide(mType, mStartLocation, mEndLocation);
                 dismiss();
             }
         });
@@ -81,21 +97,21 @@ public class CreateRideDialogFragment extends DialogFragment{
         });
 
         String[] locationArray = view.getContext().getResources().getStringArray(R.array.location_array);
-        mlocationValueArray = view.getContext().getResources().getStringArray(R.array.location_value);
+        mLocationValueArray = view.getContext().getResources().getStringArray(R.array.location_value);
         Spinner spinnerStartLoc = view.findViewById(R.id.spinner_startLocation);
         CustomAdapter customAdapterStartLoc=new CustomAdapter(view.getContext(), locationArray);
         spinnerStartLoc.setAdapter(customAdapterStartLoc);
         spinnerStartLoc.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(final AdapterView<?> parent, final View view, final int position, final long id) {
-                mlocationValueArray[0] = mLocation;
-                mStartLocation = mCreateRideViewModel.getPosition(mlocationValueArray[position]);
-                Timber.d("Spinner value: %s",  mlocationValueArray[position]);
+                mLocationValueArray[0] = mLocation;
+                mStartLocation = LocationHelper.getPositionFromString(mLocationValueArray[position]);
+                Timber.d("Spinner value: %s",  mLocationValueArray[position]);
             }
 
             @Override
             public void onNothingSelected(final AdapterView<?> parent) {
-                mStartLocation = mCreateRideViewModel.getPosition(mlocationValueArray[0]);
+                mStartLocation = LocationHelper.getPositionFromString(mLocationValueArray[0]);
             }
         });
 
@@ -106,12 +122,12 @@ public class CreateRideDialogFragment extends DialogFragment{
 
             @Override
             public void onItemSelected(final AdapterView<?> parent, final View view, final int position, final long id) {
-                mEndLocation = mCreateRideViewModel.getPosition(mlocationValueArray[position]);
+                mEndLocation = LocationHelper.getPositionFromString(mLocationValueArray[position]);
             }
 
             @Override
             public void onNothingSelected(final AdapterView<?> parent) {
-                mEndLocation = mCreateRideViewModel.getPosition(mlocationValueArray[0]);
+                mEndLocation = LocationHelper.getPositionFromString(mLocationValueArray[0]);
             }
         });
 
@@ -131,5 +147,26 @@ public class CreateRideDialogFragment extends DialogFragment{
         } else {
             dismiss();
         }
+    }
+
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        if (context instanceof CreateRideDialogFragmentListener) {
+            mCreateRideDialogListener = (CreateRideDialogFragmentListener) context;
+        } else {
+            Toast.makeText(context, R.string.must_implement_passenger_notification_listener,
+                    Toast.LENGTH_SHORT).show();
+            dismiss();
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+
+        mCreateRideDialogListener = null;
     }
 }
