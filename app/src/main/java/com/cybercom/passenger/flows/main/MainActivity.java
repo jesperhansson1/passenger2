@@ -126,6 +126,18 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
                 }
             }
         });
+
+        mMainViewModel.getUpdatedLocationLiveData().observe(this, new Observer<Location>() {
+            @Override
+            public void onChanged(@Nullable Location location) {
+                // TODO: Need to handle if there is no data och display info. Need to send this location to spinner
+                if(location == null){
+                    Timber.d("get updated --> null");
+                } else {
+                    mLocation = location;
+                }
+            }
+        });
     }
 
     @Override
@@ -157,20 +169,6 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     protected void onResume() {
         super.onResume();
             mMainViewModel.startLocationUpdates();
-    }
-
-    public void getViewModel(){
-        mMainViewModel.getUpdatedLocationLiveData().observe(this, new Observer<Location>() {
-            @Override
-            public void onChanged(@Nullable Location location) {
-                // TODO: Need to handle if there is no data och display info. Need to send this location to spinner
-                if(location == null){
-                    Timber.d("get updated --> null");
-                } else {
-                    mLocation = location;
-                }
-            }
-        });
     }
 
     public void initUI(){
