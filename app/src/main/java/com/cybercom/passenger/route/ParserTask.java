@@ -81,7 +81,9 @@ public class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<Str
         // Drawing polyline in the Google Map for the i-th route
         if(polylineOptions != null) {
             Timber.d(String.valueOf(polylineOptions));
-            mGoogleMap.addPolyline(polylineOptions);
+            if(mGoogleMap!=null) {
+                mGoogleMap.addPolyline(polylineOptions);
+            }
         }
         else {
             Timber.d("without Polylines drawn");
