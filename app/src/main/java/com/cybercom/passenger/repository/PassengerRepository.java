@@ -6,6 +6,7 @@ import android.location.Location;
 
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
+import com.cybercom.passenger.model.Notification;
 import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.repository.databasemodel.utils.DatabaseModelHelper;
