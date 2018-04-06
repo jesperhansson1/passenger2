@@ -11,7 +11,6 @@ public class PassengerInstanceIdService extends FirebaseInstanceIdService {
     public void onTokenRefresh() {
         super.onTokenRefresh();
 
-        System.out.println(FirebaseInstanceId.getInstance().getToken());
         Timber.d("PassengerInstanceIdService: TokenId = "
                 + FirebaseInstanceId.getInstance().getToken());
 

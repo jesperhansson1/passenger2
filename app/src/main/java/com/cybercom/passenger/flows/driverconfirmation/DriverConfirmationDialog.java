@@ -27,7 +27,6 @@ public class DriverConfirmationDialog extends DialogFragment implements View.OnC
     private Drive mDrive;
     private DriveRequest mDriveRequest;
 
-
     public interface ConfirmationListener {
         void onDriverConfirmation(Boolean isAccepted, Drive drive, DriveRequest driveRequest);
     }
