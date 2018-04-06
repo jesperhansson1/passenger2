@@ -1,5 +1,6 @@
 package com.cybercom.passenger.flows.login;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -10,6 +11,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.cybercom.passenger.R;
+import com.cybercom.passenger.flows.main.MainActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -23,6 +25,7 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
     FirebaseAuth mAuth;
     EditText mEmail,mPassword;
     Button mLogin, mSignup;
+    Intent intent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +60,8 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
                                     // Sign in success, update UI with the signed-in user's information
                                     FirebaseUser user = mAuth.getCurrentUser();
                                     Timber.d("signInWithEmail:success %s", user);
+                                    intent = new Intent(getApplicationContext(), MainActivity.class);
+                                    startActivity(intent);
                                 } else {
                                     // If sign in fails, display a message to the user.
                                     Timber.d("signInWithEmail:failure %s", task.getException());
