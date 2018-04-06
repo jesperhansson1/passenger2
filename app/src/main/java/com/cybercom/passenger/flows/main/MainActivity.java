@@ -28,12 +28,13 @@ import com.cybercom.passenger.flows.passengernotification.PassengerNotificationD
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Position;
+import com.cybercom.passenger.route.FetchRouteUrl;
 import com.cybercom.passenger.utils.LocationHelper;
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import io.fabric.sdk.android.Fabric;
@@ -171,17 +172,26 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mGoogleMap = googleMap;
+        mGoogleMap.setMinZoomPreference(10.0f);
+        mGoogleMap.setMaxZoomPreference(20.0f);
         // Add a marker in Sydney and move the camera
         LatLng sydney = new LatLng(-34, 151);
+        LatLng opera = new LatLng(-33.9320447,151.1597271);
         mGoogleMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mGoogleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        mGoogleMap.addMarker(new MarkerOptions().position(opera).title("Marker in Opera"));
+        LatLngBounds ADELAIDE = new LatLngBounds(
+                sydney, opera);
+        // Constrain the camera target to the Adelaide bounds.
+        mGoogleMap.setLatLngBoundsForCameraTarget(ADELAIDE);
+       // mGoogleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+
+        FetchRouteUrl fetchRouteUrl = new FetchRouteUrl(mGoogleMap, sydney, opera);
     }
 
     @Override
     public void onPointerCaptureChanged(boolean hasCapture) {
 
     }
-
 
     @Override
     public void onCreateRide(int type, Position startLocation, Position endLocation) {
