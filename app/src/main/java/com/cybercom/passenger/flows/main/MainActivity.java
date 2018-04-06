@@ -34,7 +34,6 @@ import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.utils.LocationHelper;
 import com.cybercom.passenger.flows.login.Login;
-import com.cybercom.passenger.helpers.LocationHelper;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -81,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
             getSupportActionBar().setTitle(R.string.mainactivity_title);
         }
 
-        mViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
+        mMainViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
 
         if (ContextCompat.checkSelfPermission(this.getApplication(),
                 android.Manifest.permission.ACCESS_FINE_LOCATION)
@@ -125,6 +124,8 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
                 }
             }
         });
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_mainactivity_login, menu);
@@ -153,25 +154,11 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     @Override
     protected void onResume() {
         super.onResume();
-        mViewModel.startLocationUpdates();
-    }
-
-        mMainViewModel.getUpdatedLocationLiveData().observe(this, new Observer<Location>() {
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION: {
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    mViewModel.getLastLocation();
-                }
-            }
-        }
+            mMainViewModel.startLocationUpdates();
     }
 
     public void getViewModel(){
-        mViewModel.getUpdatedLocationLiveData().observe(this, new Observer<Location>() {
+        mMainViewModel.getUpdatedLocationLiveData().observe(this, new Observer<Location>() {
             @Override
             public void onChanged(@Nullable Location location) {
                 // TODO: Need to handle if there is no data och display info. Need to send this location to spinner
@@ -182,13 +169,6 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
                 }
             }
         });
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        mMainViewModel.startLocationUpdates();
     }
 
     public void initUI(){
