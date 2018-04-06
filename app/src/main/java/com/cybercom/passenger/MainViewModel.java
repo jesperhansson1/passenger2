@@ -55,10 +55,6 @@ public class MainViewModel extends AndroidViewModel {
         return mMyLocation;
     }
 
-    public void getLocation() {
-        getLastLocation();
-    }
-
     @SuppressWarnings("MissingPermission")
     public void getLastLocation() {
         mFusedLocationClient.getLastLocation()
