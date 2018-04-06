@@ -48,8 +48,6 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private DatabaseReference mDriveRequestsReference;
     private DatabaseReference mNotificationsReference;
 
-    private MutableLiveData<Notification> mNotification = new MutableLiveData<>();
-
     public static PassengerRepository getInstance() {
         if (sPassengerRepository == null) {
             sPassengerRepository = new PassengerRepository();
@@ -62,7 +60,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
         // TODO: Remove these
         gDriver = new User("userId", "tokenId", User.TYPE_DRIVER, "phonenumber" , "personalnumber", "Nicolas Cage", "imagelink", "male");
-        gPassenger = new User("userId", "tokenId", User.TYPE_PASSENGER, "phonenumber" ,"personalnumber", "John Travolta", "imagelink", "male");
+        gPassenger = new User("userId", "tokenId", User.TYPE_PASSENGER, "phonenumber" , "personalnumber", "John Travolta", "imagelink", "male");
         FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
         mUsersReference = firebaseDatabase.getReference(REFERENCE_USERS);
         mDrivesReference = firebaseDatabase.getReference(REFERENCE_DRIVES);
@@ -225,7 +223,4 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private String generateRandomUUID() {
         return UUID.randomUUID().toString();
     }
-
-
-
 }
