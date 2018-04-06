@@ -37,14 +37,28 @@
     <string name="create_drive_cancel">Cancel</string>
     <string name="security">Security</string>
     <string name="mail_example">luftluft@mail.com</string>
-    <string name="password">Password</string>
-    <string name="email">Email</string>
     <string name="forgot_password">Forgot Password</string>
     <string name="signin">Sign in</string>
     <string name="login">Login</string>
+    <string name="send_me_password">Send me password</string>
+    <string name="we_sent_password_to">We sent password to</string>
+    <string name="open_mail_client">Open mail client</string>
     <string name="dialog_create_drive_header">Create Ride</string>
     <string name="dialog_request_drive_header">Request Ride</string>
 
+
+    <string name="signup_title">Sign Up</string>
+    <string name="full_name">Full name</string>
+    <string name="personal_number">Personal number</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="phone">Phone</string>
+    <string name="next">Next</string>
+    <string name="hint_full_name">Enter name</string>
+    <string name="hint_personal_number">831026-3388</string>
+    <string name="hint_email">my@email.com</string>
+    <string name="hint_password">Enter password</string>
+    <string name="hint_phone">12345</string>
 
     <string-array name="location_array">
         <item>My Location</item>
