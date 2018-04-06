@@ -1,6 +1,8 @@
 package com.cybercom.passenger.model;
 
-public class Position {
+import java.io.Serializable;
+
+public class Position implements Serializable {
 
     private double mLatitude;
     private double mLongitude;

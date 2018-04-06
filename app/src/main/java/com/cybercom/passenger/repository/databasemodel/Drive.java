@@ -1,32 +1,31 @@
-package com.cybercom.passenger.model;
+package com.cybercom.passenger.repository.databasemodel;
 
-import java.io.Serializable;
+import com.cybercom.passenger.model.Position;
 
-public class Drive implements Serializable {
+public class Drive {
 
-    private User mDriver;
-
+    private String mDriverId;
     private long mTime;
     private Position mStartLocation;
     private Position mEndLocation;
     private int mAvailableSeats;
 
-    public Drive(){}
+    public Drive() {}
 
-    public Drive(User driver, long time, Position startLocation, Position endLocation, int availableSeats) {
-        mDriver = driver;
+    public Drive(String driverId, long time, Position startLocation, Position endLocation, int availableSeats) {
+        mDriverId = driverId;
         mTime = time;
         mStartLocation = startLocation;
         mEndLocation = endLocation;
         mAvailableSeats = availableSeats;
     }
 
-    public User getDriver() {
-        return mDriver;
+    public String getDriverId() {
+        return mDriverId;
     }
 
-    public void setDriver(User driver) {
-        this.mDriver = driver;
+    public void setDriverId(String driverId) {
+        mDriverId = driverId;
     }
 
     public long getTime() {
@@ -65,7 +64,7 @@ public class Drive implements Serializable {
     public String toString() {
         return "Drive{" +
                 "mTime=" + mTime +
-                ", mDriver=" + mDriver +
+                ", mDriverId=" + mDriverId +
                 ", mStartLocation=" + mStartLocation +
                 ", mEndLocation=" + mEndLocation +
                 ", mAvailableSeats=" + mAvailableSeats +

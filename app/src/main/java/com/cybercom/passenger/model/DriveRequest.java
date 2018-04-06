@@ -1,24 +1,33 @@
 package com.cybercom.passenger.model;
 
-import android.location.Location;
+import java.io.Serializable;
 
-public class DriveRequest {
+public class DriveRequest implements Serializable {
+
+    private User mPassenger;
 
     private long mTime;
     private Position mStartLocation;
     private Position mEndLocation;
-    private String mNotificationTokenId;
     private int mExtraPassengers;
 
     public DriveRequest(){
     }
 
-    public DriveRequest(long time, Position startLocation, Position endLocation, String notificationTokenId, int extraPassengers) {
+    public DriveRequest(User passenger, long time, Position startLocation, Position endLocation, int extraPassengers) {
+        mPassenger = passenger;
         mTime = time;
         mStartLocation = startLocation;
         mEndLocation = endLocation;
-        mNotificationTokenId = notificationTokenId;
         mExtraPassengers = extraPassengers;
+    }
+
+    public User getPassenger() {
+        return mPassenger;
+    }
+
+    public void setPassenger(User passenger) {
+        mPassenger = passenger;
     }
 
     public long getTime() {
@@ -45,14 +54,6 @@ public class DriveRequest {
         mEndLocation = endLocation;
     }
 
-    public String getNotificationTokenId() {
-        return mNotificationTokenId;
-    }
-
-    public void setNotificationTokenId(String notificationTokenId) {
-        mNotificationTokenId = notificationTokenId;
-    }
-
     public int getExtraPassengers() {
         return mExtraPassengers;
     }
@@ -65,9 +66,9 @@ public class DriveRequest {
     public String toString() {
         return "DriveRequest{" +
                 "mTime=" + mTime +
+                ", mPassenger=" + mPassenger +
                 ", mStartLocation=" + mStartLocation +
                 ", mEndLocation=" + mEndLocation +
-                ", mNotificationTokenId='" + mNotificationTokenId + '\'' +
                 ", mExtraPassengers=" + mExtraPassengers +
                 '}';
     }
