@@ -16,7 +16,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import timber.log.Timber;
 
 public class ForgotPassword extends AppCompatActivity{
-
     EditText mResetPasswordMail;
     Button mResetPasswordButton;
 
@@ -27,22 +26,28 @@ public class ForgotPassword extends AppCompatActivity{
         mResetPasswordMail = findViewById(R.id.edittext_forgotpassword_mail);
         mResetPasswordButton = findViewById(R.id.button_forgotpassword_sendmepassword);
 
-        mResetPasswordMail.setOnClickListener(new View.OnClickListener() {
+        mResetPasswordButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                /*FirebaseAuth auth = FirebaseAuth.getInstance();
-                String emailAddress = "user@example.com";
+                FirebaseAuth auth = FirebaseAuth.getInstance();
+                String email = mResetPasswordMail.getText().toString();
 
-                auth.sendPasswordResetEmail(emailAddress)
-                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                if (task.isSuccessful()) {
-                                    Timber.d("Email sent.");
+                if(!email.isEmpty()) {
+                    Timber.d("email");
+                    auth.sendPasswordResetEmail(email)
+                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    if (task.isSuccessful()) {
+                                        Timber.d("Email sent.");
+                                    } else {
+                                        Timber.d("Email wasn't sent.");
+                                    }
                                 }
-                            }
-                        });    */
-                Timber.d("Button clicked");
+                            });
+                } else{
+                    Timber.d("Email : You havent entered any email");
+                }
             }
         });
     }
