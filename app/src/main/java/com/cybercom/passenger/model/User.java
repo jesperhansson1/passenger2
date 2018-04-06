@@ -4,11 +4,11 @@ public class User {
 
     public static final int TYPE_DRIVER = 0;
     public static final int TYPE_PASSENGER = 1;
+
+    private String mUserId;
     private String mNotificationTokenId;
     private int mType;
     private String mPhone;
-    private String mPassword;
-    private String mEmail;
     private String mPersonalNumber;
     private String mFullName;
     private String mImageLink;
@@ -18,14 +18,12 @@ public class User {
 
     }
 
-    public User(String notificationTokenId, int type, String phone, String password,
-                String email, String personalNumber, String fullName, String imageLink,
+    public User(String userId, String notificationTokenId, int type, String phone, String personalNumber, String fullName, String imageLink,
                 String gender) {
+        mUserId = userId;
         mNotificationTokenId = notificationTokenId;
         mType = type;
         mPhone = phone;
-        mPassword = password;
-        mEmail = email;
         mPersonalNumber = personalNumber;
         mFullName = fullName;
         mImageLink = imageLink;
@@ -40,26 +38,13 @@ public class User {
         mPhone = phone;
     }
 
-    public String getPassword() {
-        return mPassword;
-    }
-
-    public void setPassword(String password) {
-        mPassword = password;
-    }
-
-    public String getEmail() {
-        return mEmail;
-    }
-
     @Override
     public String toString() {
         return "User{" +
-                "mNotificationTokenId='" + mNotificationTokenId + '\'' +
+                "mUserId='" + mUserId + '\'' +
+                ", mNotificationTokenId='" + mNotificationTokenId + '\'' +
                 ", mType=" + mType +
                 ", mPhone='" + mPhone + '\'' +
-                ", mPassword='" + mPassword + '\'' +
-                ", mEmail='" + mEmail + '\'' +
                 ", mPersonalNumber='" + mPersonalNumber + '\'' +
                 ", mFullName='" + mFullName + '\'' +
                 ", mImageLink='" + mImageLink + '\'' +
@@ -67,9 +52,6 @@ public class User {
                 '}';
     }
 
-    public void setEmail(String email) {
-        mEmail = email;
-    }
 
     public String getPersonalNumber() {
         return mPersonalNumber;
@@ -111,54 +93,12 @@ public class User {
         mNotificationTokenId = notificationTokenId;
     }
 
-    public int getType() {
-        return mType;
+    public String getUserIdId() {
+        return mUserId;
     }
 
-    public void setType(int type) {
-        mType = type;
-    }
-
-
-    /*
-
-    public static final int TYPE_DRIVER = 0;
-    public static final int TYPE_PASSENGER = 1;
-
-    private String mFirstName;
-    private String mLastName;
-    private String mNotificationTokenId;
-    private int mType;
-
-    public User(String firstName, String lastName, String notificationTokenId, int type) {
-        mFirstName = firstName;
-        mLastName = lastName;
-        mNotificationTokenId = notificationTokenId;
-        mType = type;
-    }
-
-    public String getFirstName() {
-        return mFirstName;
-    }
-
-    public void setFirstName(String firstName) {
-        mFirstName = firstName;
-    }
-
-    public String getLastName() {
-        return mLastName;
-    }
-
-    public void setLastName(String lastName) {
-        mLastName = lastName;
-    }
-
-    public String getNotificationTokenId() {
-        return mNotificationTokenId;
-    }
-
-    public void setNotificationTokenId(String notificationTokenId) {
-        mNotificationTokenId = notificationTokenId;
+    public void setUserId(String userId) {
+        mUserId = userId;
     }
 
     public int getType() {
@@ -168,16 +108,5 @@ public class User {
     public void setType(int type) {
         mType = type;
     }
-
-    @Override
-    public String toString() {
-        return "User{" +
-                "mFirstName='" + mFirstName + '\'' +
-                ", mLastName='" + mLastName + '\'' +
-                ", mNotificationTokenId='" + mNotificationTokenId + '\'' +
-                ", mType=" + mType +
-                '}';
-    }*/
-
 
 }

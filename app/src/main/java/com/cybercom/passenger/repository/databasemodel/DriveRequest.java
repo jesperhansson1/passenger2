@@ -1,32 +1,35 @@
-package com.cybercom.passenger.model;
+package com.cybercom.passenger.repository.databasemodel;
+
+import com.cybercom.passenger.model.Position;
 
 import java.io.Serializable;
 
-public class Drive implements Serializable {
+public class DriveRequest implements Serializable {
 
-    private User mDriver;
+    private String mPassengerId;
 
     private long mTime;
     private Position mStartLocation;
     private Position mEndLocation;
-    private int mAvailableSeats;
+    private int mExtraPassengers;
 
-    public Drive(){}
+    public DriveRequest(){
+    }
 
-    public Drive(User driver, long time, Position startLocation, Position endLocation, int availableSeats) {
-        mDriver = driver;
+    public DriveRequest(String passengerId, long time, Position startLocation, Position endLocation, int extraPassengers) {
+        mPassengerId = passengerId;
         mTime = time;
         mStartLocation = startLocation;
         mEndLocation = endLocation;
-        mAvailableSeats = availableSeats;
+        mExtraPassengers = extraPassengers;
     }
 
-    public User getDriver() {
-        return mDriver;
+    public String getPassenger() {
+        return mPassengerId;
     }
 
-    public void setDriver(User driver) {
-        this.mDriver = driver;
+    public void setPassenger(String passengerId) {
+        mPassengerId = passengerId;
     }
 
     public long getTime() {
@@ -53,22 +56,22 @@ public class Drive implements Serializable {
         mEndLocation = endLocation;
     }
 
-    public int getAvailableSeats() {
-        return mAvailableSeats;
+    public int getExtraPassengers() {
+        return mExtraPassengers;
     }
 
-    public void setAvailableSeats(int availableSeats) {
-        mAvailableSeats = availableSeats;
+    public void setExtraPassengers(int extraPassengers) {
+        mExtraPassengers = extraPassengers;
     }
 
     @Override
     public String toString() {
-        return "Drive{" +
+        return "DriveRequest{" +
                 "mTime=" + mTime +
-                ", mDriver=" + mDriver +
+                ", mPassengerId=" + mPassengerId +
                 ", mStartLocation=" + mStartLocation +
                 ", mEndLocation=" + mEndLocation +
-                ", mAvailableSeats=" + mAvailableSeats +
+                ", mExtraPassengers=" + mExtraPassengers +
                 '}';
     }
 }
