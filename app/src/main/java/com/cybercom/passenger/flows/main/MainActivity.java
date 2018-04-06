@@ -82,8 +82,6 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
             getSupportActionBar().setTitle(R.string.mainactivity_title);
         }
 
-        mMainViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
-
         if (ContextCompat.checkSelfPermission(this.getApplication(),
                 android.Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
