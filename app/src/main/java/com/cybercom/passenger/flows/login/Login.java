@@ -56,24 +56,28 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
 
         switch (v.getId()){
             case R.id.button_loginscreen_login:
-                mAuth.signInWithEmailAndPassword(email, password)
-                        .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                            @Override
-                            public void onComplete(@NonNull Task<AuthResult> task) {
-                                if (task.isSuccessful()) {
-                                    // Sign in success, update UI with the signed-in user's information
-                                    FirebaseUser user = mAuth.getCurrentUser();
-                                    Timber.d("signInWithEmail:success %s", user);
-                                    intent = new Intent(getApplicationContext(), MainActivity.class);
-                                    startActivity(intent);
-                                } else {
-                                    // If sign in fails, display a message to the user.
-                                    Timber.d("signInWithEmail:failure %s", task.getException());
-                                    Toast.makeText(Login.this, "Authentication failed.",
-                                            Toast.LENGTH_SHORT).show();
+                if(email.isEmpty() || password.isEmpty()){
+                    Toast.makeText(Login.this, "Please enter email and password to login",
+                            Toast.LENGTH_LONG).show();
+                } else{
+                    mAuth.signInWithEmailAndPassword(email, password)
+                            .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                                @Override
+                                public void onComplete(@NonNull Task<AuthResult> task) {
+                                    if (task.isSuccessful()) {
+                                        // Sign in success, update UI with the signed-in user's information
+                                        FirebaseUser user = mAuth.getCurrentUser();
+                                        intent = new Intent(getApplicationContext(), MainActivity.class);
+                                        startActivity(intent);
+                                    } else {
+                                        // If sign in fails, display a message to the user.
+                                        Timber.d("signInWithEmail:failure %s", task.getException());
+                                        Toast.makeText(Login.this, "The email address is badly formatted, please check your email",
+                                                Toast.LENGTH_LONG).show();
+                                    }
                                 }
-                            }
-                        });
+                            });
+                }
                 break;
             case R.id.button_loginscreen_signup:
                 Timber.d("clicked signup");
