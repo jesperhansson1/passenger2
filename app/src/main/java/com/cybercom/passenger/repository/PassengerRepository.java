@@ -222,7 +222,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         return mNotification;
     }
 
-    public void setIncomingNotifications(final Map<String, String> payload) {
+    public void setIncomingNotification(final Map<String, String> payload) {
         mUsersReference.child(payload.get("driveDriverId"))
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -254,6 +254,10 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                         Timber.e("getDriver:onCancelled", databaseError.toException());
                     }
                 });
+    }
+
+    public void removeNotification(){
+        mNotification.postValue(null);
     }
 
     private String generateRandomUUID() {

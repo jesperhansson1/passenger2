@@ -21,7 +21,7 @@ public class PassengerMessagingService extends FirebaseMessagingService {
     }
 
     private void sendNotificationToRepository(Map<String, String> payload) {
-        PassengerRepository.getInstance().setIncomingNotifications(payload);
+        PassengerRepository.getInstance().setIncomingNotification(payload);
     }
 
 }
