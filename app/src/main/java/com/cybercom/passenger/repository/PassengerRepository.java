@@ -11,6 +11,7 @@ import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.repository.databasemodel.utils.DatabaseModelHelper;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -32,13 +33,6 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private static final String REFERENCE_DRIVES = "drives";
     private static final String REFERENCE_DRIVE_REQUESTS = "driveRequests";
     private static final String REFERENCE_USERS_CHILD_TYPE = "type";
-    private static final String MOCK_USER = "userone";
-
-    // TODO: remove these
-    public static User gPassenger;
-    public static User gDriver;
-
-    private static String token;
 
     private static final int DRIVE_REQUEST_MATCH_TIME_THRESHOLD = 15 * 60 * 60 * 1000;
 
@@ -56,11 +50,6 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     }
 
     private PassengerRepository() {
-        token = generateRandomUUID();
-
-        // TODO: Remove these
-        gDriver = new User("userId", "tokenId", User.TYPE_DRIVER, "phonenumber" , "personalnumber", "Nicolas Cage", "imagelink", "male");
-        gPassenger = new User("userId", "tokenId", User.TYPE_PASSENGER, "phonenumber" , "personalnumber", "John Travolta", "imagelink", "male");
         FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
         mUsersReference = firebaseDatabase.getReference(REFERENCE_USERS);
         mDrivesReference = firebaseDatabase.getReference(REFERENCE_DRIVES);
@@ -73,24 +62,33 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
         final MutableLiveData<User> user = new MutableLiveData<>();
 
-        mUsersReference.child(MOCK_USER).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                user.setValue(dataSnapshot.getValue(User.class));
-            }
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (firebaseUser != null) {
+            mUsersReference.child(firebaseUser.getUid()).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    user.setValue(dataSnapshot.getValue(User.class));
+                }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
 
-            }
+                }
 
-        });
+            });
+        } else {
+            // TODO: Not logged in...
+            return null;
+        }
         return user;
     }
 
     @Override
     public void updateUserType(int type) {
-        mUsersReference.child(MOCK_USER).child(REFERENCE_USERS_CHILD_TYPE).setValue(type);
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (firebaseUser != null) {
+            mUsersReference.child(firebaseUser.getUid()).child(REFERENCE_USERS_CHILD_TYPE).setValue(type);
+        }
     }
 
     @Override
@@ -161,9 +159,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                 if (bestMatch != null) {
                     final com.cybercom.passenger.repository.databasemodel.Drive finalBestMatch = bestMatch;
 
-//                    mUsersReference.child(finalBestMatch.getDriverId()).addListenerForSingleValueEvent(new ValueEventListener() {
-                    //TODO: Remove hardcoded user id and replace with finalBestMatch.getDriverId()
-                    mUsersReference.child("-L9KinSlVL0pmSQnzpBs").addListenerForSingleValueEvent(new ValueEventListener() {
+                    mUsersReference.child(finalBestMatch.getDriverId()).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             User driver = dataSnapshot.getValue(User.class);

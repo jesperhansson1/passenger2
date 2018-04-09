@@ -7,13 +7,13 @@ import com.cybercom.passenger.model.Notification;
 public class DatabaseModelHelper {
     public static com.cybercom.passenger.repository.databasemodel.Drive convertDrive(Drive drive) {
 
-        return new com.cybercom.passenger.repository.databasemodel.Drive(drive.getDriver().getUserIdId(), drive.getTime(),
+        return new com.cybercom.passenger.repository.databasemodel.Drive(drive.getDriver().getUserId(), drive.getTime(),
                 drive.getStartLocation(), drive.getEndLocation(), drive.getAvailableSeats());
     }
 
     public static com.cybercom.passenger.repository.databasemodel.DriveRequest convertDriveRequest(DriveRequest driveRequest) {
 
-        return new com.cybercom.passenger.repository.databasemodel.DriveRequest(driveRequest.getPassenger().getUserIdId(), driveRequest.getTime(),
+        return new com.cybercom.passenger.repository.databasemodel.DriveRequest(driveRequest.getPassenger().getUserId(), driveRequest.getTime(),
                 driveRequest.getStartLocation(), driveRequest.getEndLocation(), driveRequest.getExtraPassengers());
     }
 
