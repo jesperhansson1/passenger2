@@ -14,6 +14,7 @@ import android.widget.RadioButton;
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.main.MainActivity;
 import com.cybercom.passenger.model.User;
+import com.cybercom.passenger.utils.CheckTextFieldHelper;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.iid.FirebaseInstanceId;
 
@@ -24,8 +25,9 @@ public class SignUp extends AppCompatActivity implements View.OnClickListener {
     SignUpViewModel mViewModel;
     RadioButton mRadioButtonMale, mRadioButtonFemale;
     Button mNextButton;
-    EditText mPassword, mEmail, mFullName, mPersonalNumber, mPhone;
+    public static EditText mPassword, mEmail, mFullName, mPersonalNumber, mPhone;
     String mSaveRadioButtonAnswer;
+    public static Boolean mFilledInTextFields = false;
     private static final String GENDER_MALE = "Male";
     private static final String GENDER_FEMALE = "Female";
 
@@ -62,6 +64,7 @@ public class SignUp extends AppCompatActivity implements View.OnClickListener {
         mRadioButtonFemale.setButtonDrawable(R.drawable.ic_woman_blue);
 
         mSaveRadioButtonAnswer = GENDER_MALE;
+
     }
 
     @Override
@@ -98,20 +101,24 @@ public class SignUp extends AppCompatActivity implements View.OnClickListener {
                 final String personalNumber = mPersonalNumber.getText().toString();
                 final String phone = mPhone.getText().toString();
 
-                mViewModel.createUserWithEmailAndPassword(email, password, this).observe(this, new Observer<FirebaseUser>() {
-                    @Override
-                    public void onChanged(@Nullable FirebaseUser user) {
-                        if(user != null){
-                            mViewModel.createUser(user.getUid(), new User(user.getUid(), FirebaseInstanceId.getInstance().getToken(),
-                                    User.TYPE_PASSENGER, phone, personalNumber, fullName, null, mSaveRadioButtonAnswer));
-                            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                            startActivity(intent);
-                        } else{
-                            Timber.d("USER was not CREATED");
+                if(CheckTextFieldHelper.checkTextFieldsHelper(email, password, fullName, personalNumber, phone)){
+                    mViewModel.createUserWithEmailAndPassword(email, password, this).observe(this, new Observer<FirebaseUser>() {
+                        @Override
+                        public void onChanged(@Nullable FirebaseUser user) {
+                            if(user != null){
+                                mViewModel.createUser(user.getUid(), new User(user.getUid(), FirebaseInstanceId.getInstance().getToken(),
+                                        User.TYPE_PASSENGER, phone, personalNumber, fullName, null, mSaveRadioButtonAnswer));
+                                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                                startActivity(intent);
+                            } else{
+                                Timber.d("USER was not CREATED");
+                            }
                         }
-                    }
-                });
+                    });
+                }
                 break;
         }
     }
+
+
 }
