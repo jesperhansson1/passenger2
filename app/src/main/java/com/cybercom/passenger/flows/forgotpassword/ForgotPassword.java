@@ -43,16 +43,13 @@ public class ForgotPassword extends AppCompatActivity{
 
     public void getNewPassword(String email){
         mEmail = email.trim();
-
         if(!mEmail.isEmpty()){
-            Timber.d("Email EMAIL not null! Activity %s", mEmail);
             mViewModel.getNewPassword(mEmail).observe(this, new Observer<String>() {
                 @Override
-                public void onChanged(@Nullable String s) {
-                    if(!s.isEmpty()) {
+                public void onChanged(@Nullable String result) {
+                    if(!result.isEmpty()) {
                         intent = new Intent(getApplicationContext(), PasswordSent.class);
                         intent.putExtra("EXTRA_SESSION_EMAIL", mEmail);
-                        Timber.d("Email, %s", mEmail);
                         startActivity(intent);
                     } else{
                         Timber.d("Email wasnt sent! Activity");
@@ -60,7 +57,7 @@ public class ForgotPassword extends AppCompatActivity{
                 }
             });
         } else{
-            Timber.d("Email EMAIL IS NULL! Activity");
+            Timber.d("Email is empty");
         }
     }
 }

@@ -7,10 +7,11 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.cybercom.passenger.R;
+import com.cybercom.passenger.flows.login.Login;
 
 public class PasswordSent extends AppCompatActivity {
-
     TextView mEmail;
+    Intent intent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,7 +32,9 @@ public class PasswordSent extends AppCompatActivity {
 
     public void openEmailClient()
     {
-        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent = new Intent(getApplicationContext(), Login.class);
+        startActivity(intent);
+        intent = new Intent(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_APP_EMAIL);
         startActivity(intent);
     }
