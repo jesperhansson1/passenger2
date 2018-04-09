@@ -80,6 +80,11 @@ public class MainViewModel extends AndroidViewModel {
                 Looper.myLooper());
     }
 
+    public Location getLastSeenLocation()
+    {
+        return mLastLocation;
+    }
+
     private void createLocationRequest() {
         mLocationRequest = LocationRequest.create();
         mLocationRequest.setInterval(10000);
