@@ -15,14 +15,13 @@ public class PassengerMessagingService extends FirebaseMessagingService {
         super.onMessageReceived(remoteMessage);
 
         if (remoteMessage.getData().size() > 0) {
-            Map<String, String> payload = remoteMessage.getData();
-            sendNotificationToRepository(payload);
+            sendNotificationToRepository(remoteMessage.getData());
             Timber.i(remoteMessage.getData().toString());
         }
     }
 
     private void sendNotificationToRepository(Map<String, String> payload) {
-        PassengerRepository.getInstance().receiveIncomingNotifications();
+        PassengerRepository.getInstance().setIncomingNotifications(payload);
     }
 
 }

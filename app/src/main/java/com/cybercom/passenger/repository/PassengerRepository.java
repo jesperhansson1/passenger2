@@ -10,6 +10,7 @@ import com.cybercom.passenger.model.Notification;
 import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.repository.databasemodel.utils.DatabaseModelHelper;
+import com.cybercom.passenger.utils.LocationHelper;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -18,7 +19,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import timber.log.Timber;
@@ -61,8 +64,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         token = generateRandomUUID();
 
         // TODO: Remove these
-        gDriver = new User("userId", "tokenId", User.TYPE_DRIVER, "phonenumber" , "personalnumber", "Nicolas Cage", "imagelink", "male");
-        gPassenger = new User("userId", "tokenId", User.TYPE_PASSENGER, "phonenumber" ,"personalnumber", "John Travolta", "imagelink", "male");
+        gDriver = new User("CAFpHVaBPSed9RiwVPYPlamYkrb2", "tokenId", User.TYPE_DRIVER, "phonenumber", "personalnumber", "Nicolas Cage", "imagelink", "male");
+        gPassenger = new User("userId", "tokenId", User.TYPE_PASSENGER, "phonenumber", "personalnumber", "John Travolta", "imagelink", "male");
         FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
         mUsersReference = firebaseDatabase.getReference(REFERENCE_USERS);
         mDrivesReference = firebaseDatabase.getReference(REFERENCE_DRIVES);
@@ -137,8 +140,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                     com.cybercom.passenger.repository.databasemodel.Drive drive = snapshot.getValue(com.cybercom.passenger.repository.databasemodel.Drive.class);
 
                     if (drive != null && Math.abs(time - drive.getTime()) < DRIVE_REQUEST_MATCH_TIME_THRESHOLD) {
-                            Location.distanceBetween(startLocation.getLatitude(), startLocation.getLongitude(),
-                                    drive.getStartLocation().getLatitude(), drive.getStartLocation().getLongitude(), distance);
+                        Location.distanceBetween(startLocation.getLatitude(), startLocation.getLongitude(),
+                                drive.getStartLocation().getLatitude(), drive.getStartLocation().getLongitude(), distance);
 
                         Timber.d("Drives: distance: %s, driveRequest: lat: %s, lng: %s, drive: lat %s, lng %s",
                                 distance[0], startLocation.getLatitude(), startLocation.getLongitude(),
@@ -163,12 +166,11 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                 if (bestMatch != null) {
                     final com.cybercom.passenger.repository.databasemodel.Drive finalBestMatch = bestMatch;
 
-//                    mUsersReference.child(finalBestMatch.getDriverId()).addListenerForSingleValueEvent(new ValueEventListener() {
-                    //TODO: Remove hardcoded user id and replace with finalBestMatch.getDriverId()
-                    mUsersReference.child("-L9KinSlVL0pmSQnzpBs").addListenerForSingleValueEvent(new ValueEventListener() {
+                    mUsersReference.child(finalBestMatch.getDriverId()).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             User driver = dataSnapshot.getValue(User.class);
+                            driver.setUserId(dataSnapshot.getKey());
                             bestDriveMatch.setValue(new Drive(driver, finalBestMatch.getTime(),
                                     finalBestMatch.getStartLocation(), finalBestMatch.getEndLocation(),
                                     finalBestMatch.getAvailableSeats()));
@@ -217,15 +219,46 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     }
 
     public LiveData<Notification> receiveIncomingNotifications() {
-        final MutableLiveData<Notification> notification = new MutableLiveData<>();
-        // TODO: Implement
-        return notification;
+        return mNotification;
+    }
+
+    public void setIncomingNotifications(final Map<String, String> payload) {
+        mUsersReference.child(payload.get("driveDriverId"))
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        final User driver = dataSnapshot.getValue(User.class);
+                        mUsersReference.child(payload.get("driveRequestPassenger"))
+                                .addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(DataSnapshot dataSnapshot) {
+                                        User passenger = dataSnapshot.getValue(User.class);
+                                        mNotification.postValue(DatabaseModelHelper
+                                                .convertPayloadToNotification(
+                                                        payload,
+                                                        driver,
+                                                        passenger)
+                                        );
+                                    }
+
+                                    @Override
+                                    public void onCancelled(DatabaseError databaseError) {
+                                        Timber.e("getPassenger:onCancelled",
+                                                databaseError.toException());
+                                    }
+                                });
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        Timber.e("getDriver:onCancelled", databaseError.toException());
+                    }
+                });
     }
 
     private String generateRandomUUID() {
         return UUID.randomUUID().toString();
     }
-
 
 
 }
