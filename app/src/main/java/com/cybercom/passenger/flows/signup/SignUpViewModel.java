@@ -17,9 +17,8 @@ import com.google.firebase.auth.FirebaseUser;
 import timber.log.Timber;
 
 public class SignUpViewModel extends AndroidViewModel {
-    FirebaseAuth mAuth;
-    PassengerRepository repository = PassengerRepository.getInstance();
-    FirebaseUser user = mAuth.getInstance().getCurrentUser();
+    private FirebaseAuth mAuth;
+    private PassengerRepository repository = PassengerRepository.getInstance();
 
     public SignUpViewModel(@NonNull Application application) {
         super(application);
@@ -33,7 +32,8 @@ public class SignUpViewModel extends AndroidViewModel {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            Timber.d("createUserWithEmail:success");
+                            FirebaseUser user = mAuth.getInstance().getCurrentUser();
+                            Timber.d("createUserWithEmail:success %s", user);
                             userMutableLiveData.setValue(user);
                         } else {
                             Timber.w("createUserWithEmail:failure %s", task.getException());

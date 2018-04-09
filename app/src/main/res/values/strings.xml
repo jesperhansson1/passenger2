@@ -38,7 +38,7 @@
     <string name="security">Security</string>
     <string name="mail_example">luftluft@mail.com</string>
     <string name="forgot_password">Forgot Password</string>
-    <string name="signin">Sign in</string>
+    <string name="signup">Sign Up</string>
     <string name="login">Login</string>
     <string name="send_me_password">Send me password</string>
     <string name="we_sent_password_to">We sent password to</string>
@@ -57,6 +57,10 @@
     <string name="hint_email">my@email.com</string>
     <string name="hint_password">Enter password</string>
     <string name="hint_phone">12345</string>
+
+    <string name="login_title">Login</string>
+    <string name="mainactivity_title">Passenger</string>
+
 
     <string-array name="location_array">
         <item>My Location</item>

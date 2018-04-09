@@ -2,6 +2,7 @@ package com.cybercom.passenger.flows.signup;
 
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.Intent;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -11,8 +12,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import com.cybercom.passenger.R;
+import com.cybercom.passenger.flows.main.MainActivity;
 import com.cybercom.passenger.model.User;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.iid.FirebaseInstanceId;
+
+import timber.log.Timber;
 
 public class SignUp extends AppCompatActivity implements View.OnClickListener {
 
@@ -97,7 +102,12 @@ public class SignUp extends AppCompatActivity implements View.OnClickListener {
                     @Override
                     public void onChanged(@Nullable FirebaseUser user) {
                         if(user != null){
-                            mViewModel.createUser(user.getUid(), new User("353554","notificationId", User.TYPE_PASSENGER, phone, personalNumber, fullName, null, mSaveRadioButtonAnswer));
+                            mViewModel.createUser(user.getUid(), new User(user.getUid(), FirebaseInstanceId.getInstance().getToken(),
+                                    User.TYPE_PASSENGER, phone, personalNumber, fullName, null, mSaveRadioButtonAnswer));
+                            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                            startActivity(intent);
+                        } else{
+                            Timber.d("USER was not CREATED");
                         }
                     }
                 });

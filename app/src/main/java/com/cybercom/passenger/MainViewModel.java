@@ -14,6 +14,7 @@ import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Notification;
 import com.cybercom.passenger.model.Position;
+import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.repository.PassengerRepository;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -91,21 +92,21 @@ public class MainViewModel extends AndroidViewModel {
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 
-    public Drive createDrive(Position startLocation, Position endLocation) {
+    public Drive createDrive(User user, Position startLocation, Position endLocation) {
         Long currentTimeMillis = System.currentTimeMillis();
         int seats = 1;
 
-        Drive drive = new Drive(PassengerRepository.gDriver, currentTimeMillis, startLocation, endLocation, seats);
+        Drive drive = new Drive(user, currentTimeMillis,startLocation,endLocation, seats);
         mPassengerRepository.addDrive(drive);
 
         return drive;
     }
 
-    public DriveRequest createDriveRequest(Position startLocation, Position endLocation) {
+    public DriveRequest createDriveRequest(User user, Position startLocation, Position endLocation) {
         Long currentTimeMillis = System.currentTimeMillis();
         int seats = 1;
 
-        DriveRequest driveRequest = new DriveRequest(PassengerRepository.gPassenger, currentTimeMillis, startLocation, endLocation, seats);
+        DriveRequest driveRequest = new DriveRequest(user, currentTimeMillis, startLocation, endLocation, seats);
         mPassengerRepository.addDriveRequest(driveRequest);
 
         return driveRequest;
