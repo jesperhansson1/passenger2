@@ -29,7 +29,6 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
 
     public static final String NOTIFICATION_TOKEN_ID = "notificationTokenId";
-    FirebaseAuth auth;
 
     private static final String REFERENCE_NOTIFICATIONS = "notifications";
     private static final String REFERENCE_USERS = "users";
@@ -266,9 +265,5 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
     public void removeNotification() {
         mNotification.postValue(null);
-    }
-
-    private String generateRandomUUID() {
-        return UUID.randomUUID().toString();
     }
 }
