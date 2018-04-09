@@ -65,13 +65,9 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
                                 @Override
                                 public void onComplete(@NonNull Task<AuthResult> task) {
                                     if (task.isSuccessful()) {
-                                        // Sign in success, update UI with the signed-in user's information
-                                        FirebaseUser user = mAuth.getCurrentUser();
                                         intent = new Intent(getApplicationContext(), MainActivity.class);
                                         startActivity(intent);
                                     } else {
-                                        // If sign in fails, display a message to the user.
-                                        Timber.d("signInWithEmail:failure %s", task.getException());
                                         Toast.makeText(Login.this, "The email address is badly formatted, please check your email",
                                                 Toast.LENGTH_LONG).show();
                                     }
@@ -80,16 +76,13 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
                 }
                 break;
             case R.id.button_loginscreen_signup:
-                Timber.d("clicked signup");
                 intent = new Intent(getApplicationContext(), SignUp.class);
                 startActivity(intent);
                     break;
             case R.id.button_loginscreen_forgotpassword:
-                Timber.d("clicked forgot");
                 intent = new Intent(getApplicationContext(), ForgotPassword.class);
                 startActivity(intent);
                 break;
         }
     }
-
 }
