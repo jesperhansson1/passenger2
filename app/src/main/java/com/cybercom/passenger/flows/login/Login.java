@@ -11,6 +11,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.cybercom.passenger.R;
+import com.cybercom.passenger.flows.forgotpassword.ForgotPassword;
 import com.cybercom.passenger.flows.main.MainActivity;
 import com.cybercom.passenger.flows.signup.SignUp;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -25,7 +26,8 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
 
     FirebaseAuth mAuth;
     EditText mEmail,mPassword;
-    Button mLogin, mSignup;
+    Button mLogin, mSignup, mForgotPassword;
+    Intent intent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +44,8 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
         mLogin.setOnClickListener(this);
         mSignup = findViewById(R.id.button_loginscreen_signup);
         mSignup.setOnClickListener(this);
+        mForgotPassword = findViewById(R.id.button_loginscreen_forgotpassword);
+        mForgotPassword.setOnClickListener(this);
     }
 
     @Override
@@ -60,7 +64,7 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
                                     // Sign in success, update UI with the signed-in user's information
                                     FirebaseUser user = mAuth.getCurrentUser();
                                     Timber.d("signInWithEmail:success %s", user);
-                                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                                    intent = new Intent(getApplicationContext(), MainActivity.class);
                                     startActivity(intent);
                                 } else {
                                     // If sign in fails, display a message to the user.
@@ -73,9 +77,14 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
                 break;
             case R.id.button_loginscreen_signup:
                 Timber.d("clicked signup");
-                Intent intent = new Intent(getApplicationContext(), SignUp.class);
+                intent = new Intent(getApplicationContext(), SignUp.class);
                 startActivity(intent);
                     break;
+            case R.id.button_loginscreen_forgotpassword:
+                Timber.d("clicked forgot");
+                intent = new Intent(getApplicationContext(), ForgotPassword.class);
+                startActivity(intent);
+                break;
         }
     }
 

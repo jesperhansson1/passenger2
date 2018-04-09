@@ -23,6 +23,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".flows.forgotpassword.ForgotPassword"></activity>
+        <activity android:name=".flows.signup.PasswordSent"></activity>
         <activity android:name=".flows.signup.SignUp"></activity>
         <activity android:name=".flows.login.Login"></activity>
 
