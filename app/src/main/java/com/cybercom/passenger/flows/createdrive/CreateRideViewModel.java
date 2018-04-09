@@ -15,7 +15,7 @@ public class CreateRideViewModel extends ViewModel {
         int seats = 1;
         PassengerRepository repo = (PassengerRepository.getInstance());
 
-        User driver = new User("user-id", "notification-token", User.TYPE_DRIVER, "040-88 88 88", "password", "email", "personalnumber" , "fullname", "image-link", "gender");
+        User driver = new User("user-id", "notification-token", User.TYPE_DRIVER, "040-88 88 88", "personalnumber" , "fullname", "image-link", "gender");
 
         Drive drive = new Drive(driver, currentTimeMillis, startLocation, endLocation, seats);
 

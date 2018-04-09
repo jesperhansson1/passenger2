@@ -1,10 +1,13 @@
 package com.cybercom.passenger;
 
+import android.app.Activity;
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
+import android.content.Intent;
 import android.location.Location;
+
 import android.os.Looper;
 import android.support.annotation.NonNull;
 
@@ -12,16 +15,22 @@ import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Notification;
 import com.cybercom.passenger.model.Position;
+import com.cybercom.passenger.flows.login.Login;
+import com.cybercom.passenger.flows.main.MainActivity;
 import com.cybercom.passenger.repository.PassengerRepository;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.Task;
 
 public class MainViewModel extends AndroidViewModel {
 
     private FusedLocationProviderClient mFusedLocationClient;
+    private Location mLastLocation;
     private PassengerRepository mPassengerRepository = PassengerRepository.getInstance();
     private MutableLiveData<Location> mMyLocation = new MutableLiveData<>();
     private LocationCallback mLocationCallback;
@@ -46,8 +55,26 @@ public class MainViewModel extends AndroidViewModel {
         createLocationRequest();
     }
 
-    public LiveData<Location> getUpdatedLocationLiveData(){
+    public LiveData<Location> getUpdatedLocationLiveData() {
         return mMyLocation;
+    }
+
+    @SuppressWarnings("MissingPermission")
+    public void getLastLocation() {
+        mFusedLocationClient.getLastLocation()
+                .addOnCompleteListener(new OnCompleteListener<Location>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Location> task) {
+                        if (task.isSuccessful() && task.getResult() != null) {
+                            mLastLocation = task.getResult();
+                        }
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     @SuppressWarnings("MissingPermission")
@@ -110,5 +137,6 @@ public class MainViewModel extends AndroidViewModel {
 
     public void sendRejectPassengerNotificaiton() {
         // TODO: implement
+
     }
 }

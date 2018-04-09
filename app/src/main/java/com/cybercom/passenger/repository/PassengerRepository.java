@@ -59,10 +59,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         token = generateRandomUUID();
 
         // TODO: Remove these
-        gDriver = new User("userId", "tokenId", User.TYPE_DRIVER, "phonenumber" ,
-                "password", "email", "personalnumber", "Nicolas Cage", "imagelink", "male");
-        gPassenger = new User("userId", "tokenId", User.TYPE_PASSENGER, "phonenumber" ,
-                "password", "email", "personalnumber", "John Travolta", "imagelink", "male");
+        gDriver = new User("userId", "tokenId", User.TYPE_DRIVER, "phonenumber" , "personalnumber", "Nicolas Cage", "imagelink", "male");
+        gPassenger = new User("userId", "tokenId", User.TYPE_PASSENGER, "phonenumber" , "personalnumber", "John Travolta", "imagelink", "male");
         FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
         mUsersReference = firebaseDatabase.getReference(REFERENCE_USERS);
         mDrivesReference = firebaseDatabase.getReference(REFERENCE_DRIVES);
@@ -124,7 +122,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
     public LiveData<Drive> findBestRideMatch(final Position startLocation, final Position endLocation, final long time) {
 
-        final MutableLiveData<Drive> bestDriveMatch  = new MutableLiveData<>();
+        final MutableLiveData<Drive> bestDriveMatch = new MutableLiveData<>();
 
         mDrivesReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -144,17 +142,16 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                                 distance[0], startLocation.getLatitude(), startLocation.getLongitude(),
                                 drive.getStartLocation().getLatitude(), drive.getStartLocation().getLongitude());
 
-                            if(distance[0] < 700){
-                                if (bestMatch == null) {
-                                    bestMatch = drive;
-                                    shortestDistance = distance[0];
-                                }
-                                else if(distance[0] < shortestDistance){
-                                    bestMatch = drive;
-                                    shortestDistance = distance[0];
-                                }
+                        if (distance[0] < 700) {
+                            if (bestMatch == null) {
+                                bestMatch = drive;
+                                shortestDistance = distance[0];
+                            } else if (distance[0] < shortestDistance) {
+                                bestMatch = drive;
+                                shortestDistance = distance[0];
                             }
-                    } else{
+                        }
+                    } else {
                         Timber.d("Drives: Out of time frame!");
                     }
                 }
@@ -223,7 +220,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         return notification;
     }
 
-    private String generateRandomUUID(){
+    private String generateRandomUUID() {
         return UUID.randomUUID().toString();
     }
 }
