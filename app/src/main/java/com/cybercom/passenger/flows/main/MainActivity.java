@@ -48,7 +48,6 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     MainViewModel mMainViewModel;
     Location mLocation;
     private GoogleMap mGoogleMap;
-    Location mMyLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,26 +115,21 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
                 } else {
                     mLocation = location;
                     //Permission granted to access user location
-                    mMyLocation = mLocation;
                 }
             }
         });
         if (mLocation == null)
         {
-            if(mMainViewModel.getLastSeenLocation() == null)
-            {
-                //Permission denied to access user location and last seen location is null
-                Location defaultLocation = new Location("default");
-                defaultLocation.setLatitude(55.611473);
-                defaultLocation.setLongitude(12.994266);
-                mMyLocation = defaultLocation;
-            }
-            else
-            {
-                //Permission denied to access user location and last seen location is not null
-                mMyLocation = mMainViewModel.getLastSeenLocation();
-            }
+            //Permission not granted to access user location
+            setDefaultLocationToMinc();
         }
+    }
+
+    public void setDefaultLocationToMinc()
+    {
+        mLocation = new Location("Minc");
+        mLocation.setLatitude(55.611473);
+        mLocation.setLongitude(12.994266);
     }
 
     @Override
@@ -197,7 +191,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
         mGoogleMap.setMaxZoomPreference(14.0f);
         //To show +/- zoom options
         mGoogleMap.getUiSettings().setZoomGesturesEnabled(true);
-        updateMyLocation(mMyLocation);
+        updateMyLocation(mLocation);
 
     }
 
@@ -219,13 +213,13 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
 
         mGoogleMap.addMarker(new MarkerOptions().position(startLocation).title("Start"));
         mGoogleMap.addMarker(new MarkerOptions().position(endLocation).title("End"));
-        LatLngBounds latLngBounds = new LatLngBounds(
-                startLocation, endLocation);
-        // Constrain the camera target to the Adelaide bounds.
-        mGoogleMap.setLatLngBoundsForCameraTarget(latLngBounds);
-        mGoogleMap.animateCamera(CameraUpdateFactory.zoomIn());
-        mGoogleMap.animateCamera(CameraUpdateFactory.zoomTo(5), 2000, null);
+        LatLngBounds.Builder latlngBuilder = new LatLngBounds.Builder();
+        latlngBuilder.include(startLocation);
+        latlngBuilder.include(endLocation);
+
+        mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(latlngBuilder.build(), 100));
         FetchRouteUrl fetchRouteUrl = new FetchRouteUrl(mGoogleMap, startLocation, endLocation);
+
     }
 
     @Override
