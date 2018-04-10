@@ -6,6 +6,7 @@ import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.location.Location;
 
+import android.os.Bundle;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 
@@ -23,6 +24,9 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainViewModel extends AndroidViewModel {
 
@@ -135,5 +139,21 @@ public class MainViewModel extends AndroidViewModel {
     public void sendRejectPassengerNotificaiton() {
         // TODO: implement
 
+    }
+
+    public void setIncomingNotification(Bundle extras) {
+
+        Map<String, String> payload = new HashMap<>();
+
+        for (String key : extras.keySet()) {
+            payload.put(key, extras.getString(key));
+        }
+
+        mPassengerRepository.setIncomingNotification(payload);
+
+    }
+
+    public void removeNotification(){
+        mPassengerRepository.removeNotification();
     }
 }

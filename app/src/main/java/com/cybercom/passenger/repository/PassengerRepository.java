@@ -20,11 +20,13 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import timber.log.Timber;
 
 public class PassengerRepository implements PassengerRepositoryInterface {
+
 
     FirebaseAuth auth;
 
@@ -34,6 +36,9 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private static final String REFERENCE_DRIVE_REQUESTS = "driveRequests";
     private static final String REFERENCE_USERS_CHILD_TYPE = "type";
 
+    private static final String DRIVE_DRIVER_ID = "driveDriverId";
+    private static final String DRIVE_REQUEST_PASSENGER = "driveRequestPassenger";
+
     private static final int DRIVE_REQUEST_MATCH_TIME_THRESHOLD = 15 * 60 * 60 * 1000;
 
     private static PassengerRepository sPassengerRepository;
@@ -41,6 +46,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private DatabaseReference mDrivesReference;
     private DatabaseReference mDriveRequestsReference;
     private DatabaseReference mNotificationsReference;
+
+    private MutableLiveData<Notification> mNotification = new MutableLiveData<>();
 
     public static PassengerRepository getInstance() {
         if (sPassengerRepository == null) {
@@ -211,9 +218,45 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     }
 
     public LiveData<Notification> receiveIncomingNotifications() {
-        final MutableLiveData<Notification> notification = new MutableLiveData<>();
-        // TODO: Implement
-        return notification;
+        return mNotification;
+    }
+
+    public void setIncomingNotification(final Map<String, String> payload) {
+        mUsersReference.child(payload.get(DRIVE_DRIVER_ID))
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        final User driver = dataSnapshot.getValue(User.class);
+                        mUsersReference.child(payload.get(DRIVE_REQUEST_PASSENGER))
+                                .addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(DataSnapshot dataSnapshot) {
+                                        User passenger = dataSnapshot.getValue(User.class);
+                                        mNotification.postValue(DatabaseModelHelper
+                                                .convertPayloadToNotification(
+                                                        payload,
+                                                        driver,
+                                                        passenger)
+                                        );
+                                    }
+
+                                    @Override
+                                    public void onCancelled(DatabaseError databaseError) {
+                                        Timber.e("getPassenger:onCancelled",
+                                                databaseError.toException());
+                                    }
+                                });
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        Timber.e("getDriver:onCancelled", databaseError.toException());
+                    }
+                });
+    }
+
+    public void removeNotification(){
+        mNotification.postValue(null);
     }
 
     private String generateRandomUUID() {

@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
 
         if (savedInstanceState == null) {
             if (getIntent().getExtras() != null) {
-                mMainViewModel.getIncomingNotifications();
+                mMainViewModel.setIncomingNotification(getIntent().getExtras());
             }
         }
         mUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -91,8 +91,8 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
 //            }
 //            else {
             ActivityCompat.requestPermissions(this,
-                        new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                        MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
+                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                    MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
 //            }
         }
 
@@ -114,10 +114,13 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
 
                 switch (notification.getType()) {
                     case Notification.REQUEST_DRIVE:
-                        showDriverConfirmationDialogFragment(notification.getDrive(), notification.getDriveRequest());
+                        showDriverConfirmationDialogFragment(notification.getDrive(),
+                                notification.getDriveRequest());
+                        mMainViewModel.removeNotification();
                         break;
                     case Notification.ACCEPT_PASSENGER:
                         showPassengerNotificationDialog(notification.getDrive());
+                        mMainViewModel.removeNotification();
                         break;
                     case Notification.REJECT_PASSENGER:
                         // TODO: Attempt to make another match
@@ -129,7 +132,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
             @Override
             public void onChanged(@Nullable Location location) {
                 // TODO: Need to handle if there is no data och display info. Need to send this location to spinner
-                if(location == null){
+                if (location == null) {
                     Timber.d("get updated --> null");
                 } else {
                     mLocation = location;
@@ -169,7 +172,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
             mMainViewModel.startLocationUpdates();
     }
 
-    public void initUI(){
+    public void initUI() {
         changeLabelFontStyle(false);
         final Switch switchRide = findViewById(R.id.switch_ride);
         final FloatingActionButton floatRide = findViewById(R.id.button_createRide);
@@ -208,8 +211,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
         }
     }
 
-    public void showCreateDriveDialog(int type, String location)
-    {
+    public void showCreateDriveDialog(int type, String location) {
         CreateRideDialogFragment dialogFragment = CreateRideDialogFragment.newInstance(type, location);
         dialogFragment.show(getFragmentManager(), CreateRideDialogFragment.TAG);
     }
