@@ -16,7 +16,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     tools:context="com.cybercom.passenger.flows.signup.SignUpActivity">
 
     <ImageView
@@ -52,7 +52,7 @@
             android:button="@drawable/ic_male_blue"
             android:checked="true"
             android:duplicateParentState="false"
-            android:text="Male"/>
+            android:text="@string/male"/>
 
         <RadioButton
             android:id="@+id/radiobutton_signup_femaleRadioButton"
@@ -62,7 +62,7 @@
             android:layout_weight="1"
             android:button="@drawable/ic_woman_blue"
             android:drawablePadding="50dp"
-            android:text="Female" />
+            android:text="@string/female" />
     </RadioGroup>
 
     <TextView
