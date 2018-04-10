@@ -25,4 +25,11 @@ public class LocationHelper {
         lang = Double.valueOf(locArr[1]);
         return new Position(lat,lang);
     }
+
+    public static String getStringFromPosition(Position position) {
+        String lat = String.valueOf(position.getLatitude());
+        String lng = String.valueOf(position.getLatitude());
+
+        return "Latitude: " + lat + ", Longitude: " + lng;
+    }
 }
