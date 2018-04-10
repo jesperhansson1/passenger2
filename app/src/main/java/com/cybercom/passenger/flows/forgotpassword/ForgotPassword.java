@@ -9,8 +9,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.cybercom.passenger.R;
+import com.cybercom.passenger.flows.login.Login;
 import com.cybercom.passenger.flows.signup.PasswordSent;
 import com.cybercom.passenger.flows.signup.SignUpViewModel;
 
@@ -44,20 +46,19 @@ public class ForgotPassword extends AppCompatActivity{
     public void getNewPassword(String email){
         mEmail = email.trim();
         if(!mEmail.isEmpty()){
-            mViewModel.getNewPassword(mEmail).observe(this, new Observer<String>() {
+            mViewModel.getNewPassword(mEmail, this).observe(this, new Observer<String>() {
                 @Override
                 public void onChanged(@Nullable String result) {
                     if(!result.isEmpty()) {
                         intent = new Intent(getApplicationContext(), PasswordSent.class);
                         intent.putExtra("EXTRA_SESSION_EMAIL", mEmail);
                         startActivity(intent);
-                    } else{
-                        Timber.d("Email wasnt sent! Activity");
                     }
                 }
             });
         } else{
-            Timber.d("Email is empty");
+            Toast.makeText(ForgotPassword.this, "You haven't entered any email", Toast.LENGTH_LONG).show();
+            //Add ForgotPasswordActivity
         }
     }
 }
