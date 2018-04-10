@@ -44,6 +44,7 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
@@ -77,9 +78,14 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
         mUser = FirebaseAuth.getInstance().getCurrentUser();
 
         if (mUser != null) {
-            getSupportActionBar().setTitle(mUser.getEmail());
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setTitle(mUser.getEmail());
+            }
+            mMainViewModel.refreshToken(FirebaseInstanceId.getInstance().getToken());
         } else {
-            getSupportActionBar().setTitle(R.string.mainactivity_title);
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setTitle(R.string.mainactivity_title);
+            }
         }
 
         if (ContextCompat.checkSelfPermission(this.getApplication(),
@@ -169,7 +175,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     @Override
     protected void onResume() {
         super.onResume();
-            mMainViewModel.startLocationUpdates();
+        mMainViewModel.startLocationUpdates();
     }
 
     public void initUI() {
@@ -223,14 +229,14 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
         mGoogleMap.setMaxZoomPreference(20.0f);
         // Add a marker in Sydney and move the camera
         LatLng sydney = new LatLng(-34, 151);
-        LatLng opera = new LatLng(-33.9320447,151.1597271);
+        LatLng opera = new LatLng(-33.9320447, 151.1597271);
         mGoogleMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         mGoogleMap.addMarker(new MarkerOptions().position(opera).title("Marker in Opera"));
         LatLngBounds ADELAIDE = new LatLngBounds(
                 sydney, opera);
         // Constrain the camera target to the Adelaide bounds.
         mGoogleMap.setLatLngBoundsForCameraTarget(ADELAIDE);
-       // mGoogleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        // mGoogleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
 
         FetchRouteUrl fetchRouteUrl = new FetchRouteUrl(mGoogleMap, sydney, opera);
     }
@@ -283,7 +289,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     }
 
     private void showPassengerNotificationDialog(Drive drive) {
-        PassengerNotificationDialog dialogFragment = PassengerNotificationDialog.getInstance();
+        PassengerNotificationDialog dialogFragment = PassengerNotificationDialog.getInstance(drive);
         dialogFragment.show(getSupportFragmentManager(), dialogFragment.getTag());
     }
 

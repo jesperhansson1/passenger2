@@ -22,8 +22,6 @@ import com.cybercom.passenger.utils.LocationHelper;
 
 public class DriverConfirmationDialog extends DialogFragment implements View.OnClickListener {
 
-    public static final String TAG = "DRIVER_CONFIRMATION_DIALOG";
-
     public static final String DRIVE_KEY = "DRIVE";
     public static final String DRIVE_REQUEST_KEY = "DRIVE_REQUEST";
     private Drive mDrive;
