@@ -11,13 +11,13 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
+
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.main.MainActivity;
 import com.cybercom.passenger.model.User;
+import com.cybercom.passenger.utils.ToastHelper;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.iid.FirebaseInstanceId;
-
-import timber.log.Timber;
 
 public class SignUpActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -26,6 +26,7 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
     Button mNextButton;
     EditText mPassword, mEmail, mFullName, mPersonalNumber, mPhone;
     String mSaveRadioButtonAnswer;
+    Boolean mFilledInTextFields = false;
     private static final String GENDER_MALE = "Male";
     private static final String GENDER_FEMALE = "Female";
 
@@ -62,6 +63,7 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         mRadioButtonFemale.setButtonDrawable(R.drawable.ic_woman_blue);
 
         mSaveRadioButtonAnswer = GENDER_MALE;
+
     }
 
     @Override
@@ -98,20 +100,48 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                 final String personalNumber = mPersonalNumber.getText().toString();
                 final String phone = mPhone.getText().toString();
 
-                mViewModel.createUserWithEmailAndPassword(email, password, this).observe(this, new Observer<FirebaseUser>() {
-                    @Override
-                    public void onChanged(@Nullable FirebaseUser user) {
-                        if(user != null){
-                            mViewModel.createUser(user.getUid(), new User(user.getUid(), FirebaseInstanceId.getInstance().getToken(),
-                                    User.TYPE_PASSENGER, phone, personalNumber, fullName, null, mSaveRadioButtonAnswer));
-                            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                            startActivity(intent);
-                        } else{
-                            Timber.d("USER was not CREATED");
+                if(checkTextFields(email, password, fullName, personalNumber, phone)){
+                    mViewModel.createUserWithEmailAndPassword(email, password, this).observe(this, new Observer<FirebaseUser>() {
+                        @Override
+                        public void onChanged(@Nullable FirebaseUser user) {
+                            if(user != null){
+                                mViewModel.createUser(user.getUid(), new User(user.getUid(), FirebaseInstanceId.getInstance().getToken(),
+                                        User.TYPE_PASSENGER, phone, personalNumber, fullName, null, mSaveRadioButtonAnswer));
+                                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                                startActivity(intent);
+                            } else{
+                                ToastHelper.makeToast(getResources().getString(R.string.toast_could_not_create_user), SignUpActivity.this).show();
+                            }
                         }
-                    }
-                });
+                    });
+                }
                 break;
         }
     }
+
+    public Boolean checkTextFields(String email, String password, String fullName, String personalNumber, String phone){
+        if(!email.isEmpty() && !password.isEmpty() && !fullName.isEmpty() && !personalNumber.isEmpty() && !phone.isEmpty()){
+            mFilledInTextFields = true;
+        } else{
+            mFilledInTextFields = false;
+        }
+        if(email.isEmpty()){
+            mEmail.setError("Please enter an email");
+        }
+        if(password.isEmpty()){
+            mPassword.setError("Please enter a password");
+        }
+        if(fullName.isEmpty()){
+            mFullName.setError("Please enter your name");
+        }
+        if(personalNumber.isEmpty()){
+            mPersonalNumber.setError("Please enter your personal number");
+        }
+        if(phone.isEmpty()){
+            mPhone.setError("Please enter your phone number");
+        }
+        return mFilledInTextFields;
+    }
+
+
 }

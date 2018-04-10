@@ -12,8 +12,8 @@ import android.widget.EditText;
 
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.signup.PasswordSentActivity;
+import com.cybercom.passenger.utils.ToastHelper;
 
-import timber.log.Timber;
 
 public class ForgotPasswordActivity extends AppCompatActivity{
     EditText mResetPasswordMail;
@@ -41,20 +41,18 @@ public class ForgotPasswordActivity extends AppCompatActivity{
 
     public void getNewPassword(final String email){
         if(!email.isEmpty()){
-            mViewModel.getNewPassword(email.trim()).observe(this, new Observer<Boolean>() {
+            mViewModel.getNewPassword(email.trim(), this).observe(this, new Observer<Boolean>() {
                 @Override
                 public void onChanged(@Nullable Boolean result) {
                     if(result) {
                         Intent intent = new Intent(getApplicationContext(), PasswordSentActivity.class);
                         intent.putExtra(EXTRA_SESSION_EMAIL, email);
                         startActivity(intent);
-                    } else{
-                        Timber.d("Email wasnt sent! Activity");
                     }
                 }
             });
         } else{
-            Timber.d("Email is empty");
+            ToastHelper.makeToast(getResources().getString(R.string.toast_send_forgot_password_email), this).show();
         }
     }
 }
