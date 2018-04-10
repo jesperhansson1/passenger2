@@ -20,7 +20,7 @@ import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.utils.LocationHelper;
 
-public class DriverConfirmationDialog extends DialogFragment implements View.OnClickListener {
+public class AcceptRejectPassengerDialog extends DialogFragment implements View.OnClickListener {
 
     public static final String DRIVE_KEY = "DRIVE";
     public static final String DRIVE_REQUEST_KEY = "DRIVE_REQUEST";
@@ -31,13 +31,13 @@ public class DriverConfirmationDialog extends DialogFragment implements View.OnC
         void onDriverConfirmation(Boolean isAccepted, Drive drive, DriveRequest driveRequest);
     }
 
-    public static DriverConfirmationDialog getInstance(Drive drive, DriveRequest driveRequest) {
-        DriverConfirmationDialog driverConfirmationDialog = new DriverConfirmationDialog();
+    public static AcceptRejectPassengerDialog getInstance(Drive drive, DriveRequest driveRequest) {
+        AcceptRejectPassengerDialog acceptRejectPassengerDialog = new AcceptRejectPassengerDialog();
         Bundle args = new Bundle();
         args.putSerializable(DRIVE_KEY, drive);
         args.putSerializable(DRIVE_REQUEST_KEY, driveRequest);
-        driverConfirmationDialog.setArguments(args);
-        return driverConfirmationDialog;
+        acceptRejectPassengerDialog.setArguments(args);
+        return acceptRejectPassengerDialog;
     }
 
     private ConfirmationListener mConfirmationListener;

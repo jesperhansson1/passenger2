@@ -25,8 +25,7 @@ import com.crashlytics.android.Crashlytics;
 import com.cybercom.passenger.MainViewModel;
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.createdrive.CreateRideDialogFragment;
-import com.cybercom.passenger.flows.driverconfirmation.DriverConfirmationDialog;
-import com.cybercom.passenger.flows.login.Login;
+import com.cybercom.passenger.flows.driverconfirmation.AcceptRejectPassengerDialog;
 import com.cybercom.passenger.flows.passengernotification.PassengerNotificationDialog;
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
@@ -36,6 +35,7 @@ import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.repository.PassengerRepository;
 import com.cybercom.passenger.route.FetchRouteUrl;
 import com.cybercom.passenger.utils.LocationHelper;
+import com.cybercom.passenger.flows.login.LoginActivity;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -49,7 +49,7 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
-public class MainActivity extends AppCompatActivity implements CreateRideDialogFragment.CreateRideDialogFragmentListener, DriverConfirmationDialog.ConfirmationListener, PassengerNotificationDialog.PassengerNotificationListener, OnMapReadyCallback {
+public class MainActivity extends AppCompatActivity implements CreateRideDialogFragment.CreateRideDialogFragmentListener, AcceptRejectPassengerDialog.ConfirmationListener, PassengerNotificationDialog.PassengerNotificationListener, OnMapReadyCallback {
 
     FirebaseUser mUser;
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 0;
@@ -78,6 +78,8 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
         mUser = FirebaseAuth.getInstance().getCurrentUser();
 
         if (mUser != null) {
+            getSupportActionBar().setTitle(mUser.getEmail());
+            mMainViewModel.refreshToken(FirebaseInstanceId.getInstance().getToken());
             if (getSupportActionBar() != null) {
                 getSupportActionBar().setTitle(mUser.getEmail());
             }
@@ -113,9 +115,10 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     }
 
     private void initObservers() {
+        final LifecycleOwner lifecycleOwner = this;
         mMainViewModel.getIncomingNotifications().observe(this, new Observer<Notification>() {
             @Override
-            public void onChanged(@Nullable Notification notification) {
+            public void onChanged(@Nullable final Notification notification) {
                 if (notification == null) return;
 
                 switch (notification.getType()) {
@@ -129,7 +132,17 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
                         mMainViewModel.removeNotification();
                         break;
                     case Notification.REJECT_PASSENGER:
-                        // TODO: Attempt to make another match
+                        // TODO: Currently the matching does not hanlde configuration changes...
+                        // Also matching should timeout
+                        mMainViewModel.findBestDriveMatch(notification.getDriveRequest().getStartLocation(), notification.getDriveRequest().getEndLocation()).observe(lifecycleOwner, new Observer<Drive>() {
+                            @Override
+                            public void onChanged(@Nullable Drive drive) {
+                                if (drive != null) {
+                                    mMainViewModel.addRequestDriveNotification(notification.getDriveRequest(), drive);
+                                }
+                            }
+                        });
+                        mMainViewModel.removeNotification();
                 }
             }
         });
@@ -165,7 +178,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
         int menuId = item.getItemId();
         //noinspection SimplifiableIfStatement
         if (menuId == R.id.menu_action_login) {
-            Intent intent = new Intent(this, Login.class);
+            Intent intent = new Intent(this, LoginActivity.class);
             startActivity(intent);
             return true;
         }
@@ -284,7 +297,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     }
 
     private void showDriverConfirmationDialogFragment(Drive drive, DriveRequest driveRequest) {
-        DriverConfirmationDialog dialogFragment = DriverConfirmationDialog.getInstance(drive, driveRequest);
+        AcceptRejectPassengerDialog dialogFragment = AcceptRejectPassengerDialog.getInstance(drive, driveRequest);
         dialogFragment.show(getSupportFragmentManager(), dialogFragment.getTag());
     }
 
@@ -298,7 +311,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
         if (isAccepted) {
             mMainViewModel.sendAcceptPassengerNotification(drive, driveRequest);
         } else {
-            mMainViewModel.sendRejectPassengerNotificaiton();
+            mMainViewModel.sendRejectPassengerNotification(drive, driveRequest);
         }
     }
 
