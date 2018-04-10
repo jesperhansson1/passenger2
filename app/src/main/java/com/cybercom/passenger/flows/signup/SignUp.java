@@ -205,7 +205,7 @@ public class SignUp extends AppCompatActivity implements View.OnClickListener, A
     private static void openDialog(final Activity context, final List<Intent> intents,
                                    List<ResolveInfo> activitiesInfo) {
         AlertDialog.Builder dialog = new AlertDialog.Builder(context, R.style.AlertDialogTheme);
-        dialog.setTitle("Select image source");
+        dialog.setTitle(context.getResources().getString(R.string.select_image_source));
         final AlertDialog.Builder builder = dialog.setAdapter(buildAdapter(context, activitiesInfo),
                 new DialogInterface.OnClickListener() {
                     @Override
@@ -215,7 +215,7 @@ public class SignUp extends AppCompatActivity implements View.OnClickListener, A
                     }
                 });
 
-        dialog.setNeutralButton("Cancel",
+        dialog.setNeutralButton(context.getResources().getString(R.string.cancel),
                 new android.content.DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
