@@ -8,24 +8,21 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.forgotpassword.ForgotPasswordActivity;
 import com.cybercom.passenger.flows.main.MainActivity;
 import com.cybercom.passenger.flows.signup.SignUpActivity;
+import com.cybercom.passenger.utils.ToastHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-
-import timber.log.Timber;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
 
     FirebaseAuth mAuth;
-    EditText mEmail,mPassword;
+    EditText mEmail, mPassword;
     Button mLogin, mSignup, mForgotPassword;
     Intent mIntent;
 
@@ -54,38 +51,33 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         String password = mPassword.getText().toString();
         mAuth = FirebaseAuth.getInstance();
 
-        switch (v.getId()){
+        switch (v.getId()) {
             case R.id.button_loginscreen_login:
-                mAuth.signInWithEmailAndPassword(email, password)
-                        .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                            @Override
-                            public void onComplete(@NonNull Task<AuthResult> task) {
-                                if (task.isSuccessful()) {
-                                    // Sign in success, update UI with the signed-in user's information
-                                    FirebaseUser user = mAuth.getCurrentUser();
-                                    Timber.d("signInWithEmail:success %s", user);
-                                    mIntent = new Intent(getApplicationContext(), MainActivity.class);
-                                    startActivity(mIntent);
-                                } else {
-                                    // If sign in fails, display a message to the user.
-                                    Timber.d("signInWithEmail:failure %s", task.getException());
-                                    Toast.makeText(LoginActivity.this, "Authentication failed.",
-                                            Toast.LENGTH_SHORT).show();
+                if (email.isEmpty() || password.isEmpty()) {
+                    ToastHelper.makeToast(getResources().getString(R.string.toast_enter_email_password), LoginActivity.this).show();
+                } else {
+                    mAuth.signInWithEmailAndPassword(email, password)
+                            .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                                @Override
+                                public void onComplete(@NonNull Task<AuthResult> task) {
+                                    if (task.isSuccessful()) {
+                                        mIntent = new Intent(getApplicationContext(), MainActivity.class);
+                                        startActivity(mIntent);
+                                    } else {
+                                        ToastHelper.makeToast(getResources().getString(R.string.toast_incorrect_email_password), LoginActivity.this).show();
+                                    }
                                 }
-                            }
-                        });
+                            });
+                }
                 break;
             case R.id.button_loginscreen_signup:
-                Timber.d("clicked signup");
-                mIntent = new Intent(getApplicationContext(), SignUpActivity.class);
-                startActivity(mIntent);
-                    break;
-            case R.id.button_loginscreen_forgotpassword:
-                Timber.d("clicked forgot");
-                mIntent = new Intent(getApplicationContext(), ForgotPasswordActivity.class);
-                startActivity(mIntent);
-                break;
+                        mIntent = new Intent(getApplicationContext(), SignUpActivity.class);
+                        startActivity(mIntent);
+                        break;
+                    case R.id.button_loginscreen_forgotpassword:
+                        mIntent = new Intent(getApplicationContext(), ForgotPasswordActivity.class);
+                        startActivity(mIntent);
+                        break;
         }
     }
-
 }
