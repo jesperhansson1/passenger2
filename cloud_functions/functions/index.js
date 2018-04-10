@@ -107,7 +107,6 @@ exports.pushNotifications = functions.database.ref('notifications/{notificationI
             driveEndLocationLatitude: drive.endLocation.latitude.toString(),
             driveEndLocationLongitude: drive.endLocation.longitude.toString(),
             driveTime: drive.time.toString(),
-            driveRequest: notificationData.driveRequest.userId,
 
             driveRequestPassenger: driveRequest.passenger,
             driveRequestExtraPassengers: driveRequest.extraPassengers.toString(),
