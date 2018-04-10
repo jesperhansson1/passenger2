@@ -24,9 +24,9 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
     SignUpViewModel mViewModel;
     RadioButton mRadioButtonMale, mRadioButtonFemale;
     Button mNextButton;
-    public static EditText mPassword, mEmail, mFullName, mPersonalNumber, mPhone;
+    EditText mPassword, mEmail, mFullName, mPersonalNumber, mPhone;
     String mSaveRadioButtonAnswer;
-    public static Boolean mFilledInTextFields = false;
+    Boolean mFilledInTextFields = false;
     private static final String GENDER_MALE = "Male";
     private static final String GENDER_FEMALE = "Female";
 
