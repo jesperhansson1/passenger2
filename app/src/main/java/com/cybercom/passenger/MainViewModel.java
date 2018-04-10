@@ -154,8 +154,8 @@ public class MainViewModel extends AndroidViewModel {
 
     }
 
-    public void removeNotification(){
-        mPassengerRepository.removeNotification();
+    public void removeNotification(Notification notification){
+        mPassengerRepository.removeNotification(notification);
     }
 
     public void refreshToken(String token) {

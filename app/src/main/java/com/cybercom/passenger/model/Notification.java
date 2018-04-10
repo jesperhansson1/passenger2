@@ -42,4 +42,13 @@ public class Notification {
     public void setmDrive(Drive mDrive) {
         this.mDrive = mDrive;
     }
+
+    @Override
+    public String toString() {
+        return "Drive{" +
+                "mType=" + mType +
+                ", mDriveRequest=" + mDriveRequest +
+                ", mDrive=" + mDrive +
+                '}';
+    }
 }

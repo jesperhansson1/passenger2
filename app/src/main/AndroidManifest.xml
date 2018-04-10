@@ -22,10 +22,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".flows.forgotpassword.ForgotPasswordActivity"></activity>
-        <activity android:name=".flows.signup.PasswordSentActivity"></activity>
-        <activity android:name=".flows.signup.SignUpActivity"></activity>
-        <activity android:name=".flows.login.LoginActivity"></activity>
+        <activity android:name=".flows.forgotpassword.ForgotPasswordActivity" />
+        <activity android:name=".flows.signup.PasswordSentActivity" />
+        <activity android:name=".flows.signup.SignUpActivity" />
+        <activity android:name=".flows.login.LoginActivity" />
 
         <service android:name=".service.PassengerInstanceIdService">
             <intent-filter>

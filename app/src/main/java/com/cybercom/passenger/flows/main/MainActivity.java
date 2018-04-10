@@ -114,29 +114,31 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
             @Override
             public void onChanged(@Nullable final Notification notification) {
                 if (notification == null) return;
+                Timber.d("Notification to be displayed: %s", notification.toString());
 
                 switch (notification.getType()) {
                     case Notification.REQUEST_DRIVE:
                         showDriverConfirmationDialogFragment(notification.getDrive(),
                                 notification.getDriveRequest());
-                        mMainViewModel.removeNotification();
+                        mMainViewModel.removeNotification(notification);
                         break;
                     case Notification.ACCEPT_PASSENGER:
                         showPassengerNotificationDialog(notification.getDrive());
-                        mMainViewModel.removeNotification();
+                        mMainViewModel.removeNotification(notification);
                         break;
                     case Notification.REJECT_PASSENGER:
-                        // TODO: Currently the matching does not hanlde configuration changes...
+                        // TODO: Currently the matching does not handle configuration changes...
                         // Also matching should timeout
-                        mMainViewModel.findBestDriveMatch(notification.getDriveRequest().getStartLocation(), notification.getDriveRequest().getEndLocation()).observe(lifecycleOwner, new Observer<Drive>() {
-                            @Override
-                            public void onChanged(@Nullable Drive drive) {
-                                if (drive != null) {
-                                    mMainViewModel.addRequestDriveNotification(notification.getDriveRequest(), drive);
-                                }
-                            }
-                        });
-                        mMainViewModel.removeNotification();
+//                        mMainViewModel.findBestDriveMatch(notification.getDriveRequest().getStartLocation(), notification.getDriveRequest().getEndLocation()).observe(lifecycleOwner, new Observer<Drive>() {
+//                            @Override
+//                            public void onChanged(@Nullable Drive drive) {
+//                                if (drive != null) {
+//                                    mMainViewModel.addRequestDriveNotification(notification.getDriveRequest(), drive);
+//                                }
+//                            }
+//                        });
+                        mMainViewModel.removeNotification(notification);
+                        break;
                 }
             }
         });
