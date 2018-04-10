@@ -12,6 +12,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -40,6 +41,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import timber.log.Timber;
+
+import static android.os.Build.VERSION_CODES.M;
 
 public class SignUp extends AppCompatActivity implements View.OnClickListener, ActivityCompat.OnRequestPermissionsResultCallback {
 
@@ -147,13 +150,13 @@ public class SignUp extends AppCompatActivity implements View.OnClickListener, A
 
     public void checkpermissions(Activity activity) {
         PackageManager mPackageManager = activity.getPackageManager();
-        int hasPermStorage = mPackageManager.checkPermission(android.Manifest.permission.CAMERA, activity.getPackageName());
+        int hasPermStorage = mPackageManager.checkPermission(Manifest.permission.CAMERA, activity.getPackageName());
         if (hasPermStorage != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.CAMERA,Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CAMERA_PERMISSION);
-        } else if (hasPermStorage == PackageManager.PERMISSION_GRANTED) {
-            openMediaSelector(SignUp.this);
+            if (Build.VERSION.SDK_INT >= M) {
+                requestPermissions(new String[]{Manifest.permission.CAMERA,Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CAMERA_PERMISSION);
+            }
         } else {
-            requestPermissions(new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CAMERA_PERMISSION);
+            openMediaSelector(SignUp.this);
         }
     }
 
