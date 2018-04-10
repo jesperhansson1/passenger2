@@ -100,8 +100,22 @@ exports.pushNotifications = functions.database.ref('notifications/{notificationI
         payload = {
           data: {
             type: PASSENGER_REJECT.toString(),
-            drive: notificationData.drive.userId,
-            driveRequest: notificationData.driveRequest.userId
+            driveDriverId: drive.driverId,
+            driveAvailableSeats: drive.availableSeats.toString(),
+            driveStartLocationLatitude: drive.startLocation.latitude.toString(),
+            driveStartLocationLongitude: drive.startLocation.longitude.toString(),
+            driveEndLocationLatitude: drive.endLocation.latitude.toString(),
+            driveEndLocationLongitude: drive.endLocation.longitude.toString(),
+            driveTime: drive.time.toString(),
+            driveRequest: notificationData.driveRequest.userId,
+
+            driveRequestPassenger: driveRequest.passenger,
+            driveRequestExtraPassengers: driveRequest.extraPassengers.toString(),
+            driveRequestStartLocationLatitude: driveRequest.startLocation.latitude.toString(),
+            driveRequestStartLocationLongitude: driveRequest.startLocation.longitude.toString(),
+            driveRequestEndLocationLatitude: driveRequest.endLocation.latitude.toString(),
+            driveRequestEndLocationLongitude: driveRequest.endLocation.longitude.toString(),
+            driveRequestTime: driveRequest.time.toString()
           }
         };
       }
