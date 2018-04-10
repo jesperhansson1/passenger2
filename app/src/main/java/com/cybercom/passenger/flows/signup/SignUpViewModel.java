@@ -6,8 +6,11 @@ import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.support.annotation.NonNull;
+
+import com.cybercom.passenger.R;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.repository.PassengerRepository;
+import com.cybercom.passenger.utils.ToastHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -25,7 +28,7 @@ public class SignUpViewModel extends AndroidViewModel {
         mAuth = FirebaseAuth.getInstance();
     }
 
-    public LiveData<FirebaseUser> createUserWithEmailAndPassword(String email, String password, Activity activity){
+    public LiveData<FirebaseUser> createUserWithEmailAndPassword(String email, String password, final Activity activity){
         final MutableLiveData<FirebaseUser> userMutableLiveData = new MutableLiveData<>();
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(activity , new OnCompleteListener<AuthResult>() {
@@ -37,6 +40,7 @@ public class SignUpViewModel extends AndroidViewModel {
                             userMutableLiveData.setValue(user);
                         } else {
                             Timber.w("createUserWithEmail:failure %s", task.getException());
+                            ToastHelper.makeToast(activity.getResources().getString(R.string.toast_badly_formatted_email), activity).show();
                         }
                     }
                 });

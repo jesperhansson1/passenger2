@@ -53,9 +53,9 @@
     <string name="phone">Phone</string>
     <string name="next">Next</string>
     <string name="hint_full_name">Enter name</string>
-    <string name="hint_personal_number">831026-3388</string>
+    <string name="hint_personal_number">8310263388</string>
     <string name="hint_email">my@email.com</string>
-    <string name="hint_password">Enter password</string>
+    <string name="hint_password">Enter password (min 6 characters)</string>
     <string name="hint_phone">12345</string>
     <string name="male">Male</string>
     <string name="female">Female</string>
@@ -65,6 +65,7 @@
     <string name="toast_enter_email_password">Please enter email and password to login</string>
     <string name="toast_could_not_create_user">Could not create user</string>
     <string name="toast_send_forgot_password_email">You haven\'t entered any email</string>
+    <string name="toast_badly_formatted_email">Badly formatted email or to short password (min 6 characters)</string>
 
 
 
