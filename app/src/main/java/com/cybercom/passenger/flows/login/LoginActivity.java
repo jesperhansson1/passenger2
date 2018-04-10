@@ -64,7 +64,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                                         mIntent = new Intent(getApplicationContext(), MainActivity.class);
                                         startActivity(mIntent);
                                     } else {
-                                        ToastHelper.makeToast(getResources().getString(R.string.toast_incorrect_email), LoginActivity.this).show();
+                                        ToastHelper.makeToast(getResources().getString(R.string.toast_incorrect_email_password), LoginActivity.this).show();
                                     }
                                 }
                             });
