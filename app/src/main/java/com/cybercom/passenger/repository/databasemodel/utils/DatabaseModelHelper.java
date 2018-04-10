@@ -9,6 +9,21 @@ import com.cybercom.passenger.utils.LocationHelper;
 import java.util.Map;
 
 public class DatabaseModelHelper {
+
+    private static final String DRIVE_TIME = "driveTime";
+    private static final String DRIVE_START_LOCATION_LATITUDE = "driveStartLocationLatitude";
+    private static final String DRIVE_START_LOCATION_LONGITUDE = "driveStartLocationLongitude";
+    private static final String DRIVE_END_LOCATION_LATITUDE = "driveEndLocationLatitude";
+    private static final String DRIVE_END_LOCATION_LONGITUDE = "driveEndLocationLongitude";
+    private static final String DRIVE_AVAILABLE_SEATS = "driveAvailableSeats";
+    private static final String DRIVE_REQUEST_TIME = "driveRequestTime";
+    private static final String DRIVE_REQUEST_START_LOCATION_LATITUDE = "driveRequestStartLocationLatitude";
+    private static final String DRIVE_REQUEST_START_LOCATION_LONGITUDE = "driveRequestStartLocationLongitude";
+    private static final String DRIVE_REQUEST_END_LOCATION_LATITUDE = "driveRequestEndLocationLatitude";
+    private static final String DRIVE_REQUEST_END_LOCATION_LONGITUDE = "driveRequestEndLocationLongitude";
+    private static final String DRIVE_REQUEST_EXTRA_PASSENGERS = "driveRequestExtraPassengers";
+    private static final String TYPE = "type";
+
     public static com.cybercom.passenger.repository.databasemodel.Drive convertDrive(Drive drive) {
 
         return new com.cybercom.passenger.repository.databasemodel.Drive(drive.getDriver().getUserId(), drive.getTime(),
@@ -28,38 +43,38 @@ public class DatabaseModelHelper {
         return new com.cybercom.passenger.repository.databasemodel.Notification(notification.getType(), firebaseDriveRequest, firebaseDrive);
     }
 
-    private static Drive convertViewModelDrive(Map<String, String> payload, User driver) {
+    private static Drive convertToViewModelDrive(Map<String, String> payload, User driver) {
         return new Drive(
                 driver,
-                Long.valueOf(payload.get("driveTime")),
+                Long.valueOf(payload.get(DRIVE_TIME)),
                 LocationHelper.getPositionFromString(
-                        payload.get("driveStartLocationLatitude") +
-                                "," + payload.get("driveStartLocationLongitude")),
+                        payload.get(DRIVE_START_LOCATION_LATITUDE) +
+                                "," + payload.get(DRIVE_START_LOCATION_LONGITUDE)),
                 LocationHelper.getPositionFromString(
-                        payload.get("driveEndLocationLatitude") +
-                                "," + payload.get("driveEndLocationLongitude")),
-                Integer.valueOf(payload.get("driveAvailableSeats"))
+                        payload.get(DRIVE_END_LOCATION_LATITUDE) +
+                                "," + payload.get(DRIVE_END_LOCATION_LONGITUDE)),
+                Integer.valueOf(payload.get(DRIVE_AVAILABLE_SEATS))
         );
     }
 
-    private static DriveRequest convertViewModelDriveRequest(Map<String, String> payload, User passenger) {
+    private static DriveRequest convertToViewModelDriveRequest(Map<String, String> payload, User passenger) {
         return new DriveRequest(
                 passenger,
-                Long.valueOf(payload.get("driveRequestTime")),
+                Long.valueOf(payload.get(DRIVE_REQUEST_TIME)),
                 LocationHelper.getPositionFromString(
-                        payload.get("driveRequestStartLocationLatitude") +
-                                "," + payload.get("driveRequestStartLocationLongitude")),
+                        payload.get(DRIVE_REQUEST_START_LOCATION_LATITUDE) +
+                                "," + payload.get(DRIVE_REQUEST_START_LOCATION_LONGITUDE)),
                 LocationHelper.getPositionFromString(
-                        payload.get("driveRequestEndLocationLatitude") +
-                                "," + payload.get("driveRequestEndLocationLongitude")),
-                Integer.valueOf(payload.get("driveRequestExtraPassengers")));
+                        payload.get(DRIVE_REQUEST_END_LOCATION_LATITUDE) +
+                                "," + payload.get(DRIVE_REQUEST_END_LOCATION_LONGITUDE)),
+                Integer.valueOf(payload.get(DRIVE_REQUEST_EXTRA_PASSENGERS)));
     }
 
     public static Notification convertPayloadToNotification(Map<String, String> payload, User driver, User passenger) {
         return new Notification(
-                Integer.valueOf(payload.get("type")),
-                convertViewModelDriveRequest(payload, passenger),
-                convertViewModelDrive(payload, driver)
+                Integer.valueOf(payload.get(TYPE)),
+                convertToViewModelDriveRequest(payload, passenger),
+                convertToViewModelDrive(payload, driver)
         );
     }
 }

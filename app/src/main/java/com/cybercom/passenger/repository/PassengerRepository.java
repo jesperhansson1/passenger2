@@ -27,6 +27,7 @@ import timber.log.Timber;
 
 public class PassengerRepository implements PassengerRepositoryInterface {
 
+
     FirebaseAuth auth;
 
     private static final String REFERENCE_NOTIFICATIONS = "notifications";
@@ -34,6 +35,9 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private static final String REFERENCE_DRIVES = "drives";
     private static final String REFERENCE_DRIVE_REQUESTS = "driveRequests";
     private static final String REFERENCE_USERS_CHILD_TYPE = "type";
+
+    private static final String DRIVE_DRIVER_ID = "driveDriverId";
+    private static final String DRIVE_REQUEST_PASSENGER = "driveRequestPassenger";
 
     private static final int DRIVE_REQUEST_MATCH_TIME_THRESHOLD = 15 * 60 * 60 * 1000;
 
@@ -218,12 +222,12 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     }
 
     public void setIncomingNotification(final Map<String, String> payload) {
-        mUsersReference.child(payload.get("driveDriverId"))
+        mUsersReference.child(payload.get(DRIVE_DRIVER_ID))
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         final User driver = dataSnapshot.getValue(User.class);
-                        mUsersReference.child(payload.get("driveRequestPassenger"))
+                        mUsersReference.child(payload.get(DRIVE_REQUEST_PASSENGER))
                                 .addListenerForSingleValueEvent(new ValueEventListener() {
                                     @Override
                                     public void onDataChange(DataSnapshot dataSnapshot) {
