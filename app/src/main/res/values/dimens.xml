@@ -9,16 +9,17 @@
     <dimen name="pad_10dp">10dp</dimen>
     <dimen name="pad_12dp">12dp</dimen>
     <dimen name="pad_15dp">15dp</dimen>
+    <dimen name="pad_16dp">16dp</dimen>
     <dimen name="pad_20dp">20dp</dimen>
     <dimen name="pad_24dp">24dp</dimen>
     <dimen name="pad_30dp">30dp</dimen>
+    <dimen name="pad_32dp">32dp</dimen>
     <dimen name="pad_108dp">108dp</dimen>
     <dimen name="pad_12sp">12sp</dimen>
     <dimen name="pad_24sp">24sp</dimen>
     <dimen name="pad_20sp">20sp</dimen>
     <dimen name="space_normal">10dp</dimen>
     <dimen name="space_double">20dp</dimen>
-
 
 
 

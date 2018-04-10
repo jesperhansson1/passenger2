@@ -7,7 +7,6 @@
     tools:context="com.cybercom.passenger.flows.main.MainActivity">
 
 
-
     <include
         android:id="@+id/mapfragment_activitymain_map"
         layout="@layout/fragment_maps"
@@ -19,11 +18,10 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <include
-        android:id="@+id/switch_activitymain_rider"
-        layout="@layout/switch_passenger_driver"
-        android:layout_width="match_parent"
+        android:id="@+id/toolbar"
+        layout="@layout/passenger_toolbar"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/activity_margin_none"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -39,6 +37,16 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:srcCompat="@android:drawable/alert_light_frame" />
+
+    <include
+        android:id="@+id/switch_passenger_driver"
+        layout="@layout/switch_passenger_driver"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="55dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 
 </android.support.constraint.ConstraintLayout>

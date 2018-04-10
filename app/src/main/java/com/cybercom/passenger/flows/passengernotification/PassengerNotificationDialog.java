@@ -12,20 +12,29 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cybercom.passenger.R;
+import com.cybercom.passenger.model.Drive;
 
 import timber.log.Timber;
 
 public class PassengerNotificationDialog extends DialogFragment implements View.OnClickListener {
 
+    private static final String DRIVE_KEY = "DRIVE";
+    private Drive mDrive;
+
     public interface PassengerNotificationListener {
         void onCancelPressed(Boolean isCancelPressed);
     }
 
-    public static PassengerNotificationDialog getInstance() {
-        return new PassengerNotificationDialog();
+    public static PassengerNotificationDialog getInstance(Drive drive) {
+        PassengerNotificationDialog passengerNotificationDialog = new PassengerNotificationDialog();
+        Bundle args = new Bundle();
+        args.putSerializable(DRIVE_KEY, drive);
+        passengerNotificationDialog.setArguments(args);
+        return passengerNotificationDialog;
     }
 
     private PassengerNotificationListener mPassengerNotificationListener;
@@ -40,6 +49,16 @@ public class PassengerNotificationDialog extends DialogFragment implements View.
 
         Button cancelButton = rootView.findViewById(R.id.passenger_notification_cancel_button);
         cancelButton.setOnClickListener(this);
+
+
+        if(getArguments() != null){
+            mDrive = (Drive) getArguments().getSerializable(DRIVE_KEY);
+
+            TextView passengerNotificationName
+                    = rootView.findViewById(R.id.passenger_notification_name);
+            passengerNotificationName.setText(mDrive.getDriver().getFullName());
+
+        }
 
         return rootView;
     }

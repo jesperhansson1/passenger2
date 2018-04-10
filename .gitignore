@@ -8,4 +8,4 @@
 /captures
 .externalNativeBuild
 .idea/modules.xml
-/cloud-functions/functions/node_modules
+/cloud_functions/functions/node_modules

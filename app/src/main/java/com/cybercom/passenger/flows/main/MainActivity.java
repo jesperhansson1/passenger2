@@ -1,7 +1,9 @@
 package com.cybercom.passenger.flows.main;
 
+import android.arch.lifecycle.LifecycleOwner;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.location.Location;
@@ -11,6 +13,9 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.Switch;
@@ -20,17 +25,18 @@ import com.crashlytics.android.Crashlytics;
 import com.cybercom.passenger.MainViewModel;
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.createdrive.CreateRideDialogFragment;
-import com.cybercom.passenger.flows.driverconfirmation.DriverConfirmationDialog;
-
-import com.cybercom.passenger.model.Notification;
+import com.cybercom.passenger.flows.driverconfirmation.AcceptRejectPassengerDialog;
 import com.cybercom.passenger.flows.passengernotification.PassengerNotificationDialog;
-
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
+import com.cybercom.passenger.model.Notification;
 import com.cybercom.passenger.model.Position;
+import com.cybercom.passenger.model.User;
+import com.cybercom.passenger.repository.PassengerRepository;
 import com.cybercom.passenger.route.FetchRouteUrl;
 import com.cybercom.passenger.utils.LocationHelper;
 import com.google.android.gms.maps.CameraUpdateFactory;
+import com.cybercom.passenger.flows.login.LoginActivity;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -38,28 +44,51 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
-public class MainActivity extends AppCompatActivity implements CreateRideDialogFragment.CreateRideDialogFragmentListener, DriverConfirmationDialog.ConfirmationListener, PassengerNotificationDialog.PassengerNotificationListener, OnMapReadyCallback {
+public class MainActivity extends AppCompatActivity implements CreateRideDialogFragment.CreateRideDialogFragmentListener, AcceptRejectPassengerDialog.ConfirmationListener, PassengerNotificationDialog.PassengerNotificationListener, OnMapReadyCallback {
 
+    FirebaseUser mUser;
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 0;
     MainViewModel mMainViewModel;
     Location mLocation;
     private GoogleMap mGoogleMap;
+    Menu mLoginMenu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Toolbar toolbar = findViewById(R.id.my_toolbar);
+        toolbar.setTitleTextColor(getResources().getColor(R.color.colorWhite));
+        setSupportActionBar(toolbar);
+        Timber.i("First log info");
         Fabric.with(this, new Crashlytics());
 
         mMainViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
 
         if (savedInstanceState == null) {
             if (getIntent().getExtras() != null) {
-                mMainViewModel.getIncomingNotifications();
+                mMainViewModel.setIncomingNotification(getIntent().getExtras());
+            }
+        }
+        mUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (mUser != null) {
+            getSupportActionBar().setTitle(mUser.getEmail());
+            mMainViewModel.refreshToken(FirebaseInstanceId.getInstance().getToken());
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setTitle(mUser.getEmail());
+            }
+            mMainViewModel.refreshToken(FirebaseInstanceId.getInstance().getToken());
+        } else {
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setTitle(R.string.mainactivity_title);
             }
         }
 
@@ -72,8 +101,8 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
 //            }
 //            else {
             ActivityCompat.requestPermissions(this,
-                        new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                        MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
+                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                    MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
 //            }
         }
 
@@ -88,20 +117,34 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     }
 
     private void initObservers() {
+        final LifecycleOwner lifecycleOwner = this;
         mMainViewModel.getIncomingNotifications().observe(this, new Observer<Notification>() {
             @Override
-            public void onChanged(@Nullable Notification notification) {
+            public void onChanged(@Nullable final Notification notification) {
                 if (notification == null) return;
 
                 switch (notification.getType()) {
                     case Notification.REQUEST_DRIVE:
-                        showDriverConfirmationDialogFragment(notification.getDrive(), notification.getDriveRequest());
+                        showDriverConfirmationDialogFragment(notification.getDrive(),
+                                notification.getDriveRequest());
+                        mMainViewModel.removeNotification();
                         break;
                     case Notification.ACCEPT_PASSENGER:
                         showPassengerNotificationDialog(notification.getDrive());
+                        mMainViewModel.removeNotification();
                         break;
                     case Notification.REJECT_PASSENGER:
-                        // TODO: Attempt to make another match
+                        // TODO: Currently the matching does not hanlde configuration changes...
+                        // Also matching should timeout
+                        mMainViewModel.findBestDriveMatch(notification.getDriveRequest().getStartLocation(), notification.getDriveRequest().getEndLocation()).observe(lifecycleOwner, new Observer<Drive>() {
+                            @Override
+                            public void onChanged(@Nullable Drive drive) {
+                                if (drive != null) {
+                                    mMainViewModel.addRequestDriveNotification(notification.getDriveRequest(), drive);
+                                }
+                            }
+                        });
+                        mMainViewModel.removeNotification();
                 }
             }
         });
@@ -110,11 +153,10 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
             @Override
             public void onChanged(@Nullable Location location) {
                 // TODO: Need to handle if there is no data och display info. Need to send this location to spinner
-                if(location == null){
-                     Timber.d("get updated --> null");
-                } else {
+                if(location == null) {
+                    Timber.d("get updated --> null");
+                }else {
                     mLocation = location;
-                    //Permission granted to access user location
                 }
             }
         });
@@ -133,13 +175,37 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_mainactivity_login, menu);
+        mLoginMenu = menu;
+
+        if (mUser != null) {
+            mLoginMenu.findItem(R.id.menu_action_login).setVisible(false);
+        } else {
+            mLoginMenu.findItem(R.id.menu_action_login).setVisible(true);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int menuId = item.getItemId();
+        //noinspection SimplifiableIfStatement
+        if (menuId == R.id.menu_action_login) {
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
-
         mMainViewModel.startLocationUpdates();
     }
 
-    public void initUI(){
+    public void initUI() {
         changeLabelFontStyle(false);
         final Switch switchRide = findViewById(R.id.switch_ride);
         final FloatingActionButton floatRide = findViewById(R.id.button_createRide);
@@ -178,8 +244,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
         }
     }
 
-    public void showCreateDriveDialog(int type, String location)
-    {
+    public void showCreateDriveDialog(int type, String location) {
         CreateRideDialogFragment dialogFragment = CreateRideDialogFragment.newInstance(type, location);
         dialogFragment.show(getFragmentManager(), CreateRideDialogFragment.TAG);
     }
@@ -223,38 +288,50 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     }
 
     @Override
-    public void onCreateRide(int type, Position startLocation, Position endLocation) {
+    public void onCreateRide(int type, final Position startLocation, final Position endLocation) {
         Timber.i("on create ride");
-         switch (type) {
-            case CreateRideDialogFragment.TYPE_RIDE:
-                mMainViewModel.createDrive(startLocation, endLocation);
-                updateMap(new LatLng(startLocation.getLatitude(),startLocation.getLongitude()),
-                        new LatLng(endLocation.getLatitude(),endLocation.getLongitude()));
-                break;
-            case CreateRideDialogFragment.TYPE_REQUEST:
-                final DriveRequest driveRequest = mMainViewModel.createDriveRequest(startLocation, endLocation);
 
-                mMainViewModel.findBestDriveMatch(startLocation, endLocation).observe(this, new Observer<Drive>() {
+        switch (type) {
+            case CreateRideDialogFragment.TYPE_RIDE:
+                PassengerRepository.getInstance().getUser().observe(this, new Observer<User>() {
                     @Override
-                    public void onChanged(@Nullable Drive drive) {
-                        Timber.d("DriveRequest: %s is matched to Ride: %s", driveRequest, drive);
-                        if (drive != null) {
-                            mMainViewModel.addRequestDriveNotification(driveRequest, drive);
-                        }
+                    public void onChanged(@Nullable User user) {
+                        mMainViewModel.createDrive(user, startLocation, endLocation);
+                        updateMap(new LatLng(startLocation.getLatitude(),startLocation.getLongitude()),
+                                new LatLng(endLocation.getLatitude(),endLocation.getLongitude()));
                     }
                 });
+                break;
+            case CreateRideDialogFragment.TYPE_REQUEST:
+                final LifecycleOwner lifeCycleOwner = this;
+
+                PassengerRepository.getInstance().getUser().observe(this, new Observer<User>() {
+                    @Override
+                    public void onChanged(@Nullable User user) {
+                        final DriveRequest driveRequest = mMainViewModel.createDriveRequest(user, startLocation, endLocation);
+                        mMainViewModel.findBestDriveMatch(startLocation, endLocation).observe(lifeCycleOwner, new Observer<Drive>() {
+                            @Override
+                            public void onChanged(@Nullable Drive drive) {
+                                if (drive != null) {
+                                    mMainViewModel.addRequestDriveNotification(driveRequest, drive);
+                                }
+                            }
+                        });
+                    }
+                });
+
                 break;
         }
 
     }
 
     private void showDriverConfirmationDialogFragment(Drive drive, DriveRequest driveRequest) {
-        DriverConfirmationDialog dialogFragment = DriverConfirmationDialog.getInstance(drive, driveRequest);
+        AcceptRejectPassengerDialog dialogFragment = AcceptRejectPassengerDialog.getInstance(drive, driveRequest);
         dialogFragment.show(getSupportFragmentManager(), dialogFragment.getTag());
     }
 
     private void showPassengerNotificationDialog(Drive drive) {
-        PassengerNotificationDialog dialogFragment = PassengerNotificationDialog.getInstance();
+        PassengerNotificationDialog dialogFragment = PassengerNotificationDialog.getInstance(drive);
         dialogFragment.show(getSupportFragmentManager(), dialogFragment.getTag());
     }
 
@@ -263,7 +340,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
         if (isAccepted) {
             mMainViewModel.sendAcceptPassengerNotification(drive, driveRequest);
         } else {
-            mMainViewModel.sendRejectPassengerNotificaiton();
+            mMainViewModel.sendRejectPassengerNotification(drive, driveRequest);
         }
     }
 
@@ -271,4 +348,5 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     public void onCancelPressed(Boolean isCancelPressed) {
         Timber.i("Canceled pressed! ");
     }
+
 }

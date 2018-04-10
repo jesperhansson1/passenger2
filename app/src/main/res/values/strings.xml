@@ -38,7 +38,7 @@
     <string name="security">Security</string>
     <string name="mail_example">luftluft@mail.com</string>
     <string name="forgot_password">Forgot Password</string>
-    <string name="signin">Sign in</string>
+    <string name="signup">Sign Up</string>
     <string name="login">Login</string>
     <string name="send_me_password">Send me password</string>
     <string name="we_sent_password_to">We sent password to</string>
@@ -53,10 +53,24 @@
     <string name="phone">Phone</string>
     <string name="next">Next</string>
     <string name="hint_full_name">Enter name</string>
-    <string name="hint_personal_number">831026-3388</string>
+    <string name="hint_personal_number">8310263388</string>
     <string name="hint_email">my@email.com</string>
-    <string name="hint_password">Enter password</string>
+    <string name="hint_password">Enter password (min 6 characters)</string>
     <string name="hint_phone">12345</string>
+    <string name="male">Male</string>
+    <string name="female">Female</string>
+    <string name="name">Name</string>
+
+    <string name="toast_enter_email_password">Please enter email and password to login</string>
+    <string name="toast_incorrect_email_password">You have entered an incorrect email or password</string>
+    <string name="toast_forgot_password_incorrect_email">You have entered an incorrect email</string>
+    <string name="toast_send_forgot_password_email">You haven\'t entered any email</string>
+    <string name="toast_could_not_create_user">Could not create user</string>
+    <string name="toast_badly_formatted_email">Badly formatted email or to short password (min 6 characters)</string>
+
+    <string name="login_title">Login</string>
+    <string name="mainactivity_title">Passenger</string>
+
 
     <string-array name="location_array">
         <item>My Location</item>
