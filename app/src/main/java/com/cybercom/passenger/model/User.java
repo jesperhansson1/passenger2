@@ -93,7 +93,7 @@ public class User {
         mNotificationTokenId = notificationTokenId;
     }
 
-    public String getUserIdId() {
+    public String getUserId() {
         return mUserId;
     }
 
