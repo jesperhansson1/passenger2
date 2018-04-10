@@ -211,8 +211,8 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
 
     public void updateMap(LatLng startLocation, LatLng endLocation){
 
-        mGoogleMap.addMarker(new MarkerOptions().position(startLocation).title("Start"));
-        mGoogleMap.addMarker(new MarkerOptions().position(endLocation).title("End"));
+        mGoogleMap.addMarker(new MarkerOptions().position(startLocation).title(getApplicationContext().getResources().getString(R.string.start_location)));
+        mGoogleMap.addMarker(new MarkerOptions().position(endLocation).title(getApplicationContext().getResources().getString(R.string.end_location)));
         LatLngBounds.Builder latlngBuilder = new LatLngBounds.Builder();
         latlngBuilder.include(startLocation);
         latlngBuilder.include(endLocation);
