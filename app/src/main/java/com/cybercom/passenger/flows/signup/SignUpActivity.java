@@ -11,17 +11,14 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
-import android.widget.Toast;
 
 import com.cybercom.passenger.R;
-import com.cybercom.passenger.flows.login.LoginActivity;
 import com.cybercom.passenger.flows.main.MainActivity;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.utils.CheckTextFieldHelper;
+import com.cybercom.passenger.utils.ToastHelper;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.iid.FirebaseInstanceId;
-
-import timber.log.Timber;
 
 public class SignUpActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -114,8 +111,7 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                                 Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                                 startActivity(intent);
                             } else{
-                                Toast.makeText(SignUpActivity.this, getResources().getString(R.string.toast_could_not_create_user),
-                                        Toast.LENGTH_LONG).show();
+                                ToastHelper.makeToast(getResources().getString(R.string.toast_could_not_create_user), SignUpActivity.this).show();
                             }
                         }
                     });

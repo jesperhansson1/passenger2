@@ -8,19 +8,16 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.forgotpassword.ForgotPasswordActivity;
 import com.cybercom.passenger.flows.main.MainActivity;
 import com.cybercom.passenger.flows.signup.SignUpActivity;
+import com.cybercom.passenger.utils.ToastHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-
-import timber.log.Timber;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -57,24 +54,17 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         switch (v.getId()) {
             case R.id.button_loginscreen_login:
                 if (email.isEmpty() || password.isEmpty()) {
-                    Toast.makeText(LoginActivity.this, getResources().getString(R.string.toast_enter_email_password),
-                            Toast.LENGTH_LONG).show();
+                    ToastHelper.makeToast(getResources().getString(R.string.toast_enter_email_password), LoginActivity.this).show();
                 } else {
                     mAuth.signInWithEmailAndPassword(email, password)
                             .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                                 @Override
                                 public void onComplete(@NonNull Task<AuthResult> task) {
                                     if (task.isSuccessful()) {
-                                        // Sign in success, update UI with the signed-in user's information
-                                        FirebaseUser user = mAuth.getCurrentUser();
-                                        Timber.d("signInWithEmail:success %s", user);
                                         mIntent = new Intent(getApplicationContext(), MainActivity.class);
                                         startActivity(mIntent);
                                     } else {
-                                        // If sign in fails, display a message to the user.
-                                        Timber.d("signInWithEmail:failure %s", task.getException());
-                                        Toast.makeText(LoginActivity.this, getResources().getString(R.string.toast_incorrect_email),
-                                                Toast.LENGTH_SHORT).show();
+                                        ToastHelper.makeToast(getResources().getString(R.string.toast_incorrect_email), LoginActivity.this).show();
                                     }
                                 }
                             });

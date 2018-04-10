@@ -10,6 +10,8 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.widget.Toast;
 
+import com.cybercom.passenger.R;
+import com.cybercom.passenger.utils.ToastHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -33,8 +35,7 @@ public class ForgotPasswordViewModel extends AndroidViewModel {
                             if (task.isSuccessful()) {
                                 emailSent.setValue(true);
                             } else {
-                                Toast.makeText(activity, "You have entered an incorrect email", Toast.LENGTH_LONG).show();
-                                //Add ForgotPasswordActivity
+                                ToastHelper.makeToast(activity.getResources().getString(R.string.toast_incorrect_email), activity).show();
                             }
                         }
                     });

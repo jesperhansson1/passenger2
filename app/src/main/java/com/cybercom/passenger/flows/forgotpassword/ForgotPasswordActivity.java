@@ -9,12 +9,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.signup.PasswordSentActivity;
+import com.cybercom.passenger.utils.ToastHelper;
 
-import timber.log.Timber;
 
 public class ForgotPasswordActivity extends AppCompatActivity{
     EditText mResetPasswordMail;
@@ -53,7 +52,7 @@ public class ForgotPasswordActivity extends AppCompatActivity{
                 }
             });
         } else{
-            Toast.makeText(ForgotPasswordActivity.this, getResources().getString(R.string.toast_send_forgot_password_email), Toast.LENGTH_LONG).show();
+            ToastHelper.makeToast(getResources().getString(R.string.toast_send_forgot_password_email), this).show();
         }
     }
 }
