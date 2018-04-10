@@ -11,9 +11,9 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.cybercom.passenger.R;
-import com.cybercom.passenger.flows.forgotpassword.ForgotPassword;
+import com.cybercom.passenger.flows.forgotpassword.ForgotPasswordActivity;
 import com.cybercom.passenger.flows.main.MainActivity;
-import com.cybercom.passenger.flows.signup.SignUp;
+import com.cybercom.passenger.flows.signup.SignUpActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -22,7 +22,7 @@ import com.google.firebase.auth.FirebaseUser;
 
 import timber.log.Timber;
 
-public class Login extends AppCompatActivity implements View.OnClickListener {
+public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
 
     FirebaseAuth mAuth;
     EditText mEmail,mPassword;
@@ -69,7 +69,7 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
                                 } else {
                                     // If sign in fails, display a message to the user.
                                     Timber.d("signInWithEmail:failure %s", task.getException());
-                                    Toast.makeText(Login.this, "Authentication failed.",
+                                    Toast.makeText(LoginActivity.this, "Authentication failed.",
                                             Toast.LENGTH_SHORT).show();
                                 }
                             }
@@ -77,12 +77,12 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
                 break;
             case R.id.button_loginscreen_signup:
                 Timber.d("clicked signup");
-                intent = new Intent(getApplicationContext(), SignUp.class);
+                intent = new Intent(getApplicationContext(), SignUpActivity.class);
                 startActivity(intent);
                     break;
             case R.id.button_loginscreen_forgotpassword:
                 Timber.d("clicked forgot");
-                intent = new Intent(getApplicationContext(), ForgotPassword.class);
+                intent = new Intent(getApplicationContext(), ForgotPasswordActivity.class);
                 startActivity(intent);
                 break;
         }

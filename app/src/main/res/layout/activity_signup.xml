@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.cybercom.passenger.flows.signup.SignUp">
+    tools:context="com.cybercom.passenger.flows.signup.SignUpActivity">
 
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -17,7 +17,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.cybercom.passenger.flows.signup.SignUp">
+    tools:context="com.cybercom.passenger.flows.signup.SignUpActivity">
 
     <ImageView
         android:id="@+id/imageview_signup_profile"

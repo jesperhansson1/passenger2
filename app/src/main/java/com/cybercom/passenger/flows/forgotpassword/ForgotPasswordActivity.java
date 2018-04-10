@@ -11,12 +11,11 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.cybercom.passenger.R;
-import com.cybercom.passenger.flows.signup.PasswordSent;
-import com.cybercom.passenger.flows.signup.SignUpViewModel;
+import com.cybercom.passenger.flows.signup.PasswordSentActivity;
 
 import timber.log.Timber;
 
-public class ForgotPassword extends AppCompatActivity{
+public class ForgotPasswordActivity extends AppCompatActivity{
     EditText mResetPasswordMail;
     Button mResetPasswordButton;
     Intent intent;
@@ -48,7 +47,7 @@ public class ForgotPassword extends AppCompatActivity{
                 @Override
                 public void onChanged(@Nullable String result) {
                     if(!result.isEmpty()) {
-                        intent = new Intent(getApplicationContext(), PasswordSent.class);
+                        intent = new Intent(getApplicationContext(), PasswordSentActivity.class);
                         intent.putExtra("EXTRA_SESSION_EMAIL", mEmail);
                         startActivity(intent);
                     } else{

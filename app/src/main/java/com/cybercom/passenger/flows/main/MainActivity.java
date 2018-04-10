@@ -34,8 +34,7 @@ import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.route.FetchRouteUrl;
 import com.cybercom.passenger.utils.LocationHelper;
-import com.cybercom.passenger.flows.login.Login;
-import com.google.android.gms.maps.CameraUpdateFactory;
+import com.cybercom.passenger.flows.login.LoginActivity;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -156,7 +155,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
         int menuId = item.getItemId();
         //noinspection SimplifiableIfStatement
         if (menuId == R.id.menu_action_login) {
-            Intent intent = new Intent(this, Login.class);
+            Intent intent = new Intent(this, LoginActivity.class);
             startActivity(intent);
             return true;
         }
