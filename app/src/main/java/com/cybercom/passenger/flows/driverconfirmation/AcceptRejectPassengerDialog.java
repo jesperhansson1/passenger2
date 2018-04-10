@@ -12,25 +12,32 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cybercom.passenger.R;
+import com.cybercom.passenger.model.Drive;
+import com.cybercom.passenger.model.DriveRequest;
+import com.cybercom.passenger.utils.LocationHelper;
 
-public class DriverConfirmationDialog extends DialogFragment implements View.OnClickListener {
+public class AcceptRejectPassengerDialog extends DialogFragment implements View.OnClickListener {
 
-    public static final String TAG = "DRIVER_CONFIRMATION_DIALOG";
-    public static final String PASSENGER_NAME = "PASSENGER_NAME";
+    public static final String DRIVE_KEY = "DRIVE";
+    public static final String DRIVE_REQUEST_KEY = "DRIVE_REQUEST";
+    private Drive mDrive;
+    private DriveRequest mDriveRequest;
 
     public interface ConfirmationListener {
-        void onDriverConfirmation(Boolean isAccepted);
+        void onDriverConfirmation(Boolean isAccepted, Drive drive, DriveRequest driveRequest);
     }
 
-    public static DriverConfirmationDialog getInstance(String name) {
-        DriverConfirmationDialog driverConfirmationDialog = new DriverConfirmationDialog();
+    public static AcceptRejectPassengerDialog getInstance(Drive drive, DriveRequest driveRequest) {
+        AcceptRejectPassengerDialog acceptRejectPassengerDialog = new AcceptRejectPassengerDialog();
         Bundle args = new Bundle();
-        args.putString(PASSENGER_NAME, name);
-        driverConfirmationDialog.setArguments(args);
-        return driverConfirmationDialog;
+        args.putSerializable(DRIVE_KEY, drive);
+        args.putSerializable(DRIVE_REQUEST_KEY, driveRequest);
+        acceptRejectPassengerDialog.setArguments(args);
+        return acceptRejectPassengerDialog;
     }
 
     private ConfirmationListener mConfirmationListener;
@@ -53,6 +60,26 @@ public class DriverConfirmationDialog extends DialogFragment implements View.OnC
 
         Button declineButton = rootView.findViewById(R.id.driver_confirmation_decline_button);
         declineButton.setOnClickListener(this);
+
+        Bundle arguments = getArguments();
+        if (arguments != null) {
+            mDrive = (Drive) getArguments().getSerializable(DRIVE_KEY);
+            mDriveRequest = (DriveRequest) getArguments().getSerializable(DRIVE_REQUEST_KEY);
+
+            TextView driverConfirmationPassengerName
+                    = rootView.findViewById(R.id.driver_confirmation_passenger_name);
+            driverConfirmationPassengerName.setText(mDriveRequest.getPassenger().getFullName());
+
+            TextView driverConfirmationPassengerStartLocation
+                    = rootView.findViewById(R.id.driver_confirmation_passenger_start_location);
+            driverConfirmationPassengerStartLocation.setText(LocationHelper
+                    .getStringFromPosition(mDriveRequest.getStartLocation()));
+
+            TextView driverConfirmationPassengerEndLocation
+                    = rootView.findViewById(R.id.driver_confirmation_passenger_end_location);
+            driverConfirmationPassengerEndLocation
+                    .setText(LocationHelper.getStringFromPosition(mDriveRequest.getEndLocation()));
+        }
 
         return rootView;
     }
@@ -90,12 +117,12 @@ public class DriverConfirmationDialog extends DialogFragment implements View.OnC
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.driver_confirmation_accept_button: {
-                mConfirmationListener.onDriverConfirmation(true);
+                mConfirmationListener.onDriverConfirmation(true, mDrive, mDriveRequest);
                 dismiss();
                 break;
             }
             case R.id.driver_confirmation_decline_button: {
-                mConfirmationListener.onDriverConfirmation(false);
+                mConfirmationListener.onDriverConfirmation(false, mDrive, mDriveRequest);
                 dismiss();
                 break;
             }

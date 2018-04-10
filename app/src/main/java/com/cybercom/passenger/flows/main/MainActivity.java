@@ -1,8 +1,9 @@
 package com.cybercom.passenger.flows.main;
 
-import android.app.DialogFragment;
+import android.arch.lifecycle.LifecycleOwner;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.location.Location;
@@ -12,6 +13,9 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.Switch;
@@ -21,26 +25,70 @@ import com.crashlytics.android.Crashlytics;
 import com.cybercom.passenger.MainViewModel;
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.createdrive.CreateRideDialogFragment;
-import com.cybercom.passenger.helpers.LocationHelper;
+import com.cybercom.passenger.flows.driverconfirmation.AcceptRejectPassengerDialog;
+import com.cybercom.passenger.flows.passengernotification.PassengerNotificationDialog;
+import com.cybercom.passenger.model.Drive;
+import com.cybercom.passenger.model.DriveRequest;
+import com.cybercom.passenger.model.Notification;
+import com.cybercom.passenger.model.Position;
+import com.cybercom.passenger.model.User;
+import com.cybercom.passenger.repository.PassengerRepository;
+import com.cybercom.passenger.route.FetchRouteUrl;
+import com.cybercom.passenger.utils.LocationHelper;
+import com.cybercom.passenger.flows.login.LoginActivity;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements CreateRideDialogFragment.CreateRideDialogFragmentListener, AcceptRejectPassengerDialog.ConfirmationListener, PassengerNotificationDialog.PassengerNotificationListener, OnMapReadyCallback {
 
+    FirebaseUser mUser;
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 0;
-    MainViewModel viewModel;
+    MainViewModel mMainViewModel;
     Location mLocation;
+    private GoogleMap mGoogleMap;
+    Menu mLoginMenu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Toolbar toolbar = findViewById(R.id.my_toolbar);
+        toolbar.setTitleTextColor(getResources().getColor(R.color.colorWhite));
+        setSupportActionBar(toolbar);
         Timber.i("First log info");
         Fabric.with(this, new Crashlytics());
-        addUI();
 
-        viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
+        mMainViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
+
+        if (savedInstanceState == null) {
+            if (getIntent().getExtras() != null) {
+                mMainViewModel.setIncomingNotification(getIntent().getExtras());
+            }
+        }
+        mUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (mUser != null) {
+            getSupportActionBar().setTitle(mUser.getEmail());
+            mMainViewModel.refreshToken(FirebaseInstanceId.getInstance().getToken());
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setTitle(mUser.getEmail());
+            }
+            mMainViewModel.refreshToken(FirebaseInstanceId.getInstance().getToken());
+        } else {
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setTitle(R.string.mainactivity_title);
+            }
+        }
 
         if (ContextCompat.checkSelfPermission(this.getApplication(),
                 android.Manifest.permission.ACCESS_FINE_LOCATION)
@@ -50,51 +98,100 @@ public class MainActivity extends AppCompatActivity {
 //                    android.Manifest.permission.ACCESS_FINE_LOCATION)) {
 //            }
 //            else {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                        MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
+            ActivityCompat.requestPermissions(this,
+                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                    MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
 //            }
-        } else {
-            viewModel.getLocation();
         }
 
-        getViewModel();
+        initUI();
+
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map_activitymap_googlemap);
+        mapFragment.getMapAsync(this);
+
+        initObservers();
+
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        viewModel.startLocationUpdates();
-    }
+    private void initObservers() {
+        final LifecycleOwner lifecycleOwner = this;
+        mMainViewModel.getIncomingNotifications().observe(this, new Observer<Notification>() {
+            @Override
+            public void onChanged(@Nullable final Notification notification) {
+                if (notification == null) return;
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION: {
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    viewModel.getLastLocation();
+                switch (notification.getType()) {
+                    case Notification.REQUEST_DRIVE:
+                        showDriverConfirmationDialogFragment(notification.getDrive(),
+                                notification.getDriveRequest());
+                        mMainViewModel.removeNotification();
+                        break;
+                    case Notification.ACCEPT_PASSENGER:
+                        showPassengerNotificationDialog(notification.getDrive());
+                        mMainViewModel.removeNotification();
+                        break;
+                    case Notification.REJECT_PASSENGER:
+                        // TODO: Currently the matching does not hanlde configuration changes...
+                        // Also matching should timeout
+                        mMainViewModel.findBestDriveMatch(notification.getDriveRequest().getStartLocation(), notification.getDriveRequest().getEndLocation()).observe(lifecycleOwner, new Observer<Drive>() {
+                            @Override
+                            public void onChanged(@Nullable Drive drive) {
+                                if (drive != null) {
+                                    mMainViewModel.addRequestDriveNotification(notification.getDriveRequest(), drive);
+                                }
+                            }
+                        });
+                        mMainViewModel.removeNotification();
                 }
             }
-        }
-    }
+        });
 
-    public void getViewModel(){
-        viewModel.getUpdatedLocationLiveData().observe(this, new Observer<Location>() {
+        mMainViewModel.getUpdatedLocationLiveData().observe(this, new Observer<Location>() {
             @Override
             public void onChanged(@Nullable Location location) {
-//                TODO: Need to handle if there is no data och display info. Need to send this location to spinner
-                if(location == null){
+                // TODO: Need to handle if there is no data och display info. Need to send this location to spinner
+                if (location == null) {
                     Timber.d("get updated --> null");
-                } else{
+                } else {
                     mLocation = location;
                 }
             }
         });
     }
 
-    public void addUI(){
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_mainactivity_login, menu);
+        mLoginMenu = menu;
+
+        if (mUser != null) {
+            mLoginMenu.findItem(R.id.menu_action_login).setVisible(false);
+        } else {
+            mLoginMenu.findItem(R.id.menu_action_login).setVisible(true);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int menuId = item.getItemId();
+        //noinspection SimplifiableIfStatement
+        if (menuId == R.id.menu_action_login) {
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mMainViewModel.startLocationUpdates();
+    }
+
+    public void initUI() {
         changeLabelFontStyle(false);
         final Switch switchRide = findViewById(R.id.switch_ride);
         final FloatingActionButton floatRide = findViewById(R.id.button_createRide);
@@ -102,12 +199,10 @@ public class MainActivity extends AppCompatActivity {
         switchRide.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton arg0, boolean isChecked) {
-                if(isChecked){
+                if (isChecked) {
                     floatRide.setImageResource(R.drawable.driver);
                     changeLabelFontStyle(true);
-                }
-                else
-                {
+                } else {
                     floatRide.setImageResource(R.drawable.passenger);
                     changeLabelFontStyle(false);
                 }
@@ -116,32 +211,113 @@ public class MainActivity extends AppCompatActivity {
         floatRide.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(switchRide.isChecked()) {
+                if (switchRide.isChecked()) {
                     showCreateDriveDialog(CreateRideDialogFragment.TYPE_RIDE, LocationHelper.convertLocationToDisplayString(mLocation));
-                }
-                else {
+                } else {
                     showCreateDriveDialog(CreateRideDialogFragment.TYPE_REQUEST, LocationHelper.convertLocationToDisplayString(mLocation));
                 }
-           }
+            }
         });
     }
 
-    public void changeLabelFontStyle(boolean driverValue)
-    {
-        if(driverValue){
-            ((TextView)findViewById(R.id.label_driver)).setTypeface(Typeface.DEFAULT_BOLD);
-            ((TextView)findViewById(R.id.label_passenger)).setTypeface(Typeface.DEFAULT);
-        }
-        else
-        {
-            ((TextView)findViewById(R.id.label_passenger)).setTypeface(Typeface.DEFAULT_BOLD);
-            ((TextView)findViewById(R.id.label_driver)).setTypeface(Typeface.DEFAULT);
+    public void changeLabelFontStyle(boolean driverValue) {
+        if (driverValue) {
+            ((TextView) findViewById(R.id.label_driver)).setTypeface(Typeface.DEFAULT_BOLD);
+            ((TextView) findViewById(R.id.label_passenger)).setTypeface(Typeface.DEFAULT);
+        } else {
+            ((TextView) findViewById(R.id.label_passenger)).setTypeface(Typeface.DEFAULT_BOLD);
+            ((TextView) findViewById(R.id.label_driver)).setTypeface(Typeface.DEFAULT);
         }
     }
 
-    public void showCreateDriveDialog(int type, String location)
-    {
-        DialogFragment dialogFragment = CreateRideDialogFragment.newInstance(type, location);
+    public void showCreateDriveDialog(int type, String location) {
+        CreateRideDialogFragment dialogFragment = CreateRideDialogFragment.newInstance(type, location);
         dialogFragment.show(getFragmentManager(), CreateRideDialogFragment.TAG);
     }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mGoogleMap = googleMap;
+        mGoogleMap.setMinZoomPreference(10.0f);
+        mGoogleMap.setMaxZoomPreference(20.0f);
+        // Add a marker in Sydney and move the camera
+        LatLng sydney = new LatLng(-34, 151);
+        LatLng opera = new LatLng(-33.9320447, 151.1597271);
+        mGoogleMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+        mGoogleMap.addMarker(new MarkerOptions().position(opera).title("Marker in Opera"));
+        LatLngBounds ADELAIDE = new LatLngBounds(
+                sydney, opera);
+        // Constrain the camera target to the Adelaide bounds.
+        mGoogleMap.setLatLngBoundsForCameraTarget(ADELAIDE);
+        // mGoogleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+
+        FetchRouteUrl fetchRouteUrl = new FetchRouteUrl(mGoogleMap, sydney, opera);
+    }
+
+    @Override
+    public void onPointerCaptureChanged(boolean hasCapture) {
+
+    }
+
+    @Override
+    public void onCreateRide(int type, final Position startLocation, final Position endLocation) {
+        Timber.i("on create ride");
+
+        switch (type) {
+            case CreateRideDialogFragment.TYPE_RIDE:
+                PassengerRepository.getInstance().getUser().observe(this, new Observer<User>() {
+                    @Override
+                    public void onChanged(@Nullable User user) {
+                        mMainViewModel.createDrive(user, startLocation, endLocation);
+                    }
+                });
+
+                break;
+            case CreateRideDialogFragment.TYPE_REQUEST:
+                final LifecycleOwner lifeCycleOwner = this;
+
+                PassengerRepository.getInstance().getUser().observe(this, new Observer<User>() {
+                    @Override
+                    public void onChanged(@Nullable User user) {
+                        final DriveRequest driveRequest = mMainViewModel.createDriveRequest(user, startLocation, endLocation);
+                        mMainViewModel.findBestDriveMatch(startLocation, endLocation).observe(lifeCycleOwner, new Observer<Drive>() {
+                            @Override
+                            public void onChanged(@Nullable Drive drive) {
+                                if (drive != null) {
+                                    mMainViewModel.addRequestDriveNotification(driveRequest, drive);
+                                }
+                            }
+                        });
+                    }
+                });
+
+                break;
+        }
+
+    }
+
+    private void showDriverConfirmationDialogFragment(Drive drive, DriveRequest driveRequest) {
+        AcceptRejectPassengerDialog dialogFragment = AcceptRejectPassengerDialog.getInstance(drive, driveRequest);
+        dialogFragment.show(getSupportFragmentManager(), dialogFragment.getTag());
+    }
+
+    private void showPassengerNotificationDialog(Drive drive) {
+        PassengerNotificationDialog dialogFragment = PassengerNotificationDialog.getInstance(drive);
+        dialogFragment.show(getSupportFragmentManager(), dialogFragment.getTag());
+    }
+
+    @Override
+    public void onDriverConfirmation(Boolean isAccepted, Drive drive, DriveRequest driveRequest) {
+        if (isAccepted) {
+            mMainViewModel.sendAcceptPassengerNotification(drive, driveRequest);
+        } else {
+            mMainViewModel.sendRejectPassengerNotification(drive, driveRequest);
+        }
+    }
+
+    @Override
+    public void onCancelPressed(Boolean isCancelPressed) {
+        Timber.i("Canceled pressed! ");
+    }
+
 }

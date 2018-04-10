@@ -1,24 +1,32 @@
 package com.cybercom.passenger.model;
 
-import android.location.Location;
+import java.io.Serializable;
 
-public class Drive {
+public class Drive implements Serializable {
+
+    private User mDriver;
 
     private long mTime;
     private Position mStartLocation;
     private Position mEndLocation;
-    private String mNotificationTokenId;
     private int mAvailableSeats;
 
-    public Drive() {
-    }
+    public Drive(){}
 
-    public Drive(long time, Position startLocation, Position endLocation, String notificationTokenId, int availableSeats) {
+    public Drive(User driver, long time, Position startLocation, Position endLocation, int availableSeats) {
+        mDriver = driver;
         mTime = time;
         mStartLocation = startLocation;
         mEndLocation = endLocation;
-        mNotificationTokenId = notificationTokenId;
         mAvailableSeats = availableSeats;
+    }
+
+    public User getDriver() {
+        return mDriver;
+    }
+
+    public void setDriver(User driver) {
+        this.mDriver = driver;
     }
 
     public long getTime() {
@@ -45,14 +53,6 @@ public class Drive {
         mEndLocation = endLocation;
     }
 
-    public String getNotificationTokenId() {
-        return mNotificationTokenId;
-    }
-
-    public void setNotificationTokenId(String notificationTokenId) {
-        mNotificationTokenId = notificationTokenId;
-    }
-
     public int getAvailableSeats() {
         return mAvailableSeats;
     }
@@ -65,9 +65,9 @@ public class Drive {
     public String toString() {
         return "Drive{" +
                 "mTime=" + mTime +
+                ", mDriver=" + mDriver +
                 ", mStartLocation=" + mStartLocation +
                 ", mEndLocation=" + mEndLocation +
-                ", mNotificationTokenId='" + mNotificationTokenId + '\'' +
                 ", mAvailableSeats=" + mAvailableSeats +
                 '}';
     }
