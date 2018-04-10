@@ -11,7 +11,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
+import android.widget.Toast;
+
 import com.cybercom.passenger.R;
+import com.cybercom.passenger.flows.login.LoginActivity;
 import com.cybercom.passenger.flows.main.MainActivity;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.utils.CheckTextFieldHelper;
@@ -111,7 +114,8 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                                 Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                                 startActivity(intent);
                             } else{
-                                Timber.d("USER was not CREATED");
+                                Toast.makeText(SignUpActivity.this, getResources().getString(R.string.toast_could_not_create_user),
+                                        Toast.LENGTH_LONG).show();
                             }
                         }
                     });

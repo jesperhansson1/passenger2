@@ -53,7 +53,7 @@ public class ForgotPasswordActivity extends AppCompatActivity{
                 }
             });
         } else{
-            Toast.makeText(ForgotPasswordActivity.this, "You haven't entered any email", Toast.LENGTH_LONG).show();
+            Toast.makeText(ForgotPasswordActivity.this, getResources().getString(R.string.toast_send_forgot_password_email), Toast.LENGTH_LONG).show();
         }
     }
 }

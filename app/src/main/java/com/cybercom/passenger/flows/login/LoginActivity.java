@@ -57,7 +57,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         switch (v.getId()) {
             case R.id.button_loginscreen_login:
                 if (email.isEmpty() || password.isEmpty()) {
-                    Toast.makeText(LoginActivity.this, "Please enter email and password to login",
+                    Toast.makeText(LoginActivity.this, getResources().getString(R.string.toast_enter_email_password),
                             Toast.LENGTH_LONG).show();
                 } else {
                     mAuth.signInWithEmailAndPassword(email, password)
@@ -73,7 +73,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                                     } else {
                                         // If sign in fails, display a message to the user.
                                         Timber.d("signInWithEmail:failure %s", task.getException());
-                                        Toast.makeText(LoginActivity.this, "You have entered an incorrect email",
+                                        Toast.makeText(LoginActivity.this, getResources().getString(R.string.toast_incorrect_email),
                                                 Toast.LENGTH_SHORT).show();
                                     }
                                 }

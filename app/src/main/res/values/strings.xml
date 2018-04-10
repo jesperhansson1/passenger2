@@ -61,6 +61,11 @@
     <string name="female">Female</string>
     <string name="name">Name</string>
 
+    <string name="toast_incorrect_email">You have entered an incorrect email</string>
+    <string name="toast_enter_email_password">Please enter email and password to login</string>
+    <string name="toast_could_not_create_user">Could not create user</string>
+    <string name="toast_send_forgot_password_email">You haven\'t entered any email</string>
+
 
 
     <string name="login_title">Login</string>
