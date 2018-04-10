@@ -1,6 +1,7 @@
 package com.cybercom.passenger.flows.forgotpassword;
 
 import android.app.Activity;
+import android.app.Activity;
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
@@ -23,14 +24,14 @@ public class ForgotPasswordViewModel extends AndroidViewModel {
         mAuth = FirebaseAuth.getInstance();
     }
 
-    public LiveData<String> getNewPassword(String email, final Activity activity){
-        final MutableLiveData<String> emailSent = new MutableLiveData<>();
+    public LiveData<Boolean> getNewPassword(String email,  final Activity activity){
+        final MutableLiveData<Boolean> emailSent = new MutableLiveData<>();
             mAuth.sendPasswordResetEmail(email)
                     .addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
                             if (task.isSuccessful()) {
-                                emailSent.setValue("Email sent");
+                                emailSent.setValue(true);
                             } else {
                                 Toast.makeText(activity, "You have entered an incorrect email", Toast.LENGTH_LONG).show();
                                 //Add ForgotPasswordActivity

@@ -20,7 +20,7 @@ import com.google.firebase.iid.FirebaseInstanceId;
 
 import timber.log.Timber;
 
-public class SignUp extends AppCompatActivity implements View.OnClickListener {
+public class SignUpActivity extends AppCompatActivity implements View.OnClickListener {
 
     SignUpViewModel mViewModel;
     RadioButton mRadioButtonMale, mRadioButtonFemale;
