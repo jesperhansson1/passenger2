@@ -44,6 +44,7 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
@@ -78,6 +79,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
 
         if (mUser != null) {
             getSupportActionBar().setTitle(mUser.getEmail());
+            mMainViewModel.refreshToken(FirebaseInstanceId.getInstance().getToken());
         } else {
             getSupportActionBar().setTitle(R.string.mainactivity_title);
         }
