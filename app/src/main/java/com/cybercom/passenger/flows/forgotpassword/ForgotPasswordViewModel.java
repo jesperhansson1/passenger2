@@ -21,14 +21,14 @@ public class ForgotPasswordViewModel extends AndroidViewModel {
         mAuth = FirebaseAuth.getInstance();
     }
 
-    public LiveData<String> getNewPassword(String email){
-        final MutableLiveData<String> emailSent = new MutableLiveData<>();
+    public LiveData<Boolean> getNewPassword(String email){
+        final MutableLiveData<Boolean> emailSent = new MutableLiveData<>();
             mAuth.sendPasswordResetEmail(email)
                     .addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
                             if (task.isSuccessful()) {
-                                emailSent.setValue("Email sent");
+                                emailSent.setValue(true);
                             } else {
                                 Timber.d("Email wasn't sent.");
                             }

@@ -18,9 +18,8 @@ import timber.log.Timber;
 public class ForgotPasswordActivity extends AppCompatActivity{
     EditText mResetPasswordMail;
     Button mResetPasswordButton;
-    Intent intent;
     ForgotPasswordViewModel mViewModel;
-    String mEmail;
+    public static final String EXTRA_SESSION_EMAIL = "EXTRA_SESSION_EMAIL";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,15 +39,14 @@ public class ForgotPasswordActivity extends AppCompatActivity{
         });
     }
 
-    public void getNewPassword(String email){
-        mEmail = email.trim();
-        if(!mEmail.isEmpty()){
-            mViewModel.getNewPassword(mEmail).observe(this, new Observer<String>() {
+    public void getNewPassword(final String email){
+        if(!email.isEmpty()){
+            mViewModel.getNewPassword(email.trim()).observe(this, new Observer<Boolean>() {
                 @Override
-                public void onChanged(@Nullable String result) {
-                    if(!result.isEmpty()) {
-                        intent = new Intent(getApplicationContext(), PasswordSentActivity.class);
-                        intent.putExtra("EXTRA_SESSION_EMAIL", mEmail);
+                public void onChanged(@Nullable Boolean result) {
+                    if(result) {
+                        Intent intent = new Intent(getApplicationContext(), PasswordSentActivity.class);
+                        intent.putExtra(EXTRA_SESSION_EMAIL, email);
                         startActivity(intent);
                     } else{
                         Timber.d("Email wasnt sent! Activity");
