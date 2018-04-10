@@ -42,7 +42,7 @@ public class ForgotPasswordActivity extends AppCompatActivity{
 
     public void getNewPassword(final String email){
         if(!email.isEmpty()){
-            mViewModel.getNewPassword(email.trim()).observe(this, new Observer<Boolean>() {
+            mViewModel.getNewPassword(email.trim(), this).observe(this, new Observer<Boolean>() {
                 @Override
                 public void onChanged(@Nullable Boolean result) {
                     if(result) {

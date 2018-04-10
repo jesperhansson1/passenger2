@@ -57,7 +57,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         switch (v.getId()) {
             case R.id.button_loginscreen_login:
                 if (email.isEmpty() || password.isEmpty()) {
-                    Toast.makeText(Login.this, "Please enter email and password to login",
+                    Toast.makeText(LoginActivity.this, "Please enter email and password to login",
                             Toast.LENGTH_LONG).show();
                 } else {
                     mAuth.signInWithEmailAndPassword(email, password)
@@ -73,22 +73,21 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                                     } else {
                                         // If sign in fails, display a message to the user.
                                         Timber.d("signInWithEmail:failure %s", task.getException());
-                                        Toast.makeText(LoginActivity.this, "Authentication failed.",
+                                        Toast.makeText(LoginActivity.this, "You have entered an incorrect email",
                                                 Toast.LENGTH_SHORT).show();
                                     }
                                 }
-
                             });
-                    break;
-                    case R.id.button_loginscreen_signup:
-                        intent = new Intent(getApplicationContext(), SignUp.class);
-                        startActivity(intent);
+                }
+                break;
+            case R.id.button_loginscreen_signup:
+                        mIntent = new Intent(getApplicationContext(), SignUpActivity.class);
+                        startActivity(mIntent);
                         break;
                     case R.id.button_loginscreen_forgotpassword:
-                        intent = new Intent(getApplicationContext(), ForgotPassword.class);
-                        startActivity(intent);
+                        mIntent = new Intent(getApplicationContext(), ForgotPasswordActivity.class);
+                        startActivity(mIntent);
                         break;
-                }
         }
     }
 }
