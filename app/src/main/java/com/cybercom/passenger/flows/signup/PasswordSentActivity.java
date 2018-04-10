@@ -11,14 +11,14 @@ import com.cybercom.passenger.flows.login.LoginActivity;
 
 public class PasswordSentActivity extends AppCompatActivity {
     TextView mEmail;
-    Intent intent;
+    public static final String EXTRA_SESSION_EMAIL = "EXTRA_SESSION_EMAIL";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.password_sent);
         mEmail = findViewById(R.id.textView_passwordsent_email);
-        String valueFromForgotPassword = getIntent().getStringExtra("EXTRA_SESSION_EMAIL");
+        String valueFromForgotPassword = getIntent().getStringExtra(EXTRA_SESSION_EMAIL);
 
         mEmail.setText(valueFromForgotPassword);
 
@@ -32,7 +32,7 @@ public class PasswordSentActivity extends AppCompatActivity {
 
     public void openEmailClient()
     {
-        intent = new Intent(getApplicationContext(), LoginActivity.class);
+        Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
         startActivity(intent);
         intent = new Intent(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_APP_EMAIL);

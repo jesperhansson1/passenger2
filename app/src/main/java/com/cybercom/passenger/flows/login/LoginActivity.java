@@ -27,7 +27,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     FirebaseAuth mAuth;
     EditText mEmail,mPassword;
     Button mLogin, mSignup, mForgotPassword;
-    Intent intent;
+    Intent mIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,8 +64,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                                     // Sign in success, update UI with the signed-in user's information
                                     FirebaseUser user = mAuth.getCurrentUser();
                                     Timber.d("signInWithEmail:success %s", user);
-                                    intent = new Intent(getApplicationContext(), MainActivity.class);
-                                    startActivity(intent);
+                                    mIntent = new Intent(getApplicationContext(), MainActivity.class);
+                                    startActivity(mIntent);
                                 } else {
                                     // If sign in fails, display a message to the user.
                                     Timber.d("signInWithEmail:failure %s", task.getException());
@@ -77,13 +77,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 break;
             case R.id.button_loginscreen_signup:
                 Timber.d("clicked signup");
-                intent = new Intent(getApplicationContext(), SignUpActivity.class);
-                startActivity(intent);
+                mIntent = new Intent(getApplicationContext(), SignUpActivity.class);
+                startActivity(mIntent);
                     break;
             case R.id.button_loginscreen_forgotpassword:
                 Timber.d("clicked forgot");
-                intent = new Intent(getApplicationContext(), ForgotPasswordActivity.class);
-                startActivity(intent);
+                mIntent = new Intent(getApplicationContext(), ForgotPasswordActivity.class);
+                startActivity(mIntent);
                 break;
         }
     }
