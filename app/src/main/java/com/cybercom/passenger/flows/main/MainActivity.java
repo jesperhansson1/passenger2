@@ -42,7 +42,6 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -117,7 +116,6 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     }
 
     private void initObservers() {
-        final LifecycleOwner lifecycleOwner = this;
         mMainViewModel.getIncomingNotifications().observe(this, new Observer<Notification>() {
             @Override
             public void onChanged(@Nullable final Notification notification) {
@@ -126,13 +124,12 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
 
                 switch (notification.getType()) {
                     case Notification.REQUEST_DRIVE:
-                        showDriverConfirmationDialogFragment(notification.getDrive(),
-                                notification.getDriveRequest());
-                        mMainViewModel.removeNotification(notification);
+                        showDriverConfirmationDialogFragment(notification);
+//                        mMainViewModel.removeNotification(notification);
                         break;
                     case Notification.ACCEPT_PASSENGER:
-                        showPassengerNotificationDialog(notification.getDrive());
-                        mMainViewModel.removeNotification(notification);
+                        showPassengerNotificationDialog(notification);
+//                        mMainViewModel.removeNotification(notification);
                         break;
                     case Notification.REJECT_PASSENGER:
                         // TODO: Currently the matching does not handle configuration changes...
@@ -145,6 +142,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
 //                                }
 //                            }
 //                        });
+
                         mMainViewModel.removeNotification(notification);
                         break;
                 }
@@ -327,28 +325,29 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
 
     }
 
-    private void showDriverConfirmationDialogFragment(Drive drive, DriveRequest driveRequest) {
-        AcceptRejectPassengerDialog dialogFragment = AcceptRejectPassengerDialog.getInstance(drive, driveRequest);
+    private void showDriverConfirmationDialogFragment(Notification notification) {
+        AcceptRejectPassengerDialog dialogFragment = AcceptRejectPassengerDialog.getInstance(notification);
         dialogFragment.show(getSupportFragmentManager(), dialogFragment.getTag());
     }
 
-    private void showPassengerNotificationDialog(Drive drive) {
-        PassengerNotificationDialog dialogFragment = PassengerNotificationDialog.getInstance(drive);
+    private void showPassengerNotificationDialog(Notification notification) {
+        PassengerNotificationDialog dialogFragment = PassengerNotificationDialog.getInstance(notification);
         dialogFragment.show(getSupportFragmentManager(), dialogFragment.getTag());
     }
 
     @Override
-    public void onDriverConfirmation(Boolean isAccepted, Drive drive, DriveRequest driveRequest) {
+    public void onDriverConfirmation(Boolean isAccepted, Notification notification) {
         if (isAccepted) {
-            mMainViewModel.sendAcceptPassengerNotification(drive, driveRequest);
+            mMainViewModel.sendAcceptPassengerNotification(notification.getDrive(), notification.getDriveRequest());
         } else {
-            mMainViewModel.sendRejectPassengerNotification(drive, driveRequest);
+            mMainViewModel.sendRejectPassengerNotification(notification.getDrive(), notification.getDriveRequest());
         }
+        mMainViewModel.removeNotification(notification);
     }
 
     @Override
-    public void onCancelPressed(Boolean isCancelPressed) {
-        Timber.i("Canceled pressed! ");
+    public void onCancelDrive(Notification notification) {
+        mMainViewModel.removeNotification(notification);
     }
 
 }

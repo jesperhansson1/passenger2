@@ -1,6 +1,8 @@
 package com.cybercom.passenger.model;
 
-public class Notification {
+import java.io.Serializable;
+
+public class Notification implements Serializable {
 
     public static final int REQUEST_DRIVE = 0;
     public static final int ACCEPT_PASSENGER = 1;
