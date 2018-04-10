@@ -28,6 +28,7 @@ import timber.log.Timber;
 public class PassengerRepository implements PassengerRepositoryInterface {
 
 
+    public static final String NOTIFICATION_TOKEN_ID = "notificationTokenId";
     FirebaseAuth auth;
 
     private static final String REFERENCE_NOTIFICATIONS = "notifications";
@@ -98,6 +99,14 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         }
     }
 
+    public void refreshNotificationTokenId(String tokenId) {
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (firebaseUser != null) {
+            mUsersReference.child(firebaseUser.getUid())
+                    .child(NOTIFICATION_TOKEN_ID).setValue(tokenId);
+        }
+    }
+
     @Override
     public void createUser(String userId, User user) {
         mUsersReference.child(userId).setValue(user);
@@ -140,8 +149,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                     com.cybercom.passenger.repository.databasemodel.Drive drive = snapshot.getValue(com.cybercom.passenger.repository.databasemodel.Drive.class);
 
                     if (drive != null && Math.abs(time - drive.getTime()) < DRIVE_REQUEST_MATCH_TIME_THRESHOLD) {
-                            Location.distanceBetween(startLocation.getLatitude(), startLocation.getLongitude(),
-                                    drive.getStartLocation().getLatitude(), drive.getStartLocation().getLongitude(), distance);
+                        Location.distanceBetween(startLocation.getLatitude(), startLocation.getLongitude(),
+                                drive.getStartLocation().getLatitude(), drive.getStartLocation().getLongitude(), distance);
 
                         Timber.d("Drives: distance: %s, driveRequest: lat: %s, lng: %s, drive: lat %s, lng %s",
                                 distance[0], startLocation.getLatitude(), startLocation.getLongitude(),
@@ -255,7 +264,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                 });
     }
 
-    public void removeNotification(){
+    public void removeNotification() {
         mNotification.postValue(null);
     }
 
