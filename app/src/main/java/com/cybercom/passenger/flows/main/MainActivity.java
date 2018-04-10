@@ -26,7 +26,6 @@ import com.cybercom.passenger.MainViewModel;
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.createdrive.CreateRideDialogFragment;
 import com.cybercom.passenger.flows.driverconfirmation.AcceptRejectPassengerDialog;
-import com.cybercom.passenger.flows.login.Login;
 import com.cybercom.passenger.flows.passengernotification.PassengerNotificationDialog;
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
@@ -36,6 +35,7 @@ import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.repository.PassengerRepository;
 import com.cybercom.passenger.route.FetchRouteUrl;
 import com.cybercom.passenger.utils.LocationHelper;
+import com.cybercom.passenger.flows.login.LoginActivity;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -170,7 +170,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
         int menuId = item.getItemId();
         //noinspection SimplifiableIfStatement
         if (menuId == R.id.menu_action_login) {
-            Intent intent = new Intent(this, Login.class);
+            Intent intent = new Intent(this, LoginActivity.class);
             startActivity(intent);
             return true;
         }
@@ -266,8 +266,8 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
 
                 break;
             case CreateRideDialogFragment.TYPE_REQUEST:
-
                 final LifecycleOwner lifeCycleOwner = this;
+
                 PassengerRepository.getInstance().getUser().observe(this, new Observer<User>() {
                     @Override
                     public void onChanged(@Nullable User user) {

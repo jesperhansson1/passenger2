@@ -57,6 +57,11 @@
     <string name="hint_email">my@email.com</string>
     <string name="hint_password">Enter password</string>
     <string name="hint_phone">12345</string>
+    <string name="male">Male</string>
+    <string name="female">Female</string>
+    <string name="name">Name</string>
+
+
 
     <string name="login_title">Login</string>
     <string name="mainactivity_title">Passenger</string>
