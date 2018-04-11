@@ -31,7 +31,6 @@ import java.util.Map;
 public class MainViewModel extends AndroidViewModel {
 
     private FusedLocationProviderClient mFusedLocationClient;
-    private Location mLastLocation;
     private PassengerRepository mPassengerRepository = PassengerRepository.getInstance();
     private MutableLiveData<Location> mMyLocation = new MutableLiveData<>();
     private LocationCallback mLocationCallback;
@@ -58,24 +57,6 @@ public class MainViewModel extends AndroidViewModel {
 
     public LiveData<Location> getUpdatedLocationLiveData() {
         return mMyLocation;
-    }
-
-    @SuppressWarnings("MissingPermission")
-    public void getLastLocation() {
-        mFusedLocationClient.getLastLocation()
-                .addOnCompleteListener(new OnCompleteListener<Location>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Location> task) {
-                        if (task.isSuccessful() && task.getResult() != null) {
-                            mLastLocation = task.getResult();
-                        }
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                e.printStackTrace();
-            }
-        });
     }
 
     @SuppressWarnings("MissingPermission")
