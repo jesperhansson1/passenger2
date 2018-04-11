@@ -213,7 +213,7 @@
         android:layout_marginEnd="16dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="55dp"
-        android:background="@color/colorBlue"
+        android:background="@drawable/button_corner_round"
         android:elevation="@dimen/pad_2dp"
         android:text="@string/next"
         android:textColor="@color/colorWhite"
