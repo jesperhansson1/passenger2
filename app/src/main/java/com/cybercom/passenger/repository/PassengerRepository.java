@@ -22,12 +22,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import timber.log.Timber;
 
 public class PassengerRepository implements PassengerRepositoryInterface {
 
 
+    public static final String NOTIFICATION_TOKEN_ID = "notificationTokenId";
     FirebaseAuth auth;
 
     private static final String REFERENCE_NOTIFICATIONS = "notifications";
@@ -46,6 +49,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private DatabaseReference mDrivesReference;
     private DatabaseReference mDriveRequestsReference;
     private DatabaseReference mNotificationsReference;
+
+    BlockingQueue<Notification> mNotificationQueue = new LinkedBlockingQueue<>();
 
     private MutableLiveData<Notification> mNotification = new MutableLiveData<>();
 
@@ -98,6 +103,14 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         }
     }
 
+    public void refreshNotificationTokenId(String tokenId) {
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (firebaseUser != null) {
+            mUsersReference.child(firebaseUser.getUid())
+                    .child(NOTIFICATION_TOKEN_ID).setValue(tokenId);
+        }
+    }
+
     @Override
     public void createUser(String userId, User user) {
         mUsersReference.child(userId).setValue(user);
@@ -140,8 +153,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                     com.cybercom.passenger.repository.databasemodel.Drive drive = snapshot.getValue(com.cybercom.passenger.repository.databasemodel.Drive.class);
 
                     if (drive != null && Math.abs(time - drive.getTime()) < DRIVE_REQUEST_MATCH_TIME_THRESHOLD) {
-                            Location.distanceBetween(startLocation.getLatitude(), startLocation.getLongitude(),
-                                    drive.getStartLocation().getLatitude(), drive.getStartLocation().getLongitude(), distance);
+                        Location.distanceBetween(startLocation.getLatitude(), startLocation.getLongitude(),
+                                drive.getStartLocation().getLatitude(), drive.getStartLocation().getLongitude(), distance);
 
                         Timber.d("Drives: distance: %s, driveRequest: lat: %s, lng: %s, drive: lat %s, lng %s",
                                 distance[0], startLocation.getLatitude(), startLocation.getLongitude(),
@@ -206,7 +219,6 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     public void addDriveRequest(DriveRequest driveRequest) {
         com.cybercom.passenger.repository.databasemodel.DriveRequest fDriveRequest =
                 DatabaseModelHelper.convertDriveRequest(driveRequest);
-
         mDriveRequestsReference.push().setValue(fDriveRequest);
     }
 
@@ -232,12 +244,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                                     @Override
                                     public void onDataChange(DataSnapshot dataSnapshot) {
                                         User passenger = dataSnapshot.getValue(User.class);
-                                        mNotification.postValue(DatabaseModelHelper
-                                                .convertPayloadToNotification(
-                                                        payload,
-                                                        driver,
-                                                        passenger)
-                                        );
+
+                                        addToNotificationQueue(DatabaseModelHelper.convertPayloadToNotification(payload, driver, passenger));
                                     }
 
                                     @Override
@@ -255,8 +263,16 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                 });
     }
 
-    public void removeNotification(){
-        mNotification.postValue(null);
+    private void addToNotificationQueue(Notification notification) {
+        mNotificationQueue.add(notification);
+        if (mNotification.getValue() == null) {
+            mNotification.postValue(notification);
+        }
+    }
+
+    public void removeNotification(Notification notification) {
+        mNotificationQueue.remove(notification);
+        mNotification.postValue(mNotificationQueue.poll());
     }
 
     private String generateRandomUUID() {

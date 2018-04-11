@@ -12,32 +12,28 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cybercom.passenger.R;
-import com.cybercom.passenger.model.Drive;
-import com.cybercom.passenger.model.DriveRequest;
+import com.cybercom.passenger.model.Notification;
+import com.cybercom.passenger.utils.LocationHelper;
 
-public class DriverConfirmationDialog extends DialogFragment implements View.OnClickListener {
+public class AcceptRejectPassengerDialog extends DialogFragment implements View.OnClickListener {
 
-    public static final String TAG = "DRIVER_CONFIRMATION_DIALOG";
-
-    public static final String DRIVE_KEY = "DRIVE";
-    public static final String DRIVE_REQUEST_KEY = "DRIVE_REQUEST";
-    private Drive mDrive;
-    private DriveRequest mDriveRequest;
+    public static final String NOTIFICATION_KEY = "NOTIFICATION";
+    private Notification mNotification;
 
     public interface ConfirmationListener {
-        void onDriverConfirmation(Boolean isAccepted, Drive drive, DriveRequest driveRequest);
+        void onDriverConfirmation(Boolean isAccepted, Notification notification);
     }
 
-    public static DriverConfirmationDialog getInstance(Drive drive, DriveRequest driveRequest) {
-        DriverConfirmationDialog driverConfirmationDialog = new DriverConfirmationDialog();
+    public static AcceptRejectPassengerDialog getInstance(Notification notification) {
+        AcceptRejectPassengerDialog acceptRejectPassengerDialog = new AcceptRejectPassengerDialog();
         Bundle args = new Bundle();
-        args.putSerializable(DRIVE_KEY, drive);
-        args.putSerializable(DRIVE_REQUEST_KEY, driveRequest);
-        driverConfirmationDialog.setArguments(args);
-        return driverConfirmationDialog;
+        args.putSerializable(NOTIFICATION_KEY, notification);
+        acceptRejectPassengerDialog.setArguments(args);
+        return acceptRejectPassengerDialog;
     }
 
     private ConfirmationListener mConfirmationListener;
@@ -63,8 +59,21 @@ public class DriverConfirmationDialog extends DialogFragment implements View.OnC
 
         Bundle arguments = getArguments();
         if (arguments != null) {
-            mDrive = (Drive) getArguments().getSerializable(DRIVE_KEY);
-            mDriveRequest = (DriveRequest) getArguments().getSerializable(DRIVE_REQUEST_KEY);
+             mNotification = (Notification) getArguments().getSerializable(NOTIFICATION_KEY);
+
+            TextView driverConfirmationPassengerName
+                    = rootView.findViewById(R.id.driver_confirmation_passenger_name);
+            driverConfirmationPassengerName.setText(mNotification.getDriveRequest().getPassenger().getFullName());
+
+            TextView driverConfirmationPassengerStartLocation
+                    = rootView.findViewById(R.id.driver_confirmation_passenger_start_location);
+            driverConfirmationPassengerStartLocation.setText(LocationHelper
+                    .getStringFromPosition(mNotification.getDriveRequest().getStartLocation()));
+
+            TextView driverConfirmationPassengerEndLocation
+                    = rootView.findViewById(R.id.driver_confirmation_passenger_end_location);
+            driverConfirmationPassengerEndLocation
+                    .setText(LocationHelper.getStringFromPosition(mNotification.getDriveRequest().getEndLocation()));
         }
 
         return rootView;
@@ -103,12 +112,12 @@ public class DriverConfirmationDialog extends DialogFragment implements View.OnC
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.driver_confirmation_accept_button: {
-                mConfirmationListener.onDriverConfirmation(true, mDrive, mDriveRequest);
+                mConfirmationListener.onDriverConfirmation(true, mNotification);
                 dismiss();
                 break;
             }
             case R.id.driver_confirmation_decline_button: {
-                mConfirmationListener.onDriverConfirmation(false, mDrive, mDriveRequest);
+                mConfirmationListener.onDriverConfirmation(false, mNotification);
                 dismiss();
                 break;
             }

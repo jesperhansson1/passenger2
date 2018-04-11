@@ -136,8 +136,9 @@ public class MainViewModel extends AndroidViewModel {
         mPassengerRepository.sendNotification(acceptPassenger);
     }
 
-    public void sendRejectPassengerNotificaiton() {
-        // TODO: implement
+    public void sendRejectPassengerNotification(Drive drive, DriveRequest driveRequest) {
+        Notification rejectPassenger = new Notification(Notification.REJECT_PASSENGER, driveRequest, drive);
+        mPassengerRepository.sendNotification(rejectPassenger);
 
     }
 
@@ -153,7 +154,11 @@ public class MainViewModel extends AndroidViewModel {
 
     }
 
-    public void removeNotification(){
-        mPassengerRepository.removeNotification();
+    public void removeNotification(Notification notification){
+        mPassengerRepository.removeNotification(notification);
+    }
+
+    public void refreshToken(String token) {
+        mPassengerRepository.refreshNotificationTokenId(token);
     }
 }
