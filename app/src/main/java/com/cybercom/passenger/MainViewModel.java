@@ -1,13 +1,12 @@
 package com.cybercom.passenger;
 
-import android.app.Activity;
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
-import android.content.Intent;
 import android.location.Location;
 
+import android.os.Bundle;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 
@@ -15,8 +14,7 @@ import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Notification;
 import com.cybercom.passenger.model.Position;
-import com.cybercom.passenger.flows.login.Login;
-import com.cybercom.passenger.flows.main.MainActivity;
+import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.repository.PassengerRepository;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -26,6 +24,9 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainViewModel extends AndroidViewModel {
 
@@ -91,21 +92,21 @@ public class MainViewModel extends AndroidViewModel {
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 
-    public Drive createDrive(Position startLocation, Position endLocation) {
+    public Drive createDrive(User user, Position startLocation, Position endLocation) {
         Long currentTimeMillis = System.currentTimeMillis();
         int seats = 1;
 
-        Drive drive = new Drive(PassengerRepository.gDriver, currentTimeMillis,startLocation,endLocation, seats);
+        Drive drive = new Drive(user, currentTimeMillis,startLocation,endLocation, seats);
         mPassengerRepository.addDrive(drive);
 
         return drive;
     }
 
-    public DriveRequest createDriveRequest(Position startLocation, Position endLocation) {
+    public DriveRequest createDriveRequest(User user, Position startLocation, Position endLocation) {
         Long currentTimeMillis = System.currentTimeMillis();
         int seats = 1;
 
-        DriveRequest driveRequest = new DriveRequest(PassengerRepository.gPassenger, currentTimeMillis, startLocation, endLocation, seats);
+        DriveRequest driveRequest = new DriveRequest(user, currentTimeMillis, startLocation, endLocation, seats);
         mPassengerRepository.addDriveRequest(driveRequest);
 
         return driveRequest;
@@ -135,8 +136,29 @@ public class MainViewModel extends AndroidViewModel {
         mPassengerRepository.sendNotification(acceptPassenger);
     }
 
-    public void sendRejectPassengerNotificaiton() {
-        // TODO: implement
+    public void sendRejectPassengerNotification(Drive drive, DriveRequest driveRequest) {
+        Notification rejectPassenger = new Notification(Notification.REJECT_PASSENGER, driveRequest, drive);
+        mPassengerRepository.sendNotification(rejectPassenger);
 
+    }
+
+    public void setIncomingNotification(Bundle extras) {
+
+        Map<String, String> payload = new HashMap<>();
+
+        for (String key : extras.keySet()) {
+            payload.put(key, extras.getString(key));
+        }
+
+        mPassengerRepository.setIncomingNotification(payload);
+
+    }
+
+    public void removeNotification(Notification notification){
+        mPassengerRepository.removeNotification(notification);
+    }
+
+    public void refreshToken(String token) {
+        mPassengerRepository.refreshNotificationTokenId(token);
     }
 }

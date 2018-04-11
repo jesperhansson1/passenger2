@@ -22,12 +22,13 @@
         <activity android:name=".flows.main.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".flows.signup.SignUp"></activity>
-        <activity android:name=".flows.login.Login"></activity>
+        <activity android:name=".flows.forgotpassword.ForgotPasswordActivity" />
+        <activity android:name=".flows.signup.PasswordSentActivity" />
+        <activity android:name=".flows.signup.SignUpActivity" />
+        <activity android:name=".flows.login.LoginActivity" />
 
         <service android:name=".service.PassengerInstanceIdService">
             <intent-filter>

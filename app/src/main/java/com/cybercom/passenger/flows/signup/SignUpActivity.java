@@ -33,6 +33,7 @@ import android.widget.TextView;
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.main.MainActivity;
 import com.cybercom.passenger.model.User;
+import com.cybercom.passenger.utils.ToastHelper;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.squareup.picasso.Picasso;
@@ -44,13 +45,14 @@ import timber.log.Timber;
 
 import static android.os.Build.VERSION_CODES.M;
 
-public class SignUp extends AppCompatActivity implements View.OnClickListener, ActivityCompat.OnRequestPermissionsResultCallback {
+public class SignUpActivity extends AppCompatActivity implements View.OnClickListener, ActivityCompat.OnRequestPermissionsResultCallback {
 
     SignUpViewModel mViewModel;
     RadioButton mRadioButtonMale, mRadioButtonFemale;
     Button mNextButton;
     EditText mPassword, mEmail, mFullName, mPersonalNumber, mPhone;
     String mSaveRadioButtonAnswer;
+    Boolean mFilledInTextFields = false;
     private static final String GENDER_MALE = "Male";
     private static final String GENDER_FEMALE = "Female";
     ImageView mImageViewProfile;
@@ -127,19 +129,21 @@ public class SignUp extends AppCompatActivity implements View.OnClickListener, A
                 final String personalNumber = mPersonalNumber.getText().toString();
                 final String phone = mPhone.getText().toString();
 
-                mViewModel.createUserWithEmailAndPassword(email, password, this).observe(this, new Observer<FirebaseUser>() {
-                    @Override
-                    public void onChanged(@Nullable FirebaseUser user) {
-                        if(user != null){
-                            mViewModel.createUser(user.getUid(), new User(user.getUid(), FirebaseInstanceId.getInstance().getToken(),
-                                    User.TYPE_PASSENGER, phone, personalNumber, fullName, null, mSaveRadioButtonAnswer));
-                            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                            startActivity(intent);
-                        } else{
-                            Timber.d("USER was not CREATED");
+                if(checkTextFields(email, password, fullName, personalNumber, phone)){
+                    mViewModel.createUserWithEmailAndPassword(email, password, this).observe(this, new Observer<FirebaseUser>() {
+                        @Override
+                        public void onChanged(@Nullable FirebaseUser user) {
+                            if(user != null){
+                                mViewModel.createUser(user.getUid(), new User(user.getUid(), FirebaseInstanceId.getInstance().getToken(),
+                                        User.TYPE_PASSENGER, phone, personalNumber, fullName, null, mSaveRadioButtonAnswer));
+                                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                                startActivity(intent);
+                            } else{
+                                ToastHelper.makeToast(getResources().getString(R.string.toast_could_not_create_user), SignUpActivity.this).show();
+                            }
                         }
-                    }
-                });
+                    });
+                }
                 break;
 
             case R.id.imageview_signup_profile:
@@ -147,6 +151,32 @@ public class SignUp extends AppCompatActivity implements View.OnClickListener, A
                 break;
         }
     }
+
+    public Boolean checkTextFields(String email, String password, String fullName, String personalNumber, String phone){
+        if(!email.isEmpty() && !password.isEmpty() && !fullName.isEmpty() && !personalNumber.isEmpty() && !phone.isEmpty()){
+            mFilledInTextFields = true;
+        } else{
+            mFilledInTextFields = false;
+        }
+        if(email.isEmpty()){
+            mEmail.setError("Please enter an email");
+        }
+        if(password.isEmpty()){
+            mPassword.setError("Please enter a password");
+        }
+        if(fullName.isEmpty()){
+            mFullName.setError("Please enter your name");
+        }
+        if(personalNumber.isEmpty()){
+            mPersonalNumber.setError("Please enter your personal number");
+        }
+        if(phone.isEmpty()){
+            mPhone.setError("Please enter your phone number");
+        }
+        return mFilledInTextFields;
+    }
+
+
 
     public void checkpermissions(Activity activity) {
         PackageManager mPackageManager = activity.getPackageManager();
@@ -156,7 +186,7 @@ public class SignUp extends AppCompatActivity implements View.OnClickListener, A
                 requestPermissions(new String[]{Manifest.permission.CAMERA,Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CAMERA_PERMISSION);
             }
         } else {
-            openMediaSelector(SignUp.this);
+            openMediaSelector(SignUpActivity.this);
         }
     }
 
@@ -170,7 +200,7 @@ public class SignUp extends AppCompatActivity implements View.OnClickListener, A
             else
             {
                 Timber.d("permission granted");
-                openMediaSelector(SignUp.this);
+                openMediaSelector(SignUpActivity.this);
             }
         } else {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
