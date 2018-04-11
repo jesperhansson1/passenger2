@@ -21,9 +21,6 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.Task;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -135,8 +132,12 @@ public class MainViewModel extends AndroidViewModel {
 
     }
 
-    public void removeNotification(Notification notification){
-        mPassengerRepository.removeNotification(notification);
+    public void pollNotificationQueue(Notification notification){
+        mPassengerRepository.pollNotificationQueue(notification);
+    }
+
+    public void removeNotification() {
+        mPassengerRepository.removeNotification();
     }
 
     public void refreshToken(String token) {
