@@ -147,7 +147,7 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                 break;
 
             case R.id.imageview_signup_profile:
-                checkpermissions(SignUp.this);
+                checkpermissions(SignUpActivity.this);
                 break;
         }
     }
