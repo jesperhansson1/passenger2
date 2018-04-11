@@ -100,15 +100,15 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         switch(v.getId()) {
             case R.id.radiobutton_signup_maleRadioButton:
                 // Do something
-                mSaveRadioButtonAnswer = GENDER_MALE;
-                mRadioButtonMale.setBackgroundColor(getResources().getColor(R.color.colorBlue));
-                mRadioButtonMale.setTextColor(getResources().getColor(R.color.colorWhite));
-                mRadioButtonMale.setButtonDrawable(R.drawable.ic_male_white);
+                    mSaveRadioButtonAnswer = GENDER_MALE;
+            mRadioButtonMale.setBackgroundColor(getResources().getColor(R.color.colorBlue));
+            mRadioButtonMale.setTextColor(getResources().getColor(R.color.colorWhite));
+            mRadioButtonMale.setButtonDrawable(R.drawable.ic_male_white);
 
-                mRadioButtonFemale.setBackgroundColor(getResources().getColor(R.color.colorWhite));
-                mRadioButtonFemale.setTextColor(getResources().getColor(R.color.colorBlue));
-                mRadioButtonFemale.setButtonDrawable(R.drawable.ic_woman_blue);
-                break;
+            mRadioButtonFemale.setBackgroundColor(getResources().getColor(R.color.colorWhite));
+            mRadioButtonFemale.setTextColor(getResources().getColor(R.color.colorBlue));
+            mRadioButtonFemale.setButtonDrawable(R.drawable.ic_woman_blue);
+            break;
 
             case R.id.radiobutton_signup_femaleRadioButton:
                 // Do something
