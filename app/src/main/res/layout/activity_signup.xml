@@ -21,8 +21,8 @@
 
     <ImageView
         android:id="@+id/imageview_signup_profile"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="100dp"
@@ -45,6 +45,7 @@
 
         <RadioButton
             android:id="@+id/radiobutton_signup_maleRadioButton"
+
             style="@style/RadioButtons"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
