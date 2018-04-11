@@ -25,7 +25,8 @@
 
     <style name="EditTextStyle" parent="TextAppearance.AppCompat">
         <item name="android:paddingBottom">@dimen/pad_10dp</item>
-        <item name="android:paddingLeft">@dimen/pad_5dp</item>
+        <item name="android:paddingLeft">@dimen/pad_10dp</item>
+        <item name="android:paddingRight">@dimen/pad_10dp</item>
         <item name="android:elevation">@dimen/pad_5dp</item>
         <item name="android:paddingTop">@dimen/pad_15dp</item>
         <item name="android:drawablePadding">@dimen/pad_5dp</item>
