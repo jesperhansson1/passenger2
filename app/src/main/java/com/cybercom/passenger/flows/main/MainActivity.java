@@ -79,12 +79,10 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
         mUser = FirebaseAuth.getInstance().getCurrentUser();
 
         if (mUser != null) {
-            getSupportActionBar().setTitle(mUser.getEmail());
             mMainViewModel.refreshToken(FirebaseInstanceId.getInstance().getToken());
             if (getSupportActionBar() != null) {
                 getSupportActionBar().setTitle(mUser.getEmail());
             }
-            mMainViewModel.refreshToken(FirebaseInstanceId.getInstance().getToken());
         } else {
             if (getSupportActionBar() != null) {
                 getSupportActionBar().setTitle(R.string.mainactivity_title);
