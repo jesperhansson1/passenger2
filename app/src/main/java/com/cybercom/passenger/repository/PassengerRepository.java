@@ -265,12 +265,18 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private void addToNotificationQueue(Notification notification) {
         mNotificationQueue.add(notification);
         if (mNotification.getValue() == null) {
-            mNotification.postValue(notification);
+            mNotification.postValue(mNotificationQueue.poll());
         }
     }
 
-    public void removeNotification(Notification notification) {
+    public void removeNotification() {
+        mNotification.postValue(null);
+    }
+
+    public void pollNotificationQueue(Notification notification) {
         mNotificationQueue.remove(notification);
-        mNotification.postValue(mNotificationQueue.poll());
+        Notification n = mNotificationQueue.poll();
+
+        mNotification.postValue(n);
     }
 }

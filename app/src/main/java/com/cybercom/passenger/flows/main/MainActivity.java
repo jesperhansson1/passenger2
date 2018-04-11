@@ -123,11 +123,11 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
                 switch (notification.getType()) {
                     case Notification.REQUEST_DRIVE:
                         showDriverConfirmationDialogFragment(notification);
-//                        mMainViewModel.removeNotification(notification);
+                        mMainViewModel.removeNotification();
                         break;
                     case Notification.ACCEPT_PASSENGER:
                         showPassengerNotificationDialog(notification);
-//                        mMainViewModel.removeNotification(notification);
+                        mMainViewModel.removeNotification();
                         break;
                     case Notification.REJECT_PASSENGER:
                         // TODO: Currently the matching does not handle configuration changes...
@@ -136,12 +136,12 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
 //                            @Override
 //                            public void onChanged(@Nullable Drive drive) {
 //                                if (drive != null) {
-//                                    mMainViewModel.addRequestDriveNotification(notification.getDriveRequest(), drive);
+//                                    mMainViewModel.addReque                                                                                                                   stDriveNotification(notification.getDriveRequest(), drive);
 //                                }
 //                            }
 //                        });
 
-                        mMainViewModel.removeNotification(notification);
+                        mMainViewModel.removeNotification();
                         break;
                 }
             }
@@ -340,12 +340,12 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
         } else {
             mMainViewModel.sendRejectPassengerNotification(notification.getDrive(), notification.getDriveRequest());
         }
-        mMainViewModel.removeNotification(notification);
+        mMainViewModel.pollNotificationQueue(notification);
     }
 
     @Override
     public void onCancelDrive(Notification notification) {
-        mMainViewModel.removeNotification(notification);
+        mMainViewModel.pollNotificationQueue(notification);
     }
 
 }
