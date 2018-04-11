@@ -261,15 +261,14 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
             case 0:
                 if(resultCode == RESULT_OK){
                     Uri selectedImage = imageReturnedIntent.getData();
-                    mImageViewProfile.setImageURI(selectedImage);
+                    Picasso.with(this)
+                            .load(selectedImage).into(mImageViewProfile);
                 }
              break;
             case 1:
                 if(resultCode == RESULT_OK){
                     Uri selectedImage = imageReturnedIntent.getData();
-                    mImageViewProfile.setImageURI(selectedImage);
-                    Picasso.with(this)
-                            .load(selectedImage).into(mImageViewProfile);
+
                     boolean isCamera = (imageReturnedIntent == null || imageReturnedIntent.getData() == null);
                     if(isCamera)
                     {
@@ -279,6 +278,11 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                         Picasso.with(this)
                                 .load(MediaStore.Images.Media.insertImage(getApplicationContext().getContentResolver(),
                                         imageBitmap, "Title", null)).into(mImageViewProfile);
+                    }
+                    else
+                    {
+                        Picasso.with(this)
+                                .load(selectedImage).into(mImageViewProfile);
                     }
                 }
                  break;
