@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import timber.log.Timber;
 
@@ -47,6 +49,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private DatabaseReference mDrivesReference;
     private DatabaseReference mDriveRequestsReference;
     private DatabaseReference mNotificationsReference;
+
+    BlockingQueue<Notification> mNotificationQueue = new LinkedBlockingQueue<>();
 
     private MutableLiveData<Notification> mNotification = new MutableLiveData<>();
 
@@ -215,7 +219,6 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     public void addDriveRequest(DriveRequest driveRequest) {
         com.cybercom.passenger.repository.databasemodel.DriveRequest fDriveRequest =
                 DatabaseModelHelper.convertDriveRequest(driveRequest);
-
         mDriveRequestsReference.push().setValue(fDriveRequest);
     }
 
@@ -241,12 +244,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                                     @Override
                                     public void onDataChange(DataSnapshot dataSnapshot) {
                                         User passenger = dataSnapshot.getValue(User.class);
-                                        mNotification.postValue(DatabaseModelHelper
-                                                .convertPayloadToNotification(
-                                                        payload,
-                                                        driver,
-                                                        passenger)
-                                        );
+
+                                        addToNotificationQueue(DatabaseModelHelper.convertPayloadToNotification(payload, driver, passenger));
                                     }
 
                                     @Override
@@ -264,8 +263,16 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                 });
     }
 
-    public void removeNotification() {
-        mNotification.postValue(null);
+    private void addToNotificationQueue(Notification notification) {
+        mNotificationQueue.add(notification);
+        if (mNotification.getValue() == null) {
+            mNotification.postValue(notification);
+        }
+    }
+
+    public void removeNotification(Notification notification) {
+        mNotificationQueue.remove(notification);
+        mNotification.postValue(mNotificationQueue.poll());
     }
 
     private String generateRandomUUID() {

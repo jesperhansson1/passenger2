@@ -16,23 +16,23 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cybercom.passenger.R;
-import com.cybercom.passenger.model.Drive;
+import com.cybercom.passenger.model.Notification;
 
 import timber.log.Timber;
 
 public class PassengerNotificationDialog extends DialogFragment implements View.OnClickListener {
 
-    private static final String DRIVE_KEY = "DRIVE";
-    private Drive mDrive;
+    private static final String NOTIFICATION_KEY = "NOTIFICATION";
+    private Notification mNotification;
 
     public interface PassengerNotificationListener {
-        void onCancelPressed(Boolean isCancelPressed);
+        void onCancelDrive(Notification notification);
     }
 
-    public static PassengerNotificationDialog getInstance(Drive drive) {
+    public static PassengerNotificationDialog getInstance(Notification notification) {
         PassengerNotificationDialog passengerNotificationDialog = new PassengerNotificationDialog();
         Bundle args = new Bundle();
-        args.putSerializable(DRIVE_KEY, drive);
+        args.putSerializable(NOTIFICATION_KEY, notification);
         passengerNotificationDialog.setArguments(args);
         return passengerNotificationDialog;
     }
@@ -52,11 +52,11 @@ public class PassengerNotificationDialog extends DialogFragment implements View.
 
 
         if(getArguments() != null){
-            mDrive = (Drive) getArguments().getSerializable(DRIVE_KEY);
+            mNotification = (Notification) getArguments().getSerializable(NOTIFICATION_KEY);
 
             TextView passengerNotificationName
                     = rootView.findViewById(R.id.passenger_notification_name);
-            passengerNotificationName.setText(mDrive.getDriver().getFullName());
+            passengerNotificationName.setText(mNotification.getDrive().getDriver().getFullName());
 
         }
 
@@ -96,7 +96,7 @@ public class PassengerNotificationDialog extends DialogFragment implements View.
         switch (v.getId()) {
             case R.id.passenger_notification_cancel_button: {
                 Timber.i("Passenger notification cancel button pressed");
-                mPassengerNotificationListener.onCancelPressed(true);
+                mPassengerNotificationListener.onCancelDrive(mNotification);
                 dismiss();
                 break;
             }

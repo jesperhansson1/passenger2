@@ -1,6 +1,8 @@
 package com.cybercom.passenger.model;
 
-public class Notification {
+import java.io.Serializable;
+
+public class Notification implements Serializable {
 
     public static final int REQUEST_DRIVE = 0;
     public static final int ACCEPT_PASSENGER = 1;
@@ -41,5 +43,14 @@ public class Notification {
 
     public void setmDrive(Drive mDrive) {
         this.mDrive = mDrive;
+    }
+
+    @Override
+    public String toString() {
+        return "Drive{" +
+                "mType=" + mType +
+                ", mDriveRequest=" + mDriveRequest +
+                ", mDrive=" + mDrive +
+                '}';
     }
 }
