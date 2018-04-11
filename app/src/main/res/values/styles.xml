@@ -1,0 +1,57 @@
+<resources>
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:textColor">#ff0099cc</item>
+
+
+    </style>
+
+    <style name="switch_passenger_driver" parent="Theme.AppCompat.Light">
+        <!-- active thumb & track color (30% transparency) -->
+        <item name="colorControlActivated">#ff0099cc</item>
+
+        <!-- inactive thumb color -->
+        <item name="colorSwitchThumbNormal">#f1f1f1
+        </item>
+
+        <!-- inactive track color (30% transparency) -->
+        <item name="android:colorForeground">#42221f1f
+        </item>
+    </style>
+
+    <style name="EditTextStyle" parent="TextAppearance.AppCompat">
+        <item name="android:paddingBottom">@dimen/pad_10dp</item>
+        <item name="android:paddingLeft">@dimen/pad_10dp</item>
+        <item name="android:paddingRight">@dimen/pad_10dp</item>
+        <item name="android:elevation">@dimen/pad_5dp</item>
+        <item name="android:paddingTop">@dimen/pad_15dp</item>
+        <item name="android:drawablePadding">@dimen/pad_5dp</item>
+    </style>
+
+    <style name="SignUpLogInTitles" parent="TextAppearance.AppCompat">
+        <item name="android:textColor">@color/colorBlue</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="RadioButtons" parent="TextAppearance.AppCompat">
+        <item name="android:textStyle">bold</item>
+        <item name="android:paddingRight">@dimen/pad_20dp</item>
+        <item name="android:paddingLeft">@dimen/pad_5dp</item>
+        <item name="android:paddingBottom">@dimen/pad_10dp</item>
+        <item name="android:paddingTop">@dimen/pad_15dp</item>
+
+    </style>
+
+    <style name="AlertDialogTheme" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <item name="android:buttonBarNeutralButtonStyle">@style/NeutralButtonStyle</item>
+    </style>
+
+    <style name="NeutralButtonStyle" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
+        <item name="android:textColor">@color/colorRed</item>
+    </style>
+
+</resources>

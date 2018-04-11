@@ -1,0 +1,92 @@
+<resources>
+    <string name="app_name">passenger</string>
+    <string name="create_ride">Create Ride</string>
+    <string name="create_ride_request">Request Ride</string>
+    <string name="start_location">Start Location</string>
+    <string name="end_location">End Location</string>
+    <string name="driver">Driver</string>
+    <string name="passenger">Passenger</string>
+    <string name="ride">Ride Detail</string>
+
+    <string name="driver_confirmation_share_your_ride">This person wants to share your ride</string>
+    <string name="driver_confirmation_drive_cost">45</string>
+    <string name="driver_confirmation_passenger_name">Nicolas Cage</string>
+    <string name="driver_confirmation_decline">Decline</string>
+    <string name="driver_confirmation_accept">Accept</string>
+    <string name="driver_confirmation_start_position">Dockplatsen 14</string>
+    <string name="driver_confirmation_end_position">Dockplatsen 16</string>
+    <string name="must_implement_confirmation_listener">Must implement ConfirmationListener</string>
+    <string name="must_implement_passenger_notification_listener">Must implement passenger notification listener</string>
+    <string name="content_description_passenger_thumbnail">Passenger thumbnail</string>
+    <string name="content_description_start_location_icon">Start location icon</string>
+    <string name="content_description_end_location_icon">End location icon</string>
+    <string name="content_description_three_vertical_dots">Three vertical dots</string>
+    <string name="passenger_notification_name">John Travolta</string>
+    <string name="passenger_notification_car_model">Volvo XC90</string>
+    <string name="passenger_notification_eta_title">ETA</string>
+    <string name="passenger_notification_price_title">PRICE</string>
+    <string name="passenger_notification_eta">4m</string>
+    <string name="passenger_notification_price">45</string>
+    <string name="passenger_notification_license_plate">ABC 123</string>
+    <string name="passenger_notification_cancel">Cancel</string>
+    <string name="content_description_passenger_notification_thumbnail">Passenger notification thumbnail</string>
+    <string name="finding_car_info">Searching for a car...</string>
+    <string name="finding_driver_cancel">Cancel</string>
+    <string name="must_implement_finding_car_listener">Must implement FindingCarListener</string>
+    <string name="finding_car_price">Price 45</string>
+    <string name="create_drive_cancel">Cancel</string>
+    <string name="security">Security</string>
+    <string name="mail_example">luftluft@mail.com</string>
+    <string name="forgot_password">Forgot Password</string>
+    <string name="signup">Sign Up</string>
+    <string name="login">Login</string>
+    <string name="send_me_password">Send me password</string>
+    <string name="we_sent_password_to">We sent password to</string>
+    <string name="open_mail_client">Open mail client</string>
+    <string name="dialog_create_drive_header">Create Ride</string>
+    <string name="dialog_request_drive_header">Request Ride</string>
+    <string name="signup_title">Sign Up</string>
+    <string name="full_name">Full name</string>
+    <string name="personal_number">Personal number</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="phone">Phone</string>
+    <string name="next">Next</string>
+    <string name="hint_full_name">Enter name</string>
+    <string name="hint_personal_number">8310263388</string>
+    <string name="hint_email">my@email.com</string>
+    <string name="hint_password">Enter password (min 6 characters)</string>
+    <string name="hint_phone">12345</string>
+    <string name="male">Male</string>
+    <string name="female">Female</string>
+    <string name="name">Name</string>
+
+    <string name="toast_enter_email_password">Please enter email and password to login</string>
+    <string name="toast_incorrect_email_password">You have entered an incorrect email or password</string>
+    <string name="toast_forgot_password_incorrect_email">You have entered an incorrect email</string>
+    <string name="toast_send_forgot_password_email">You haven\'t entered any email</string>
+    <string name="toast_could_not_create_user">Could not create user</string>
+    <string name="toast_badly_formatted_email">Badly formatted email or to short password (min 6 characters)</string>
+
+    <string name="login_title">Login</string>
+    <string name="mainactivity_title">Passenger</string>
+    <string name="select_image_source">Select image source</string>
+     <string name="library">Library</string>
+    <string name="take_photo">Take Photo</string>
+    <string name="cancel">Cancel</string>
+
+    <string-array name="location_array">
+        <item>My Location</item>
+        <item>Malmö</item>
+        <item>Helsingborg</item>
+        <item>Stockholm</item>
+        <item>Göteborg</item>
+    </string-array>
+    <string-array name="location_value">
+        <item></item>
+        <item>55.604981,13.003822</item>
+        <item>56.046467,12.694512</item>
+        <item>59.329323,18.068581</item>
+        <item>57.708870,11.974560</item>
+    </string-array>
+</resources>
