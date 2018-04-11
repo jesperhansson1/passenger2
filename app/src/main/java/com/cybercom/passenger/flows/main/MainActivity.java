@@ -22,7 +22,6 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.crashlytics.android.Crashlytics;
-import com.cybercom.passenger.MainViewModel;
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.createdrive.CreateRideDialogFragment;
 import com.cybercom.passenger.flows.driverconfirmation.AcceptRejectPassengerDialog;

@@ -1,4 +1,4 @@
-package com.cybercom.passenger;
+package com.cybercom.passenger.flows.main;
 
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
