@@ -136,11 +136,15 @@ public class MainViewModel extends AndroidViewModel {
         mPassengerRepository.pollNotificationQueue(notification);
     }
 
-    public void removeNotification() {
-        mPassengerRepository.removeNotification();
+    public void dismissNotification() {
+        mPassengerRepository.dismissNotification();
     }
 
     public void refreshToken(String token) {
         mPassengerRepository.refreshNotificationTokenId(token);
+    }
+
+    public LiveData<User> getUser() {
+        return mPassengerRepository.getUser();
     }
 }

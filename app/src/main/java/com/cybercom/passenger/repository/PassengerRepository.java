@@ -30,7 +30,7 @@ import timber.log.Timber;
 public class PassengerRepository implements PassengerRepositoryInterface {
 
 
-    public static final String NOTIFICATION_TOKEN_ID = "notificationTokenId";
+    private static final String NOTIFICATION_TOKEN_ID = "notificationTokenId";
 
     private static final String REFERENCE_NOTIFICATIONS = "notifications";
     private static final String REFERENCE_USERS = "users";
@@ -269,14 +269,12 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         }
     }
 
-    public void removeNotification() {
+    public void dismissNotification() {
         mNotification.postValue(null);
     }
 
     public void pollNotificationQueue(Notification notification) {
         mNotificationQueue.remove(notification);
-        Notification n = mNotificationQueue.poll();
-
-        mNotification.postValue(n);
+        mNotification.postValue(mNotificationQueue.poll());
     }
 }

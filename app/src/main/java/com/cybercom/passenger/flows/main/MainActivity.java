@@ -31,7 +31,6 @@ import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Notification;
 import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
-import com.cybercom.passenger.repository.PassengerRepository;
 import com.cybercom.passenger.route.FetchRouteUrl;
 import com.cybercom.passenger.utils.LocationHelper;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -122,25 +121,15 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
                 switch (notification.getType()) {
                     case Notification.REQUEST_DRIVE:
                         showDriverConfirmationDialogFragment(notification);
-                        mMainViewModel.removeNotification();
+                        mMainViewModel.dismissNotification();
                         break;
                     case Notification.ACCEPT_PASSENGER:
                         showPassengerNotificationDialog(notification);
-                        mMainViewModel.removeNotification();
+                        mMainViewModel.dismissNotification();
                         break;
                     case Notification.REJECT_PASSENGER:
-                        // TODO: Currently the matching does not handle configuration changes...
-                        // Also matching should timeout
-//                        mMainViewModel.findBestDriveMatch(notification.getDriveRequest().getStartLocation(), notification.getDriveRequest().getEndLocation()).observe(lifecycleOwner, new Observer<Drive>() {
-//                            @Override
-//                            public void onChanged(@Nullable Drive drive) {
-//                                if (drive != null) {
-//                                    mMainViewModel.addReque                                                                                                                   stDriveNotification(notification.getDriveRequest(), drive);
-//                                }
-//                            }
-//                        });
-
-                        mMainViewModel.removeNotification();
+//                        matchDriveRequest(notification.getDriveRequest());
+                        mMainViewModel.dismissNotification();
                         break;
                 }
             }
@@ -162,6 +151,21 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
             //Permission not granted to access user location
             setDefaultLocationToMinc();
         }
+    }
+
+    private void matchDriveRequest(final DriveRequest driveRequest) {
+        LifecycleOwner lifecycleOwner = this;
+
+        // TODO: Currently the matching does not handle configuration changes...
+        // Also matching should timeout
+        mMainViewModel.findBestDriveMatch(driveRequest.getStartLocation(), driveRequest.getEndLocation()).observe(lifecycleOwner, new Observer<Drive>() {
+            @Override
+            public void onChanged(@Nullable Drive drive) {
+                if (drive != null) {
+                    mMainViewModel.addRequestDriveNotification(driveRequest, drive);
+                }
+            }
+        });
     }
 
     public void setDefaultLocationToMinc()
@@ -290,7 +294,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
 
         switch (type) {
             case CreateRideDialogFragment.TYPE_RIDE:
-                PassengerRepository.getInstance().getUser().observe(this, new Observer<User>() {
+                mMainViewModel.getUser().observe(this, new Observer<User>() {
                     @Override
                     public void onChanged(@Nullable User user) {
                         mMainViewModel.createDrive(user, startLocation, endLocation);
@@ -300,20 +304,12 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
                 });
                 break;
             case CreateRideDialogFragment.TYPE_REQUEST:
-                final LifecycleOwner lifeCycleOwner = this;
 
-                PassengerRepository.getInstance().getUser().observe(this, new Observer<User>() {
+                mMainViewModel.getUser().observe(this, new Observer<User>() {
                     @Override
                     public void onChanged(@Nullable User user) {
                         final DriveRequest driveRequest = mMainViewModel.createDriveRequest(user, startLocation, endLocation);
-                        mMainViewModel.findBestDriveMatch(startLocation, endLocation).observe(lifeCycleOwner, new Observer<Drive>() {
-                            @Override
-                            public void onChanged(@Nullable Drive drive) {
-                                if (drive != null) {
-                                    mMainViewModel.addRequestDriveNotification(driveRequest, drive);
-                                }
-                            }
-                        });
+                        matchDriveRequest(driveRequest);
                     }
                 });
 
