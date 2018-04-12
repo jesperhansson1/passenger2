@@ -128,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
                         mMainViewModel.dismissNotification();
                         break;
                     case Notification.REJECT_PASSENGER:
-//                        matchDriveRequest(notification.getDriveRequest());
+                        matchDriveRequest(notification.getDriveRequest());
                         mMainViewModel.dismissNotification();
                         break;
                 }
