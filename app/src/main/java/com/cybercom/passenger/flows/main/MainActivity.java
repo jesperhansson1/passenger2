@@ -11,21 +11,27 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
 
 import com.crashlytics.android.Crashlytics;
+import com.cybercom.passenger.CreateDriveFragment;
 import com.cybercom.passenger.MainViewModel;
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.createdrive.CreateRideDialogFragment;
 import com.cybercom.passenger.flows.driverconfirmation.AcceptRejectPassengerDialog;
+import com.cybercom.passenger.flows.login.LoginActivity;
 import com.cybercom.passenger.flows.passengernotification.PassengerNotificationDialog;
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
@@ -34,9 +40,7 @@ import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.repository.PassengerRepository;
 import com.cybercom.passenger.route.FetchRouteUrl;
-import com.cybercom.passenger.utils.LocationHelper;
 import com.google.android.gms.maps.CameraUpdateFactory;
-import com.cybercom.passenger.flows.login.LoginActivity;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -58,6 +62,11 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     Location mLocation;
     private GoogleMap mGoogleMap;
     Menu mLoginMenu;
+    FloatingActionButton mFloatRide;
+
+    private FragmentManager mFragmentManager;
+    CreateDriveFragment mCreateDriveFragment;
+    private boolean isCreateDriveFragmentVisible = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +79,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
         Fabric.with(this, new Crashlytics());
 
         mMainViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
+        mFragmentManager = getSupportFragmentManager();
 
         if (savedInstanceState == null) {
             if (getIntent().getExtras() != null) {
@@ -108,6 +118,42 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map_activitymap_googlemap);
         mapFragment.getMapAsync(this);
+        toolbar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isCreateDriveFragmentVisible) {
+                    mFloatRide.setVisibility(View.VISIBLE);
+
+                    if (mCreateDriveFragment != null) {
+                        //Your animation
+                        Animation animation = AnimationUtils.loadAnimation(MainActivity.this, R.anim.dialog_exit_animation);
+
+                        animation.setAnimationListener(new Animation.AnimationListener() {
+                            @Override
+                            public void onAnimationStart(Animation animation) {
+
+                            }
+
+                            @Override
+                            public void onAnimationEnd(Animation animation) {
+                                closeFragment(mCreateDriveFragment);
+
+                                isCreateDriveFragmentVisible = false;
+                            }
+
+                            @Override
+                            public void onAnimationRepeat(Animation animation) {
+
+                            }
+                        });
+
+                        //Start the animation.
+                        findViewById(R.id.create_drive_dialog).startAnimation(animation);
+                    }
+
+                }
+            }
+        });
 
         initObservers();
 
@@ -151,22 +197,21 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
             @Override
             public void onChanged(@Nullable Location location) {
                 // TODO: Need to handle if there is no data och display info. Need to send this location to spinner
-                if(location == null) {
-                    Timber.d("get updated --> null");
-                }else {
+                if (location == null) {
+                    Timber.i("get updated --> null");
+                } else {
                     mLocation = location;
                 }
             }
         });
-        if (mLocation == null)
-        {
+       // if (mLocation == null) {
             //Permission not granted to access user location
-            setDefaultLocationToMinc();
-        }
+           // Timber.i("get updated --> minc");
+          //  setDefaultLocationToMinc();
+        //}
     }
 
-    public void setDefaultLocationToMinc()
-    {
+    public void setDefaultLocationToMinc() {
         mLocation = new Location("Minc");
         mLocation.setLatitude(55.611473);
         mLocation.setLongitude(12.994266);
@@ -206,28 +251,39 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     public void initUI() {
         changeLabelFontStyle(false);
         final Switch switchRide = findViewById(R.id.switch_ride);
-        final FloatingActionButton floatRide = findViewById(R.id.button_createRide);
-        floatRide.setImageResource(R.drawable.passenger);
+
+        mFloatRide = findViewById(R.id.button_createRide);
+        mFloatRide.setImageResource(R.drawable.passenger);
+
         switchRide.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton arg0, boolean isChecked) {
                 if (isChecked) {
-                    floatRide.setImageResource(R.drawable.driver);
+                    mFloatRide.setImageResource(R.drawable.driver);
                     changeLabelFontStyle(true);
                 } else {
-                    floatRide.setImageResource(R.drawable.passenger);
+                    mFloatRide.setImageResource(R.drawable.passenger);
                     changeLabelFontStyle(false);
                 }
             }
         });
-        floatRide.setOnClickListener(new View.OnClickListener() {
+
+        mCreateDriveFragment = CreateDriveFragment.newInstance();
+        mFloatRide.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (switchRide.isChecked()) {
+
+             if(!isCreateDriveFragmentVisible){
+                    loadFragment(mCreateDriveFragment);
+                    isCreateDriveFragmentVisible = true;
+                 mFloatRide.setVisibility(View.INVISIBLE);
+                }
+
+                /*if (switchRide.isChecked()) {
                     showCreateDriveDialog(CreateRideDialogFragment.TYPE_RIDE, LocationHelper.convertLocationToDisplayString(mLocation));
                 } else {
                     showCreateDriveDialog(CreateRideDialogFragment.TYPE_REQUEST, LocationHelper.convertLocationToDisplayString(mLocation));
-                }
+                }*/
             }
         });
     }
@@ -247,6 +303,17 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
         dialogFragment.show(getFragmentManager(), CreateRideDialogFragment.TAG);
     }
 
+    public void loadFragment(Fragment fragment) {
+        mFragmentManager.beginTransaction()
+                .setCustomAnimations(R.anim.dialog_enter_animation, R.anim.dialog_exit_animation)
+                .replace(R.id.main_activity_dialog_container, fragment).commit();
+    }
+
+    public void closeFragment(Fragment fragment) {
+        mFragmentManager.beginTransaction()
+                .remove(fragment).commit();
+    }
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mGoogleMap = googleMap;
@@ -263,16 +330,15 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
 
     }
 
-    public void updateMyLocation(Location myLocation)
-    {
-        if(mGoogleMap!=null) {
+    public void updateMyLocation(Location myLocation) {
+        if (mGoogleMap != null) {
             MarkerOptions markerOptions = new MarkerOptions().position(new LatLng(myLocation.getLatitude(), myLocation.getLongitude())).title("You are Here");
             mGoogleMap.addMarker(markerOptions);
             mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(myLocation.getLatitude(), myLocation.getLongitude()), 8.0f));
         }
     }
 
-    public void updateMap(LatLng startLocation, LatLng endLocation){
+    public void updateMap(LatLng startLocation, LatLng endLocation) {
 
         mGoogleMap.addMarker(new MarkerOptions().position(startLocation).title(getApplicationContext().getResources().getString(R.string.start_location)));
         mGoogleMap.addMarker(new MarkerOptions().position(endLocation).title(getApplicationContext().getResources().getString(R.string.end_location)));
@@ -295,8 +361,8 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
                     @Override
                     public void onChanged(@Nullable User user) {
                         mMainViewModel.createDrive(user, startLocation, endLocation);
-                        updateMap(new LatLng(startLocation.getLatitude(),startLocation.getLongitude()),
-                                new LatLng(endLocation.getLatitude(),endLocation.getLongitude()));
+                        updateMap(new LatLng(startLocation.getLatitude(), startLocation.getLongitude()),
+                                new LatLng(endLocation.getLatitude(), endLocation.getLongitude()));
                     }
                 });
                 break;

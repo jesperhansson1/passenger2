@@ -143,4 +143,15 @@ public class MainViewModel extends AndroidViewModel {
     public void refreshToken(String token) {
         mPassengerRepository.refreshNotificationTokenId(token);
     }
+
+    // CreateDriveFragment
+    private int numberOfPassengers = 4;
+
+    public void setNumberOfPassengers(int passengers){
+        numberOfPassengers = passengers;
+    }
+
+    public int getNumberOfPassengers(){
+        return numberOfPassengers;
+    }
 }
