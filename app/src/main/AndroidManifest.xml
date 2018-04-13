@@ -4,10 +4,11 @@
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES"/>
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.CAMERA" />
+
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
 
@@ -20,15 +21,26 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
         <activity android:name=".flows.main.MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+
+            <!--
+                     <intent-filter>
+                     <action android:name="android.intent.action.MAIN" />
+
+                     <category android:name="android.intent.category.LAUNCHER" />
+                 </intent-filter>
+            -->
         </activity>
         <activity android:name=".flows.forgotpassword.ForgotPasswordActivity" />
         <activity android:name=".flows.signup.PasswordSentActivity" />
         <activity android:name=".flows.signup.SignUpActivity" />
         <activity android:name=".flows.login.LoginActivity" />
+        <activity android:name=".flows.car.CarsActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
 
         <service android:name=".service.PassengerInstanceIdService">
             <intent-filter>
@@ -47,7 +59,6 @@
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_color"
             android:resource="@color/colorAccent" />
-
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="38256c6824587d6fb8c72978c282a112ba5e1a55" />
@@ -65,5 +76,7 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
+        <activity android:name=".flows.car.CarDetailActivity"></activity>
     </application>
+
 </manifest>

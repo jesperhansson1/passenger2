@@ -4,6 +4,7 @@ import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.location.Location;
 
+import com.cybercom.passenger.model.Car;
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Notification;
@@ -35,6 +36,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private static final String REFERENCE_NOTIFICATIONS = "notifications";
     private static final String REFERENCE_USERS = "users";
     private static final String REFERENCE_DRIVES = "drives";
+    private static final String REFERENCE_CARS = "cars";
     private static final String REFERENCE_DRIVE_REQUESTS = "driveRequests";
     private static final String REFERENCE_USERS_CHILD_TYPE = "type";
 
@@ -48,6 +50,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private DatabaseReference mDrivesReference;
     private DatabaseReference mDriveRequestsReference;
     private DatabaseReference mNotificationsReference;
+    private DatabaseReference mCarsReference;
 
     BlockingQueue<Notification> mNotificationQueue = new LinkedBlockingQueue<>();
 
@@ -64,6 +67,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
         mUsersReference = firebaseDatabase.getReference(REFERENCE_USERS);
         mDrivesReference = firebaseDatabase.getReference(REFERENCE_DRIVES);
+        mCarsReference = firebaseDatabase.getReference(REFERENCE_CARS);
         mDriveRequestsReference = firebaseDatabase.getReference(REFERENCE_DRIVE_REQUESTS);
         mNotificationsReference = firebaseDatabase.getReference(REFERENCE_NOTIFICATIONS);
     }
@@ -276,5 +280,9 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     public void pollNotificationQueue(Notification notification) {
         mNotificationQueue.remove(notification);
         mNotification.postValue(mNotificationQueue.poll());
+    }
+
+    public DatabaseReference getCarsReference(){
+        return mCarsReference;
     }
 }

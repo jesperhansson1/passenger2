@@ -24,6 +24,7 @@ class DataParser {
         try {
 
             jsonArrayRoutes = jsonObject.getJSONArray("routes");
+            System.out.println(jsonArrayRoutes);
 
             // Traversing all routes
             for(int i=0;i<jsonArrayRoutes.length();i++){

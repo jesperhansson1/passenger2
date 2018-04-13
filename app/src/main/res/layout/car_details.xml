@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/Toolbar_cardetails"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        app:popupTheme="@style/PopupOverlay" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/pad_50dp"
+        android:orientation="vertical"
+        android:paddingBottom="@dimen/pad_10dp"
+        android:paddingEnd="@dimen/pad_10dp"
+        android:paddingStart="@dimen/pad_10dp"
+        android:paddingTop="@dimen/pad_10dp"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/textView_cardetails_number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/car_number" />
+
+        <EditText
+            android:id="@+id/editText_cardetails_number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ems="10"
+            android:hint="@string/car_number_hint"
+            android:drawablePadding="@dimen/pad_10dp"
+            android:drawableStart="@drawable/ic_looks_two"
+            android:inputType="textPersonName" />
+
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/space_normal" />
+
+        <TextView
+            android:id="@+id/textView_cardetails_model"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/car_model" />
+
+        <EditText
+            android:id="@+id/editText_cardetails_model"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ems="10"
+            android:drawablePadding="@dimen/pad_10dp"
+            android:drawableStart="@drawable/driver"
+            android:hint="@string/car_model_hint"
+            android:inputType="textPersonName" />
+
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/space_normal" />
+
+        <TextView
+            android:id="@+id/textView_cardetails_year"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/car_year" />
+
+        <EditText
+            android:id="@+id/editText_cardetails_year"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ems="10"
+            android:drawablePadding="@dimen/pad_10dp"
+            android:drawableStart="@drawable/ic_date_range"
+            android:hint="@string/car_year_hint"
+            android:inputType="textPersonName" />
+
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/space_normal" />
+
+        <TextView
+            android:id="@+id/textView_cardetails_color"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/car_color" />
+
+        <EditText
+            android:id="@+id/editText_cardetails_color"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ems="10"
+            android:drawablePadding="@dimen/pad_10dp"
+            android:drawableStart="@drawable/ic_color_lens"
+            android:hint="@string/car_color_hint"
+            android:inputType="textPersonName" />
+
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/space_normal" />
+
+        <Button
+            android:id="@+id/button_cardetails_save"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/save" />
+    </LinearLayout>
+</android.support.constraint.ConstraintLayout>
