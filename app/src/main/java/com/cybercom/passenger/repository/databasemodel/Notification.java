@@ -7,13 +7,13 @@ public class Notification {
     public static final int REJECT_PASSENGER = 2;
 
     private int mType;
-    private DriveRequest mDriveRequest;
-    private Drive mDrive;
+    private String mDriveRequestId;
+    private String mDriveId;
 
-    public Notification(int type, DriveRequest driveRequest, Drive drive) {
+    public Notification(int type, String driveRequestId, String driveId) {
         mType = type;
-        mDriveRequest = driveRequest;
-        mDrive = drive;
+        mDriveRequestId = driveRequestId;
+        mDriveId = driveId;
     }
 
     public Notification() {
@@ -27,19 +27,19 @@ public class Notification {
         this.mType = type;
     }
 
-    public DriveRequest getDriveRequest() {
-        return mDriveRequest;
+    public String getDriveRequest() {
+        return mDriveRequestId;
     }
 
-    public void setDriveRequest(DriveRequest driveRequest) {
-        this.mDriveRequest = driveRequest;
+    public void setDriveRequestId(String driveRequestId) {
+        this.mDriveRequestId = driveRequestId;
     }
 
-    public Drive getDrive() {
-        return mDrive;
+    public String getDriveId() {
+        return mDriveId;
     }
 
-    public void setDrive(Drive mDrive) {
-        this.mDrive = mDrive;
+    public void setDriveId(String driveId) {
+        this.mDriveId = driveId;
     }
 }

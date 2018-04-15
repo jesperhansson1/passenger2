@@ -1,6 +1,7 @@
 package com.cybercom.passenger.flows.main;
 
 import android.arch.lifecycle.LifecycleOwner;
+import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
@@ -20,11 +21,13 @@ import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.createdrive.CreateRideDialogFragment;
 import com.cybercom.passenger.flows.driverconfirmation.AcceptRejectPassengerDialog;
+import com.cybercom.passenger.flows.login.LoginActivity;
 import com.cybercom.passenger.flows.passengernotification.PassengerNotificationDialog;
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
@@ -34,7 +37,6 @@ import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.route.FetchRouteUrl;
 import com.cybercom.passenger.utils.LocationHelper;
 import com.google.android.gms.maps.CameraUpdateFactory;
-import com.cybercom.passenger.flows.login.LoginActivity;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -43,6 +45,7 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.iid.FirebaseInstanceId;
 
 import io.fabric.sdk.android.Fabric;
@@ -81,6 +84,12 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
             if (getSupportActionBar() != null) {
                 getSupportActionBar().setTitle(mUser.getEmail());
             }
+            mMainViewModel.getUser().observe(this, new Observer<User>() {
+                @Override
+                public void onChanged(@Nullable User user) {
+                    Timber.i("User: %s logged in", user);
+                }
+            });
         } else {
             if (getSupportActionBar() != null) {
                 getSupportActionBar().setTitle(R.string.mainactivity_title);
@@ -154,16 +163,34 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     }
 
     private void matchDriveRequest(final DriveRequest driveRequest) {
-        LifecycleOwner lifecycleOwner = this;
+        final LifecycleOwner lifecycleOwner = this;
 
-        // TODO: Currently the matching does not handle configuration changes...
-        // Also matching should timeout
-        mMainViewModel.findBestDriveMatch(driveRequest.getStartLocation(), driveRequest.getEndLocation()).observe(lifecycleOwner, new Observer<Drive>() {
+        final LiveData<Drive> findMatch = mMainViewModel.findBestDriveMatch(driveRequest);
+
+        final Observer<Drive> matchObserver = new Observer<Drive>() {
             @Override
             public void onChanged(@Nullable Drive drive) {
                 if (drive != null) {
+                    Timber.i("matched drive %s", drive);
                     mMainViewModel.addRequestDriveNotification(driveRequest, drive);
+                    findMatch.removeObservers(lifecycleOwner);
+                } else {
+                    Timber.i("No drives match for the moment. Keep listening.");
                 }
+            }
+        };
+
+        findMatch.observe(lifecycleOwner, matchObserver);
+
+        final LiveData<Boolean> timerObserver = mMainViewModel.setFindMatchTimer();
+
+        timerObserver.observe(lifecycleOwner, new Observer<Boolean>() {
+            @Override
+            public void onChanged(@Nullable Boolean aBoolean) {
+                Toast.makeText(MainActivity.this, R.string.main_activity_match_not_found_message,
+                        Toast.LENGTH_LONG).show();
+                findMatch.removeObserver(matchObserver);
+                timerObserver.removeObservers(lifecycleOwner);
             }
         });
     }
@@ -294,25 +321,27 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
 
         switch (type) {
             case CreateRideDialogFragment.TYPE_RIDE:
-                mMainViewModel.getUser().observe(this, new Observer<User>() {
+                long time = System.currentTimeMillis();
+                int availableSeats = 4;
+
+                mMainViewModel.createDrive(time ,startLocation, endLocation, availableSeats).observe(this, new Observer<Drive>() {
                     @Override
-                    public void onChanged(@Nullable User user) {
-                        mMainViewModel.createDrive(user, startLocation, endLocation);
-                        updateMap(new LatLng(startLocation.getLatitude(),startLocation.getLongitude()),
-                                new LatLng(endLocation.getLatitude(),endLocation.getLongitude()));
+                    public void onChanged(@Nullable Drive drive) {
+                        Timber.i("Drive created: %s", drive);
                     }
                 });
                 break;
             case CreateRideDialogFragment.TYPE_REQUEST:
-
-                mMainViewModel.getUser().observe(this, new Observer<User>() {
+                final LifecycleOwner lifeCycleOwner = this;
+                long t = System.currentTimeMillis();
+                final int seats = 2;
+                mMainViewModel.createDriveRequest(t, startLocation, endLocation, seats).observe(this, new Observer<DriveRequest>() {
                     @Override
-                    public void onChanged(@Nullable User user) {
-                        final DriveRequest driveRequest = mMainViewModel.createDriveRequest(user, startLocation, endLocation);
+                    public void onChanged(@Nullable DriveRequest driveRequest) {
+                        Timber.i("DriveRequest : %s", driveRequest);
                         matchDriveRequest(driveRequest);
                     }
                 });
-
                 break;
         }
 
