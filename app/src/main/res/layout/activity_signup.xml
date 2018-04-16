@@ -19,6 +19,76 @@
         android:layout_height="wrap_content"
         tools:context="com.cybercom.passenger.flows.signup.SignUpActivity">
 
+        <LinearLayout
+            android:id="@+id/maleContainer"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="50dp"
+            android:background="@drawable/male_selector"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingBottom="@dimen/pad_15dp"
+            android:paddingTop="@dimen/pad_15dp"
+            app:layout_constraintEnd_toStartOf="@+id/femaleContainer"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/imageview_signup_profile">
+
+            <ImageView
+                android:id="@+id/male_icon_select"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:scaleType="fitEnd"
+                app:srcCompat="@drawable/ic_male_blue"
+                android:contentDescription="@string/desc_male_icon" />
+
+            <TextView
+                android:id="@+id/male_text_select"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="@string/male"
+                android:paddingStart="@dimen/pad_5dp"
+                android:paddingEnd="@dimen/pad_0dp"
+                android:gravity="center"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/femaleContainer"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+
+            android:layout_marginEnd="16dp"
+            android:background="@drawable/female_selector"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingBottom="@dimen/pad_15dp"
+            android:paddingTop="@dimen/pad_15dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/maleContainer"
+            app:layout_constraintTop_toTopOf="@+id/maleContainer">
+
+            <ImageView
+                android:id="@+id/female_icon_select"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:scaleType="fitEnd"
+                app:srcCompat="@drawable/ic_male_blue"
+                android:contentDescription="@string/desc_female_icon" />
+
+            <TextView
+                android:id="@+id/female_text_select"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="@string/female"
+                android:paddingStart="@dimen/pad_5dp"
+                android:paddingEnd="@dimen/pad_0dp"
+                android:gravity="center"/>
+
+        </LinearLayout>
+
         <ImageView
             android:id="@+id/imageview_signup_profile"
             android:layout_width="100dp"
@@ -29,7 +99,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/ic_person_profile" />
+            app:srcCompat="@drawable/ic_person_profile"
+            android:contentDescription="@string/desc_profile_picture" />
 
         <TextView
             android:id="@+id/textview_signup_fullNameTitle"
@@ -57,7 +128,7 @@
             android:inputType="textPersonName"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/maleButton" />
+            app:layout_constraintTop_toBottomOf="@+id/maleContainer" />
 
         <TextView
             android:id="@+id/textview_signup_personalNumerTitle"
@@ -110,7 +181,7 @@
             android:drawableLeft="@drawable/ic_email"
             android:ems="10"
             android:hint="@string/hint_email"
-            android:inputType="textPersonName"
+            android:inputType="textEmailAddress"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/edittext_signup_personalNumer" />
@@ -166,7 +237,7 @@
             android:drawableLeft="@drawable/ic_phone"
             android:ems="10"
             android:hint="@string/hint_phone"
-            android:inputType="number"
+            android:inputType="phone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/edittext_signup_password" />
@@ -187,38 +258,6 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/edittext_signup_phone" />
-
-        <Button
-            android:id="@+id/maleButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="84dp"
-            android:background="@drawable/male_selector"
-            android:drawableLeft="@drawable/ic_person_blue"
-            android:paddingLeft="40dp"
-            android:paddingRight="40dp"
-            android:text="@string/male"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/femaleButton"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/imageview_signup_profile" />
-
-        <Button
-            android:id="@+id/femaleButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
-            android:background="@drawable/female_selector"
-            android:drawableLeft="@drawable/ic_person_blue"
-            android:paddingLeft="40dp"
-            android:paddingRight="40dp"
-            android:text="@string/female"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toEndOf="@+id/maleButton"
-            app:layout_constraintTop_toTopOf="@+id/maleButton" />
 
 
     </android.support.constraint.ConstraintLayout>
