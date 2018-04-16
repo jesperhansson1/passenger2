@@ -26,10 +26,10 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.crashlytics.android.Crashlytics;
-import com.cybercom.passenger.CreateDriveFragment;
 import com.cybercom.passenger.MainViewModel;
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.createdrive.CreateRideDialogFragment;
+import com.cybercom.passenger.flows.createridefragment.CreateDriveFragment;
 import com.cybercom.passenger.flows.driverconfirmation.AcceptRejectPassengerDialog;
 import com.cybercom.passenger.flows.login.LoginActivity;
 import com.cybercom.passenger.flows.passengernotification.PassengerNotificationDialog;
@@ -44,8 +44,10 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -54,7 +56,7 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
-public class MainActivity extends AppCompatActivity implements CreateRideDialogFragment.CreateRideDialogFragmentListener, AcceptRejectPassengerDialog.ConfirmationListener, PassengerNotificationDialog.PassengerNotificationListener, OnMapReadyCallback {
+public class MainActivity extends AppCompatActivity implements CreateRideDialogFragment.CreateRideDialogFragmentListener, AcceptRejectPassengerDialog.ConfirmationListener, PassengerNotificationDialog.PassengerNotificationListener, OnMapReadyCallback, GoogleMap.OnMarkerDragListener {
 
     FirebaseUser mUser;
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 0;
@@ -67,6 +69,11 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     private FragmentManager mFragmentManager;
     CreateDriveFragment mCreateDriveFragment;
     private boolean isCreateDriveFragmentVisible = false;
+    private Marker mCurrentLocation;
+    private Marker mStartLocationMarker;
+    private Marker mEndLocationMarker;
+    private boolean isCurrentLocationMarkerAdded = false;
+    private boolean isStartLocationMarkerAdded = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -201,14 +208,49 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
                     Timber.i("get updated --> null");
                 } else {
                     mLocation = location;
+
+                    if (!isCurrentLocationMarkerAdded) {
+                        LatLng currentLocation = new LatLng(mLocation.getLatitude()
+                                , mLocation.getLongitude());
+
+                        MarkerOptions currentLocationOptions = new MarkerOptions()
+                                .position(currentLocation)
+                                .title(getString(R.string.marker_title_you_are_here))
+                                .icon(BitmapDescriptorFactory
+                                        .fromResource(R.drawable.ic_location))
+                                .anchor(0.5f,0.5f);
+
+                        mCurrentLocation = mGoogleMap.addMarker(currentLocationOptions);
+                        mGoogleMap
+                                .animateCamera(CameraUpdateFactory.newLatLngZoom(
+                                        new LatLng(location.getLatitude(),
+                                                location.getLongitude()), 18.0f));
+                        isCurrentLocationMarkerAdded = true;
+                    }
+
+                    updateLocation(mCurrentLocation,mLocation);
                 }
             }
         });
-       // if (mLocation == null) {
-            //Permission not granted to access user location
-           // Timber.i("get updated --> minc");
-          //  setDefaultLocationToMinc();
-        //}
+
+
+        if (mLocation == null) {
+            // Permission not granted to access user location
+            Timber.i("get updated --> minc");
+            setDefaultLocationToMinc();
+        }
+    }
+
+    private void addStartLocationMarker() {
+        LatLng startLatLng = new LatLng(mLocation.getLatitude(), mLocation.getLongitude());
+        mStartLocationMarker =
+                mGoogleMap.addMarker(new MarkerOptions()
+                        .position(startLatLng)
+                        .title(getString(R.string.marker_title_start_location))
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.circle_start_location))
+                        .anchor(0.5f,0.5f)
+                        .draggable(true));
+        mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(startLatLng, 18.0f));
     }
 
     public void setDefaultLocationToMinc() {
@@ -273,10 +315,16 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
             @Override
             public void onClick(View view) {
 
-             if(!isCreateDriveFragmentVisible){
+                if (!isCreateDriveFragmentVisible) {
                     loadFragment(mCreateDriveFragment);
+                    if(!isStartLocationMarkerAdded){
+                        addStartLocationMarker();
+                        mMainViewModel.setStartMarkerLocation(mLocation);
+                        isStartLocationMarkerAdded = true;
+                    }
+
+                    mFloatRide.setVisibility(View.INVISIBLE);
                     isCreateDriveFragmentVisible = true;
-                 mFloatRide.setVisibility(View.INVISIBLE);
                 }
 
                 /*if (switchRide.isChecked()) {
@@ -318,10 +366,10 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     public void onMapReady(GoogleMap googleMap) {
         mGoogleMap = googleMap;
         mGoogleMap.setMinZoomPreference(4.0f);
-        mGoogleMap.setMaxZoomPreference(14.0f);
         //To show +/- zoom options
         mGoogleMap.getUiSettings().setZoomGesturesEnabled(true);
-        updateMyLocation(mLocation);
+        mGoogleMap.setOnMarkerDragListener(this);
+        //updateMyLocation(mLocation);
 
     }
 
@@ -330,11 +378,9 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
 
     }
 
-    public void updateMyLocation(Location myLocation) {
+    public void updateLocation(Marker marker, Location location) {
         if (mGoogleMap != null) {
-            MarkerOptions markerOptions = new MarkerOptions().position(new LatLng(myLocation.getLatitude(), myLocation.getLongitude())).title("You are Here");
-            mGoogleMap.addMarker(markerOptions);
-            mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(myLocation.getLatitude(), myLocation.getLongitude()), 8.0f));
+            marker.setPosition(new LatLng(location.getLatitude(),location.getLongitude()));
         }
     }
 
@@ -414,4 +460,21 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
         mMainViewModel.pollNotificationQueue(notification);
     }
 
+    @Override
+    public void onMarkerDragStart(Marker marker) {
+
+    }
+
+    @Override
+    public void onMarkerDrag(Marker marker) {
+
+    }
+
+    @Override
+    public void onMarkerDragEnd(Marker marker) {
+        Location markerLocation = new Location("MarkerDrag");
+        markerLocation.setLatitude(marker.getPosition().latitude);
+        markerLocation.setLongitude(marker.getPosition().longitude);
+        mMainViewModel.setStartMarkerLocation(markerLocation);
+    }
 }

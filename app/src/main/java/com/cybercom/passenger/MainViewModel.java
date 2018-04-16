@@ -4,8 +4,9 @@ import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
-
 import android.os.Bundle;
 import android.os.Looper;
 import android.support.annotation.NonNull;
@@ -22,7 +23,10 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class MainViewModel extends AndroidViewModel {
@@ -146,6 +150,9 @@ public class MainViewModel extends AndroidViewModel {
 
     // CreateDriveFragment
     private int numberOfPassengers = 4;
+    private MutableLiveData<String> mCurrentLocationAddress = new MutableLiveData<>();
+    private MutableLiveData<String> mStartLocationAddress = new MutableLiveData<>();
+    private MutableLiveData<Location> mStartMarkerLocation = new MutableLiveData<>();
 
     public void setNumberOfPassengers(int passengers){
         numberOfPassengers = passengers;
@@ -153,5 +160,52 @@ public class MainViewModel extends AndroidViewModel {
 
     public int getNumberOfPassengers(){
         return numberOfPassengers;
+    }
+
+    public void setStartMarkerLocation(Location location){
+        mStartMarkerLocation.setValue(location);
+        mStartLocationAddress.setValue(getAddressFromLocation(location));
+    }
+
+    private String getAddressFromLocation(Location location){
+        List<Address> addresses;
+        Geocoder geocoder = new Geocoder(getApplication(), Locale.getDefault());
+        try {
+            addresses = geocoder.getFromLocation(location.getLatitude(),location.getLongitude(),1);
+
+            return addresses.get(0).getThoroughfare() + " " + addresses.get(0).getFeatureName();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public Location getLocationFromAddress(String address){
+        List<Address> addresses;
+        Geocoder geocoder = new Geocoder(getApplication(), Locale.getDefault());
+        try {
+            addresses = geocoder.getFromLocationName(address,1);
+
+            Location locationFromAddress = new Location("LocationFromAddress");
+            locationFromAddress.setLatitude(addresses.get(0).getLatitude());
+            locationFromAddress.setLongitude(addresses.get(0).getLongitude());
+
+            return locationFromAddress;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public LiveData<String> getCurrentLocationAddress(){
+        return mCurrentLocationAddress;
+    }
+
+    public LiveData<String> getStartLocationAddress(){
+        return mStartLocationAddress;
+    }
+
+    public LiveData<Location> getStartMarkerLocation(){
+        return mStartMarkerLocation;
     }
 }

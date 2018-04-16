@@ -96,4 +96,6 @@
     <string name="create_drive_passengers_title">PASSENGERS</string>
     <string name="create_ride_content_description_remove_passenger">remove passenger</string>
     <string name="create_ride_content_description_add_passenger">add passenger</string>
+    <string name="marker_title_you_are_here">You are here</string>
+    <string name="marker_title_start_location">Start location</string>
 </resources>
