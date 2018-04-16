@@ -22,6 +22,8 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.Marker;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -153,6 +155,8 @@ public class MainViewModel extends AndroidViewModel {
     private MutableLiveData<String> mCurrentLocationAddress = new MutableLiveData<>();
     private MutableLiveData<String> mStartLocationAddress = new MutableLiveData<>();
     private MutableLiveData<Location> mStartMarkerLocation = new MutableLiveData<>();
+    private MutableLiveData<GoogleMap> mGoogleMap = new MutableLiveData<>();
+    private MutableLiveData<Marker> mCurrentLocationMarker = new MutableLiveData<>();
 
     public void setNumberOfPassengers(int passengers){
         numberOfPassengers = passengers;
@@ -207,5 +211,21 @@ public class MainViewModel extends AndroidViewModel {
 
     public LiveData<Location> getStartMarkerLocation(){
         return mStartMarkerLocation;
+    }
+
+    public MutableLiveData<GoogleMap> getGoogleMap() {
+        return mGoogleMap;
+    }
+
+    public void setGoogleMap(GoogleMap googleMap) {
+        mGoogleMap.setValue(googleMap);
+    }
+
+    public MutableLiveData<Marker> getCurrentLocationMarker() {
+        return mCurrentLocationMarker;
+    }
+
+    public void setCurrentLocationMarker(Marker currentLocationMarker) {
+        mCurrentLocationMarker.setValue(currentLocationMarker);
     }
 }

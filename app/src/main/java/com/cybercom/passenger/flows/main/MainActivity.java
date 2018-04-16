@@ -62,14 +62,13 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 0;
     MainViewModel mMainViewModel;
     Location mLocation;
-    private GoogleMap mGoogleMap;
     Menu mLoginMenu;
     FloatingActionButton mFloatRide;
 
     private FragmentManager mFragmentManager;
     CreateDriveFragment mCreateDriveFragment;
     private boolean isCreateDriveFragmentVisible = false;
-    private Marker mCurrentLocation;
+
     private Marker mStartLocationMarker;
     private Marker mEndLocationMarker;
     private boolean isCurrentLocationMarkerAdded = false;
@@ -208,6 +207,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
                     Timber.i("get updated --> null");
                 } else {
                     mLocation = location;
+                    System.out.println(location.toString());
 
                     if (!isCurrentLocationMarkerAdded) {
                         LatLng currentLocation = new LatLng(mLocation.getLatitude()
@@ -220,15 +220,15 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
                                         .fromResource(R.drawable.ic_location))
                                 .anchor(0.5f,0.5f);
 
-                        mCurrentLocation = mGoogleMap.addMarker(currentLocationOptions);
-                        mGoogleMap
+                        mMainViewModel.setCurrentLocationMarker(mMainViewModel.getGoogleMap().getValue().addMarker(currentLocationOptions));
+                        mMainViewModel.getGoogleMap().getValue()
                                 .animateCamera(CameraUpdateFactory.newLatLngZoom(
                                         new LatLng(location.getLatitude(),
                                                 location.getLongitude()), 18.0f));
                         isCurrentLocationMarkerAdded = true;
                     }
 
-                    updateLocation(mCurrentLocation,mLocation);
+                    updateLocation(mMainViewModel.getCurrentLocationMarker().getValue(),mLocation);
                 }
             }
         });
@@ -244,13 +244,13 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     private void addStartLocationMarker() {
         LatLng startLatLng = new LatLng(mLocation.getLatitude(), mLocation.getLongitude());
         mStartLocationMarker =
-                mGoogleMap.addMarker(new MarkerOptions()
+                mMainViewModel.getGoogleMap().getValue().addMarker(new MarkerOptions()
                         .position(startLatLng)
                         .title(getString(R.string.marker_title_start_location))
                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.circle_start_location))
                         .anchor(0.5f,0.5f)
                         .draggable(true));
-        mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(startLatLng, 18.0f));
+        mMainViewModel.getGoogleMap().getValue().animateCamera(CameraUpdateFactory.newLatLngZoom(startLatLng, 18.0f));
     }
 
     public void setDefaultLocationToMinc() {
@@ -364,11 +364,12 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        mGoogleMap = googleMap;
-        mGoogleMap.setMinZoomPreference(4.0f);
+        mMainViewModel.setGoogleMap(googleMap);
+
+        mMainViewModel.getGoogleMap().getValue().setMinZoomPreference(4.0f);
         //To show +/- zoom options
-        mGoogleMap.getUiSettings().setZoomGesturesEnabled(true);
-        mGoogleMap.setOnMarkerDragListener(this);
+        mMainViewModel.getGoogleMap().getValue().getUiSettings().setZoomGesturesEnabled(true);
+        mMainViewModel.getGoogleMap().getValue().setOnMarkerDragListener(this);
         //updateMyLocation(mLocation);
 
     }
@@ -379,21 +380,21 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     }
 
     public void updateLocation(Marker marker, Location location) {
-        if (mGoogleMap != null) {
+        if (mMainViewModel.getGoogleMap().getValue() != null) {
             marker.setPosition(new LatLng(location.getLatitude(),location.getLongitude()));
         }
     }
 
     public void updateMap(LatLng startLocation, LatLng endLocation) {
 
-        mGoogleMap.addMarker(new MarkerOptions().position(startLocation).title(getApplicationContext().getResources().getString(R.string.start_location)));
-        mGoogleMap.addMarker(new MarkerOptions().position(endLocation).title(getApplicationContext().getResources().getString(R.string.end_location)));
+        mMainViewModel.getGoogleMap().getValue().addMarker(new MarkerOptions().position(startLocation).title(getApplicationContext().getResources().getString(R.string.start_location)));
+        mMainViewModel.getGoogleMap().getValue().addMarker(new MarkerOptions().position(endLocation).title(getApplicationContext().getResources().getString(R.string.end_location)));
         LatLngBounds.Builder latlngBuilder = new LatLngBounds.Builder();
         latlngBuilder.include(startLocation);
         latlngBuilder.include(endLocation);
 
-        mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(latlngBuilder.build(), 100));
-        FetchRouteUrl fetchRouteUrl = new FetchRouteUrl(mGoogleMap, startLocation, endLocation);
+        mMainViewModel.getGoogleMap().getValue().animateCamera(CameraUpdateFactory.newLatLngBounds(latlngBuilder.build(), 100));
+        FetchRouteUrl fetchRouteUrl = new FetchRouteUrl(mMainViewModel.getGoogleMap().getValue(), startLocation, endLocation);
 
     }
 
