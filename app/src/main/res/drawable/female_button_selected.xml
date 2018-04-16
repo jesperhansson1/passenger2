@@ -9,7 +9,7 @@
         android:color="@color/colorBlue" />
 
     <corners
-        android:bottomRightRadius="@dimen/pad_20dp"
-        android:topRightRadius="@dimen/pad_20dp" />
+        android:bottomRightRadius="@dimen/pad_5dp"
+        android:topRightRadius="@dimen/pad_5dp" />
 
 </shape>

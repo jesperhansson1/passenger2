@@ -73,11 +73,19 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         mFullName = findViewById(R.id.edittext_signup_fullName);
         mPersonalNumber = findViewById(R.id.edittext_signup_personalNumer);
         mPhone = findViewById(R.id.edittext_signup_phone);
+        mNextButton = findViewById(R.id.button_signup_next);
+        mNextButton.setOnClickListener(this);
         mMaleButton = findViewById(R.id.maleButton);
         mMaleButton.setOnClickListener(this);
         mFemaleButton = findViewById(R.id.femaleButton);
         mFemaleButton.setOnClickListener(this);
 
+        mMaleButton.setSelected(true);
+        mMaleButton.setCompoundDrawablesWithIntrinsicBounds( R.drawable.ic_male_white, 0, 0, 0);
+        mFemaleButton.setCompoundDrawablesWithIntrinsicBounds( R.drawable.ic_woman_blue, 0, 0, 0);
+        mMaleButton.setTextColor(getResources().getColor(R.color.colorWhite));
+        mFemaleButton.setTextColor(getResources().getColor(R.color.colorBlue));
+        mSaveRadioButtonAnswer = GENDER_MALE;
     }
 
     @Override
@@ -87,6 +95,11 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                if(!mMaleButton.isSelected()){
                    mMaleButton.setSelected(true);
                    mFemaleButton.setSelected(false);
+                   mMaleButton.setCompoundDrawablesWithIntrinsicBounds( R.drawable.ic_male_white, 0, 0, 0);
+                   mFemaleButton.setCompoundDrawablesWithIntrinsicBounds( R.drawable.ic_woman_blue, 0, 0, 0);
+                   mMaleButton.setTextColor(getResources().getColor(R.color.colorWhite));
+                   mFemaleButton.setTextColor(getResources().getColor(R.color.colorBlue));
+                   mSaveRadioButtonAnswer = GENDER_MALE;
                }
                 break;
 
@@ -94,6 +107,11 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                 if(!mFemaleButton.isSelected()){
                     mFemaleButton.setSelected(true);
                     mMaleButton.setSelected(false);
+                    mFemaleButton.setCompoundDrawablesWithIntrinsicBounds( R.drawable.ic_woman_white, 0, 0, 0);
+                    mMaleButton.setCompoundDrawablesWithIntrinsicBounds( R.drawable.ic_male_blue, 0, 0, 0);
+                    mMaleButton.setTextColor(getResources().getColor(R.color.colorBlue));
+                    mFemaleButton.setTextColor(getResources().getColor(R.color.colorWhite));
+                    mSaveRadioButtonAnswer = GENDER_FEMALE;
                 }
                 break;
 
