@@ -28,7 +28,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RadioButton;
 import android.widget.TextView;
 
 import com.cybercom.passenger.R;
@@ -49,14 +48,14 @@ import static android.os.Build.VERSION_CODES.M;
 public class SignUpActivity extends AppCompatActivity implements View.OnClickListener, ActivityCompat.OnRequestPermissionsResultCallback {
 
     SignUpViewModel mViewModel;
-    Button mNextButton, mMaleButton, mFemaleButton;
+    Button mNextButton;
     EditText mPassword, mEmail, mFullName, mPersonalNumber, mPhone;
-    TextView maleTextSelect, femaleTextSelect;
+    TextView mMaleTextSelect, mFemaleTextSelect;
     String mSaveRadioButtonAnswer;
     Boolean mFilledInTextFields = false;
     private static final String GENDER_MALE = "Male";
     private static final String GENDER_FEMALE = "Female";
-    ImageView mImageViewProfile, maleIcon, femaleIcon;
+    ImageView mImageViewProfile, mMaleIcon, mFemaleIcon;
     private static final int REQUEST_CAMERA_PERMISSION = 1;
     LinearLayout mMaleLayout, mFemaleLayout;
 
@@ -80,50 +79,50 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         mNextButton = findViewById(R.id.button_signup_next);
         mNextButton.setOnClickListener(this);
 
-        mMaleLayout = findViewById(R.id.maleContainer);
+        mMaleLayout = findViewById(R.id.maleLayout);
         mMaleLayout.setOnClickListener(this);
-        mFemaleLayout = findViewById(R.id.femaleContainer);
+        mFemaleLayout = findViewById(R.id.femaleLayout);
         mFemaleLayout.setOnClickListener(this);
 
-        maleTextSelect = findViewById(R.id.male_text_select);
-        femaleTextSelect = findViewById(R.id.female_text_select);
-        maleIcon = findViewById(R.id.male_icon_select);
-        femaleIcon = findViewById(R.id.female_icon_select);
+        mMaleTextSelect = findViewById(R.id.male_text_select);
+        mFemaleTextSelect = findViewById(R.id.female_text_select);
+        mMaleIcon = findViewById(R.id.male_icon_select);
+        mFemaleIcon = findViewById(R.id.female_icon_select);
 
         defaultSettings();
     }
 
     void defaultSettings(){
         mMaleLayout.setSelected(true);
-        maleTextSelect.setTextColor(getResources().getColor(R.color.colorWhite));
-        femaleTextSelect.setTextColor(getResources().getColor(R.color.colorBlue));
-        maleIcon.setImageDrawable(getResources().getDrawable(R.drawable.ic_male_white));
-        femaleIcon.setImageDrawable(getResources().getDrawable(R.drawable.ic_woman_blue));
+        mMaleTextSelect.setTextColor(getResources().getColor(R.color.colorWhite));
+        mFemaleTextSelect.setTextColor(getResources().getColor(R.color.colorBlue));
+        mMaleIcon.setImageDrawable(getResources().getDrawable(R.drawable.ic_male_white));
+        mFemaleIcon.setImageDrawable(getResources().getDrawable(R.drawable.ic_woman_blue));
         mSaveRadioButtonAnswer = GENDER_MALE;
     }
 
     @Override
     public void onClick(View v) {
         switch(v.getId()) {
-            case R.id.maleContainer:
+            case R.id.maleLayout:
                 if(!mMaleLayout.isSelected()){
                     mMaleLayout.setSelected(true);
                     mFemaleLayout.setSelected(false);
-                    maleTextSelect.setTextColor(getResources().getColor(R.color.colorWhite));
-                    femaleTextSelect.setTextColor(getResources().getColor(R.color.colorBlue));
-                    maleIcon.setImageDrawable(getResources().getDrawable(R.drawable.ic_male_white));
-                    femaleIcon.setImageDrawable(getResources().getDrawable(R.drawable.ic_woman_blue));
+                    mMaleTextSelect.setTextColor(getResources().getColor(R.color.colorWhite));
+                    mFemaleTextSelect.setTextColor(getResources().getColor(R.color.colorBlue));
+                    mMaleIcon.setImageDrawable(getResources().getDrawable(R.drawable.ic_male_white));
+                    mFemaleIcon.setImageDrawable(getResources().getDrawable(R.drawable.ic_woman_blue));
                     mSaveRadioButtonAnswer = GENDER_MALE;
                 }
                 break;
-            case R.id.femaleContainer:
+            case R.id.femaleLayout:
                 if(!mFemaleLayout.isSelected()){
                     mFemaleLayout.setSelected(true);
                     mMaleLayout.setSelected(false);
-                    maleTextSelect.setTextColor(getResources().getColor(R.color.colorBlue));
-                    femaleTextSelect.setTextColor(getResources().getColor(R.color.colorWhite));
-                    maleIcon.setImageDrawable(getResources().getDrawable(R.drawable.ic_male_blue));
-                    femaleIcon.setImageDrawable(getResources().getDrawable(R.drawable.ic_woman_white));
+                    mMaleTextSelect.setTextColor(getResources().getColor(R.color.colorBlue));
+                    mFemaleTextSelect.setTextColor(getResources().getColor(R.color.colorWhite));
+                    mMaleIcon.setImageDrawable(getResources().getDrawable(R.drawable.ic_male_blue));
+                    mFemaleIcon.setImageDrawable(getResources().getDrawable(R.drawable.ic_woman_white));
                     mSaveRadioButtonAnswer = GENDER_FEMALE;
                 }
                 break;

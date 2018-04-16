@@ -20,7 +20,7 @@
         tools:context="com.cybercom.passenger.flows.signup.SignUpActivity">
 
         <LinearLayout
-            android:id="@+id/maleContainer"
+            android:id="@+id/maleLayout"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_marginStart="16dp"
@@ -30,7 +30,7 @@
             android:orientation="horizontal"
             android:paddingBottom="@dimen/pad_15dp"
             android:paddingTop="@dimen/pad_15dp"
-            app:layout_constraintEnd_toStartOf="@+id/femaleContainer"
+            app:layout_constraintEnd_toStartOf="@+id/femaleLayout"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/imageview_signup_profile">
@@ -55,7 +55,7 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/femaleContainer"
+            android:id="@+id/femaleLayout"
             android:layout_width="0dp"
             android:layout_height="match_parent"
 
@@ -67,8 +67,8 @@
             android:paddingTop="@dimen/pad_15dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toEndOf="@+id/maleContainer"
-            app:layout_constraintTop_toTopOf="@+id/maleContainer">
+            app:layout_constraintStart_toEndOf="@+id/maleLayout"
+            app:layout_constraintTop_toTopOf="@+id/maleLayout">
 
             <ImageView
                 android:id="@+id/female_icon_select"
@@ -128,7 +128,7 @@
             android:inputType="textPersonName"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/maleContainer" />
+            app:layout_constraintTop_toBottomOf="@+id/maleLayout" />
 
         <TextView
             android:id="@+id/textview_signup_personalNumerTitle"
