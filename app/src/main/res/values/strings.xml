@@ -75,6 +75,10 @@
     <string name="take_photo">Take Photo</string>
     <string name="cancel">Cancel</string>
 
+    <string name="desc_male_icon">Male Icon</string>
+    <string name="desc_female_icon">Female Icon</string>
+    <string name="desc_profile_picture">Profile picture</string>
+
     <string-array name="location_array">
         <item>My Location</item>
         <item>Malmö</item>
