@@ -1,6 +1,7 @@
 package com.cybercom.passenger.flows.car;
 
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -16,24 +17,25 @@ public class CarDetailActivity extends AppCompatActivity{
 
     EditText mEditTextCarNumber,mEditTextCarModel,mEditTextCarYear,mEditTextCarColor;
     Button mButtonSave;
-    CarViewModel mCarViewModel;
-
+   // CarViewModel mCarViewModel;
+    final int CAR_DETAIL = 17;
+    final String CAR_NUMBER = "NUMBER";
+    final String CAR_MODEL = "MODEL";
+    final String CAR_YEAR = "YEAR";
+    final String CAR_COLOR = "COLOUR";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.car_details);
-        mCarViewModel = ViewModelProviders.of(this).get(CarViewModel.class);
         initializeUI();
     }
 
     public void initializeUI(){
-        mCarViewModel.getCars();
         mEditTextCarNumber = findViewById(R.id.editText_cardetails_number);
         mEditTextCarModel = findViewById(R.id.editText_cardetails_model);
         mEditTextCarYear = findViewById(R.id.editText_cardetails_year);
         mEditTextCarColor = findViewById(R.id.editText_cardetails_color);
-
         mButtonSave = findViewById(R.id.button_cardetails_save);
         mButtonSave.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -41,9 +43,7 @@ public class CarDetailActivity extends AppCompatActivity{
                 if(checkError() == 0)
                 {
                     addCar();
-
                 }
-
             }
         });
     }
@@ -76,9 +76,12 @@ public class CarDetailActivity extends AppCompatActivity{
 
     public void addCar()
     {
-        mCarViewModel.addCar(mEditTextCarNumber.getText().toString(),
-                mEditTextCarModel.getText().toString(),
-                Integer.parseInt(mEditTextCarYear.getText().toString()),
-                mEditTextCarColor.getText().toString());
+        Intent intent=new Intent();
+        intent.putExtra("CAR_NUMBER",mEditTextCarNumber.getText().toString());
+        intent.putExtra("CAR_MODEL",mEditTextCarModel.getText().toString());
+        intent.putExtra("CAR_YEAR",mEditTextCarYear.getText().toString());
+        intent.putExtra("CAR_COLOR",mEditTextCarColor.getText().toString());
+        setResult(CAR_DETAIL,intent);
+        finish();
     }
 }

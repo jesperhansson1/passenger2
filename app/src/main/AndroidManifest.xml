@@ -76,7 +76,13 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-        <activity android:name=".flows.car.CarDetailActivity"></activity>
+       <activity android:name=".flows.car.CarDetailActivity"></activity>
+        <!-- <activity android:name = ".flows.car.CarDetailActivity"
+            android:parentActivityName = ".flows.car.CarsActivity" >
+            <meta-data android:name = " android.support.PARENT_ACTIVITY "
+                android:value = ".flows.car.CarsActivity" />
+        </activity>-->
+
     </application>
 
 </manifest>

@@ -3,12 +3,12 @@ package com.cybercom.passenger.model;
 public class Car {
     private String mNumber;
     private String mModel;
-    private int mYear;
+    private String mYear;
     private String mColor;
    /* private String mCarId;
     private String mUserId;*/
 
-    public Car(String number, String model, int year, String colour){//}, String carId, String userId) {
+    public Car(String number, String model, String year, String colour){//}, String carId, String userId) {
         mNumber = number;
         mModel = model;
         mYear = year;
@@ -33,11 +33,11 @@ public class Car {
         mModel = model;
     }
 
-    public int getYear() {
+    public String getYear() {
         return mYear;
     }
 
-    public void setYear(int year) {
+    public void setYear(String year) {
         mYear = year;
     }
 

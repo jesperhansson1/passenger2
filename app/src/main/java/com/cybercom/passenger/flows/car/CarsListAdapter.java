@@ -1,5 +1,6 @@
 package com.cybercom.passenger.flows.car;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
@@ -17,6 +18,7 @@ import java.util.List;
 public class CarsListAdapter extends RecyclerView.Adapter<CarsListAdapter.MyViewHolder> {
 
     private List<Car> mCarList;
+    Context mContext;
 
     @NonNull
     @Override
@@ -36,7 +38,7 @@ public class CarsListAdapter extends RecyclerView.Adapter<CarsListAdapter.MyView
     }
 
     public CarsListAdapter(List<Car> carsList) {
-        this.mCarList = carsList;
+        mCarList = carsList;
     }
 
     @Override
