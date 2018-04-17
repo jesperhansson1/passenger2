@@ -1,19 +1,100 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
+<!--<android.support.constraint.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content">-->
 
-    <TextView
-        android:id="@+id/textView_carlistrow_number"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:hint="@string/car_number_hint"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/pad_10dp"
+    android:layout_marginEnd="@dimen/pad_10dp"
+    android:layout_marginStart="@dimen/pad_10dp"
+    android:layout_marginTop="@dimen/pad_10dp"
+    android:background="@drawable/button_corner_round"
+    android:paddingBottom="@dimen/pad_10dp"
+    android:paddingEnd="@dimen/pad_10dp"
+    android:paddingStart="@dimen/pad_10dp"
+    android:paddingTop="@dimen/pad_10dp"
+    android:stretchColumns="*"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent">
 
-</android.support.constraint.ConstraintLayout>
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/textView_carlistrow_model"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="@string/car_model_hint"
+
+            android:paddingBottom="@dimen/pad_10dp"
+            android:paddingEnd="@dimen/pad_10dp"
+            android:paddingStart="@dimen/pad_10dp"
+            android:paddingTop="@dimen/pad_10dp"
+            android:textAlignment="viewStart"
+            android:textColor="@color/colorWhite"
+            android:textSize="@dimen/pad_18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/textView_carlistrow_year"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="@string/car_year_hint"
+            android:paddingBottom="@dimen/pad_10dp"
+            android:paddingEnd="@dimen/pad_10dp"
+            android:paddingStart="@dimen/pad_10dp"
+            android:paddingTop="@dimen/pad_10dp"
+            android:textAlignment="viewEnd"
+            android:textColor="@color/colorWhite"
+            android:textStyle="bold" />
+
+    </TableRow>
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/textView_carlistrow_color"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:hint="@string/car_color_hint"
+            android:paddingBottom="@dimen/pad_10dp"
+            android:paddingEnd="@dimen/pad_10dp"
+            android:paddingStart="@dimen/pad_10dp"
+            android:paddingTop="@dimen/pad_10dp"
+            android:textAlignment="viewStart"
+            android:textColor="@color/colorWhite"
+            android:textStyle="bold" />
+
+
+        <TextView
+            android:id="@+id/textView_carlistrow_number"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:hint="@string/car_number_hint"
+            android:paddingBottom="@dimen/pad_10dp"
+            android:paddingEnd="@dimen/pad_10dp"
+            android:paddingStart="@dimen/pad_10dp"
+            android:paddingTop="@dimen/pad_10dp"
+            android:textAlignment="viewEnd"
+            android:textColor="@color/colorWhite"
+            android:textSize="@dimen/pad_18sp"
+            android:textStyle="bold" />
+
+    </TableRow>
+
+</TableLayout>
+
+<!--</android.support.constraint.ConstraintLayout>-->

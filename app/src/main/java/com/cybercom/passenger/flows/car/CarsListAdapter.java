@@ -28,27 +28,43 @@ public class CarsListAdapter extends RecyclerView.Adapter<CarsListAdapter.MyView
         return new MyViewHolder(itemView);
     }
 
-    public class MyViewHolder extends RecyclerView.ViewHolder {
-        public TextView carNumber;
-
-        public MyViewHolder(View view) {
-            super(view);
-            carNumber = (TextView) view.findViewById(R.id.textView_carlistrow_number);
-        }
-    }
 
     public CarsListAdapter(List<Car> carsList) {
         mCarList = carsList;
+        notifyDataSetChanged();
     }
 
     @Override
     public void onBindViewHolder(MyViewHolder holder, int position) {
         Car car = mCarList.get(position);
+        System.out.println(car.getNumber());
         holder.carNumber.setText(car.getNumber());
+        holder.carModel.setText(car.getModel());
+        holder.carYear.setText(car.getYear());
+        holder.carColor.setText(car.getColor());
+
     }
 
     @Override
     public int getItemCount() {
+
+        System.out.println("adapter "+mCarList.size());
         return mCarList.size();
     }
+
+    static class MyViewHolder extends RecyclerView.ViewHolder {
+        private TextView carNumber;
+        private TextView carModel;
+        private TextView carYear;
+        private TextView carColor;
+
+        MyViewHolder(View view) {
+            super(view);
+            carNumber = view.findViewById(R.id.textView_carlistrow_number);
+            carModel = view.findViewById(R.id.textView_carlistrow_model);
+            carYear = view.findViewById(R.id.textView_carlistrow_year);
+            carColor = view.findViewById(R.id.textView_carlistrow_color);
+        }
+    }
+
 }

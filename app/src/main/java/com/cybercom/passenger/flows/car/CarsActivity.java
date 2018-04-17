@@ -79,13 +79,9 @@ public class CarsActivity extends AppCompatActivity {
 
         mCarViewModel = ViewModelProviders.of(this).get(CarViewModel.class);
 
-        mCarViewModel.getCarList().observe(this, new List<Car>()(List<Car> fruitlist) -> {
-            // update UI
-            CarsListAdapter carsListAdapter = new CarsListAdapter(fruitlist);
-            // Assign adapter to ListView
-            System.out.println(carsListAdapter.getItemCount());
-            //ArrayAdapter adapter = new ArrayAdapter()
-            recyclerView.setAdapter(ap);
+        mCarViewModel.getCarList().observe(this, (List<Car> carList) -> {
+            CarsListAdapter carsListAdapter = new CarsListAdapter(carList);
+            recyclerView.setAdapter(carsListAdapter);
         });
     }
 

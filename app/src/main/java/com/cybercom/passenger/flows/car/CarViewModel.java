@@ -30,6 +30,7 @@ public class CarViewModel extends AndroidViewModel {
         super(application);
         mCarRef = (PassengerRepository.getInstance()).getCarsReference();
         mUserId = "CAFpHVaBPSed9RiwVPYPlamYkrb2";//FirebaseAuth.getInstance().getCurrentUser().getUid();
+        mCarList = new MutableLiveData<>();
         mCarRef.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
@@ -70,7 +71,7 @@ public class CarViewModel extends AndroidViewModel {
            System.out.println(singleSnapshot);
         }*/
         mAllCar = new ArrayList<Car>();
-        mCarList = new MutableLiveData<>();
+
         Map<String, Object> objectMap = (HashMap<String, Object>)
                 dataSnapshot.getValue();
         for (Object obj : objectMap.values()) {
@@ -91,6 +92,7 @@ public class CarViewModel extends AndroidViewModel {
                 }
             }
         }
+        System.out.println("here" + mAllCar.size());
         mCarList.setValue(mAllCar);
     }
 
@@ -99,6 +101,7 @@ public class CarViewModel extends AndroidViewModel {
     }
 
     LiveData<List<Car>> getCarList() {
+
         return mCarList;
     }
 
