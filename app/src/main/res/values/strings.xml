@@ -71,7 +71,7 @@
     <string name="login_title">Login</string>
     <string name="mainactivity_title">Passenger</string>
     <string name="select_image_source">Select image source</string>
-     <string name="library">Library</string>
+    <string name="library">Library</string>
     <string name="take_photo">Take Photo</string>
     <string name="cancel">Cancel</string>
 
@@ -93,4 +93,8 @@
         <item>59.329323,18.068581</item>
         <item>57.708870,11.974560</item>
     </string-array>
+
+    <string name="account_label">You need to add a credit card and Bank account. Need it to withdraw money</string>
+    <string name="bank_account">Bank account</string>
+    <string name="credit_card">Credit Card</string>
 </resources>
