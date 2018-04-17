@@ -18,6 +18,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import timber.log.Timber;
+
+import static com.cybercom.passenger.utils.CarNumberHelper.getKeyFromNumber;
+
 public class CarViewModel extends AndroidViewModel {
 
     DatabaseReference mCarRef;
@@ -55,9 +59,12 @@ public class CarViewModel extends AndroidViewModel {
 
     public void addCar(String number, String model, String year, String colour)
     {
-        String carId = mCarRef.push().getKey();
         Car car = new Car(number,model,year,colour);
-        mCarRef.child(mUserId).child(carId).setValue(car);
+        mCarRef.child(mUserId).child(getKeyFromNumber(number)).setValue(car);
+    }
+
+    public void deleteCar(String number){
+        mCarRef.child(mUserId).child(getKeyFromNumber(number)).removeValue();
     }
 
     public List<Car> getCars() {
@@ -65,15 +72,10 @@ public class CarViewModel extends AndroidViewModel {
     }
 
     private void getAllTask(DataSnapshot dataSnapshot){
-       /* for(DataSnapshot singleSnapshot : dataSnapshot.getChildren()){
-            //recyclerViewAdapter = new RecyclerViewAdapter(MainActivity.this, allTask);
-            recyclerView.setAdapter(recyclerViewAdapter);
-           System.out.println(singleSnapshot);
-        }*/
         mAllCar = new ArrayList<Car>();
-
         Map<String, Object> objectMap = (HashMap<String, Object>)
                 dataSnapshot.getValue();
+        if(objectMap.values()!= null)
         for (Object obj : objectMap.values()) {
             if (obj instanceof Map) {
                 Map<String, Object> mapObj = (Map<String, Object>) obj;
@@ -84,24 +86,21 @@ public class CarViewModel extends AndroidViewModel {
                             mapObj.get("year").toString(),
                             mapObj.get("color").toString());
                     mAllCar.add(match);
-                    System.out.println(mAllCar.size());
                 }
                 catch(Exception e)
                 {
-                    System.out.println(e.getLocalizedMessage());
+                    Timber.e(e.getLocalizedMessage());
                 }
             }
         }
-        System.out.println("here" + mAllCar.size());
-        mCarList.setValue(mAllCar);
+         mCarList.setValue(mAllCar);
     }
 
     public void taskDeletion(DataSnapshot dataSnapshot){
-        System.out.println("delete " + dataSnapshot);
+        getAllTask(dataSnapshot);
     }
 
     LiveData<List<Car>> getCarList() {
-
         return mCarList;
     }
 

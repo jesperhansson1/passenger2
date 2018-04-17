@@ -103,5 +103,8 @@
     <string name="car_model_error">Car model name cannot be empty</string>
     <string name="car_year_error">Car built year cannot be empty</string>
     <string name="car_color_error">Car color cannot be empty</string>
+    <string name="add_new_car">Add new car</string>
+    <string name="numbers">0123456789</string>
+    <string name="deleteConfirmation">Delete this car ?</string>
 
 </resources>

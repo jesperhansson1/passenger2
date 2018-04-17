@@ -1,37 +1,27 @@
 package com.cybercom.passenger.flows.car;
 
-import android.arch.lifecycle.LifecycleOwner;
-import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.widget.ArrayAdapter;
-
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.model.Car;
-import com.google.firebase.database.DataSnapshot;
-
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+
+import timber.log.Timber;
 
 public class CarsActivity extends AppCompatActivity {
 
-    private List<Car> carList = new ArrayList<>();
+    private List<Car> mCarList = new ArrayList<>();
     private RecyclerView recyclerView;
     private CarsListAdapter mCarsListAdapter;
     CarViewModel mCarViewModel;
@@ -46,10 +36,10 @@ public class CarsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cars);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.FloatingActionButton_activitycars_add);
+        FloatingActionButton fab = findViewById(R.id.FloatingActionButton_activitycars_add);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -57,7 +47,7 @@ public class CarsActivity extends AppCompatActivity {
             }
         });
 
-        recyclerView = (RecyclerView) findViewById(R.id.RecyclerView_contentcars_carlist);
+        recyclerView = findViewById(R.id.RecyclerView_contentcars_carlist);
 
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(mLayoutManager);
@@ -67,8 +57,8 @@ public class CarsActivity extends AppCompatActivity {
         recyclerView.addOnItemTouchListener(new CarTouchListener(getApplicationContext(), recyclerView, new CarTouchListener.ClickListener() {
             @Override
             public void onClick(View view, int position) {
-                Car car = carList.get(position);
-                System.out.println(car.getNumber());
+                Car car = mCarList.get(position);
+                deleteConfirmDialog(car.getNumber());
             }
 
             @Override
@@ -80,11 +70,37 @@ public class CarsActivity extends AppCompatActivity {
         mCarViewModel = ViewModelProviders.of(this).get(CarViewModel.class);
 
         mCarViewModel.getCarList().observe(this, (List<Car> carList) -> {
-            CarsListAdapter carsListAdapter = new CarsListAdapter(carList);
+            mCarList = carList;
+            CarsListAdapter carsListAdapter = new CarsListAdapter(mCarList);
             recyclerView.setAdapter(carsListAdapter);
         });
     }
 
+    public void deleteConfirmDialog(String alertMsg){
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        String msg = getApplicationContext().getResources().getString(R.string.deleteConfirmation)
+                        + " \n " + alertMsg ;
+        alertDialogBuilder.setMessage(msg);
+                alertDialogBuilder.setPositiveButton("yes",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface arg0, int arg1) {
+                                mCarViewModel.deleteCar(alertMsg);
+                                Timber.d("Deleting car details %s", alertMsg);
+                            }
+                        });
+
+        alertDialogBuilder.setNegativeButton("No",new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+            }
+        });
+
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+
+    }
 
     public void openCarDetail()
     {

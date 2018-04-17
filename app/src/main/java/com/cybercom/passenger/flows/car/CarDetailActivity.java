@@ -17,7 +17,6 @@ public class CarDetailActivity extends AppCompatActivity{
 
     EditText mEditTextCarNumber,mEditTextCarModel,mEditTextCarYear,mEditTextCarColor;
     Button mButtonSave;
-   // CarViewModel mCarViewModel;
     final int CAR_DETAIL = 17;
     final String CAR_NUMBER = "NUMBER";
     final String CAR_MODEL = "MODEL";

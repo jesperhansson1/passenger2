@@ -83,6 +83,8 @@
             android:drawablePadding="@dimen/pad_10dp"
             android:drawableStart="@drawable/ic_date_range"
             android:hint="@string/car_year_hint"
+            android:maxLength="4"
+            android:digits="@string/numbers"
             android:inputType="textPersonName" />
 
         <Space

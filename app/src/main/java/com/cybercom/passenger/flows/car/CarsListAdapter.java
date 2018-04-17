@@ -1,19 +1,17 @@
 package com.cybercom.passenger.flows.car;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
-
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.model.Car;
-
 import java.util.List;
+
+import timber.log.Timber;
 
 public class CarsListAdapter extends RecyclerView.Adapter<CarsListAdapter.MyViewHolder> {
 
@@ -37,7 +35,6 @@ public class CarsListAdapter extends RecyclerView.Adapter<CarsListAdapter.MyView
     @Override
     public void onBindViewHolder(MyViewHolder holder, int position) {
         Car car = mCarList.get(position);
-        System.out.println(car.getNumber());
         holder.carNumber.setText(car.getNumber());
         holder.carModel.setText(car.getModel());
         holder.carYear.setText(car.getYear());
@@ -47,8 +44,7 @@ public class CarsListAdapter extends RecyclerView.Adapter<CarsListAdapter.MyView
 
     @Override
     public int getItemCount() {
-
-        System.out.println("adapter "+mCarList.size());
+        Timber.i("No. of cars %s", mCarList.size());
         return mCarList.size();
     }
 
