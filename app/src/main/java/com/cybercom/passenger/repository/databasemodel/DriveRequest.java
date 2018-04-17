@@ -19,12 +19,13 @@ public class DriveRequest implements Serializable {
     public DriveRequest(){
     }
 
-    public DriveRequest(String passengerId, long time, Position startLocation, Position endLocation, int extraPassengers) {
+    public DriveRequest(String passengerId, long time, Position startLocation, Position endLocation, int extraPassengers, List<String> driverIdBlacklist) {
         mPassengerId = passengerId;
         mTime = time;
         mStartLocation = startLocation;
         mEndLocation = endLocation;
         mExtraPassengers = extraPassengers;
+        mDriverIdBlackList = driverIdBlacklist;
     }
 
     public String getPassengerId() {

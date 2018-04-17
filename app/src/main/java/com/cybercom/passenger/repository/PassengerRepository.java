@@ -41,7 +41,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
     private static final int DRIVE_REQUEST_MATCH_TIME_THRESHOLD = 15 * 60 * 60 * 1000;
     private static final String NOTIFICATION_TYPE_KEY = "type";
-    private static final String KEY_PAYLOAD_DRIVE_REQUEST_ID = "driveRequestId";
+    private static final String KEY_PAYLOAD_DRIVE_REQUEST_ID = "driveRequest";
     private static final String KEY_PAYLOAD_DRIVE_ID = "driveId";
 
     private static PassengerRepository sPassengerRepository;
@@ -149,6 +149,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 com.cybercom.passenger.repository.databasemodel.Drive bestMatch = null;
                 float shortestDistance = 0;
+                String bestMatchDriveId = "";
                 float[] distance = new float[2];
 
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
@@ -162,12 +163,17 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                                 distance[0], driveRequest.getStartLocation().getLatitude(), driveRequest.getEndLocation().getLongitude(),
                                 drive.getStartLocation().getLatitude(), drive.getStartLocation().getLongitude());
 
+                        if (driveRequest.getDriverIdBlackList().contains(drive.getDriverId())) Timber.i("No match driver blacklisted: %s", drive.getDriverId());
+
+
                         if (distance[0] < 700 && !driveRequest.getDriverIdBlackList().contains(drive.getDriverId())) {
                             if (bestMatch == null) {
                                 bestMatch = drive;
+                                bestMatchDriveId = snapshot.getKey();
                                 shortestDistance = distance[0];
                             } else if (distance[0] < shortestDistance) {
                                 bestMatch = drive;
+                                bestMatchDriveId = snapshot.getKey();
                                 shortestDistance = distance[0];
                             }
                         }
@@ -180,12 +186,13 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
                 if (bestMatch != null) {
                     final com.cybercom.passenger.repository.databasemodel.Drive finalBestMatch = bestMatch;
+                    final String finalBestMatchDriveId = bestMatchDriveId;
 
                     mUsersReference.child(finalBestMatch.getDriverId()).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             User driver = dataSnapshot.getValue(User.class);
-                            bestDriveMatch.setValue(new Drive(dataSnapshot.getKey(), driver, finalBestMatch.getTime(),
+                            bestDriveMatch.setValue(new Drive(finalBestMatchDriveId, driver, finalBestMatch.getTime(),
                                     finalBestMatch.getStartLocation(), finalBestMatch.getEndLocation(),
                                     finalBestMatch.getAvailableSeats() ));
                         }
@@ -219,22 +226,21 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     }
 
     /**
-     * Rebuild the (ModelView) notification from payload coming from push-notification
+     * Rebuild the notification (to the ModelView model) from payload coming from push-notification
      * and add it to the notification queue
      *
-     * @param payload The push-notifications payload
+     * @param payload The push-notification's payload
      */
     public void setIncomingNotification(final Map<String, String> payload) {
 
-        // If it is a Reject-notification add driverId to the driver-request's blacklist
-        if (Integer.valueOf(payload.get(NOTIFICATION_TYPE_KEY)) == Notification.REJECT_PASSENGER) {
-            mDriveRequestsReference.child(payload.get(KEY_PAYLOAD_DRIVE_REQUEST_ID))
-                    .child(REFERENCE_DRIVER_ID_BLACK_LIST)
-                    .push().setValue(payload.get(DRIVE_DRIVER_ID));
-        }
+        final String driveId = payload.get(KEY_PAYLOAD_DRIVE_ID);
+        final String driveRequestId = payload.get(KEY_PAYLOAD_DRIVE_REQUEST_ID);
+
+        Timber.i("notification recevied %s", payload.toString());
+
 
         // Fetch the Drive
-        mDrivesReference.child(payload.get(KEY_PAYLOAD_DRIVE_ID))
+        mDrivesReference.child(driveId)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
@@ -250,12 +256,19 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                                         final String driverId = dataSnapshot.getKey();
 
                                         // Fetch the DriverRequest
-                                        mDriveRequestsReference.child(payload.get(KEY_PAYLOAD_DRIVE_REQUEST_ID))
+                                        Timber.i("fetch driveRequest : %s", driveRequestId);
+                                        mDriveRequestsReference.child(driveRequestId)
                                                 .addListenerForSingleValueEvent(new ValueEventListener() {
                                                     @Override
                                                     public void onDataChange(DataSnapshot dataSnapshot) {
                                                         final com.cybercom.passenger.repository.databasemodel.DriveRequest dBdriveRequest
                                                                 = dataSnapshot.getValue(com.cybercom.passenger.repository.databasemodel.DriveRequest.class);
+
+                                                        // If it is a Reject-notification add driverId to the driver-request's blacklist
+                                                        if (Integer.valueOf(payload.get(NOTIFICATION_TYPE_KEY)) == Notification.REJECT_PASSENGER) {
+                                                            dBdriveRequest.addDriverIdBlackList(driver.getUserId());
+                                                            mDriveRequestsReference.child(driveRequestId).setValue(dBdriveRequest);
+                                                        }
 
                                                         // Fetch the passenger (User)
                                                         mUsersReference.child(dBdriveRequest.getPassengerId())
@@ -263,12 +276,11 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                                                                     @Override
                                                                     public void onDataChange(DataSnapshot dataSnapshot) {
                                                                         User passenger = dataSnapshot.getValue(User.class);
-                                                                        String passengerId = dataSnapshot.getKey();
 
-                                                                        Drive drive = new Drive(driverId, driver,
+                                                                        Drive drive = new Drive(driveId, driver,
                                                                                 dBdrive.getTime(), dBdrive.getStartLocation(),
                                                                                 dBdrive.getEndLocation(), dBdrive.getAvailableSeats());
-                                                                        DriveRequest driveRequest = new DriveRequest(passengerId,
+                                                                        DriveRequest driveRequest = new DriveRequest(driveRequestId,
                                                                                 passenger, dBdriveRequest.getTime(), dBdriveRequest.getStartLocation(),
                                                                                 dBdriveRequest.getEndLocation(), dBdriveRequest.getExtraPassengers(),
                                                                                 dBdriveRequest.getDriverIdBlackList());
@@ -369,7 +381,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
             String uId = firebaseUser.getUid();
 
             final com.cybercom.passenger.repository.databasemodel.DriveRequest dbDriveRequest =
-                new com.cybercom.passenger.repository.databasemodel.DriveRequest(uId, time, startLocation, endLocation, availableSeats);
+                new com.cybercom.passenger.repository.databasemodel.DriveRequest(uId, time, startLocation, endLocation, availableSeats, new ArrayList<String>());
             final DatabaseReference ref = mDriveRequestsReference.push();
             final String driveRequestId = ref.getKey();
             ref.setValue(dbDriveRequest);

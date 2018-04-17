@@ -3,11 +3,8 @@ package com.cybercom.passenger.repository.databasemodel.utils;
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Notification;
-import com.cybercom.passenger.model.User;
-import com.cybercom.passenger.utils.LocationHelper;
 
 import java.util.ArrayList;
-import java.util.Map;
 
 public class DatabaseModelHelper {
 
@@ -34,7 +31,7 @@ public class DatabaseModelHelper {
     public static com.cybercom.passenger.repository.databasemodel.DriveRequest convertDriveRequest(DriveRequest driveRequest) {
 
         return new com.cybercom.passenger.repository.databasemodel.DriveRequest(driveRequest.getPassenger().getUserId(),
-                driveRequest.getTime(), driveRequest.getStartLocation(), driveRequest.getEndLocation(), driveRequest.getExtraPassengers());
+                driveRequest.getTime(), driveRequest.getStartLocation(), driveRequest.getEndLocation(), driveRequest.getExtraPassengers(), new ArrayList<String>());
     }
 
     public static com.cybercom.passenger.repository.databasemodel.Notification convertNotification(Notification notification) {

@@ -27,7 +27,7 @@ public class Notification {
         this.mType = type;
     }
 
-    public String getDriveRequest() {
+    public String getDriveRequestId() {
         return mDriveRequestId;
     }
 
@@ -41,5 +41,14 @@ public class Notification {
 
     public void setDriveId(String driveId) {
         this.mDriveId = driveId;
+    }
+
+    @Override
+    public String toString() {
+        return "Notification{" +
+                "mType=" + mType +
+                ", mDriveRequestId=" + mDriveRequestId +
+                ", mDriveId=" + mDriveId +
+                '}';
     }
 }

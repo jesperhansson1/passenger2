@@ -167,6 +167,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
 
         final LiveData<Drive> findMatch = mMainViewModel.findBestDriveMatch(driveRequest);
 
+        final LiveData<Boolean> timerObserver = mMainViewModel.setFindMatchTimer();
         final Observer<Drive> matchObserver = new Observer<Drive>() {
             @Override
             public void onChanged(@Nullable Drive drive) {
@@ -174,6 +175,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
                     Timber.i("matched drive %s", drive);
                     mMainViewModel.addRequestDriveNotification(driveRequest, drive);
                     findMatch.removeObservers(lifecycleOwner);
+                    timerObserver.removeObservers(lifecycleOwner);
                 } else {
                     Timber.i("No drives match for the moment. Keep listening.");
                 }
@@ -182,7 +184,6 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
 
         findMatch.observe(lifecycleOwner, matchObserver);
 
-        final LiveData<Boolean> timerObserver = mMainViewModel.setFindMatchTimer();
 
         timerObserver.observe(lifecycleOwner, new Observer<Boolean>() {
             @Override

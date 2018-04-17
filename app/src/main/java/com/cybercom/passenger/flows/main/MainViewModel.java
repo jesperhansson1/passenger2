@@ -30,7 +30,7 @@ import timber.log.Timber;
 
 public class MainViewModel extends AndroidViewModel {
 
-    private static final long FIND_MATCH_TIMEOUT_MS = 5000;
+    private static final long FIND_MATCH_TIMEOUT_MS = 20 * 1000;
 
     private FusedLocationProviderClient mFusedLocationClient;
     private PassengerRepository mPassengerRepository = PassengerRepository.getInstance();
