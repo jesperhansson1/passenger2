@@ -3,6 +3,8 @@ package com.cybercom.passenger.repository;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.location.Location;
+import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
@@ -10,12 +12,17 @@ import com.cybercom.passenger.model.Notification;
 import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.repository.databasemodel.utils.DatabaseModelHelper;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.SignInMethodQueryResult;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
@@ -48,10 +55,12 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private DatabaseReference mDrivesReference;
     private DatabaseReference mDriveRequestsReference;
     private DatabaseReference mNotificationsReference;
+    private FirebaseAuth mAuth = FirebaseAuth.getInstance();
 
     BlockingQueue<Notification> mNotificationQueue = new LinkedBlockingQueue<>();
 
     private MutableLiveData<Notification> mNotification = new MutableLiveData<>();
+    Boolean m = new Boolean(null);
 
     public static PassengerRepository getInstance() {
         if (sPassengerRepository == null) {
@@ -66,6 +75,26 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         mDrivesReference = firebaseDatabase.getReference(REFERENCE_DRIVES);
         mDriveRequestsReference = firebaseDatabase.getReference(REFERENCE_DRIVE_REQUESTS);
         mNotificationsReference = firebaseDatabase.getReference(REFERENCE_NOTIFICATIONS);
+    }
+//    String a;
+    public Boolean test(){
+        mAuth.fetchSignInMethodsForEmail("e@e.se").addOnCompleteListener(new OnCompleteListener<SignInMethodQueryResult>() {
+
+            @Override
+            public void onComplete(@NonNull Task<SignInMethodQueryResult> task) {
+
+                if(task.isSuccessful()){
+                    if(task.getResult().getSignInMethods().size() > 0){
+                        Timber.d("Email");
+                        m = true;
+                    } else{
+                        Timber.d("No email");
+                        m = false;
+                    }
+                }
+            }
+        });
+        return m;
     }
 
     @Override
@@ -279,4 +308,6 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
         mNotification.postValue(n);
     }
+
+
 }

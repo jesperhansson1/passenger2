@@ -2,6 +2,7 @@ package com.cybercom.passenger.flows.signup;
 
 import android.Manifest;
 import android.app.Activity;
+import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.ComponentName;
@@ -134,7 +135,7 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                 final String personalNumber = mPersonalNumber.getText().toString();
                 final String phone = mPhone.getText().toString();
 
-                if(checkTextFields(email, password, fullName, personalNumber, phone)){
+               /* if(checkTextFields(email, password, fullName, personalNumber, phone)){
                     mViewModel.createUserWithEmailAndPassword(email, password, this).observe(this, new Observer<FirebaseUser>() {
                         @Override
                         public void onChanged(@Nullable FirebaseUser user) {
@@ -148,7 +149,18 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                             }
                         }
                     });
-                }
+                }*/
+
+
+               /* mViewModel.test().observe(this, new Observer<Boolean>() {
+                    @Override
+                    public void onChanged(@Nullable Boolean s) {
+
+                    }
+                });*/
+
+               mViewModel.test();
+               Timber.d("Email Value from repo: %s", mViewModel.test().booleanValue());
                 break;
 
             case R.id.imageview_signup_profile:

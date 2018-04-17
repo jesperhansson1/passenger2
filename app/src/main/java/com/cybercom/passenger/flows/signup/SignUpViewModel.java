@@ -16,6 +16,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.SignInMethodQueryResult;
 
 import timber.log.Timber;
 
@@ -39,8 +40,8 @@ public class SignUpViewModel extends AndroidViewModel {
                             Timber.d("createUserWithEmail:success %s", user);
                             userMutableLiveData.setValue(user);
                         } else {
-                            Timber.w("createUserWithEmail:failure %s", task.getException());
-                            ToastHelper.makeToast(activity.getResources().getString(R.string.toast_badly_formatted_email), activity).show();
+                            Timber.w("createUserWithEmail:failure %s", task.getException().getMessage().toString());
+                            ToastHelper.makeToast(task.getException().getMessage().toString(), activity).show();
                         }
                     }
                 });
@@ -50,4 +51,24 @@ public class SignUpViewModel extends AndroidViewModel {
     public void createUser(String userId, User user){
         repository.createUser(userId, user);
     }
+
+    public Boolean test(){
+        return repository.test();
+    }
+        /*mAuth.fetchSignInMethodsForEmail("e@e.se").addOnCompleteListener(new OnCompleteListener<SignInMethodQueryResult>() {
+            @Override
+            public void onComplete(@NonNull Task<SignInMethodQueryResult> task) {
+                if(task.isSuccessful()){
+                    if(task.getResult().getSignInMethods().size() > 0){
+                        Timber.d("Email exists");
+                    } else{
+                        Timber.d("Email DOESNT exist");
+                    }
+                }
+            }
+        });
+
+        return mAuth.fetchSignInMethodsForEmail("e@e.se");
+
+    }*/
 }
