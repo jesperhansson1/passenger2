@@ -166,34 +166,32 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
             mFilledInTextFields = false;
         }
         if(email.isEmpty()){
-            mEmail.setError("Please enter an email");
-            //getResources().getString(R.string
+            mEmail.setError(getResources().getString(R.string.please_enter_an_email));
         }
         if(!email.isEmpty()){
             mViewModel.validateEmail(mEmail.getText().toString()).observe(this, new Observer<Boolean>() {
                 @Override
                 public void onChanged(@Nullable Boolean bEmail) {
-                    Timber.d("Value %s", bEmail);
                     if(bEmail){
-                        mEmail.setError("Email address is already in use by another account");
+                        mEmail.setError(getResources().getString(R.string.email_address_is_already_in_use_by_another_account));
                     }
                 }
             });
         }
         if(password.isEmpty()){
-            mPassword.setError("Please enter a password");
+            mPassword.setError(getResources().getString(R.string.please_enter_a_password));
         }
         if(!password.isEmpty() && password.length() < 6){
-            mPassword.setError("The given password is invalid. [Password should be at least 6 characters]");
+            mPassword.setError(getResources().getString(R.string.the_given_password_is_invalid));
         }
         if(fullName.isEmpty()){
-            mFullName.setError("Please enter your name");
+            mFullName.setError(getResources().getString(R.string.please_enter_your_name));
         }
         if(personalNumber.isEmpty()){
-            mPersonalNumber.setError("Please enter your personal number");
+            mPersonalNumber.setError(getResources().getString(R.string.please_enter_your_personal_number));
         }
         if(phone.isEmpty()){
-            mPhone.setError("Please enter your phone number");
+            mPhone.setError(getResources().getString(R.string.please_enter_your_phone_number));
         }
         return mFilledInTextFields;
     }

@@ -34,7 +34,7 @@ public class SignUpViewModel extends AndroidViewModel {
         mAuth = FirebaseAuth.getInstance();
     }
 
-    public LiveData<FirebaseUser> createUserWithEmailAndPassword(String email, String password, final Activity activity){
+    LiveData<FirebaseUser> createUserWithEmailAndPassword(String email, String password, final Activity activity){
         final MutableLiveData<FirebaseUser> userMutableLiveData = new MutableLiveData<>();
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(activity , new OnCompleteListener<AuthResult>() {
