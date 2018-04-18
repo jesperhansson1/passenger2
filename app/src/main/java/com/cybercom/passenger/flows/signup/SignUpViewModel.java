@@ -15,6 +15,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.SignInMethodQueryResult;
 
@@ -23,6 +24,10 @@ import timber.log.Timber;
 public class SignUpViewModel extends AndroidViewModel {
     private FirebaseAuth mAuth;
     private PassengerRepository repository = PassengerRepository.getInstance();
+
+    private static final String ERROR_WEAK_PASSWORD = "ERROR_WEAK_PASSWORD";
+    private static final String ERROR_EMAIL_ALREADY_IN_USE = "ERROR_EMAIL_ALREADY_IN_USE";
+    private static final String ERROR_INVALID_EMAIL = "ERROR_INVALID_EMAIL";
 
     public SignUpViewModel(@NonNull Application application) {
         super(application);
@@ -40,8 +45,16 @@ public class SignUpViewModel extends AndroidViewModel {
                             Timber.d("createUserWithEmail:success %s", user);
                             userMutableLiveData.setValue(user);
                         } else {
-                            Timber.w("createUserWithEmail:failure %s", task.getException().getMessage().toString());
-                            ToastHelper.makeToast(task.getException().getMessage().toString(), activity).show();
+                            Timber.w("createUserWithEmail:failure %s", ((FirebaseAuthException)task.getException()).getErrorCode()/*task.getException().getMessage().toString()*/);
+                            if(((FirebaseAuthException)task.getException()).getErrorCode() == ERROR_WEAK_PASSWORD){
+                                SignUpActivity.mPassword.setError(task.getException().getMessage().toString());
+
+                            }else if(((FirebaseAuthException)task.getException()).getErrorCode() == ERROR_EMAIL_ALREADY_IN_USE){
+                                SignUpActivity.mEmail.setError(task.getException().getMessage().toString());
+                            }
+                            else if(((FirebaseAuthException)task.getException()).getErrorCode() == ERROR_INVALID_EMAIL){
+                                SignUpActivity.mEmail.setError(task.getException().getMessage().toString());
+                            }
                         }
                     }
                 });
@@ -52,8 +65,8 @@ public class SignUpViewModel extends AndroidViewModel {
         repository.createUser(userId, user);
     }
 
-    public Boolean test(){
-        return repository.test();
+    public LiveData<Boolean> validateEmail(String email){
+        return repository.validateEmail(email);
     }
         /*mAuth.fetchSignInMethodsForEmail("e@e.se").addOnCompleteListener(new OnCompleteListener<SignInMethodQueryResult>() {
             @Override

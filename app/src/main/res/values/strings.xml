@@ -79,6 +79,15 @@
     <string name="desc_female_icon">Female Icon</string>
     <string name="desc_profile_picture">Profile picture</string>
 
+    <!-- Error handling messages -->
+    <item name="please_enter_an_email">Please enter an email</item>
+
+
+
+
+    <item name="please_enter_your_phone_number">Please enter your phone number</item>
+
+
     <string-array name="location_array">
         <item>My Location</item>
         <item>Malmö</item>

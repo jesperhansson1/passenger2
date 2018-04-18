@@ -60,7 +60,6 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     BlockingQueue<Notification> mNotificationQueue = new LinkedBlockingQueue<>();
 
     private MutableLiveData<Notification> mNotification = new MutableLiveData<>();
-    Boolean m = new Boolean(null);
 
     public static PassengerRepository getInstance() {
         if (sPassengerRepository == null) {
@@ -77,24 +76,25 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         mNotificationsReference = firebaseDatabase.getReference(REFERENCE_NOTIFICATIONS);
     }
 //    String a;
-    public Boolean test(){
-        mAuth.fetchSignInMethodsForEmail("e@e.se").addOnCompleteListener(new OnCompleteListener<SignInMethodQueryResult>() {
+    public LiveData<Boolean> validateEmail(String email){
+        final MutableLiveData<Boolean> checkEmail = new MutableLiveData();
 
+        mAuth.fetchSignInMethodsForEmail(email).addOnCompleteListener(new OnCompleteListener<SignInMethodQueryResult>() {
             @Override
             public void onComplete(@NonNull Task<SignInMethodQueryResult> task) {
 
                 if(task.isSuccessful()){
                     if(task.getResult().getSignInMethods().size() > 0){
-                        Timber.d("Email");
-                        m = true;
+                        boolean email = true;
+                        checkEmail.setValue(email);
                     } else{
-                        Timber.d("No email");
-                        m = false;
+                        boolean email = false;
+                        checkEmail.setValue(email);
                     }
                 }
             }
         });
-        return m;
+        return checkEmail;
     }
 
     @Override

@@ -50,7 +50,8 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
 
     SignUpViewModel mViewModel;
     Button mNextButton;
-    EditText mPassword, mEmail, mFullName, mPersonalNumber, mPhone;
+    public static EditText mEmail, mPassword;
+    EditText mFullName, mPersonalNumber, mPhone;
     TextView mMaleTextSelect, mFemaleTextSelect;
     String mSaveRadioButtonAnswer;
     Boolean mFilledInTextFields = false;
@@ -103,7 +104,7 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     @Override
-    public void onClick(View v) {
+    public void onClick(final View v) {
         switch(v.getId()) {
             case R.id.maleLayout:
                 if(!mMaleLayout.isSelected()){
@@ -129,13 +130,13 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                 break;
 
             case R.id.button_signup_next:
-                String email = mEmail.getText().toString();
-                String password = mPassword.getText().toString();
+                final String email = mEmail.getText().toString();
+                final String password = mPassword.getText().toString();
                 final String fullName = mFullName.getText().toString();
                 final String personalNumber = mPersonalNumber.getText().toString();
                 final String phone = mPhone.getText().toString();
 
-               /* if(checkTextFields(email, password, fullName, personalNumber, phone)){
+                if (checkTextFields(email, password, fullName, personalNumber, phone)) {
                     mViewModel.createUserWithEmailAndPassword(email, password, this).observe(this, new Observer<FirebaseUser>() {
                         @Override
                         public void onChanged(@Nullable FirebaseUser user) {
@@ -149,18 +150,7 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                             }
                         }
                     });
-                }*/
-
-
-               /* mViewModel.test().observe(this, new Observer<Boolean>() {
-                    @Override
-                    public void onChanged(@Nullable Boolean s) {
-
-                    }
-                });*/
-
-               mViewModel.test();
-               Timber.d("Email Value from repo: %s", mViewModel.test().booleanValue());
+                }
                 break;
 
             case R.id.imageview_signup_profile:
@@ -177,9 +167,24 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         }
         if(email.isEmpty()){
             mEmail.setError("Please enter an email");
+            //getResources().getString(R.string
+        }
+        if(!email.isEmpty()){
+            mViewModel.validateEmail(mEmail.getText().toString()).observe(this, new Observer<Boolean>() {
+                @Override
+                public void onChanged(@Nullable Boolean bEmail) {
+                    Timber.d("Value %s", bEmail);
+                    if(bEmail){
+                        mEmail.setError("Email address is already in use by another account");
+                    }
+                }
+            });
         }
         if(password.isEmpty()){
             mPassword.setError("Please enter a password");
+        }
+        if(!password.isEmpty() && password.length() < 6){
+            mPassword.setError("The given password is invalid. [Password should be at least 6 characters]");
         }
         if(fullName.isEmpty()){
             mFullName.setError("Please enter your name");
