@@ -2,7 +2,6 @@ package com.cybercom.passenger.flows.signup;
 
 import android.Manifest;
 import android.app.Activity;
-import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.ComponentName;
@@ -35,6 +34,7 @@ import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.main.MainActivity;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.utils.ToastHelper;
+import com.cybercom.passenger.utils.ValidatePersonalNumberHelper;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.squareup.picasso.Picasso;
@@ -187,9 +187,25 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         if(fullName.isEmpty()){
             mFullName.setError(getResources().getString(R.string.please_enter_your_name));
         }
+
+
+
+
+
+
+
         if(personalNumber.isEmpty()){
             mPersonalNumber.setError(getResources().getString(R.string.please_enter_your_personal_number));
         }
+
+        if(!personalNumber.isEmpty() && !ValidatePersonalNumberHelper.hasValidChecksum(personalNumber)){
+            mPersonalNumber.setError("The personal number doesn't exist");
+        }
+
+
+
+
+
         if(phone.isEmpty()){
             mPhone.setError(getResources().getString(R.string.please_enter_your_phone_number));
         }
