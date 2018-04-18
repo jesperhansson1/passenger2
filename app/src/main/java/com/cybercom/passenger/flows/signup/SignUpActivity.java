@@ -2,6 +2,7 @@ package com.cybercom.passenger.flows.signup;
 
 import android.Manifest;
 import android.app.Activity;
+import android.arch.lifecycle.LifecycleOwner;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.ComponentName;
@@ -21,6 +22,8 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -101,6 +104,19 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         mMaleIcon.setImageDrawable(getResources().getDrawable(R.drawable.ic_male_white));
         mFemaleIcon.setImageDrawable(getResources().getDrawable(R.drawable.ic_woman_blue));
         mSaveRadioButtonAnswer = GENDER_MALE;
+
+        mPersonalNumber.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                Timber.d("Email move %s", hasFocus);
+                if(!hasFocus && !mPersonalNumber.getText().toString().isEmpty()) {
+                    if(!ValidatePersonalNumberHelper.hasValidChecksum(mPersonalNumber.getText().toString().trim())){
+                        Timber.d("Email %s", mPersonalNumber.getText().toString().trim());
+                        mPersonalNumber.setError("The personal number doesn't exist");
+                    }
+                }
+            }
+        });
     }
 
     @Override
@@ -187,13 +203,6 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         if(fullName.isEmpty()){
             mFullName.setError(getResources().getString(R.string.please_enter_your_name));
         }
-
-
-
-
-
-
-
         if(personalNumber.isEmpty()){
             mPersonalNumber.setError(getResources().getString(R.string.please_enter_your_personal_number));
         }
@@ -201,11 +210,6 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         if(!personalNumber.isEmpty() && !ValidatePersonalNumberHelper.hasValidChecksum(personalNumber)){
             mPersonalNumber.setError("The personal number doesn't exist");
         }
-
-
-
-
-
         if(phone.isEmpty()){
             mPhone.setError(getResources().getString(R.string.please_enter_your_phone_number));
         }
