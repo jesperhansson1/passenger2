@@ -23,85 +23,36 @@ import timber.log.Timber;
 import static com.cybercom.passenger.utils.CarNumberHelper.getKeyFromNumber;
 
 public class CarViewModel extends AndroidViewModel {
-
-    DatabaseReference mCarRef;
     String mUserId;
     List<Car> mAllCar;
     private MutableLiveData<List<Car>> mCarList;
+    private PassengerRepository repository = PassengerRepository.getInstance();
 
 
     public CarViewModel(@NonNull Application application) {
         super(application);
-        mCarRef = (PassengerRepository.getInstance()).getCarsReference();
-        mUserId = "CAFpHVaBPSed9RiwVPYPlamYkrb2";//FirebaseAuth.getInstance().getCurrentUser().getUid();
+        mUserId = "CAFpHVaBPSed9RiwVPYPlamYkrb2";
         mCarList = new MutableLiveData<>();
-        mCarRef.addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                getAllTask(dataSnapshot);
-            }
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                getAllTask(dataSnapshot);
-            }
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-                taskDeletion(dataSnapshot);
-            }
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-            }
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-            }
-        });
+        repository.onChangeCarDetails();
     }
 
     public void addCar(String number, String model, String year, String colour)
     {
         Car car = new Car(number,model,year,colour);
-        mCarRef.child(mUserId).child(getKeyFromNumber(number)).setValue(car);
+        repository.createCar(getKeyFromNumber(number),mUserId, car);
     }
 
-    public void deleteCar(String number){
-        mCarRef.child(mUserId).child(getKeyFromNumber(number)).removeValue();
+    public void deleteCar(String number)
+    {
+        repository.removeCar(getKeyFromNumber(number),mUserId);
     }
 
     public List<Car> getCars() {
         return this.mAllCar;
     }
 
-    private void getAllTask(DataSnapshot dataSnapshot){
-        mAllCar = new ArrayList<Car>();
-        Map<String, Object> objectMap = (HashMap<String, Object>)
-                dataSnapshot.getValue();
-        if(objectMap.values()!= null)
-        for (Object obj : objectMap.values()) {
-            if (obj instanceof Map) {
-                Map<String, Object> mapObj = (Map<String, Object>) obj;
-                try
-                {
-                    Car match = new Car(mapObj.get("number").toString(),
-                            mapObj.get("model").toString(),
-                            mapObj.get("year").toString(),
-                            mapObj.get("color").toString());
-                    mAllCar.add(match);
-                }
-                catch(Exception e)
-                {
-                    Timber.e(e.getLocalizedMessage());
-                }
-            }
-        }
-         mCarList.setValue(mAllCar);
-    }
-
-    public void taskDeletion(DataSnapshot dataSnapshot){
-        getAllTask(dataSnapshot);
-    }
-
     LiveData<List<Car>> getCarList() {
+        mCarList = repository.getUpdatedCarList();
         return mCarList;
     }
-
 }

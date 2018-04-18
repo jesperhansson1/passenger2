@@ -26,11 +26,11 @@ public class CarsActivity extends AppCompatActivity {
     private CarsListAdapter mCarsListAdapter;
     CarViewModel mCarViewModel;
 
-    final int CAR_DETAIL = 17;
-    final String CAR_NUMBER = "NUMBER";
-    final String CAR_MODEL = "MODEL";
-    final String CAR_YEAR = "YEAR";
-    final String CAR_COLOR = "COLOUR";
+    static final int CAR_DETAIL = 17;
+    static final String CAR_NUMBER = "NUMBER";
+    static final String CAR_MODEL = "MODEL";
+    static final String CAR_YEAR = "YEAR";
+    static final String CAR_COLOR = "COLOUR";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,7 +82,7 @@ public class CarsActivity extends AppCompatActivity {
         String msg = getApplicationContext().getResources().getString(R.string.deleteConfirmation)
                         + " \n " + alertMsg ;
         alertDialogBuilder.setMessage(msg);
-                alertDialogBuilder.setPositiveButton("yes",
+                alertDialogBuilder.setPositiveButton(getApplicationContext().getResources().getString(R.string.yes),
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface arg0, int arg1) {
@@ -91,7 +91,8 @@ public class CarsActivity extends AppCompatActivity {
                             }
                         });
 
-        alertDialogBuilder.setNegativeButton("No",new DialogInterface.OnClickListener() {
+        alertDialogBuilder.setNegativeButton(getApplicationContext().getResources().getString(R.string.no),
+                new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
             }
@@ -116,10 +117,10 @@ public class CarsActivity extends AppCompatActivity {
             if (extras == null) {
                 return;
             }
-            mCarViewModel.addCar(extras.getString("CAR_NUMBER"),
-                    extras.getString("CAR_MODEL"),
-                    extras.getString("CAR_YEAR"),
-                    extras.getString("CAR_COLOR"));
+            mCarViewModel.addCar(extras.getString(CAR_NUMBER),
+                    extras.getString(CAR_MODEL),
+                    extras.getString(CAR_YEAR),
+                    extras.getString(CAR_COLOR));
         }
     }
 }

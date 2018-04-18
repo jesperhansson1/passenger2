@@ -2,6 +2,14 @@ package com.cybercom.passenger.flows.car;
 
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.ColorFilter;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -13,15 +21,17 @@ import com.cybercom.passenger.R;
 
 import timber.log.Timber;
 
+import static com.cybercom.passenger.flows.car.CarsActivity.CAR_COLOR;
+import static com.cybercom.passenger.flows.car.CarsActivity.CAR_DETAIL;
+import static com.cybercom.passenger.flows.car.CarsActivity.CAR_MODEL;
+import static com.cybercom.passenger.flows.car.CarsActivity.CAR_NUMBER;
+import static com.cybercom.passenger.flows.car.CarsActivity.CAR_YEAR;
+
 public class CarDetailActivity extends AppCompatActivity{
 
     EditText mEditTextCarNumber,mEditTextCarModel,mEditTextCarYear,mEditTextCarColor;
     Button mButtonSave;
-    final int CAR_DETAIL = 17;
-    final String CAR_NUMBER = "NUMBER";
-    final String CAR_MODEL = "MODEL";
-    final String CAR_YEAR = "YEAR";
-    final String CAR_COLOR = "COLOUR";
+    Drawable errorDraw;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,41 +55,42 @@ public class CarDetailActivity extends AppCompatActivity{
                 }
             }
         });
+        errorDraw = new BitmapDrawable(getResources(),
+                BitmapFactory.decodeResource(getResources(), R.drawable.ic_error));
     }
 
     public int checkError(){
         int k = 0;
         if(mEditTextCarNumber.getText().toString().isEmpty()){
             k = 1;
-            showAlert(getResources().getString(R.string.car_number_error));
+            mEditTextCarNumber.setError(getResources().getString(R.string.car_number_error),errorDraw);
+            return k;
         }
         if(mEditTextCarModel.getText().toString().isEmpty()){
-            showAlert(getResources().getString(R.string.car_model_error));
+            mEditTextCarModel.setError(getResources().getString(R.string.car_model_error),errorDraw);
             k = 2;
+            return k;
         }
         if(mEditTextCarYear.getText().toString().isEmpty()){
-            showAlert(getResources().getString(R.string.car_year_error));
+            mEditTextCarYear.setError(getResources().getString(R.string.car_year_error),errorDraw);
             k = 3;
+            return k;
         }
         if(mEditTextCarColor.getText().toString().isEmpty()){
-            showAlert(getResources().getString(R.string.car_color_error));
+            mEditTextCarColor.setError(getResources().getString(R.string.car_color_error),errorDraw);
             k = 4;
+            return k;
         }
         return k;
-    }
-
-    public void showAlert(String message)
-    {
-        Toast.makeText(getApplicationContext(),message,Toast.LENGTH_LONG).show();
     }
 
     public void addCar()
     {
         Intent intent=new Intent();
-        intent.putExtra("CAR_NUMBER",mEditTextCarNumber.getText().toString());
-        intent.putExtra("CAR_MODEL",mEditTextCarModel.getText().toString());
-        intent.putExtra("CAR_YEAR",mEditTextCarYear.getText().toString());
-        intent.putExtra("CAR_COLOR",mEditTextCarColor.getText().toString());
+        intent.putExtra(CAR_NUMBER, mEditTextCarNumber.getText().toString());
+        intent.putExtra(CAR_MODEL, mEditTextCarModel.getText().toString());
+        intent.putExtra(CAR_YEAR, mEditTextCarYear.getText().toString());
+        intent.putExtra(CAR_COLOR,mEditTextCarColor.getText().toString());
         setResult(CAR_DETAIL,intent);
         finish();
     }
