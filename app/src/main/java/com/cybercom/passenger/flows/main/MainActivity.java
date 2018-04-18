@@ -495,8 +495,8 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
                     @Override
                     public void onChanged(@Nullable User user) {
                         mMainViewModel.createDrive(user, startLocation, endLocation);
-                        updateMap(new LatLng(startLocation.getLatitude(), startLocation.getLongitude()),
-                                new LatLng(endLocation.getLatitude(), endLocation.getLongitude()));
+                        //updateMap(new LatLng(startLocation.getLatitude(), startLocation.getLongitude()),
+                              //  new LatLng(endLocation.getLatitude(), endLocation.getLongitude()));
                     }
                 });
                 break;

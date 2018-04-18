@@ -27,13 +27,13 @@ public class CreateDriveFragment extends Fragment {
     private TextView mNumberOfPassengers;
     private TextView mStartLocation;
     private TextView mEndLocation;
-    private ImageView mAddPassengers;
-    private ImageView mRemovePassengers;
     private Button mCreateRide;
     private ProgressBar mCreatingDrive;
     private boolean isInsertedByApp;
+    private ImageView mAddPassengers;
+    private ImageView mRemovePassengers;
 
-    public CreateDriveFragment() {
+    public CreateDriveFragment(){
     }
 
     public static CreateDriveFragment newInstance() {
