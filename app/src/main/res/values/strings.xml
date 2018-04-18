@@ -98,4 +98,6 @@
     <string name="create_ride_content_description_add_passenger">add passenger</string>
     <string name="marker_title_you_are_here">You are here</string>
     <string name="marker_title_start_location">Start location</string>
+    <string name="marker_title_end_location">End location</string>
+    <string name="location_provider">MarkerDrag</string>
 </resources>

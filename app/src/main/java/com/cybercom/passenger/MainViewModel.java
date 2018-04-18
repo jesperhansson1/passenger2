@@ -22,7 +22,6 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.Marker;
 
 import java.io.IOException;
@@ -31,14 +30,21 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import timber.log.Timber;
+
 public class MainViewModel extends AndroidViewModel {
 
+    public static final double LOWER_LEFT_LATITUDE = 55.0059799;
+    public static final double LOWER_LEFT_LONGITUDE = 10.5798;
+    public static final double UPPER_RIGHT_LATITUDE = 69.0599709;
+    public static final double UPPER_RIGHT_LONGITUDE = 24.1773101;
     private FusedLocationProviderClient mFusedLocationClient;
     private PassengerRepository mPassengerRepository = PassengerRepository.getInstance();
     private MutableLiveData<Location> mMyLocation = new MutableLiveData<>();
     private LocationCallback mLocationCallback;
     private LocationRequest mLocationRequest;
     private LiveData<Notification> mIncomingNotification;
+
 
     public MainViewModel(@NonNull Application application) {
         super(application);
@@ -152,11 +158,13 @@ public class MainViewModel extends AndroidViewModel {
 
     // CreateDriveFragment
     private int numberOfPassengers = 4;
-    private MutableLiveData<String> mCurrentLocationAddress = new MutableLiveData<>();
     private MutableLiveData<String> mStartLocationAddress = new MutableLiveData<>();
     private MutableLiveData<Location> mStartMarkerLocation = new MutableLiveData<>();
-    private MutableLiveData<GoogleMap> mGoogleMap = new MutableLiveData<>();
     private MutableLiveData<Marker> mCurrentLocationMarker = new MutableLiveData<>();
+    private MutableLiveData<Location> mEndMarkerLocation = new MutableLiveData<>();
+    private MutableLiveData<String> mEndLocationAddress = new MutableLiveData<>();
+
+
 
     public void setNumberOfPassengers(int passengers){
         numberOfPassengers = passengers;
@@ -166,17 +174,12 @@ public class MainViewModel extends AndroidViewModel {
         return numberOfPassengers;
     }
 
-    public void setStartMarkerLocation(Location location){
-        mStartMarkerLocation.setValue(location);
-        mStartLocationAddress.setValue(getAddressFromLocation(location));
-    }
-
     private String getAddressFromLocation(Location location){
         List<Address> addresses;
         Geocoder geocoder = new Geocoder(getApplication(), Locale.getDefault());
         try {
             addresses = geocoder.getFromLocation(location.getLatitude(),location.getLongitude(),1);
-
+            Timber.i(addresses.get(0).toString());
             return addresses.get(0).getThoroughfare() + " " + addresses.get(0).getFeatureName();
         } catch (IOException e) {
             e.printStackTrace();
@@ -188,44 +191,62 @@ public class MainViewModel extends AndroidViewModel {
         List<Address> addresses;
         Geocoder geocoder = new Geocoder(getApplication(), Locale.getDefault());
         try {
-            addresses = geocoder.getFromLocationName(address,1);
+            addresses = geocoder.getFromLocationName(address,1,
+                    LOWER_LEFT_LATITUDE,
+                    LOWER_LEFT_LONGITUDE,
+                    UPPER_RIGHT_LATITUDE,
+                    UPPER_RIGHT_LONGITUDE);
 
-            Location locationFromAddress = new Location("LocationFromAddress");
-            locationFromAddress.setLatitude(addresses.get(0).getLatitude());
-            locationFromAddress.setLongitude(addresses.get(0).getLongitude());
+            if(addresses.size() != 0){
+                Location locationFromAddress = new Location("LocationFromAddress");
+                locationFromAddress.setLatitude(addresses.get(0).getLatitude());
+                locationFromAddress.setLongitude(addresses.get(0).getLongitude());
 
-            return locationFromAddress;
+                return locationFromAddress;
+            }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
         return null;
     }
 
-    public LiveData<String> getCurrentLocationAddress(){
-        return mCurrentLocationAddress;
-    }
-
     public LiveData<String> getStartLocationAddress(){
         return mStartLocationAddress;
+    }
+
+    public void setStartLocationAddress(String address){
+       mStartLocationAddress.setValue(address);
+       mStartMarkerLocation.setValue(getLocationFromAddress(address));
+    }
+
+    public void setStartMarkerLocation(Location location){
+        mStartMarkerLocation.setValue(location);
+        mStartLocationAddress.setValue(getAddressFromLocation(location));
     }
 
     public LiveData<Location> getStartMarkerLocation(){
         return mStartMarkerLocation;
     }
 
-    public MutableLiveData<GoogleMap> getGoogleMap() {
-        return mGoogleMap;
-    }
-
-    public void setGoogleMap(GoogleMap googleMap) {
-        mGoogleMap.setValue(googleMap);
-    }
-
     public MutableLiveData<Marker> getCurrentLocationMarker() {
         return mCurrentLocationMarker;
     }
 
-    public void setCurrentLocationMarker(Marker currentLocationMarker) {
-        mCurrentLocationMarker.setValue(currentLocationMarker);
+    public void setCurrentLocationMarker(Marker mark) {
+        mCurrentLocationMarker.setValue(mark);
+    }
+
+    public void setEndMarkerLocation(Location location){
+        mEndMarkerLocation.setValue(location);
+        mEndLocationAddress.setValue(getAddressFromLocation(location));
+    }
+
+    public LiveData<Location> getEndMarkerLocation() {
+        return mEndMarkerLocation;
+    }
+
+    public LiveData<String> getEndLocationAddress() {
+        return mEndLocationAddress;
     }
 }
