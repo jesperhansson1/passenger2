@@ -63,8 +63,8 @@ public class Drive {
     @Override
     public String toString() {
         return "Drive{" +
-                "mTime=" + mTime +
-                ", mDriverId=" + mDriverId +
+                "mDriverId=" + mDriverId +
+                ", mTime=" + mTime +
                 ", mStartLocation=" + mStartLocation +
                 ", mEndLocation=" + mEndLocation +
                 ", mAvailableSeats=" + mAvailableSeats +

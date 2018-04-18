@@ -3,6 +3,8 @@ package com.cybercom.passenger.repository.databasemodel;
 import com.cybercom.passenger.model.Position;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DriveRequest implements Serializable {
 
@@ -12,23 +14,25 @@ public class DriveRequest implements Serializable {
     private Position mStartLocation;
     private Position mEndLocation;
     private int mExtraPassengers;
+    private List<String> mDriverIdBlackList = new ArrayList<>();
 
     public DriveRequest(){
     }
 
-    public DriveRequest(String passengerId, long time, Position startLocation, Position endLocation, int extraPassengers) {
+    public DriveRequest(String passengerId, long time, Position startLocation, Position endLocation, int extraPassengers, List<String> driverIdBlacklist) {
         mPassengerId = passengerId;
         mTime = time;
         mStartLocation = startLocation;
         mEndLocation = endLocation;
         mExtraPassengers = extraPassengers;
+        mDriverIdBlackList = driverIdBlacklist;
     }
 
-    public String getPassenger() {
+    public String getPassengerId() {
         return mPassengerId;
     }
 
-    public void setPassenger(String passengerId) {
+    public void setPassengerId(String passengerId) {
         mPassengerId = passengerId;
     }
 
@@ -64,6 +68,10 @@ public class DriveRequest implements Serializable {
         mExtraPassengers = extraPassengers;
     }
 
+    public void addDriverIdBlackList(String blackListId) {
+        mDriverIdBlackList.add(blackListId);
+    }
+
     @Override
     public String toString() {
         return "DriveRequest{" +
@@ -72,6 +80,15 @@ public class DriveRequest implements Serializable {
                 ", mStartLocation=" + mStartLocation +
                 ", mEndLocation=" + mEndLocation +
                 ", mExtraPassengers=" + mExtraPassengers +
+                ", mDriverIdBlackList=" + mDriverIdBlackList +
                 '}';
+    }
+
+    public List<String> getDriverIdBlackList() {
+        return mDriverIdBlackList;
+    }
+
+    public void setDriverIdBlackList(List<String> driverIdBlackList) {
+        this.mDriverIdBlackList = mDriverIdBlackList;
     }
 }

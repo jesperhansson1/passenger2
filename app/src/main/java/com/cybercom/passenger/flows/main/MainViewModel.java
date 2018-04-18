@@ -1,4 +1,4 @@
-package com.cybercom.passenger;
+package com.cybercom.passenger.flows.main;
 
 import android.annotation.SuppressLint;
 import android.app.Application;
@@ -9,6 +9,7 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 
@@ -35,10 +36,12 @@ import timber.log.Timber;
 
 public class MainViewModel extends AndroidViewModel {
 
+    private static final long FIND_MATCH_TIMEOUT_MS = 20 * 1000;
     public static final double LOWER_LEFT_LATITUDE = 55.0059799;
     public static final double LOWER_LEFT_LONGITUDE = 10.5798;
     public static final double UPPER_RIGHT_LATITUDE = 69.0599709;
     public static final double UPPER_RIGHT_LONGITUDE = 24.1773101;
+
     private FusedLocationProviderClient mFusedLocationClient;
     private PassengerRepository mPassengerRepository = PassengerRepository.getInstance();
     private MutableLiveData<Location> mMyLocation = new MutableLiveData<>();
@@ -70,7 +73,6 @@ public class MainViewModel extends AndroidViewModel {
         return mMyLocation;
     }
 
-
     @SuppressWarnings("MissingPermission")
     public void startLocationUpdates() {
         mFusedLocationClient.requestLocationUpdates(mLocationRequest,
@@ -90,30 +92,16 @@ public class MainViewModel extends AndroidViewModel {
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 
-    public Drive createDrive(User user, Position startLocation, Position endLocation) {
-        Long currentTimeMillis = System.currentTimeMillis();
-        int seats = 1;
-
-        Drive drive = new Drive(user, currentTimeMillis, startLocation, endLocation, seats);
-        mPassengerRepository.addDrive(drive);
-
-        return drive;
+    public LiveData<Drive> createDrive(long time, Position startLocation, Position endLocation, int availableSeats) {
+        return mPassengerRepository.createDrive(time, startLocation, endLocation, availableSeats);
     }
 
-    public DriveRequest createDriveRequest(User user, Position startLocation, Position endLocation) {
-        Long currentTimeMillis = System.currentTimeMillis();
-        int seats = 1;
-
-        DriveRequest driveRequest = new DriveRequest(user, currentTimeMillis, startLocation, endLocation, seats);
-        mPassengerRepository.addDriveRequest(driveRequest);
-
-        return driveRequest;
+    public LiveData<DriveRequest> createDriveRequest(long time, Position startLocation, Position endLocation, int seats) {
+        return mPassengerRepository.createDriveRequest(time, startLocation, endLocation, seats);
     }
 
-    public LiveData<Drive> findBestDriveMatch(Position startLocation, Position endLocation) {
-        long currentTimeMillis = System.currentTimeMillis();
-
-        return mPassengerRepository.findBestRideMatch(startLocation, endLocation, currentTimeMillis);
+    public LiveData<Drive> findBestDriveMatch(DriveRequest driveRequest) {
+        return mPassengerRepository.findBestRideMatch(driveRequest);
     }
 
     public void addRequestDriveNotification(DriveRequest driveRequest, Drive drive) {
@@ -140,6 +128,19 @@ public class MainViewModel extends AndroidViewModel {
 
     }
 
+//    TODO: Remove?
+//    public DriveRequest updateDriveRequestBlacklist(Notification notification) {
+//        DriveRequest driveRequest = notification.getDriveRequest();
+//        Drive drive = notification.getDrive();
+//
+//        mPassengerRepository.updateDriveRequestBlacklist(driveRequest.getId(),
+//                drive.getDriver().getUserId());
+//
+//        driveRequest.addDriverIdBlackList(drive.getDriver().getUserId());
+//
+//        return driveRequest;
+//    }
+
     public void setIncomingNotification(Bundle extras) {
 
         Map<String, String> payload = new HashMap<>();
@@ -149,19 +150,36 @@ public class MainViewModel extends AndroidViewModel {
         }
 
         mPassengerRepository.setIncomingNotification(payload);
-
     }
 
     public void pollNotificationQueue(Notification notification) {
         mPassengerRepository.pollNotificationQueue(notification);
     }
 
-    public void removeNotification() {
-        mPassengerRepository.removeNotification();
+    public void dismissNotification() {
+        mPassengerRepository.dismissNotification();
     }
 
     public void refreshToken(String token) {
         mPassengerRepository.refreshNotificationTokenId(token);
+    }
+
+    public LiveData<User> getUser() {
+        return mPassengerRepository.getUser();
+    }
+
+    public LiveData<Boolean> setFindMatchTimer() {
+        final MutableLiveData<Boolean> findMatchTimerLiveData = new MutableLiveData<>();
+
+        new Handler(Looper.getMainLooper()).postDelayed((new Runnable() {
+            @Override
+            public void run() {
+                Timber.d("findMatch timed out");
+                findMatchTimerLiveData.setValue(true);
+            }
+        }), FIND_MATCH_TIMEOUT_MS);
+
+        return findMatchTimerLiveData;
     }
 
     // CreateDriveFragment
