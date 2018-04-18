@@ -1,5 +1,6 @@
 package com.cybercom.passenger;
 
+import android.annotation.SuppressLint;
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
@@ -22,7 +23,7 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -41,6 +42,7 @@ public class MainViewModel extends AndroidViewModel {
     private FusedLocationProviderClient mFusedLocationClient;
     private PassengerRepository mPassengerRepository = PassengerRepository.getInstance();
     private MutableLiveData<Location> mMyLocation = new MutableLiveData<>();
+    private Boolean isInitialZoomDone = false;
     private LocationCallback mLocationCallback;
     private LocationRequest mLocationRequest;
     private LiveData<Notification> mIncomingNotification;
@@ -68,11 +70,17 @@ public class MainViewModel extends AndroidViewModel {
         return mMyLocation;
     }
 
+
     @SuppressWarnings("MissingPermission")
     public void startLocationUpdates() {
         mFusedLocationClient.requestLocationUpdates(mLocationRequest,
                 mLocationCallback,
                 Looper.myLooper());
+    }
+
+    @SuppressLint("MissingPermission")
+    public void getLastKnownLocation(OnSuccessListener<Location> onSuccessListener){
+        mFusedLocationClient.getLastLocation().addOnSuccessListener(onSuccessListener);
     }
 
     private void createLocationRequest() {
@@ -86,7 +94,7 @@ public class MainViewModel extends AndroidViewModel {
         Long currentTimeMillis = System.currentTimeMillis();
         int seats = 1;
 
-        Drive drive = new Drive(user, currentTimeMillis,startLocation,endLocation, seats);
+        Drive drive = new Drive(user, currentTimeMillis, startLocation, endLocation, seats);
         mPassengerRepository.addDrive(drive);
 
         return drive;
@@ -144,7 +152,7 @@ public class MainViewModel extends AndroidViewModel {
 
     }
 
-    public void pollNotificationQueue(Notification notification){
+    public void pollNotificationQueue(Notification notification) {
         mPassengerRepository.pollNotificationQueue(notification);
     }
 
@@ -160,25 +168,23 @@ public class MainViewModel extends AndroidViewModel {
     private int numberOfPassengers = 4;
     private MutableLiveData<String> mStartLocationAddress = new MutableLiveData<>();
     private MutableLiveData<Location> mStartMarkerLocation = new MutableLiveData<>();
-    private MutableLiveData<Marker> mCurrentLocationMarker = new MutableLiveData<>();
     private MutableLiveData<Location> mEndMarkerLocation = new MutableLiveData<>();
     private MutableLiveData<String> mEndLocationAddress = new MutableLiveData<>();
 
 
-
-    public void setNumberOfPassengers(int passengers){
+    public void setNumberOfPassengers(int passengers) {
         numberOfPassengers = passengers;
     }
 
-    public int getNumberOfPassengers(){
+    public int getNumberOfPassengers() {
         return numberOfPassengers;
     }
 
-    private String getAddressFromLocation(Location location){
+    private String getAddressFromLocation(Location location) {
         List<Address> addresses;
         Geocoder geocoder = new Geocoder(getApplication(), Locale.getDefault());
         try {
-            addresses = geocoder.getFromLocation(location.getLatitude(),location.getLongitude(),1);
+            addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
             Timber.i(addresses.get(0).toString());
             return addresses.get(0).getThoroughfare() + " " + addresses.get(0).getFeatureName();
         } catch (IOException e) {
@@ -187,17 +193,17 @@ public class MainViewModel extends AndroidViewModel {
         return null;
     }
 
-    public Location getLocationFromAddress(String address){
+    public Location getLocationFromAddress(String address) {
         List<Address> addresses;
         Geocoder geocoder = new Geocoder(getApplication(), Locale.getDefault());
         try {
-            addresses = geocoder.getFromLocationName(address,1,
+            addresses = geocoder.getFromLocationName(address, 1,
                     LOWER_LEFT_LATITUDE,
                     LOWER_LEFT_LONGITUDE,
                     UPPER_RIGHT_LATITUDE,
                     UPPER_RIGHT_LONGITUDE);
 
-            if(addresses.size() != 0){
+            if (addresses.size() != 0) {
                 Location locationFromAddress = new Location("LocationFromAddress");
                 locationFromAddress.setLatitude(addresses.get(0).getLatitude());
                 locationFromAddress.setLongitude(addresses.get(0).getLongitude());
@@ -211,35 +217,32 @@ public class MainViewModel extends AndroidViewModel {
         return null;
     }
 
-    public LiveData<String> getStartLocationAddress(){
+    public LiveData<String> getStartLocationAddress() {
         return mStartLocationAddress;
     }
 
-    public void setStartLocationAddress(String address){
-       mStartLocationAddress.setValue(address);
-       mStartMarkerLocation.setValue(getLocationFromAddress(address));
+    public void setStartLocationAddress(String address) {
+        mStartLocationAddress.setValue(address);
+        mStartMarkerLocation.setValue(getLocationFromAddress(address));
     }
 
-    public void setStartMarkerLocation(Location location){
+    public void setStartMarkerLocation(Location location) {
         mStartMarkerLocation.setValue(location);
         mStartLocationAddress.setValue(getAddressFromLocation(location));
     }
 
-    public LiveData<Location> getStartMarkerLocation(){
+    public LiveData<Location> getStartMarkerLocation() {
         return mStartMarkerLocation;
     }
 
-    public MutableLiveData<Marker> getCurrentLocationMarker() {
-        return mCurrentLocationMarker;
-    }
-
-    public void setCurrentLocationMarker(Marker mark) {
-        mCurrentLocationMarker.setValue(mark);
-    }
-
-    public void setEndMarkerLocation(Location location){
+    public void setEndMarkerLocation(Location location) {
         mEndMarkerLocation.setValue(location);
         mEndLocationAddress.setValue(getAddressFromLocation(location));
+    }
+
+    public void setEndLocationAddress(String address){
+        mEndLocationAddress.setValue(address);
+        mEndMarkerLocation.setValue(getLocationFromAddress(address));
     }
 
     public LiveData<Location> getEndMarkerLocation() {
@@ -248,5 +251,13 @@ public class MainViewModel extends AndroidViewModel {
 
     public LiveData<String> getEndLocationAddress() {
         return mEndLocationAddress;
+    }
+
+    public Boolean isInitialZoomDone() {
+        return isInitialZoomDone;
+    }
+
+    public void setInitialZoomDone(Boolean initialZoomDone) {
+        isInitialZoomDone = initialZoomDone;
     }
 }

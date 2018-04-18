@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import org.json.JSONObject;
@@ -82,7 +83,7 @@ public class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<Str
         if(polylineOptions != null) {
             Timber.d(String.valueOf(polylineOptions));
             if(mGoogleMap!=null) {
-                mGoogleMap.addPolyline(polylineOptions);
+                Polyline route = mGoogleMap.addPolyline(polylineOptions);
             }
         }
         else {

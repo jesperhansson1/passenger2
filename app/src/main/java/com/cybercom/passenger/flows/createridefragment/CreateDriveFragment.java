@@ -23,7 +23,6 @@ import com.cybercom.passenger.R;
 
 public class CreateDriveFragment extends Fragment {
 
-
     private MainViewModel mMainViewModel;
     private TextView mNumberOfPassengers;
     private TextView mStartLocation;
@@ -32,9 +31,10 @@ public class CreateDriveFragment extends Fragment {
     private ImageView mRemovePassengers;
     private Button mCreateRide;
     private ProgressBar mCreatingDrive;
+    private boolean isInsertedByApp;
 
-
-    public CreateDriveFragment() { }
+    public CreateDriveFragment() {
+    }
 
     public static CreateDriveFragment newInstance() {
 
@@ -48,7 +48,7 @@ public class CreateDriveFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if(getActivity() != null){
+        if (getActivity() != null) {
             mMainViewModel = ViewModelProviders.of(getActivity()).get(MainViewModel.class);
         }
     }
@@ -89,6 +89,7 @@ public class CreateDriveFragment extends Fragment {
         });
 
         mStartLocation.addTextChangedListener(mStartLocationListener);
+        mStartLocation.addTextChangedListener(mEndLocationListener);
 
         mCreateRide.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -96,7 +97,6 @@ public class CreateDriveFragment extends Fragment {
                 mCreateRide.setText(null);
                 mCreateRide.setEnabled(false);
                 mCreatingDrive.setVisibility(View.VISIBLE);
-
             }
         });
 
@@ -107,7 +107,9 @@ public class CreateDriveFragment extends Fragment {
         mMainViewModel.getEndLocationAddress().observe(this, new Observer<String>() {
             @Override
             public void onChanged(@Nullable String endAddress) {
+                isInsertedByApp = true;
                 mEndLocation.setText(endAddress);
+                isInsertedByApp = false;
             }
         });
     }
@@ -116,7 +118,9 @@ public class CreateDriveFragment extends Fragment {
         mMainViewModel.getStartLocationAddress().observe(this, new Observer<String>() {
             @Override
             public void onChanged(@Nullable String startAddress) {
+                isInsertedByApp = true;
                 mStartLocation.setText(startAddress);
+                isInsertedByApp = false;
             }
         });
     }
@@ -130,22 +134,57 @@ public class CreateDriveFragment extends Fragment {
         Runnable runnable;
 
         public void onTextChanged(final CharSequence s, int start, final int before, int count) {
-            handler.removeCallbacks(runnable);
+            if (!isInsertedByApp) {
+                handler.removeCallbacks(runnable);
+            }
         }
 
         @Override
         public void afterTextChanged(final Editable address) {
-            runnable = new Runnable() {
-                @Override
-                public void run() {
-                    mMainViewModel.setStartLocationAddress(address.toString());
-                }
-            };
-            handler.postDelayed(runnable, 2000);
+
+            if (!isInsertedByApp) {
+                runnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        mMainViewModel.setStartLocationAddress(address.toString());
+                    }
+                };
+                handler.postDelayed(runnable, 2000);
+            }
         }
 
         @Override
-        public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+        }
+    };
+
+    private final TextWatcher mEndLocationListener = new TextWatcher() {
+        final Handler handler = new Handler();
+        Runnable runnable;
+
+        public void onTextChanged(final CharSequence s, int start, final int before, int count) {
+            if (!isInsertedByApp) {
+                handler.removeCallbacks(runnable);
+            }
+        }
+
+        @Override
+        public void afterTextChanged(final Editable address) {
+
+            if (!isInsertedByApp) {
+                runnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        mMainViewModel.setEndLocationAddress(address.toString());
+                    }
+                };
+                handler.postDelayed(runnable, 2000);
+            }
+        }
+
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+        }
     };
 
 
