@@ -2,7 +2,6 @@ package com.cybercom.passenger.flows.signup;
 
 import android.Manifest;
 import android.app.Activity;
-import android.arch.lifecycle.LifecycleOwner;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.ComponentName;
@@ -22,8 +21,6 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -117,6 +114,13 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                 }
             }
         });
+
+        mEmail.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                validateEmail(((EditText)v).getText().toString());
+            }
+        });
     }
 
     @Override
@@ -152,7 +156,7 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                 final String personalNumber = mPersonalNumber.getText().toString();
                 final String phone = mPhone.getText().toString();
 
-                if (checkTextFields(email, password, fullName, personalNumber, phone)) {
+                if (validateUserInput(email, password, fullName, personalNumber, phone)) {
                     mViewModel.createUserWithEmailAndPassword(email, password, this).observe(this, new Observer<FirebaseUser>() {
                         @Override
                         public void onChanged(@Nullable FirebaseUser user) {
@@ -175,25 +179,15 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         }
     }
 
-    public Boolean checkTextFields(String email, String password, String fullName, String personalNumber, String phone){
+    public Boolean validateUserInput(String email, String password, String fullName, String personalNumber, String phone){
         if(!email.isEmpty() && !password.isEmpty() && !fullName.isEmpty() && !personalNumber.isEmpty() && !phone.isEmpty()){
             mFilledInTextFields = true;
         } else{
             mFilledInTextFields = false;
         }
-        if(email.isEmpty()){
-            mEmail.setError(getResources().getString(R.string.please_enter_an_email));
-        }
-        if(!email.isEmpty()){
-            mViewModel.validateEmail(mEmail.getText().toString()).observe(this, new Observer<Boolean>() {
-                @Override
-                public void onChanged(@Nullable Boolean bEmail) {
-                    if(bEmail){
-                        mEmail.setError(getResources().getString(R.string.email_address_is_already_in_use_by_another_account));
-                    }
-                }
-            });
-        }
+
+        validateEmail(email);
+
         if(password.isEmpty()){
             mPassword.setError(getResources().getString(R.string.please_enter_a_password));
         }
@@ -216,6 +210,20 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         return mFilledInTextFields;
     }
 
+    private void validateEmail(String email) {
+        if(email.isEmpty()){
+            mEmail.setError(getResources().getString(R.string.please_enter_an_email));
+        }
+
+        mViewModel.validateEmail(mEmail.getText().toString()).observe(this, new Observer<Boolean>() {
+            @Override
+            public void onChanged(@Nullable Boolean bEmail) {
+                if(bEmail){
+                    mEmail.setError(getResources().getString(R.string.email_address_is_already_in_use_by_another_account));
+                }
+            }
+        });
+    }
 
 
     public void checkpermissions(Activity activity) {
