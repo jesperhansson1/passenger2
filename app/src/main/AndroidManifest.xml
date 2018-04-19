@@ -67,8 +67,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".flows.accounts.BankActivity" />
-        <activity android:name=".flows.accounts.CardActivity"></activity>
+
+        <activity android:name=".flows.accounts.AccountDetail"></activity>
     </application>
 
 </manifest>

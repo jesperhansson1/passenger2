@@ -9,6 +9,9 @@ import com.cybercom.passenger.R;
 
 public class AccountActivity extends AppCompatActivity {
 
+    static final String BankCard = "CARDBANK";
+    static final String Bank = "BANK";
+    static final String Card = "CARD";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -16,10 +19,14 @@ public class AccountActivity extends AppCompatActivity {
     }
 
     public void startBankActivity(View target){
-        startActivity(new Intent(this, BankActivity.class));
+        Intent bankIntent =new Intent(this, AccountDetail.class);
+        bankIntent.putExtra(BankCard,Bank);
+        startActivity(bankIntent);
     }
 
     public void startCardActivity(View target){
-        startActivity(new Intent(this, CardActivity.class));
+        Intent cardIntent =new Intent(this, AccountDetail.class);
+        cardIntent.putExtra(BankCard,Card);
+        startActivity(cardIntent);
     }
 }

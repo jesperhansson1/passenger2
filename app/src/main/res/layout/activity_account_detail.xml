@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.cybercom.passenger.flows.accounts.AccountDetail">
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="@dimen/pad_50dp"
+        android:shrinkColumns="*"
+        android:stretchColumns="*"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ToggleButton
+                android:id="@+id/toggleButton_activityaccountdetail_card"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/pad_20dp"
+                android:layout_span="1"
+                android:gravity="right|center"
+                android:onClick="cardClicked"
+                android:text="@string/credit_card"
+                android:textColor="@color/colorWhite"
+                android:textOff="@string/credit_card"
+                android:textOn="@string/credit_card" />
+
+            <ToggleButton
+                android:id="@+id/toggleButton_activityaccountdetail_bank"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/pad_20dp"
+                android:layout_span="1"
+                android:fitsSystemWindows="true"
+                android:gravity="left|center"
+                android:onClick="bankClicked"
+                android:text="@string/bank_account"
+                android:textColor="@color/colorWhite"
+                android:textOff="@string/bank_account"
+                android:textOn="@string/bank_account" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <android.support.v4.view.ViewPager
+                android:id="@+id/ViewPager_activityaccountdetail"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_span="2" />
+        </TableRow>
+
+    </TableLayout>
+
+</android.support.constraint.ConstraintLayout>
