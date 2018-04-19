@@ -16,6 +16,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
@@ -163,8 +164,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                                 distance[0], driveRequest.getStartLocation().getLatitude(), driveRequest.getEndLocation().getLongitude(),
                                 drive.getStartLocation().getLatitude(), drive.getStartLocation().getLongitude());
 
-                        if (driveRequest.getDriverIdBlackList().contains(drive.getDriverId())) Timber.i("No match driver blacklisted: %s", drive.getDriverId());
-
+                        if (driveRequest.getDriverIdBlackList().contains(drive.getDriverId())) Timber.i("No match, driver blacklisted: %s", drive.getDriverId());
 
                         if (distance[0] < 700 && !driveRequest.getDriverIdBlackList().contains(drive.getDriverId())) {
                             if (bestMatch == null) {
@@ -264,10 +264,20 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                                                         final com.cybercom.passenger.repository.databasemodel.DriveRequest dBdriveRequest
                                                                 = dataSnapshot.getValue(com.cybercom.passenger.repository.databasemodel.DriveRequest.class);
 
+                                                        GenericTypeIndicator<List<String>> genTypeIndicatore = new GenericTypeIndicator<List<String>>() {};
+                                                        List<String> list = dataSnapshot.child(REFERENCE_DRIVER_ID_BLACK_LIST).getValue(genTypeIndicatore);
+                                                        if (list == null) {
+                                                            list = new ArrayList<>();
+                                                        }
+
                                                         // If it is a Reject-notification add driverId to the driver-request's blacklist
                                                         if (Integer.valueOf(payload.get(NOTIFICATION_TYPE_KEY)) == Notification.REJECT_PASSENGER) {
-                                                            dBdriveRequest.addDriverIdBlackList(driver.getUserId());
+                                                            list.add(driver.getUserId());
+                                                            List<Object> objectList = new ArrayList<Object>(list);
+                                                            dBdriveRequest.setDriverIdBlackList(objectList);
                                                             mDriveRequestsReference.child(driveRequestId).setValue(dBdriveRequest);
+                                                        } else {
+                                                            dBdriveRequest.setDriverIdBlackList(new ArrayList<Object>(list));
                                                         }
 
                                                         // Fetch the passenger (User)
@@ -381,7 +391,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
             String uId = firebaseUser.getUid();
 
             final com.cybercom.passenger.repository.databasemodel.DriveRequest dbDriveRequest =
-                new com.cybercom.passenger.repository.databasemodel.DriveRequest(uId, time, startLocation, endLocation, availableSeats, new ArrayList<String>());
+                new com.cybercom.passenger.repository.databasemodel.DriveRequest(uId, time, startLocation, endLocation, availableSeats, new ArrayList<Object>());
             final DatabaseReference ref = mDriveRequestsReference.push();
             final String driveRequestId = ref.getKey();
             ref.setValue(dbDriveRequest);
