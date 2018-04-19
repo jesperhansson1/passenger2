@@ -27,7 +27,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.RadioButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.cybercom.passenger.R;
@@ -48,15 +48,17 @@ import static android.os.Build.VERSION_CODES.M;
 public class SignUpActivity extends AppCompatActivity implements View.OnClickListener, ActivityCompat.OnRequestPermissionsResultCallback {
 
     SignUpViewModel mViewModel;
-    RadioButton mRadioButtonMale, mRadioButtonFemale;
     Button mNextButton;
     EditText mPassword, mEmail, mFullName, mPersonalNumber, mPhone;
+    TextView mMaleTextSelect, mFemaleTextSelect;
     String mSaveRadioButtonAnswer;
     Boolean mFilledInTextFields = false;
     private static final String GENDER_MALE = "Male";
     private static final String GENDER_FEMALE = "Female";
-    ImageView mImageViewProfile;
+    ImageView mImageViewProfile, mMaleIcon, mFemaleIcon;
     private static final int REQUEST_CAMERA_PERMISSION = 1;
+    LinearLayout mMaleLayout, mFemaleLayout;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,52 +76,55 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         mFullName = findViewById(R.id.edittext_signup_fullName);
         mPersonalNumber = findViewById(R.id.edittext_signup_personalNumer);
         mPhone = findViewById(R.id.edittext_signup_phone);
-
-        mRadioButtonMale = findViewById(R.id.radiobutton_signup_maleRadioButton);
-        mRadioButtonMale.setOnClickListener(this);
-        mRadioButtonFemale = findViewById(R.id.radiobutton_signup_femaleRadioButton);
-        mRadioButtonFemale.setOnClickListener(this);
         mNextButton = findViewById(R.id.button_signup_next);
         mNextButton.setOnClickListener(this);
 
-        mRadioButtonMale.setBackgroundColor(getResources().getColor(R.color.colorBlue));
-        mRadioButtonMale.setTextColor(getResources().getColor(R.color.colorWhite));
-        mRadioButtonFemale.setBackgroundColor(getResources().getColor(R.color.colorWhite));
-        mRadioButtonFemale.setTextColor(getResources().getColor(R.color.colorBlue));
+        mMaleLayout = findViewById(R.id.maleLayout);
+        mMaleLayout.setOnClickListener(this);
+        mFemaleLayout = findViewById(R.id.femaleLayout);
+        mFemaleLayout.setOnClickListener(this);
 
-        mRadioButtonMale.setButtonDrawable(R.drawable.ic_male_white);
-        mRadioButtonFemale.setButtonDrawable(R.drawable.ic_woman_blue);
+        mMaleTextSelect = findViewById(R.id.male_text_select);
+        mFemaleTextSelect = findViewById(R.id.female_text_select);
+        mMaleIcon = findViewById(R.id.male_icon_select);
+        mFemaleIcon = findViewById(R.id.female_icon_select);
 
+        defaultSettings();
+    }
+
+    void defaultSettings(){
+        mMaleLayout.setSelected(true);
+        mMaleTextSelect.setTextColor(getResources().getColor(R.color.colorWhite));
+        mFemaleTextSelect.setTextColor(getResources().getColor(R.color.colorBlue));
+        mMaleIcon.setImageDrawable(getResources().getDrawable(R.drawable.ic_male_white));
+        mFemaleIcon.setImageDrawable(getResources().getDrawable(R.drawable.ic_woman_blue));
         mSaveRadioButtonAnswer = GENDER_MALE;
-        mImageViewProfile = findViewById(R.id.imageview_signup_profile);
-        mImageViewProfile.setOnClickListener(this);
     }
 
     @Override
     public void onClick(View v) {
         switch(v.getId()) {
-            case R.id.radiobutton_signup_maleRadioButton:
-                // Do something
+            case R.id.maleLayout:
+                if(!mMaleLayout.isSelected()){
+                    mMaleLayout.setSelected(true);
+                    mFemaleLayout.setSelected(false);
+                    mMaleTextSelect.setTextColor(getResources().getColor(R.color.colorWhite));
+                    mFemaleTextSelect.setTextColor(getResources().getColor(R.color.colorBlue));
+                    mMaleIcon.setImageDrawable(getResources().getDrawable(R.drawable.ic_male_white));
+                    mFemaleIcon.setImageDrawable(getResources().getDrawable(R.drawable.ic_woman_blue));
                     mSaveRadioButtonAnswer = GENDER_MALE;
-            mRadioButtonMale.setBackgroundColor(getResources().getColor(R.color.colorBlue));
-            mRadioButtonMale.setTextColor(getResources().getColor(R.color.colorWhite));
-            mRadioButtonMale.setButtonDrawable(R.drawable.ic_male_white);
-
-            mRadioButtonFemale.setBackgroundColor(getResources().getColor(R.color.colorWhite));
-            mRadioButtonFemale.setTextColor(getResources().getColor(R.color.colorBlue));
-            mRadioButtonFemale.setButtonDrawable(R.drawable.ic_woman_blue);
-            break;
-
-            case R.id.radiobutton_signup_femaleRadioButton:
-                // Do something
-                mSaveRadioButtonAnswer = GENDER_FEMALE;
-                mRadioButtonFemale.setBackgroundColor(getResources().getColor(R.color.colorBlue));
-                mRadioButtonFemale.setTextColor(getResources().getColor(R.color.colorWhite));
-                mRadioButtonFemale.setButtonDrawable(R.drawable.ic_woman_white);
-
-                mRadioButtonMale.setBackgroundColor(getResources().getColor(R.color.colorWhite));
-                mRadioButtonMale.setTextColor(getResources().getColor(R.color.colorBlue));
-                mRadioButtonMale.setButtonDrawable(R.drawable.ic_male_blue);
+                }
+                break;
+            case R.id.femaleLayout:
+                if(!mFemaleLayout.isSelected()){
+                    mFemaleLayout.setSelected(true);
+                    mMaleLayout.setSelected(false);
+                    mMaleTextSelect.setTextColor(getResources().getColor(R.color.colorBlue));
+                    mFemaleTextSelect.setTextColor(getResources().getColor(R.color.colorWhite));
+                    mMaleIcon.setImageDrawable(getResources().getDrawable(R.drawable.ic_male_blue));
+                    mFemaleIcon.setImageDrawable(getResources().getDrawable(R.drawable.ic_woman_white));
+                    mSaveRadioButtonAnswer = GENDER_FEMALE;
+                }
                 break;
 
             case R.id.button_signup_next:
