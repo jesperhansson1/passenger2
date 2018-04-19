@@ -1,6 +1,5 @@
 package com.cybercom.passenger.flows.createridefragment;
 
-
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
@@ -18,8 +17,11 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.cybercom.passenger.MainViewModel;
 import com.cybercom.passenger.R;
+import com.cybercom.passenger.flows.main.MainViewModel;
+import com.cybercom.passenger.model.Drive;
+import com.cybercom.passenger.utils.LocationHelper;
+import com.cybercom.passenger.utils.ToastHelper;
 
 public class CreateDriveFragment extends Fragment {
 
@@ -33,7 +35,7 @@ public class CreateDriveFragment extends Fragment {
     private ImageView mAddPassengers;
     private ImageView mRemovePassengers;
 
-    public CreateDriveFragment(){
+    public CreateDriveFragment() {
     }
 
     public static CreateDriveFragment newInstance() {
@@ -89,14 +91,32 @@ public class CreateDriveFragment extends Fragment {
         });
 
         mStartLocation.addTextChangedListener(mStartLocationListener);
-        mStartLocation.addTextChangedListener(mEndLocationListener);
+        mEndLocation.addTextChangedListener(mEndLocationListener);
 
         mCreateRide.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 mCreateRide.setText(null);
                 mCreateRide.setEnabled(false);
                 mCreatingDrive.setVisibility(View.VISIBLE);
+
+                if (mMainViewModel.getStartMarkerLocation().getValue() != null
+                        && mMainViewModel.getEndMarkerLocation().getValue() != null)
+                    mMainViewModel.createDrive(System.currentTimeMillis(),
+                            LocationHelper.convertLocationToPosition(mMainViewModel
+                                    .getStartMarkerLocation().getValue()),
+                            LocationHelper.convertLocationToPosition(mMainViewModel
+                                    .getEndMarkerLocation().getValue()),
+                            mMainViewModel.getNumberOfPassengers())
+                            .observe(CreateDriveFragment.this, new Observer<Drive>() {
+                                @Override
+                                public void onChanged(@Nullable Drive drive) {
+                                    ToastHelper.makeToast("Drive is created", getActivity()).show();
+                                }
+                            });
+
+
             }
         });
 

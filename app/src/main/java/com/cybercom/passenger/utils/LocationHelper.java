@@ -3,6 +3,7 @@ package com.cybercom.passenger.utils;
 import android.location.Location;
 
 import com.cybercom.passenger.model.Position;
+import com.google.android.gms.maps.model.LatLng;
 
 public class LocationHelper {
     public static String convertLocationToDisplayString(Location location){
@@ -31,5 +32,16 @@ public class LocationHelper {
         String lng = String.valueOf(position.getLatitude());
 
         return "Latitude: " + lat + ", Longitude: " + lng;
+    }
+
+    public static Position convertLocationToPosition(Location location){
+       return new Position(location.getLatitude(),location.getLongitude());
+    }
+
+    public static Location convertPositionToLocation(LatLng latLng){
+        Location location = new Location("onMapLongClickProvider");
+        location.setLatitude(latLng.latitude);
+        location.setLongitude(latLng.longitude);
+        return location;
     }
 }

@@ -193,7 +193,6 @@
                 android:text="@string/create_ride"
                 android:textColor="@color/colorWhite">
 
-
             </Button>
 
 

@@ -81,7 +81,7 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     @SuppressLint("MissingPermission")
-    public void getLastKnownLocation(OnSuccessListener<Location> onSuccessListener){
+    public void getLastKnownLocation(OnSuccessListener<Location> onSuccessListener) {
         mFusedLocationClient.getLastLocation().addOnSuccessListener(onSuccessListener);
     }
 
@@ -183,12 +183,15 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     // CreateDriveFragment
+
+    public static final int PLACE_START_MARKER = 0;
+    public static final int PLACE_END_MARKER = 1;
+    private int mWhichMarkerToAdd = 0;
     private int numberOfPassengers = 4;
     private MutableLiveData<String> mStartLocationAddress = new MutableLiveData<>();
     private MutableLiveData<Location> mStartMarkerLocation = new MutableLiveData<>();
     private MutableLiveData<Location> mEndMarkerLocation = new MutableLiveData<>();
     private MutableLiveData<String> mEndLocationAddress = new MutableLiveData<>();
-
 
     public void setNumberOfPassengers(int passengers) {
         numberOfPassengers = passengers;
@@ -258,7 +261,7 @@ public class MainViewModel extends AndroidViewModel {
         mEndLocationAddress.setValue(getAddressFromLocation(location));
     }
 
-    public void setEndLocationAddress(String address){
+    public void setEndLocationAddress(String address) {
         mEndLocationAddress.setValue(address);
         mEndMarkerLocation.setValue(getLocationFromAddress(address));
     }
@@ -277,5 +280,13 @@ public class MainViewModel extends AndroidViewModel {
 
     public void setInitialZoomDone(Boolean initialZoomDone) {
         isInitialZoomDone = initialZoomDone;
+    }
+
+    public int getWhichMarkerToAdd() {
+        return mWhichMarkerToAdd;
+    }
+
+    public void setWhichMarkerToAdd(int whichMarkerToAdd) {
+        mWhichMarkerToAdd = whichMarkerToAdd;
     }
 }
