@@ -266,8 +266,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
                                                         GenericTypeIndicator<List<String>> genTypeIndicatore = new GenericTypeIndicator<List<String>>() {};
                                                         List<String> list = dataSnapshot.child(REFERENCE_DRIVER_ID_BLACK_LIST).getValue(genTypeIndicatore);
-                                                        if (list != null) {
-                                                            list = new ArrayList<String>();
+                                                        if (list == null) {
+                                                            list = new ArrayList<>();
                                                         }
 
                                                         // If it is a Reject-notification add driverId to the driver-request's blacklist
