@@ -74,6 +74,7 @@
      <string name="library">Library</string>
     <string name="take_photo">Take Photo</string>
     <string name="cancel">Cancel</string>
+    <string name="main_activity_match_not_found_message">Could not find any ride. Try again later</string>
 
     <string name="desc_male_icon">Male Icon</string>
     <string name="desc_female_icon">Female Icon</string>

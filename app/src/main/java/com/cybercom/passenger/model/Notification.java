@@ -47,7 +47,7 @@ public class Notification implements Serializable {
 
     @Override
     public String toString() {
-        return "Drive{" +
+        return "Notification{" +
                 "mType=" + mType +
                 ", mDriveRequest=" + mDriveRequest +
                 ", mDrive=" + mDrive +
