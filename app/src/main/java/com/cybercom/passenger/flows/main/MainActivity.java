@@ -45,7 +45,6 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.iid.FirebaseInstanceId;
 
 import io.fabric.sdk.android.Fabric;
@@ -183,7 +182,6 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
         };
 
         findMatch.observe(lifecycleOwner, matchObserver);
-
 
         timerObserver.observe(lifecycleOwner, new Observer<Boolean>() {
             @Override

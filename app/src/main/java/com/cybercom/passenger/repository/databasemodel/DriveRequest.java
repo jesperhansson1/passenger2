@@ -3,7 +3,6 @@ package com.cybercom.passenger.repository.databasemodel;
 import com.cybercom.passenger.model.Position;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 public class DriveRequest implements Serializable {
@@ -14,12 +13,12 @@ public class DriveRequest implements Serializable {
     private Position mStartLocation;
     private Position mEndLocation;
     private int mExtraPassengers;
-    private List<String> mDriverIdBlackList = new ArrayList<>();
+    private List<Object> mDriverIdBlackList;
 
     public DriveRequest(){
     }
 
-    public DriveRequest(String passengerId, long time, Position startLocation, Position endLocation, int extraPassengers, List<String> driverIdBlacklist) {
+    public DriveRequest(String passengerId, long time, Position startLocation, Position endLocation, int extraPassengers, List<Object> driverIdBlacklist) {
         mPassengerId = passengerId;
         mTime = time;
         mStartLocation = startLocation;
@@ -80,15 +79,15 @@ public class DriveRequest implements Serializable {
                 ", mStartLocation=" + mStartLocation +
                 ", mEndLocation=" + mEndLocation +
                 ", mExtraPassengers=" + mExtraPassengers +
-                ", mDriverIdBlackList=" + mDriverIdBlackList +
                 '}';
     }
 
-    public List<String> getDriverIdBlackList() {
+
+    public List<Object> getDriverIdBlackList() {
         return mDriverIdBlackList;
     }
 
-    public void setDriverIdBlackList(List<String> driverIdBlackList) {
-        this.mDriverIdBlackList = mDriverIdBlackList;
+    public void setDriverIdBlackList(List<Object> driverIdBlackList) {
+        this.mDriverIdBlackList = driverIdBlackList;
     }
 }
