@@ -82,6 +82,8 @@
     <!-- Error handling messages -->
     <string name="please_enter_an_email">Please enter an email</string>
     <string name="email_address_is_already_in_use_by_another_account">Email address is already in use by another account</string>
+    <string name="the_email_is_badly_formatted">The email is badly formatted</string>
+
     <string name="please_enter_a_password">Please enter a password</string>
     <string name="the_given_password_is_invalid">The given password is invalid. [Password should be at least 6 characters]</string>
     <string name="please_enter_your_name">Please enter your name</string>

@@ -34,6 +34,7 @@ import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.main.MainActivity;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.utils.ToastHelper;
+import com.cybercom.passenger.utils.ValidateEmailHelper;
 import com.cybercom.passenger.utils.ValidatePersonalNumberHelper;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.iid.FirebaseInstanceId;
@@ -41,6 +42,8 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import timber.log.Timber;
 
@@ -91,10 +94,10 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         mMaleIcon = findViewById(R.id.male_icon_select);
         mFemaleIcon = findViewById(R.id.female_icon_select);
 
-        defaultSettings();
+        initUI();
     }
 
-    void defaultSettings(){
+    void initUI(){
         mMaleLayout.setSelected(true);
         mMaleTextSelect.setTextColor(getResources().getColor(R.color.colorWhite));
         mFemaleTextSelect.setTextColor(getResources().getColor(R.color.colorBlue));
@@ -105,12 +108,8 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         mPersonalNumber.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                Timber.d("Email move %s", hasFocus);
                 if(!hasFocus && !mPersonalNumber.getText().toString().isEmpty()) {
-                    if(!ValidatePersonalNumberHelper.hasValidChecksum(mPersonalNumber.getText().toString().trim())){
-                        Timber.d("Email %s", mPersonalNumber.getText().toString().trim());
-                        mPersonalNumber.setError("The personal number doesn't exist");
-                    }
+                    validatePersonalNumber(mPersonalNumber.getText().toString());
                 }
             }
         });
@@ -118,7 +117,19 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         mEmail.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                validateEmail(((EditText)v).getText().toString());
+                if (!hasFocus && !mEmail.getText().toString().isEmpty()) {
+                    validateEmail(mEmail.getText().toString());
+                    mEmail.setError(ValidateEmailHelper.isValidEmailAddress(mEmail.getText().toString()));
+                }
+            }
+        });
+
+        mPassword.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if(!hasFocus && !mPassword.getText().toString().isEmpty()) {
+                    validatePassword(mPassword.getText().toString());
+                }
             }
         });
     }
@@ -185,29 +196,46 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         } else{
             mFilledInTextFields = false;
         }
-
         validateEmail(email);
+        validatePassword(password);
+        validateFullName(fullName);
+        validatePersonalNumber(personalNumber);
+        validatePhone(phone);
+        return mFilledInTextFields;
+    }
 
+    private void validatePhone(String phone){
+        if(phone.isEmpty()){
+            mPhone.setError(getResources().getString(R.string.please_enter_your_phone_number));
+        }
+    }
+
+    private void validatePersonalNumber(String personalNumber){
+        if(personalNumber.isEmpty()){
+            mPersonalNumber.setError(getResources().getString(R.string.please_enter_your_personal_number));
+        }
+
+        if(!personalNumber.isEmpty() && personalNumber.length() == 10 && !ValidatePersonalNumberHelper.hasValidChecksum(personalNumber)){
+            mPersonalNumber.setError("The personal number doesn't exist");
+        }
+        if(!personalNumber.isEmpty() && personalNumber.length() < 10){
+            mPersonalNumber.setError("You have to enter 10 characters for the personal number");
+        }
+    }
+
+    private void validateFullName(String fullName){
+        if(fullName.isEmpty()){
+            mFullName.setError(getResources().getString(R.string.please_enter_your_name));
+        }
+    }
+
+    private void validatePassword(String password){
         if(password.isEmpty()){
             mPassword.setError(getResources().getString(R.string.please_enter_a_password));
         }
         if(!password.isEmpty() && password.length() < 6){
             mPassword.setError(getResources().getString(R.string.the_given_password_is_invalid));
         }
-        if(fullName.isEmpty()){
-            mFullName.setError(getResources().getString(R.string.please_enter_your_name));
-        }
-        if(personalNumber.isEmpty()){
-            mPersonalNumber.setError(getResources().getString(R.string.please_enter_your_personal_number));
-        }
-
-        if(!personalNumber.isEmpty() && !ValidatePersonalNumberHelper.hasValidChecksum(personalNumber)){
-            mPersonalNumber.setError("The personal number doesn't exist");
-        }
-        if(phone.isEmpty()){
-            mPhone.setError(getResources().getString(R.string.please_enter_your_phone_number));
-        }
-        return mFilledInTextFields;
     }
 
     private void validateEmail(String email) {
@@ -215,16 +243,17 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
             mEmail.setError(getResources().getString(R.string.please_enter_an_email));
         }
 
-        mViewModel.validateEmail(mEmail.getText().toString()).observe(this, new Observer<Boolean>() {
-            @Override
-            public void onChanged(@Nullable Boolean bEmail) {
-                if(bEmail){
-                    mEmail.setError(getResources().getString(R.string.email_address_is_already_in_use_by_another_account));
+        if(!email.isEmpty()) {
+            mViewModel.validateEmail(email).observe(this, new Observer<Boolean>() {
+                @Override
+                public void onChanged(@Nullable Boolean bEmail) {
+                    if (bEmail) {
+                        mEmail.setError(getResources().getString(R.string.email_address_is_already_in_use_by_another_account));
+                    }
                 }
-            }
-        });
+            });
+        }
     }
-
 
     public void checkpermissions(Activity activity) {
         PackageManager mPackageManager = activity.getPackageManager();

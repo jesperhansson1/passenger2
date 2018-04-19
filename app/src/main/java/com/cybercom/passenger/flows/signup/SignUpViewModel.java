@@ -53,6 +53,8 @@ public class SignUpViewModel extends AndroidViewModel {
                                 SignUpActivity.mEmail.setError(task.getException().getMessage().toString());
                             }
                             else if(((FirebaseAuthException)task.getException()).getErrorCode() == ERROR_INVALID_EMAIL){
+                                Timber.d("Error %s", ((FirebaseAuthException)task.getException()).getErrorCode());
+
                                 SignUpActivity.mEmail.setError(task.getException().getMessage().toString());
                             }
                         }
