@@ -4,6 +4,8 @@ import android.annotation.SuppressLint;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.location.Location;
+import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.cybercom.passenger.model.Car;
 import com.cybercom.passenger.model.Drive;
@@ -12,13 +14,18 @@ import com.cybercom.passenger.model.Notification;
 import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.repository.databasemodel.utils.DatabaseModelHelper;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.SignInMethodQueryResult;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
 
@@ -57,6 +64,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private DatabaseReference mDrivesReference;
     private DatabaseReference mDriveRequestsReference;
     private DatabaseReference mNotificationsReference;
+    private FirebaseAuth mAuth = FirebaseAuth.getInstance();
     private DatabaseReference mCarsReference;
     private MutableLiveData<List<Car>> mCarList;
 
@@ -79,6 +87,27 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         mCarsReference = firebaseDatabase.getReference(REFERENCE_CARS);
         mDriveRequestsReference = firebaseDatabase.getReference(REFERENCE_DRIVE_REQUESTS);
         mNotificationsReference = firebaseDatabase.getReference(REFERENCE_NOTIFICATIONS);
+    }
+//    String a;
+    public LiveData<Boolean> validateEmail(String email){
+        final MutableLiveData<Boolean> checkEmail = new MutableLiveData();
+
+        mAuth.fetchSignInMethodsForEmail(email).addOnCompleteListener(new OnCompleteListener<SignInMethodQueryResult>() {
+            @Override
+            public void onComplete(@NonNull Task<SignInMethodQueryResult> task) {
+
+                if(task.isSuccessful()){
+                    if(task.getResult().getSignInMethods().size() > 0){
+                        boolean email = true;
+                        checkEmail.setValue(email);
+                    } else{
+                        boolean email = false;
+                        checkEmail.setValue(email);
+                    }
+                }
+            }
+        });
+        return checkEmail;
     }
 
     @Override

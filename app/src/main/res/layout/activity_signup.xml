@@ -233,23 +233,48 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/edittext_signup_password" />
 
-            <Button
-                android:id="@+id/button_signup_next"
+            <RelativeLayout
+                android:id="@+id/relativeLayout"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp"
+                android:layout_height="68dp"
+                android:layout_marginBottom="32dp"
                 android:layout_marginEnd="16dp"
                 android:layout_marginStart="16dp"
-                android:layout_marginTop="20dp"
-                android:background="@drawable/button_corner_round"
-                android:elevation="@dimen/pad_2dp"
-                android:text="@string/next"
-                android:textColor="@color/colorWhite"
+                android:layout_marginTop="32dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/edittext_signup_phone" />
+                app:layout_constraintTop_toBottomOf="@+id/edittext_signup_phone">
 
+                <ProgressBar
+                    android:id="@+id/progress_bar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignTop="@+id/button_signup_next"
+                    android:layout_centerHorizontal="true"
+                    android:indeterminateTint="@color/colorWhite"
+                    android:indeterminateTintMode="src_in"
+                    android:translationZ="@dimen/pad_3dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent" />
+
+                <Button
+                    android:id="@+id/button_signup_next"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="13dp"
+                    android:background="@drawable/button_corner_round"
+                    android:elevation="@dimen/pad_2dp"
+                    android:text="@string/next"
+                    android:textColor="@color/colorWhite"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent" />
+
+            </RelativeLayout>
 
         </android.support.constraint.ConstraintLayout>
     </ScrollView>
@@ -260,6 +285,5 @@
         android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        />
+        app:layout_constraintTop_toTopOf="parent" />
 </android.support.constraint.ConstraintLayout>
