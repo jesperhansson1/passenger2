@@ -169,6 +169,7 @@
             <EditText
                 android:id="@+id/edittext_signup_email"
                 style="@style/edittext_style"
+                android:translationZ="0dp"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="30dp"
@@ -177,7 +178,6 @@
                 android:ems="10"
                 android:hint="@string/hint_email"
                 android:inputType="textEmailAddress"
-                android:translationZ="0dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/edittext_signup_personalNumer" />
