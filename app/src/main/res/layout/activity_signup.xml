@@ -143,6 +143,7 @@
                 android:id="@+id/edittext_signup_personalNumer"
                 style="@style/edittext_style"
                 android:layout_width="0dp"
+                android:maxLength="10"
                 android:layout_height="84dp"
                 android:layout_marginTop="30dp"
                 android:layout_weight="1"
