@@ -126,4 +126,27 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
 
+
+    <string name="account_label">You need to add a credit card and Bank account. Need it to withdraw money</string>
+    <string name="bank_account"> Bank account </string>
+    <string name="credit_card"> Credit Card </string>
+    <string name="card_number">Card Number</string>
+    <string name="card_number_text_hint">8989 4732 3747 5702</string>
+    <string name="expires">Expires</string>
+    <string name="expires_hint">25/08</string>
+    <string name="security_code">Security code</string>
+    <string name="security_code_hint">573</string>
+    <string name="full_name_hint">Kristofor Cheban</string>
+    <string name="number_of_bank_account">Number of Bank Account</string>
+    <string name="number_of_bank_account_hint">3432 4325 4454 5632 2054</string>
+    <string name="card_digits">19</string>
+    <string name="bank_digits">24</string>
+    <string name="code_digits">3</string>
+    <string name="expiry_digits">5</string>
+    <string name="card_number_error">Card number cannot be empty</string>
+    <string name="expiry_error">Card expiry cannot be empty</string>
+    <string name="code_error">Card code cannot be empty</string>
+    <string name="account_name_error">Account name cannot be empty</string>
+    <string name="account_number_error">Account number cannot be empty</string>
+
 </resources>

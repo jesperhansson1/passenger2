@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.cybercom.passenger.flows.accounts.CardFragment">
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/pad_20dp"
+        android:shrinkColumns="*"
+        android:stretchColumns="*"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            >
+
+            <TextView
+                android:id="@+id/textView_fragmentcard_cardnumber"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_span="2"
+                android:text="@string/card_number"
+                android:textColor="@color/colorBlue"
+                android:textSize="@dimen/pad_15sp"
+                android:textStyle="bold" />
+
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="@dimen/pad_10dp">
+
+            <EditText
+                android:id="@+id/editText_fragmentcard_card"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_span="2"
+                android:background="@drawable/button_style"
+                android:ems="10"
+                android:hint="@string/card_number_text_hint"
+                android:inputType="number|phone"
+                android:maxLength="@string/card_digits"
+                android:textColor="@color/colorBlue" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="@dimen/pad_10dp">
+
+            <TextView
+                android:id="@+id/textView_fragmentcard_expires"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_span="1"
+                android:text="@string/expires"
+                android:textColor="@color/colorBlue"
+                android:textSize="@dimen/pad_15sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/textView_fragmentcard_securitycode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_span="1"
+                android:text="@string/security_code"
+                android:textColor="@color/colorBlue"
+                android:textSize="@dimen/pad_15sp"
+                android:textStyle="bold" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="@dimen/pad_10dp">
+
+            <EditText
+                android:id="@+id/editText_fragmentcard_expires"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/pad_2dp"
+                android:layout_span="1"
+                android:background="@drawable/button_style"
+                android:ems="10"
+                android:hint="@string/expires_hint"
+                android:inputType="number|phone"
+                android:maxLength="@string/expiry_digits"
+                android:textColor="@color/colorBlue" />
+
+            <EditText
+                android:id="@+id/editText_fragmentcard_securitycode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/pad_2dp"
+                android:layout_span="1"
+                android:background="@drawable/button_style"
+                android:ems="10"
+                android:hint="@string/security_code_hint"
+                android:inputType="number"
+                android:maxLength="@string/code_digits"
+                android:textColor="@color/colorBlue" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="@dimen/pad_10dp">
+
+
+            <Button
+                android:id="@+id/button_fragmentcard_next"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_span="2"
+                android:background="@drawable/button_corner_round"
+                android:text="@string/next"
+                android:textColor="@color/colorWhite" />
+        </TableRow>
+    </TableLayout>
+</android.support.constraint.ConstraintLayout>
