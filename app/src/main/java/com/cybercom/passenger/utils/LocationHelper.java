@@ -4,6 +4,7 @@ import android.location.Location;
 
 import com.cybercom.passenger.model.Position;
 import com.google.android.gms.maps.model.LatLng;
+import com.javadocmd.simplelatlng.Geohasher;
 
 public class LocationHelper {
     public static String convertLocationToDisplayString(Location location){
@@ -18,14 +19,14 @@ public class LocationHelper {
         }
     }
 
-    public static Position getPositionFromString(String locationValue)
+    /*public static Position getPositionFromString(String locationValue)
     {
         double lat,lang;
         String[] locArr = locationValue.split(",");
         lat = Double.valueOf(locArr[0]);
         lang = Double.valueOf(locArr[1]);
         return new Position(lat,lang);
-    }
+    }*/
 
     public static String getStringFromPosition(Position position) {
         String lat = String.valueOf(position.getLatitude());
@@ -35,7 +36,7 @@ public class LocationHelper {
     }
 
     public static Position convertLocationToPosition(Location location){
-       return new Position(location.getLatitude(),location.getLongitude());
+       return new Position(hashLocation(location),location.getLatitude(),location.getLongitude());
     }
 
     public static Location convertPositionToLocation(LatLng latLng){
@@ -43,5 +44,9 @@ public class LocationHelper {
         location.setLatitude(latLng.latitude);
         location.setLongitude(latLng.longitude);
         return location;
+    }
+
+    private static String hashLocation(Location location){
+        return Geohasher.hash(new com.javadocmd.simplelatlng.LatLng(location.getLatitude(),location.getLongitude()));
     }
 }

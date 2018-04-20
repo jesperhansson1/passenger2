@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 public class Position implements Serializable {
 
+    private String mGeoHash;
     private double mLatitude;
     private double mLongitude;
 
@@ -11,9 +12,18 @@ public class Position implements Serializable {
 
     }
 
-    public Position(double latitude, double longitude){
+    public Position(String geoHash, double latitude, double longitude){
+        mGeoHash = geoHash;
         mLatitude = latitude;
         mLongitude = longitude;
+    }
+
+    public String getGeoHash() {
+        return mGeoHash;
+    }
+
+    public void setGeoHash(String geoHash) {
+        mGeoHash = mGeoHash;
     }
 
     public double getLatitude() {
@@ -35,8 +45,9 @@ public class Position implements Serializable {
     @Override
     public String toString() {
         return "Position{" +
-                "mLatitude='" + mLatitude + '\'' +
-                ", mLongitude='" + mLongitude + '\'' +
+                "mGeoHash='" + mGeoHash + '\'' +
+                ", mLatitude=" + mLatitude +
+                ", mLongitude=" + mLongitude +
                 '}';
     }
 }
