@@ -78,7 +78,6 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         progressBar = findViewById(R.id.progress_bar);
         progressBar.setVisibility(View.GONE);
 
-
         mPassword = findViewById(R.id.edittext_signup_password);
         mEmail = findViewById(R.id.edittext_loginscreen_password);
         mFullName = findViewById(R.id.edittext_signup_fullName);
