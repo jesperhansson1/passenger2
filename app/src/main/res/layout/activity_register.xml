@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.cybercom.passenger.flows.login.RegisterActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="@dimen/pad_50dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageButton
+            android:id="@+id/imageButton_register_passenger"
+            android:layout_width="@dimen/size_100dp"
+            android:layout_height="@dimen/size_100dp"
+            android:layout_gravity="center"
+            android:layout_marginBottom="@dimen/pad_10dp"
+            android:layout_marginTop="@dimen/pad_20dp"
+            android:background="@drawable/button_style"
+            android:scaleType="fitXY"
+            app:srcCompat="@drawable/passenger_blue"
+            />
+
+        <TextView
+            android:id="@+id/textView_register_passenger"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/passenger"
+            android:textColor="@color/colorBlue"
+            android:textStyle="bold" />
+
+        <ImageButton
+            android:id="@+id/imageButton_register_driver"
+            android:layout_width="@dimen/size_100dp"
+            android:layout_height="@dimen/size_100dp"
+            android:layout_gravity="center"
+            android:layout_marginBottom="@dimen/space_normal"
+            android:layout_marginTop="@dimen/pad_30dp"
+            android:background="@drawable/button_style"
+            android:scaleType="fitXY"
+            app:srcCompat="@drawable/driver" />
+
+        <TextView
+            android:id="@+id/textView_register_driver"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/driver"
+            android:textColor="@color/colorBlue"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/button_register_login"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/pad_10dp"
+            android:background="@drawable/button_corner_round"
+            android:text="@string/login"
+            android:textColor="@color/colorWhite"
+            android:textSize="@dimen/pad_12sp"
+            android:textStyle="bold"
+            />
+    </LinearLayout>
+</android.support.constraint.ConstraintLayout>
