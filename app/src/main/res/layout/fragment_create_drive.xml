@@ -16,7 +16,19 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <EditText
+        <AutoCompleteTextView
+            android:id="@+id/create_drive_start_location"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/activity_margin"
+            android:layout_marginStart="@dimen/activity_margin"
+            android:layout_marginTop="@dimen/activity_margin"
+            android:backgroundTint="@color/colorLightBlue"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <!--<EditText
             android:id="@+id/create_drive_start_location"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -30,9 +42,21 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:layout_editor_absoluteY="16dp" />
+            tools:layout_editor_absoluteY="16dp" />-->
 
-        <EditText
+        <AutoCompleteTextView
+            android:id="@+id/create_drive_end_location"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/activity_margin"
+            android:layout_marginStart="@dimen/activity_margin"
+            android:layout_marginTop="@dimen/activity_margin"
+            android:backgroundTint="@color/colorLightBlue"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/create_drive_start_location"/>
+
+        <!--<EditText
             android:id="@+id/create_drive_end_location"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -45,7 +69,7 @@
             android:textCursorDrawable="@null"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/create_drive_start_location" />
+            app:layout_constraintTop_toBottomOf="@id/create_drive_start_location" /-->
 
         <View
             android:id="@+id/create_drive_first_separator"
