@@ -4,12 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.cybercom.passenger.flows.signup.SignUpActivity">
+    tools:context="com.cybercom.passenger.flows.signup.SignUpActivity" >
 
     <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fillViewport="true">
+        android:fillViewport="true"
+        tools:layout_editor_absoluteX="0dp"
+        tools:layout_editor_absoluteY="187dp">
 
         <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -106,21 +108,19 @@
                 style="@style/SignUpLogInTitles"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
+                android:layout_marginStart="16dp"
                 android:text="@string/full_name"
                 app:layout_constraintBottom_toTopOf="@+id/edittext_signup_fullName"
                 app:layout_constraintStart_toStartOf="@+id/edittext_signup_fullName" />
 
             <EditText
                 android:id="@+id/edittext_signup_fullName"
-                style="@style/EditTextStyle"
+                style="@style/edittext_style"
+                android:translationZ="0dp"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
-                android:layout_marginStart="16dp"
                 android:layout_marginTop="60dp"
                 android:layout_weight="1"
-                android:background="@drawable/style_edittext"
                 android:drawableLeft="@drawable/ic_person_blue"
                 android:ems="10"
                 android:hint="@string/hint_full_name"
@@ -134,26 +134,24 @@
                 style="@style/SignUpLogInTitles"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
+                android:layout_marginStart="16dp"
                 android:text="@string/personal_number"
-                app:layout_constraintBottom_toTopOf="@+id/edittext_signup_personalNumer"
-                app:layout_constraintStart_toStartOf="@+id/edittext_signup_personalNumer" />
+                app:layout_constraintBottom_toTopOf="@+id/edittext_loginscreen_email"
+                app:layout_constraintStart_toStartOf="@+id/edittext_loginscreen_email" />
 
             <EditText
-                android:id="@+id/edittext_signup_personalNumer"
-                style="@style/EditTextStyle"
+                android:id="@+id/edittext_loginscreen_email"
+                style="@style/edittext_style"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="60dp"
+                android:maxLength="10"
+                android:layout_height="84dp"
+                android:layout_marginTop="30dp"
                 android:layout_weight="1"
-                android:background="@drawable/style_edittext"
                 android:drawableLeft="@drawable/ic_personal_number"
                 android:ems="10"
                 android:hint="@string/hint_personal_number"
                 android:inputType="number"
-                android:maxLength="10"
+                android:translationZ="0dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/edittext_signup_fullName" />
@@ -163,85 +161,78 @@
                 style="@style/SignUpLogInTitles"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
+                android:layout_marginStart="16dp"
                 android:text="@string/email"
-                app:layout_constraintBottom_toTopOf="@+id/edittext_signup_email"
-                app:layout_constraintStart_toStartOf="@+id/edittext_signup_email" />
+                app:layout_constraintBottom_toTopOf="@+id/edittext_loginscreen_password"
+                app:layout_constraintStart_toStartOf="@+id/edittext_loginscreen_password" />
 
             <EditText
-                android:id="@+id/edittext_signup_email"
-                style="@style/EditTextStyle"
+                android:id="@+id/edittext_loginscreen_password"
+                style="@style/edittext_style"
+                android:translationZ="0dp"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="60dp"
+                android:layout_marginTop="30dp"
                 android:layout_weight="1"
-                android:background="@drawable/style_edittext"
                 android:drawableLeft="@drawable/ic_email"
                 android:ems="10"
                 android:hint="@string/hint_email"
                 android:inputType="textEmailAddress"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/edittext_signup_personalNumer" />
+                app:layout_constraintTop_toBottomOf="@+id/edittext_loginscreen_email" />
 
             <TextView
                 android:id="@+id/textview_signup_passwordTitle"
                 style="@style/SignUpLogInTitles"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
+                android:layout_marginStart="16dp"
                 android:text="@string/password"
                 app:layout_constraintBottom_toTopOf="@+id/edittext_signup_password"
                 app:layout_constraintStart_toStartOf="@+id/edittext_signup_password" />
 
             <EditText
                 android:id="@+id/edittext_signup_password"
-                style="@style/EditTextStyle"
+                style="@style/edittext_style"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="60dp"
+                android:layout_marginTop="30dp"
                 android:layout_weight="1"
-                android:background="@drawable/style_edittext"
                 android:drawableLeft="@drawable/ic_password"
                 android:ems="10"
                 android:hint="@string/hint_password"
                 android:inputType="textPassword"
+                android:translationZ="0dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/edittext_signup_email" />
+                app:layout_constraintTop_toBottomOf="@+id/edittext_loginscreen_password" />
 
             <TextView
                 android:id="@+id/textview_signup_phoneTitle"
                 style="@style/SignUpLogInTitles"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
+                android:layout_marginStart="16dp"
                 android:text="@string/phone"
                 app:layout_constraintBottom_toTopOf="@+id/edittext_signup_phone"
                 app:layout_constraintStart_toStartOf="@+id/edittext_signup_phone" />
 
             <EditText
                 android:id="@+id/edittext_signup_phone"
-                style="@style/EditTextStyle"
+                style="@style/edittext_style"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="60dp"
+                android:layout_marginTop="30dp"
                 android:layout_weight="1"
-                android:background="@drawable/style_edittext"
                 android:drawableLeft="@drawable/ic_phone"
                 android:ems="10"
                 android:hint="@string/hint_phone"
                 android:inputType="phone"
+                android:translationZ="0dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/edittext_signup_password" />
-
 
             <RelativeLayout
                 android:id="@+id/relativeLayout"
@@ -250,7 +241,7 @@
                 android:layout_marginBottom="32dp"
                 android:layout_marginEnd="16dp"
                 android:layout_marginStart="16dp"
-                android:layout_marginTop="32dp"
+                android:layout_marginTop="16dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
@@ -288,7 +279,6 @@
 
         </android.support.constraint.ConstraintLayout>
     </ScrollView>
-
     <include
         android:id="@+id/toolbar"
         layout="@layout/passenger_toolbar"

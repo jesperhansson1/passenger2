@@ -20,7 +20,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
-        <activity android:name=".flows.main.MainActivity">
+        <activity android:name=".flows.main.MainActivity" android:theme="@style/WhiteBackgroundTheme">
 
                      <intent-filter>
                      <action android:name="android.intent.action.MAIN" />
@@ -28,16 +28,12 @@
                      <category android:name="android.intent.category.LAUNCHER" />
                  </intent-filter>
         </activity>
-        <activity android:name=".flows.forgotpassword.ForgotPasswordActivity" />
-        <activity android:name=".flows.signup.PasswordSentActivity" />
-        <activity android:name=".flows.signup.SignUpActivity" />
-        <activity android:name=".flows.login.LoginActivity" />
-        <activity android:name=".flows.car.CarsActivity">
-          <!--  <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+        <activity android:name=".flows.forgotpassword.ForgotPasswordActivity" android:theme="@style/WhiteBackgroundTheme" />
+        <activity android:name=".flows.signup.PasswordSentActivity" android:theme="@style/WhiteBackgroundTheme" />
+        <activity android:name=".flows.signup.SignUpActivity" android:theme="@style/WhiteBackgroundTheme" />
+        <activity android:name=".flows.login.LoginActivity" android:theme="@style/WhiteBackgroundTheme" />
+        <activity android:name=".flows.car.CarsActivity" android:theme="@style/WhiteBackgroundTheme">
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>-->
         </activity>
 
         <service android:name=".service.PassengerInstanceIdService">

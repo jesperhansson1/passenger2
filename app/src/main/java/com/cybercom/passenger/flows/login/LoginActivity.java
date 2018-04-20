@@ -8,6 +8,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.forgotpassword.ForgotPasswordActivity;
@@ -25,6 +26,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     EditText mEmail, mPassword;
     Button mLogin, mSignup, mForgotPassword;
     Intent mIntent;
+    ProgressBar progressBar;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +37,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         toolbar.setTitleTextColor(getResources().getColor(R.color.colorWhite));
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle(R.string.login_title);
+
+        progressBar = findViewById(R.id.progress_bar);
+        progressBar.setVisibility(View.GONE);
 
         mEmail = findViewById(R.id.edittext_loginscreen_email);
         mPassword = findViewById(R.id.edittext_loginscreen_password);
@@ -56,6 +62,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 if (email.isEmpty() || password.isEmpty()) {
                     ToastHelper.makeToast(getResources().getString(R.string.toast_enter_email_password), LoginActivity.this).show();
                 } else {
+                    progressBar.setVisibility(View.VISIBLE);
+                    mLogin.setText("");
                     mAuth.signInWithEmailAndPassword(email, password)
                             .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                                 @Override
@@ -64,6 +72,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                                         mIntent = new Intent(getApplicationContext(), MainActivity.class);
                                         startActivity(mIntent);
                                     } else {
+                                        progressBar.setVisibility(View.GONE);
+                                        mLogin.setText(R.string.login);
                                         ToastHelper.makeToast(getResources().getString(R.string.toast_incorrect_email_password), LoginActivity.this).show();
                                     }
                                 }
