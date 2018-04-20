@@ -10,9 +10,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.MediaStore;
@@ -45,8 +43,6 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import timber.log.Timber;
 
@@ -84,9 +80,9 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
 
 
         mPassword = findViewById(R.id.edittext_signup_password);
-        mEmail = findViewById(R.id.edittext_signup_email);
+        mEmail = findViewById(R.id.edittext_loginscreen_password);
         mFullName = findViewById(R.id.edittext_signup_fullName);
-        mPersonalNumber = findViewById(R.id.edittext_signup_personalNumer);
+        mPersonalNumber = findViewById(R.id.edittext_loginscreen_email);
         mPhone = findViewById(R.id.edittext_signup_phone);
         mNextButton = findViewById(R.id.button_signup_next);
         mNextButton.setOnClickListener(this);

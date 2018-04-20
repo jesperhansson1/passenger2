@@ -40,6 +40,7 @@
     <string name="forgot_password">Forgot Password</string>
     <string name="signup">Sign Up</string>
     <string name="login">Login</string>
+    <string name="add_car">Add Car</string>
     <string name="send_me_password">Send me password</string>
     <string name="we_sent_password_to">We sent password to</string>
     <string name="open_mail_client">Open mail client</string>
@@ -56,7 +57,7 @@
     <string name="hint_full_name">Enter name</string>
     <string name="hint_personal_number">8310263388</string>
     <string name="hint_email">my@email.com</string>
-    <string name="hint_password">Enter password (min 6 characters)</string>
+    <string name="hint_password">Enter password</string>
     <string name="hint_phone">12345</string>
     <string name="male">Male</string>
     <string name="female">Female</string>
@@ -111,11 +112,11 @@
     <string name="car_number_hint">QEG 452</string>
     <string name="car_number">Car number</string>
     <string name="car_model_hint">Mazda X6</string>
-    <string name="car_model">Car model</string>
+    <string name="car_model">Model</string>
     <string name="car_year_hint">2008</string>
-    <string name="car_year">Car year</string>
+    <string name="car_year">Year</string>
     <string name="car_color_hint">Black</string>
-    <string name="car_color">Car color</string>
+    <string name="car_color">Color</string>
     <string name="save">Save</string>
     <string name="car_number_error">Car registration number cannot be empty</string>
     <string name="car_model_error">Car model name cannot be empty</string>
