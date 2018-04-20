@@ -20,11 +20,25 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
-        <activity android:name=".flows.main.MainActivity" />
+        <activity android:name=".flows.main.MainActivity">
+
+                     <intent-filter>
+                     <action android:name="android.intent.action.MAIN" />
+
+                     <category android:name="android.intent.category.LAUNCHER" />
+                 </intent-filter>
+        </activity>
         <activity android:name=".flows.forgotpassword.ForgotPasswordActivity" />
         <activity android:name=".flows.signup.PasswordSentActivity" />
         <activity android:name=".flows.signup.SignUpActivity" />
         <activity android:name=".flows.login.LoginActivity" />
+        <activity android:name=".flows.car.CarsActivity">
+          <!--  <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>-->
+        </activity>
 
         <service android:name=".service.PassengerInstanceIdService">
             <intent-filter>
@@ -60,12 +74,15 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-        <activity android:name=".flows.accounts.AccountActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+       <activity android:name=".flows.car.CarDetailActivity"></activity>
+        <!-- <activity android:name = ".flows.car.CarDetailActivity"
+            android:parentActivityName = ".flows.car.CarsActivity" >
+            <meta-data android:name = " android.support.PARENT_ACTIVITY "
+                android:value = ".flows.car.CarsActivity" />
+        </activity>-->
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+        <activity android:name=".flows.accounts.AccountActivity">
+
         </activity>
 
         <activity android:name=".flows.accounts.AccountDetail"></activity>

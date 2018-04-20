@@ -6,6 +6,7 @@ public class Drive implements Serializable {
 
     private User mDriver;
 
+    private String mId;
     private long mTime;
     private Position mStartLocation;
     private Position mEndLocation;
@@ -13,7 +14,8 @@ public class Drive implements Serializable {
 
     public Drive(){}
 
-    public Drive(User driver, long time, Position startLocation, Position endLocation, int availableSeats) {
+    public Drive(String id, User driver, long time, Position startLocation, Position endLocation, int availableSeats) {
+        mId = id;
         mDriver = driver;
         mTime = time;
         mStartLocation = startLocation;
@@ -70,5 +72,13 @@ public class Drive implements Serializable {
                 ", mEndLocation=" + mEndLocation +
                 ", mAvailableSeats=" + mAvailableSeats +
                 '}';
+    }
+
+    public String getId() {
+        return mId;
+    }
+
+    public void setId(String mId) {
+        this.mId = mId;
     }
 }

@@ -22,7 +22,6 @@
     <dimen name="space_double">20dp</dimen>
 
 
-
     <dimen name="activity_margin_none">0dp</dimen>
     <dimen name="activity_margin_half_half">4dp</dimen>
     <dimen name="activity_margin_half">8dp</dimen>
@@ -32,4 +31,7 @@
     <dimen name="pad_50dp">50dp</dimen>
     <dimen name="size_100dp">100dp</dimen>
     <dimen name="pad_15sp">15sp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
+    <dimen name="pad_16sp">16sp</dimen>
+    <dimen name="pad_18sp">18sp</dimen>
 </resources>
