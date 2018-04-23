@@ -32,7 +32,7 @@
 
             <EditText
                 android:id="@+id/edittext_loginscreen_email"
-                style="@style/edittext_style"
+                style="@style/shadow_background_style"
                 android:layout_width="0dp"
                 android:layout_height="84dp"
                 android:layout_marginTop="100dp"
@@ -59,7 +59,7 @@
 
     <EditText
         android:id="@+id/edittext_loginscreen_password"
-        style="@style/edittext_style"
+        style="@style/shadow_background_style"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"

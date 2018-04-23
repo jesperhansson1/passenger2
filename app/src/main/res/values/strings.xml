@@ -155,5 +155,6 @@
     <string name="signup_driver">driver</string>
     <string name="signup_login">login</string>
     <string name="signup_userid">userid</string>
+    <string name="register_as_title">Register as</string>
 
 </resources>

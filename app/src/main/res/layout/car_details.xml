@@ -29,7 +29,7 @@
 
             <EditText
                 android:id="@+id/editText_cardetails_number"
-                style="@style/edittext_style"
+                style="@style/shadow_background_style"
                 android:layout_width="0dp"
                 android:layout_height="78dp"
                 android:layout_weight="1"
@@ -55,7 +55,7 @@
 
             <EditText
                 android:id="@+id/editText_cardetails_model"
-                style="@style/edittext_style"
+                style="@style/shadow_background_style"
                 android:layout_width="0dp"
                 android:layout_height="78dp"
                 android:layout_marginTop="30dp"
@@ -82,7 +82,7 @@
 
             <EditText
                 android:id="@+id/editText_cardetails_year"
-                style="@style/edittext_style"
+                style="@style/shadow_background_style"
                 android:layout_width="0dp"
                 android:layout_height="78dp"
                 android:layout_marginTop="30dp"
@@ -109,7 +109,7 @@
 
             <EditText
                 android:id="@+id/editText_cardetails_color"
-                style="@style/edittext_style"
+                style="@style/shadow_background_style"
                 android:layout_width="0dp"
                 android:layout_height="78dp"
                 android:layout_marginTop="30dp"

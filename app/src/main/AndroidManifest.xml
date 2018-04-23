@@ -22,11 +22,11 @@
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
         <activity android:name=".flows.main.MainActivity" android:theme="@style/WhiteBackgroundTheme">
 
-                     <intent-filter>
+                     <!--<intent-filter>
                      <action android:name="android.intent.action.MAIN" />
 
                      <category android:name="android.intent.category.LAUNCHER" />
-                 </intent-filter>
+                 </intent-filter>-->
         </activity>
         <activity android:name=".flows.forgotpassword.ForgotPasswordActivity" android:theme="@style/WhiteBackgroundTheme" />
         <activity android:name=".flows.signup.PasswordSentActivity" android:theme="@style/WhiteBackgroundTheme" />
@@ -82,7 +82,13 @@
         </activity>
 
         <activity android:name=".flows.accounts.AccountDetail"></activity>
-        <activity android:name=".flows.login.RegisterActivity"></activity>
+        <activity android:name=".flows.login.RegisterActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

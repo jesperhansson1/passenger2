@@ -12,6 +12,7 @@
     <dimen name="pad_16dp">16dp</dimen>
     <dimen name="pad_20dp">20dp</dimen>
     <dimen name="pad_24dp">24dp</dimen>
+    <dimen name="pad_25dp">25dp</dimen>
     <dimen name="pad_30dp">30dp</dimen>
     <dimen name="pad_32dp">32dp</dimen>
     <dimen name="pad_108dp">108dp</dimen>
