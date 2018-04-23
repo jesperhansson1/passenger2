@@ -68,12 +68,19 @@ public class CarsActivity extends AppCompatActivity {
         }));
 
         mCarViewModel = ViewModelProviders.of(this).get(CarViewModel.class);
+        Bundle extras = getIntent().getExtras();
+        if (extras == null) {
+            return;
+        }
+        mCarViewModel.mUserId = extras.getString(getResources().getString(R.string.signup_userid));
 
         mCarViewModel.getCarList().observe(this, (List<Car> carList) -> {
             mCarList = carList;
             CarsListAdapter carsListAdapter = new CarsListAdapter(mCarList);
             recyclerView.setAdapter(carsListAdapter);
         });
+
+
     }
 
     public void deleteConfirmDialog(String alertMsg){

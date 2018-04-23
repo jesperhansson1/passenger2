@@ -6,9 +6,11 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:textColor">#ff0099cc</item>
-
-
     </style>
+
+        <style name="WhiteBackgroundTheme" parent="Theme.AppCompat.Light.NoActionBar">
+            <item name="android:windowBackground">@color/colorWhite</item>
+        </style>
 
     <style name="switch_passenger_driver" parent="Theme.AppCompat.Light">
         <!-- active thumb & track color (30% transparency) -->
@@ -30,6 +32,10 @@
         <item name="android:elevation">@dimen/pad_5dp</item>
         <item name="android:paddingTop">@dimen/pad_15dp</item>
         <item name="android:drawablePadding">@dimen/pad_5dp</item>
+    </style>
+
+    <style name="edittext_style">
+        <item name="android:background">@drawable/edittext_style</item>
     </style>
 
     <style name="SignUpLogInTitles" parent="TextAppearance.AppCompat">
@@ -57,5 +63,17 @@
     <style name="AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
     <style name="PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+
+    <style name="AppTheme.CardTheme">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="android:textColorHint">@color/colorTextBorder</item>
+        <item name="colorAccent">@color/colorWhite</item>
+        <item name="colorControlNormal">@color/colorWhite</item>
+        <item name="colorControlActivated">@color/colorWhite</item>
+        <item name="android:textColor">@color/colorWhite</item>
+    </style>
+
 
 </resources>

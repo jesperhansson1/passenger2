@@ -63,6 +63,8 @@ dependencies {
     implementation 'com.android.support:recyclerview-v7:27.1.1'
     //for color picker
    // compile 'com.github.yukuku:ambilwarna:2.0.1'
+
+    compile 'com.stripe:stripe-android:6.1.2'
 }
 
 apply plugin: 'com.google.gms.google-services'
