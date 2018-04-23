@@ -78,17 +78,15 @@
         </activity>-->
 
         <activity android:name=".flows.accounts.AccountActivity">
-
-        </activity>
-
-        <activity android:name=".flows.accounts.AccountDetail"></activity>
-        <activity android:name=".flows.login.RegisterActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity android:name=".flows.accounts.AccountDetail"></activity>
+        <activity android:name=".flows.login.RegisterActivity"></activity>
     </application>
 
 </manifest>
