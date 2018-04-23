@@ -82,6 +82,7 @@
         </activity>
 
         <activity android:name=".flows.accounts.AccountDetail"></activity>
+        <activity android:name=".flows.login.RegisterActivity"></activity>
     </application>
 
 </manifest>

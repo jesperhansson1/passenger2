@@ -28,6 +28,7 @@ import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.createdrive.CreateRideDialogFragment;
 import com.cybercom.passenger.flows.driverconfirmation.AcceptRejectPassengerDialog;
 import com.cybercom.passenger.flows.login.LoginActivity;
+import com.cybercom.passenger.flows.login.RegisterActivity;
 import com.cybercom.passenger.flows.passengernotification.PassengerNotificationDialog;
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
@@ -219,7 +220,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
         int menuId = item.getItemId();
         //noinspection SimplifiableIfStatement
         if (menuId == R.id.menu_action_login) {
-            Intent intent = new Intent(this, LoginActivity.class);
+            Intent intent = new Intent(this, RegisterActivity.class);
             startActivity(intent);
             return true;
         }
