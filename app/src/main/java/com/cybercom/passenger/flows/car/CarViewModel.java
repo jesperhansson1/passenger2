@@ -31,7 +31,6 @@ public class CarViewModel extends AndroidViewModel {
 
     public CarViewModel(@NonNull Application application) {
         super(application);
-       // mUserId = "CAFpHVaBPSed9RiwVPYPlamYkrb2";
         mCarList = new MutableLiveData<>();
         repository.onChangeCarDetails();
     }
