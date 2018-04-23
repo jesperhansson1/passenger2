@@ -18,8 +18,8 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
-        findViewById(R.id.imageButton_register_driver).setOnClickListener(this);
-        findViewById(R.id.imageButton_register_passenger).setOnClickListener(this);
+        findViewById(R.id.driver_section).setOnClickListener(this);
+        findViewById(R.id.passenger_section).setOnClickListener(this);
         findViewById(R.id.button_register_login).setOnClickListener(this);
         PASSENGER = getResources().getString(R.string.signup_passenger);
         DRIVER = getResources().getString(R.string.signup_driver);
@@ -30,11 +30,11 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.imageButton_register_passenger:
+            case R.id.passenger_section:
                 mType = PASSENGER;
                 startActivityNext(SignUpActivity.class);
                 break;
-            case R.id.imageButton_register_driver:
+            case R.id.driver_section:
                 mType = DRIVER;
                 startActivityNext(SignUpActivity.class);
                 break;

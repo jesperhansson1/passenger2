@@ -34,7 +34,7 @@
         <item name="android:drawablePadding">@dimen/pad_5dp</item>
     </style>
 
-    <style name="edittext_style">
+    <style name="shadow_background_style">
         <item name="android:background">@drawable/edittext_style</item>
     </style>
 

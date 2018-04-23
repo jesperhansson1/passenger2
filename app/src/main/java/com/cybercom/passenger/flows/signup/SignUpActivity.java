@@ -89,6 +89,8 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         mPhone = findViewById(R.id.edittext_signup_phone);
         mNextButton = findViewById(R.id.button_signup_next);
         mNextButton.setOnClickListener(this);
+        mImageViewProfile = findViewById(R.id.imageview_signup_profile);
+        mImageViewProfile.setOnClickListener(this);
 
         mMaleLayout = findViewById(R.id.maleLayout);
         mMaleLayout.setOnClickListener(this);

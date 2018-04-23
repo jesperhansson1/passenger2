@@ -101,7 +101,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/ic_person_profile" />
+                app:srcCompat="@drawable/ic_passenger" />
 
             <TextView
                 android:id="@+id/textview_signup_fullNameTitle"
@@ -115,7 +115,7 @@
 
             <EditText
                 android:id="@+id/edittext_signup_fullName"
-                style="@style/edittext_style"
+                style="@style/shadow_background_style"
                 android:translationZ="0dp"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -141,7 +141,7 @@
 
             <EditText
                 android:id="@+id/edittext_loginscreen_email"
-                style="@style/edittext_style"
+                style="@style/shadow_background_style"
                 android:layout_width="0dp"
                 android:maxLength="10"
                 android:layout_height="84dp"
@@ -168,7 +168,7 @@
 
             <EditText
                 android:id="@+id/edittext_loginscreen_password"
-                style="@style/edittext_style"
+                style="@style/shadow_background_style"
                 android:translationZ="0dp"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -194,7 +194,7 @@
 
             <EditText
                 android:id="@+id/edittext_signup_password"
-                style="@style/edittext_style"
+                style="@style/shadow_background_style"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="30dp"
@@ -220,7 +220,7 @@
 
             <EditText
                 android:id="@+id/edittext_signup_phone"
-                style="@style/edittext_style"
+                style="@style/shadow_background_style"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="30dp"
@@ -264,9 +264,8 @@
                     android:id="@+id/button_signup_next"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentTop="true"
-                    android:layout_centerHorizontal="true"
-                    android:layout_marginTop="13dp"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
                     android:background="@drawable/button_corner_round"
                     android:elevation="@dimen/pad_2dp"
                     android:text="@string/next"

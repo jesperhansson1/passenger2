@@ -77,9 +77,7 @@
                 android:value = ".flows.car.CarsActivity" />
         </activity>-->
 
-        <activity android:name=".flows.accounts.AccountActivity">
-
-        </activity>
+        <activity android:name=".flows.accounts.AccountActivity"></activity>
 
         <activity android:name=".flows.accounts.AccountDetail"></activity>
         <activity android:name=".flows.login.RegisterActivity"></activity>

@@ -6,60 +6,125 @@
     android:layout_height="match_parent"
     tools:context="com.cybercom.passenger.flows.accounts.AccountActivity">
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_margin="@dimen/pad_10dp"
-        android:background="@color/colorWhite"
-        android:dividerPadding="10dp"
-        android:orientation="vertical"
-        android:weightSum="3"
+        android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
-            android:id="@+id/textView_activityaccount_label"
+        <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/pad_10dp"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:lines="@integer/account_lines"
-            android:padding="@dimen/space_normal"
-            android:text="@string/account_label"
-            android:textAlignment="center"
-            android:textColor="@color/colorBlue"
-            android:textSize="18sp" />
+            android:layout_height="match_parent">
 
-        <Button
-            android:id="@+id/button_activityaccount_bank"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/pad_10dp"
-            android:layout_marginRight="@dimen/pad_10dp"
-            android:layout_marginTop="@dimen/pad_10dp"
-            android:layout_weight="1"
-            android:background="@drawable/top_corner_round"
-            android:drawableTop="@drawable/ic_account"
-            android:onClick="startBankActivity"
-            android:text="@string/bank_account"
-            android:textColor="@color/colorBlue" />
+            <TextView
+                android:id="@+id/textView_activityaccount_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/pad_10dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:lines="@integer/account_lines"
+                android:padding="@dimen/space_normal"
+                android:text="@string/account_label"
+                android:textAlignment="center"
+                android:textColor="@color/colorBlue"
+                android:textSize="18sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-        <Button
-            android:id="@+id/button_activityaccount_card"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/pad_10dp"
-            android:layout_marginLeft="@dimen/pad_10dp"
-            android:layout_marginRight="@dimen/pad_10dp"
-            android:layout_weight="1"
-            android:background="@drawable/bottom_corner_round"
-            android:drawableTop="@drawable/ic_credit_card"
-            android:onClick="startCardActivity"
-            android:text="@string/credit_card"
-            android:textColor="@color/colorBlue" />
-    </LinearLayout>
+            <RelativeLayout
+                android:id="@+id/cardLayout"
+                style="@style/shadow_background_style"
+                android:layout_width="match_parent"
+                android:layout_height="351dp"
+                android:layout_marginTop="8dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textView_activityaccount_label">
+
+                <RelativeLayout
+                    android:id="@+id/credit_card_section"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentStart="true"
+                    android:layout_below="@+id/view"
+                    android:translationZ="3dp"
+                    >
+
+                    <ImageView
+                        android:id="@+id/imageView_credit_card"
+                        android:layout_width="@dimen/size_80dp"
+                        android:layout_height="@dimen/size_80dp"
+                        android:layout_above="@+id/textView_credit_card"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginBottom="8dp"
+                        app:srcCompat="@drawable/ic_credit_card" />
+
+                    <TextView
+                        android:id="@+id/textView_credit_card"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentBottom="true"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginBottom="20dp"
+                        android:gravity="center"
+                        android:text="@string/credit_card"
+                        android:textColor="@color/colorBlue"
+                        android:textStyle="bold"
+                        tools:layout_editor_absoluteX="0dp"
+                        tools:layout_editor_absoluteY="412dp" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/bank_account_section"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_above="@+id/view"
+                    android:layout_alignParentStart="true"
+                    android:translationZ="3dp"
+                    >
+
+                    <ImageView
+                        android:id="@+id/imageView_bank"
+                        android:layout_width="@dimen/size_80dp"
+                        android:layout_height="@dimen/size_80dp"
+                        android:layout_above="@+id/textView_account_bank"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginBottom="7dp"
+                        app:srcCompat="@drawable/ic_bank_account" />
+
+                    <TextView
+                        android:id="@+id/textView_account_bank"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentBottom="true"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginBottom="19dp"
+                        android:gravity="center"
+                        android:text="@string/bank_account"
+                        android:textColor="@color/colorBlue"
+                        android:textStyle="bold"
+                        tools:layout_editor_absoluteX="0dp"
+                        tools:layout_editor_absoluteY="253dp" />
+                </RelativeLayout>
+
+                <View
+                    android:id="@+id/view"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:background="@color/colorLightBlue" />
+            </RelativeLayout>
+
+        </android.support.constraint.ConstraintLayout>
+    </ScrollView>
 
 </android.support.constraint.ConstraintLayout>
