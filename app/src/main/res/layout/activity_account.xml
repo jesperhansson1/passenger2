@@ -60,15 +60,15 @@
 
                     <ImageView
                         android:id="@+id/imageView_credit_card"
-                        android:layout_width="@dimen/size_100dp"
-                        android:layout_height="80dp"
-                        android:layout_above="@+id/textView_account_credit_card"
+                        android:layout_width="@dimen/size_80dp"
+                        android:layout_height="@dimen/size_80dp"
+                        android:layout_above="@+id/textView_credit_card"
                         android:layout_centerHorizontal="true"
-                        android:layout_marginBottom="7dp"
+                        android:layout_marginBottom="8dp"
                         app:srcCompat="@drawable/ic_credit_card" />
 
                     <TextView
-                        android:id="@+id/textView_account_credit_card"
+                        android:id="@+id/textView_credit_card"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_alignParentBottom="true"
@@ -92,9 +92,9 @@
                     >
 
                     <ImageView
-                        android:id="@+id/imageView"
-                        android:layout_width="@dimen/size_100dp"
-                        android:layout_height="@dimen/size_100dp"
+                        android:id="@+id/imageView_bank"
+                        android:layout_width="@dimen/size_80dp"
+                        android:layout_height="@dimen/size_80dp"
                         android:layout_above="@+id/textView_account_bank"
                         android:layout_centerHorizontal="true"
                         android:layout_marginBottom="7dp"

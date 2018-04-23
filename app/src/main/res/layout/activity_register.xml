@@ -35,23 +35,17 @@
                     android:layout_alignParentStart="true"
                     android:layout_below="@+id/view">
 
-                    <ImageButton
-                        android:id="@+id/imageButton_register_driver"
-
-                        android:layout_width="@dimen/size_100dp"
-                        android:layout_height="@dimen/size_100dp"
-                        android:layout_above="@+id/textView_account_credit_card"
+                    <ImageView
+                        android:id="@+id/imageView_bank3"
+                        android:layout_width="@dimen/size_80dp"
+                        android:layout_height="@dimen/size_80dp"
+                        android:layout_above="@+id/textView_register_driver"
                         android:layout_centerHorizontal="true"
-                        android:layout_gravity="center"
-                        android:background="@drawable/register_imagebutton_background"
-                        android:contentDescription="TODO"
-                        android:scaleType="fitXY"
-                        app:srcCompat="@drawable/ic_steering_wheel"
-                        tools:layout_editor_absoluteX="87dp"
-                        tools:layout_editor_absoluteY="308dp" />
+                        android:layout_marginBottom="13dp"
+                        app:srcCompat="@drawable/ic_steering_wheel" />
 
                     <TextView
-                        android:id="@+id/textView_account_credit_card"
+                        android:id="@+id/textView_register_driver"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_alignParentBottom="true"
@@ -72,26 +66,22 @@
                     android:layout_above="@+id/view"
                     android:layout_alignParentStart="true">
 
-                    <ImageButton
-                        android:id="@+id/imageButton_account_bank"
-                        android:layout_width="@dimen/size_100dp"
-                        android:layout_height="@dimen/size_100dp"
-                        android:layout_alignParentTop="true"
+                    <ImageView
+                        android:id="@+id/imageView_passenger"
+                        android:layout_width="@dimen/size_80dp"
+                        android:layout_height="@dimen/size_80dp"
+                        android:layout_above="@+id/textView_register_passenger"
                         android:layout_centerHorizontal="true"
-                        android:layout_gravity="center"
-                        android:layout_marginTop="21dp"
-                        android:background="@drawable/register_imagebutton_background"
-                        android:scaleType="fitXY"
-                        app:srcCompat="@drawable/ic_passenger"
-                        tools:layout_editor_absoluteX="87dp"
-                        tools:layout_editor_absoluteY="149dp" />
+                        android:layout_marginBottom="7dp"
+                        app:srcCompat="@drawable/ic_passenger" />
 
                     <TextView
                         android:id="@+id/textView_register_passenger"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_below="@+id/imageButton_account_bank"
-                        android:layout_centerHorizontal="true"
+                        android:layout_alignParentBottom="true"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginBottom="14dp"
                         android:gravity="center"
                         android:text="@string/passenger"
                         android:textColor="@color/colorBlue"
