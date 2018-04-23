@@ -148,5 +148,10 @@
     <string name="code_error">Card code cannot be empty</string>
     <string name="account_name_error">Account name cannot be empty</string>
     <string name="account_number_error">Account number cannot be empty</string>
+    <string name="signup_type">type</string>
+    <string name="signup_passenger">passenger</string>
+    <string name="signup_driver">driver</string>
+    <string name="signup_login">login</string>
+    <string name="signup_userid">userid</string>
 
 </resources>

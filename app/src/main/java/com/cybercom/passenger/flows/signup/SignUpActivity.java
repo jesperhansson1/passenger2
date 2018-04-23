@@ -34,6 +34,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.cybercom.passenger.R;
+import com.cybercom.passenger.flows.car.CarsActivity;
 import com.cybercom.passenger.flows.main.MainActivity;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.utils.ToastHelper;
@@ -67,10 +68,13 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
     private static final int REQUEST_CAMERA_PERMISSION = 1;
     LinearLayout mMaleLayout, mFemaleLayout;
     ProgressBar progressBar;
+    String mType, PASSENGER, DRIVER, LOGIN, REGISTERTYPE;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_signup);
         Toolbar toolbar = findViewById(R.id.my_toolbar);
         toolbar.setTitleTextColor(getResources().getColor(R.color.colorWhite));
@@ -101,6 +105,16 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         mMaleIcon = findViewById(R.id.male_icon_select);
         mFemaleIcon = findViewById(R.id.female_icon_select);
 
+        PASSENGER = getResources().getString(R.string.signup_passenger);
+        DRIVER = getResources().getString(R.string.signup_driver);
+        LOGIN = getResources().getString(R.string.signup_login);
+        REGISTERTYPE = getResources().getString(R.string.signup_type);
+
+        Bundle extras = getIntent().getExtras();
+        if (extras == null) {
+            return;
+        }
+        REGISTERTYPE = extras.getString(REGISTERTYPE);
         initUI();
     }
 
@@ -186,8 +200,19 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                             if(user != null){
                                 mViewModel.createUser(user.getUid(), new User(user.getUid(), FirebaseInstanceId.getInstance().getToken(),
                                         User.TYPE_PASSENGER, phone, personalNumber, fullName, null, mSaveRadioButtonAnswer));
-                                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                                startActivity(intent);
+                                if(REGISTERTYPE.equalsIgnoreCase(DRIVER))
+                                {
+                                    //register as driver need to add car and verify bank id
+                                    Intent intent = new Intent(getApplicationContext(), CarsActivity.class);
+                                    intent.putExtra(getResources().getString(R.string.signup_userid),user.getUid());
+                                    startActivity(intent);
+                                }
+                                if(REGISTERTYPE.equalsIgnoreCase(PASSENGER))
+                                {
+                                    //register as passenger need to verify bank id
+                                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                                    startActivity(intent);
+                                }
                             } else{
                                 ToastHelper.makeToast(getResources().getString(R.string.toast_could_not_create_user), SignUpActivity.this).show();
                             }
@@ -294,7 +319,9 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
         if (requestCode == REQUEST_CAMERA_PERMISSION){
-            if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+            if (grantResults.length != 2 ||
+                    grantResults[0] != PackageManager.PERMISSION_GRANTED ||
+                    grantResults[1] != PackageManager.PERMISSION_GRANTED) {
                 Timber.d("permission not granted");
             }
             else
