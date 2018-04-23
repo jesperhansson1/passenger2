@@ -40,7 +40,7 @@
 
                         android:layout_width="@dimen/size_100dp"
                         android:layout_height="@dimen/size_100dp"
-                        android:layout_above="@+id/textView_register_driver"
+                        android:layout_above="@+id/textView_account_credit_card"
                         android:layout_centerHorizontal="true"
                         android:layout_gravity="center"
                         android:background="@drawable/register_imagebutton_background"
@@ -51,7 +51,7 @@
                         tools:layout_editor_absoluteY="308dp" />
 
                     <TextView
-                        android:id="@+id/textView_register_driver"
+                        android:id="@+id/textView_account_credit_card"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_alignParentBottom="true"
@@ -73,7 +73,7 @@
                     android:layout_alignParentStart="true">
 
                     <ImageButton
-                        android:id="@+id/imageButton_register_passenger"
+                        android:id="@+id/imageButton_account_bank"
                         android:layout_width="@dimen/size_100dp"
                         android:layout_height="@dimen/size_100dp"
                         android:layout_alignParentTop="true"
@@ -90,7 +90,7 @@
                         android:id="@+id/textView_register_passenger"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_below="@+id/imageButton_register_passenger"
+                        android:layout_below="@+id/imageButton_account_bank"
                         android:layout_centerHorizontal="true"
                         android:gravity="center"
                         android:text="@string/passenger"
