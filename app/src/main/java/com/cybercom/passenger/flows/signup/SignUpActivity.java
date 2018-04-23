@@ -224,7 +224,7 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                         mType = User.TYPE_DRIVER;
                     }
                     String[] loginArray =
-                            {email, password, phone, personalNumber,
+                            new String[]{email, password, phone, personalNumber,
                                     fullName, mSaveRadioButtonAnswer, String.valueOf(mType)};
                     if(mRegisterType.equalsIgnoreCase(mPassenger))
                     {
