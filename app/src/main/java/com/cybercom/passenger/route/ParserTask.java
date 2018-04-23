@@ -18,10 +18,17 @@ import timber.log.Timber;
 
 public class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String, String>>>> {
 
+    public interface OnRouteCompletion{
+        void onRouteDrawn(Polyline route);
+    }
+
+    public OnRouteCompletion delegate = null;
+
     private GoogleMap mGoogleMap;
-    ParserTask(GoogleMap googleMap)
+    ParserTask(GoogleMap googleMap, OnRouteCompletion caller)
     {
         mGoogleMap = googleMap;
+        delegate = caller;
     }
     // Parsing the data in non-ui thread
     @Override
@@ -75,7 +82,8 @@ public class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<Str
             // Adding all the points in the route to LineOptions
             polylineOptions.addAll(arraylistPoints);
             polylineOptions.width(10);
-            polylineOptions.color(Color.BLUE);
+            polylineOptions.color(Color.rgb(6,182,239));
+
             Timber.d("onPostExecute lineoptions decoded");
         }
 
@@ -84,6 +92,7 @@ public class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<Str
             Timber.d(String.valueOf(polylineOptions));
             if(mGoogleMap!=null) {
                 Polyline route = mGoogleMap.addPolyline(polylineOptions);
+                delegate.onRouteDrawn(route);
             }
         }
         else {

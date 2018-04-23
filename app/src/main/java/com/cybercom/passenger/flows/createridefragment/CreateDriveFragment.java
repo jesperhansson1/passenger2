@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -18,10 +19,13 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.main.MainViewModel;
 import com.cybercom.passenger.model.Drive;
+import com.cybercom.passenger.model.DriveRequest;
+import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.utils.LocationHelper;
 import com.cybercom.passenger.utils.ToastHelper;
 import com.google.android.gms.location.places.AutocompleteFilter;
@@ -40,6 +44,13 @@ import timber.log.Timber;
 
 public class CreateDriveFragment extends Fragment {
 
+    public interface OnPlaceMarkerIconClickListener{
+        void onPlaceMarkerIconClicked();
+    }
+
+    private OnPlaceMarkerIconClickListener onPlaceMarkerIconClickListener;
+
+    private int mType;
     private MainViewModel mMainViewModel;
     private TextView mNumberOfPassengers;
     private AutoCompleteTextView mStartLocation, mEndLocation;
@@ -52,7 +63,6 @@ public class CreateDriveFragment extends Fragment {
 
     private LocationAutoCompleteAdapter mAdapter;
 
-
     private static final LatLngBounds BOUNDS_SWEDEN = new LatLngBounds(
             new LatLng(MainViewModel.LOWER_LEFT_LATITUDE, MainViewModel.LOWER_LEFT_LONGITUDE),
             new LatLng(MainViewModel.UPPER_RIGHT_LATITUDE, MainViewModel.UPPER_RIGHT_LONGITUDE));
@@ -62,6 +72,8 @@ public class CreateDriveFragment extends Fragment {
                     .setTypeFilter(AutocompleteFilter.TYPE_FILTER_ADDRESS)
                     .setCountry("SE")
                     .build();
+    private ImageView mPlaceStartLocation;
+    private ImageView mPlaceEndLocation;
 
     public CreateDriveFragment() {
     }
@@ -102,12 +114,55 @@ public class CreateDriveFragment extends Fragment {
         mCreateRide = view.findViewById(R.id.create_drive_button);
         mCreatingDrive = view.findViewById(R.id.create_drive_progressbar);
 
+        mPlaceStartLocation = view.findViewById(R.id.place_start_location);
+        mPlaceEndLocation = view.findViewById(R.id.place_end_location);
+
+        mPlaceStartLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mMainViewModel.setWhichMarkerToAdd(MainViewModel.PLACE_START_MARKER);
+                onPlaceMarkerIconClickListener.onPlaceMarkerIconClicked();
+            }
+        });
+
+        mPlaceEndLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mMainViewModel.setWhichMarkerToAdd(MainViewModel.PLACE_END_MARKER);
+                onPlaceMarkerIconClickListener.onPlaceMarkerIconClicked();
+            }
+        });
+
+
+        if (getActivity() != null) {
+            mMainViewModel.getUser().observe(getActivity(), new Observer<User>() {
+                @Override
+                public void onChanged(@Nullable User user) {
+                    if (user != null) {
+
+                        if (user.getType() == User.TYPE_DRIVER) {
+                            setUpDialogForDrive();
+                            mType = user.getType();
+                        }
+                        if (user.getType() == User.TYPE_PASSENGER) {
+                            setUpDialogForDriveRequest();
+                            mType = user.getType();
+                        }
+                    }
+                }
+            });
+        }
+
         displayNumberOfPassengers();
         displayStartLocation();
         displayEndLocation();
 
-        mGeoDataClient = Places.getGeoDataClient(getActivity());
-        mAdapter = new LocationAutoCompleteAdapter(getContext(), mGeoDataClient, BOUNDS_SWEDEN, AUTOCOMPLETE_LOCATION_FILTER);
+        if (getActivity() != null) {
+            mGeoDataClient = Places.getGeoDataClient(getActivity());
+        }
+
+        mAdapter = new LocationAutoCompleteAdapter(getContext(), mGeoDataClient,
+                BOUNDS_SWEDEN, AUTOCOMPLETE_LOCATION_FILTER);
         mStartLocation.setAdapter(mAdapter);
         mEndLocation.setAdapter(mAdapter);
 
@@ -127,8 +182,6 @@ public class CreateDriveFragment extends Fragment {
             }
         });
 
-        // mStartLocation.addTextChangedListener(mStartLocationListener);
-       // mEndLocation.addTextChangedListener(mEndLocationListener);
 
         mCreateRide.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -139,18 +192,42 @@ public class CreateDriveFragment extends Fragment {
 
                 if (mMainViewModel.getStartMarkerLocation().getValue() != null
                         && mMainViewModel.getEndMarkerLocation().getValue() != null)
-                    mMainViewModel.createDrive(System.currentTimeMillis(),
+
+                    if (mType == User.TYPE_DRIVER) {
+                        mMainViewModel.createDrive(System.currentTimeMillis(),
+                                LocationHelper.convertLocationToPosition(mMainViewModel
+                                        .getStartMarkerLocation().getValue()),
+                                LocationHelper.convertLocationToPosition(mMainViewModel
+                                        .getEndMarkerLocation().getValue()),
+                                mMainViewModel.getNumberOfPassengers())
+                                .observe(CreateDriveFragment.this, new Observer<Drive>() {
+                                    @Override
+                                    public void onChanged(@Nullable Drive drive) {
+                                        Timber.i("Drive is created: %s", drive.toString());
+                                        ToastHelper.makeToast("Drive is created"
+                                                        + drive.toString(),
+                                                getActivity()).show();
+                                        setDefaultValuesToDialog();
+                                    }
+                                });
+                    }
+                if (mType == User.TYPE_PASSENGER) {
+                    mMainViewModel.createDriveRequest(System.currentTimeMillis(),
                             LocationHelper.convertLocationToPosition(mMainViewModel
                                     .getStartMarkerLocation().getValue()),
                             LocationHelper.convertLocationToPosition(mMainViewModel
                                     .getEndMarkerLocation().getValue()),
                             mMainViewModel.getNumberOfPassengers())
-                            .observe(CreateDriveFragment.this, new Observer<Drive>() {
+                            .observe(CreateDriveFragment.this, new Observer<DriveRequest>() {
                                 @Override
-                                public void onChanged(@Nullable Drive drive) {
-                                    ToastHelper.makeToast("Drive is created", getActivity()).show();
+                                public void onChanged(@Nullable DriveRequest driveRequest) {
+                                    Timber.i("Driverequest is created: %s", driveRequest.toString());
+                                    ToastHelper.makeToast("Driverequest is created",
+                                            getActivity()).show();
+                                    setDefaultValuesToDialog();
                                 }
                             });
+                }
 
 
             }
@@ -159,11 +236,49 @@ public class CreateDriveFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        if (context instanceof OnPlaceMarkerIconClickListener) {
+            onPlaceMarkerIconClickListener = (OnPlaceMarkerIconClickListener) context;
+        } else {
+            Toast.makeText(context, R.string.must_implement_on_place_icon_click_listener,
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+    }
+
+    private void setDefaultValuesToDialog() {
+
+        if (mType == User.TYPE_DRIVER) {
+            mCreateRide.setText(R.string.create_ride);
+        }
+        if (mType == User.TYPE_PASSENGER) {
+            mCreateRide.setText(R.string.create_drive_find_ride);
+        }
+
+        mStartLocation.setText("", false);
+        mEndLocation.setText("", false);
+        mCreateRide.setEnabled(true);
+        mCreatingDrive.setVisibility(View.GONE);
+        mMainViewModel.setNumberOfPassengers(4);
+
+    }
+
+    private void setUpDialogForDrive() {
+        mCreateRide.setText(R.string.create_ride);
+    }
+
+    private void setUpDialogForDriveRequest() {
+        mCreateRide.setText(R.string.create_drive_find_ride);
+    }
+
     private void displayEndLocation() {
         mMainViewModel.getEndLocationAddress().observe(this, new Observer<String>() {
             @Override
             public void onChanged(@Nullable String endAddress) {
-                mEndLocation.setText(endAddress);
+                mEndLocation.setText(endAddress, false);
             }
         });
     }
@@ -172,7 +287,7 @@ public class CreateDriveFragment extends Fragment {
         mMainViewModel.getStartLocationAddress().observe(this, new Observer<String>() {
             @Override
             public void onChanged(@Nullable String startAddress) {
-                mStartLocation.setText(startAddress);
+                mStartLocation.setText(startAddress, false);
             }
         });
     }
@@ -188,7 +303,7 @@ public class CreateDriveFragment extends Fragment {
 
 
             System.out.println("StartLocation");
-           final AutocompletePrediction location = mAdapter.getItem(position);
+            final AutocompletePrediction location = mAdapter.getItem(position);
             final String locationId = location != null ? location.getPlaceId() : null;
 
             mGeoDataClient.getPlaceById(locationId)
@@ -201,9 +316,11 @@ public class CreateDriveFragment extends Fragment {
                                 Place clickedLocation = locations.get(0);
 
                                 if (getActivity() != null) {
-                                InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Activity.INPUT_METHOD_SERVICE);
+                                    InputMethodManager imm = (InputMethodManager) getActivity()
+                                            .getSystemService(Activity.INPUT_METHOD_SERVICE);
                                     if (imm != null) {
-                                        imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
+                                        imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY,
+                                                0);
                                     }
 
                                     mMainViewModel.setStartMarkerLocation(LocationHelper

@@ -168,6 +168,10 @@ public class MainViewModel extends AndroidViewModel {
         return mPassengerRepository.getUser();
     }
 
+    public void updateUserType(int type){
+        mPassengerRepository.updateUserType(type);
+    }
+
     public LiveData<Boolean> setFindMatchTimer() {
         final MutableLiveData<Boolean> findMatchTimerLiveData = new MutableLiveData<>();
 
