@@ -33,6 +33,7 @@ import android.widget.TextView;
 
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.accounts.AccountActivity;
+import com.cybercom.passenger.flows.car.CarDetailActivity;
 import com.cybercom.passenger.flows.car.CarsActivity;
 import com.cybercom.passenger.flows.main.MainActivity;
 import com.cybercom.passenger.model.User;
@@ -226,10 +227,10 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                     String[] loginArray =
                             new String[]{email, password, phone, personalNumber,
                                     fullName, mSaveRadioButtonAnswer, String.valueOf(mType)};
-                    if(mRegisterType.equalsIgnoreCase(mPassenger))
+                    if(mRegisterType.equalsIgnoreCase(mDriver))
                     {
                         //register as driver need to verify bank id
-                        Intent intent = new Intent(getApplicationContext(), CarsActivity.class);
+                        Intent intent = new Intent(getApplicationContext(), CarDetailActivity.class);
                         /*intent.putExtra("email",email);
                         intent.putExtra("password",password);
                         intent.putExtra("phone",phone);

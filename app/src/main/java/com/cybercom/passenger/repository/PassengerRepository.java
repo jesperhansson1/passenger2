@@ -220,6 +220,45 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         return userMutableLiveData;
     }
 
+    public LiveData<FirebaseUser> createUserAddCar(String[] loginArray, String[] carArray)
+    {
+        final MutableLiveData<FirebaseUser> userMutableLiveData = new MutableLiveData<>();
+        mAuth.createUserWithEmailAndPassword(loginArray[0], loginArray[1])
+                .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            FirebaseUser user = getAuthorization().getInstance().getCurrentUser();
+                            Timber.d("createUserWithEmail:success %s", user);
+                            userMutableLiveData.setValue(user);
+                            mUsersReference.child(user.getUid()).setValue(new User(user.getUid(),
+                                    getTokenId(), Integer.parseInt(loginArray[6]),
+                                    loginArray[2], loginArray[3],
+                                    loginArray[4], null,
+                                    loginArray[5]
+                            ));
+                            createCar(carArray[0],user.getUid(),new Car(carArray[0],
+                                    carArray[1],carArray[2],carArray[3]));
+
+                        } else {
+                            Timber.w("createUserWithEmail:failure %s", ((FirebaseAuthException)task.getException()).getErrorCode()/*task.getException().getMessage().toString()*/);
+                           /* if(((FirebaseAuthException)task.getException()).getErrorCode() == ERROR_WEAK_PASSWORD){
+                                SignUpActivity.mPassword.setError(task.getException().getMessage().toString());
+
+                            }else if(((FirebaseAuthException)task.getException()).getErrorCode() == ERROR_EMAIL_ALREADY_IN_USE){
+                                SignUpActivity.mEmail.setError(task.getException().getMessage().toString());
+                            }
+                            else if(((FirebaseAuthException)task.getException()).getErrorCode() == ERROR_INVALID_EMAIL){
+                                Timber.d("Error %s", ((FirebaseAuthException)task.getException()).getErrorCode());
+
+                                SignUpActivity.mEmail.setError(task.getException().getMessage().toString());
+                            }*/
+                        }
+                    }
+                });
+        return userMutableLiveData;
+    }
+
    /* public LiveData<FirebaseUser> createUserWithEmailAndPassword(String email, String password
     ,int type, String phone, String personalNumber, String fullName, String imageLink,
                                                                  String gender

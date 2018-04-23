@@ -98,7 +98,6 @@ public class CardFragment extends Fragment {
             {
                 Timber.e("Card is valid");
                 Toast.makeText(getContext(),"Card is valid",Toast.LENGTH_LONG).show();
-                System.out.println(mExtras);
                 createUserReturnMain(mExtras);
             }
         }
@@ -111,6 +110,12 @@ public class CardFragment extends Fragment {
                 mExtras.getString("phone"), mExtras.getString("personalnumber"),
                 mExtras.getString("fullname"), null,
                 mExtras.getString("gender"));*/
+        if(mExtras.getStringArray("carArray")!=null  &&
+                (mExtras.getStringArray("carArray").length >0))
+        {
+            repository.createUserAddCar(mExtras.getStringArray("loginArray"),
+                    mExtras.getStringArray("carArray"));
+        }
         repository.createUserWithEmailAndPassword(mExtras.getStringArray("loginArray"));
         startActivity(new Intent(getActivity().getApplicationContext(), MainActivity.class));
     }

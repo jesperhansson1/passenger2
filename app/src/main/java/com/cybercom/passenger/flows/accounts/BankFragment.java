@@ -63,7 +63,6 @@ public class BankFragment extends Fragment {
         {
             Timber.d(mEditTextName.getText().toString());
             Timber.d(mEditTextAccount.getText().toString());
-            System.out.println(mExtras);
             createUserReturnMain(mExtras);
         }
     }
@@ -76,6 +75,12 @@ public class BankFragment extends Fragment {
                 mExtras.getString("phone"), mExtras.getString("personalnumber"),
                 mExtras.getString("fullname"), null,
                 mExtras.getString("gender"));*/
+        if(mExtras.getStringArray("carArray")!=null  &&
+                (mExtras.getStringArray("carArray").length >0))
+        {
+            repository.createUserAddCar(mExtras.getStringArray("loginArray"),
+                    mExtras.getStringArray("carArray"));
+        }
         repository.createUserWithEmailAndPassword(mExtras.getStringArray("loginArray"));
         startActivity(new Intent(getActivity().getApplicationContext(), MainActivity.class));
     }

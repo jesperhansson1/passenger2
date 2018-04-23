@@ -49,7 +49,12 @@ public class AccountActivity extends AppCompatActivity {
             intent.putExtra("personalnumber",mExtras.getString("personalnumber"));
             intent.putExtra("fullname",mExtras.getString("fullname"));
             intent.putExtra("gender", mExtras.getString("gender"));*/
-            intent.putExtra("loginArray", mExtras.getShortArray("loginArray"));
+            intent.putExtra("loginArray", mExtras.getStringArray("loginArray"));
+            if((mExtras.getStringArray("carArray")!=null) &&
+                    (mExtras.getStringArray("carArray").length >0))
+            {
+                intent.putExtra("carArray", mExtras.getStringArray("carArray"));
+            }
         }
         else
         {

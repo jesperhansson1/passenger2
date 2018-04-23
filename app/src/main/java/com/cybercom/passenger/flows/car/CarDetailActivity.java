@@ -19,6 +19,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.cybercom.passenger.R;
+import com.cybercom.passenger.flows.accounts.AccountActivity;
 
 import timber.log.Timber;
 
@@ -33,6 +34,7 @@ public class CarDetailActivity extends AppCompatActivity{
     EditText mEditTextCarNumber,mEditTextCarModel,mEditTextCarYear,mEditTextCarColor;
     Button mButtonSave;
     Drawable errorDraw;
+    Bundle mExtras;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +45,8 @@ public class CarDetailActivity extends AppCompatActivity{
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle(R.string.add_car);
         initializeUI();
+        mExtras = getIntent().getExtras();
+
     }
 
     public void initializeUI(){
@@ -56,7 +60,7 @@ public class CarDetailActivity extends AppCompatActivity{
             public void onClick(View v) {
                 if(checkError() == 0)
                 {
-                    addCar();
+                    addCarToList();
                 }
             }
         });
@@ -98,5 +102,25 @@ public class CarDetailActivity extends AppCompatActivity{
         intent.putExtra(CAR_COLOR,mEditTextCarColor.getText().toString());
         setResult(CAR_DETAIL,intent);
         finish();
+    }
+
+    public void addCarToList()
+    {
+        if(mExtras == null)
+        {
+            Timber.e("No values found");
+        }
+        else
+        {
+            String[] carArray = new String[]{mEditTextCarNumber.getText().toString(),
+                    mEditTextCarModel.getText().toString(),
+                    mEditTextCarYear.getText().toString(),
+                    mEditTextCarColor.getText().toString()};
+
+            Intent intent=new Intent(getApplicationContext(), AccountActivity.class);
+            intent.putExtra("loginArray", carArray);
+            intent.putExtra("carArray", mExtras.getStringArray("loginArray"));
+            startActivity(intent);
+        }
     }
 }
