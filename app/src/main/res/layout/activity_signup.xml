@@ -101,7 +101,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/ic_person_profile" />
+                app:srcCompat="@drawable/ic_passenger" />
 
             <TextView
                 android:id="@+id/textview_signup_fullNameTitle"
