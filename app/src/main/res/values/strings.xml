@@ -2,7 +2,7 @@
     <string name="app_name">passenger</string>
     <string name="create_ride">Create Ride</string>
     <string name="create_ride_request">Request Ride</string>
-    <string name="start_location">Start Location</string>
+    <string name="start_location">start location</string>
     <string name="end_location">End Location</string>
     <string name="driver">Driver</string>
     <string name="passenger">Passenger</string>
@@ -40,12 +40,14 @@
     <string name="forgot_password">Forgot Password</string>
     <string name="signup">Sign Up</string>
     <string name="login">Login</string>
+    <string name="add_car">Add Car</string>
     <string name="send_me_password">Send me password</string>
     <string name="we_sent_password_to">We sent password to</string>
     <string name="open_mail_client">Open mail client</string>
     <string name="dialog_create_drive_header">Create Ride</string>
     <string name="dialog_request_drive_header">Request Ride</string>
     <string name="signup_title">Sign Up</string>
+    <string name="forgot_password_title">Forgot Password</string>
     <string name="full_name">Full name</string>
     <string name="personal_number">Personal number</string>
     <string name="email">Email</string>
@@ -55,7 +57,7 @@
     <string name="hint_full_name">Enter name</string>
     <string name="hint_personal_number">8310263388</string>
     <string name="hint_email">my@email.com</string>
-    <string name="hint_password">Enter password (min 6 characters)</string>
+    <string name="hint_password">Enter password</string>
     <string name="hint_phone">12345</string>
     <string name="male">Male</string>
     <string name="female">Female</string>
@@ -71,7 +73,7 @@
     <string name="login_title">Login</string>
     <string name="mainactivity_title">Passenger</string>
     <string name="select_image_source">Select image source</string>
-     <string name="library">Library</string>
+    <string name="library">Library</string>
     <string name="take_photo">Take Photo</string>
     <string name="cancel">Cancel</string>
     <string name="main_activity_match_not_found_message">Could not find any ride. Try again later</string>
@@ -79,6 +81,18 @@
     <string name="desc_male_icon">Male Icon</string>
     <string name="desc_female_icon">Female Icon</string>
     <string name="desc_profile_picture">Profile picture</string>
+
+    <!-- Error handling messages -->
+    <string name="please_enter_an_email">Please enter an email</string>
+    <string name="email_address_is_already_in_use_by_another_account">Email address is already in use by another account</string>
+    <string name="the_email_is_badly_formatted">The email is badly formatted</string>
+
+    <string name="please_enter_a_password">Please enter a password</string>
+    <string name="the_given_password_is_invalid">The given password is invalid. [Password should be at least 6 characters]</string>
+    <string name="please_enter_your_name">Please enter your name</string>
+    <string name="please_enter_your_personal_number">Please enter your personal number</string>
+    <string name="please_enter_your_phone_number">Please enter your phone number</string>
+
 
     <string-array name="location_array">
         <item>My Location</item>
@@ -94,4 +108,71 @@
         <item>59.329323,18.068581</item>
         <item>57.708870,11.974560</item>
     </string-array>
+
+    <string name="create_drive_right_now">Right now</string>
+    <string name="create_drive_time">Time</string>
+    <string name="create_drive_default_passengers">4</string>
+    <string name="create_drive_passengers_title">PASSENGERS</string>
+    <string name="create_ride_content_description_remove_passenger">remove passenger</string>
+    <string name="create_ride_content_description_add_passenger">add passenger</string>
+    <string name="marker_title_you_are_here">You are here</string>
+    <string name="marker_title_start_location">Start location</string>
+    <string name="marker_title_end_location">Destination</string>
+    <string name="location_provider_marker_drag">MarkerDrag</string>
+    <string name="create_drive_find_ride">Find ride</string>
+    <string name="create_drive_destination">destination</string>
+    <string name="must_implement_on_place_icon_click_listener">You must implement on place marker icon click listener</string>
+    <string name="create_drive_time_selected">time</string>
+    <string name="title_activity_cars">CarsActivity</string>
+    <string name="car_number_hint">QEG 452</string>
+    <string name="car_number">Car number</string>
+    <string name="car_model_hint">Mazda X6</string>
+    <string name="car_model">Model</string>
+    <string name="car_year_hint">2008</string>
+    <string name="car_year">Year</string>
+    <string name="car_color_hint">Black</string>
+    <string name="car_color">Color</string>
+    <string name="save">Save</string>
+    <string name="car_number_error">Car registration number cannot be empty</string>
+    <string name="car_model_error">Car model name cannot be empty</string>
+    <string name="car_year_error">Car built year cannot be empty</string>
+    <string name="car_color_error">Car color cannot be empty</string>
+    <string name="add_new_car">Add new car</string>
+    <string name="numbers">0123456789</string>
+    <string name="deleteConfirmation">Delete this car ?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+
+
+    <string name="account_label">You need to add a credit card or bank account. You need it to withdraw money</string>
+    <string name="bank_account"> Bank account </string>
+    <string name="credit_card"> Credit Card </string>
+    <string name="card_number">Card Number</string>
+    <string name="card_number_text_hint">8989 4732 3747 5702</string>
+    <string name="expires">Expires</string>
+    <string name="expires_hint">25/08</string>
+    <string name="security_code">Security code</string>
+    <string name="security_code_hint">573</string>
+    <string name="full_name_hint">Kristofor Cheban</string>
+    <string name="number_of_bank_account">Number of Bank Account</string>
+    <string name="number_of_bank_account_hint">3432 4325 4454 5632 2054</string>
+    <string name="card_digits">19</string>
+    <string name="bank_digits">24</string>
+    <string name="code_digits">3</string>
+    <string name="expiry_digits">5</string>
+    <string name="card_number_error">Card number cannot be empty</string>
+    <string name="expiry_error">Card expiry cannot be empty</string>
+    <string name="code_error">Card code cannot be empty</string>
+    <string name="account_name_error">Account name cannot be empty</string>
+    <string name="account_number_error">Account number cannot be empty</string>
+    <string name="signup_type">type</string>
+    <string name="signup_passenger">passenger</string>
+    <string name="signup_driver">driver</string>
+    <string name="signup_login">login</string>
+    <string name="signup_userid">userid</string>
+    <string name="register_as_title">Register as</string>
+    <string name="year_length">4</string>
+    <string name="car_length">7</string>
+
+
 </resources>

@@ -13,6 +13,7 @@ import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -28,14 +29,21 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.cybercom.passenger.R;
+import com.cybercom.passenger.flows.accounts.AccountActivity;
+import com.cybercom.passenger.flows.car.CarDetailActivity;
+import com.cybercom.passenger.flows.car.CarsActivity;
 import com.cybercom.passenger.flows.main.MainActivity;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.utils.ToastHelper;
+import com.cybercom.passenger.utils.ValidateEmailHelper;
+import com.cybercom.passenger.utils.ValidatePersonalNumberHelper;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -49,20 +57,25 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
 
     SignUpViewModel mViewModel;
     Button mNextButton;
-    EditText mPassword, mEmail, mFullName, mPersonalNumber, mPhone;
+    public static EditText mEmail, mPassword;
+    EditText mFullName, mPersonalNumber, mPhone;
     TextView mMaleTextSelect, mFemaleTextSelect;
     String mSaveRadioButtonAnswer;
-    Boolean mFilledInTextFields = false;
+    Boolean mFilledInTextFields = false, checkEmailValidation = false, checkPasswordValidation = false, checkPersonalNumberValidation = false;
     private static final String GENDER_MALE = "Male";
     private static final String GENDER_FEMALE = "Female";
     ImageView mImageViewProfile, mMaleIcon, mFemaleIcon;
     private static final int REQUEST_CAMERA_PERMISSION = 1;
     LinearLayout mMaleLayout, mFemaleLayout;
-
+    ProgressBar progressBar;
+    String mPassenger, mDriver, mLogin, mRegisterType;
+    int mType;
+    static final String LOGINARRAY = "loginArray";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_signup);
         Toolbar toolbar = findViewById(R.id.my_toolbar);
         toolbar.setTitleTextColor(getResources().getColor(R.color.colorWhite));
@@ -71,13 +84,18 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
 
         mViewModel = ViewModelProviders.of(this).get(SignUpViewModel.class);
 
+        progressBar = findViewById(R.id.progress_bar);
+        progressBar.setVisibility(View.GONE);
+
         mPassword = findViewById(R.id.edittext_signup_password);
-        mEmail = findViewById(R.id.edittext_signup_email);
+        mEmail = findViewById(R.id.edittext_loginscreen_password);
         mFullName = findViewById(R.id.edittext_signup_fullName);
-        mPersonalNumber = findViewById(R.id.edittext_signup_personalNumer);
+        mPersonalNumber = findViewById(R.id.edittext_loginscreen_email);
         mPhone = findViewById(R.id.edittext_signup_phone);
         mNextButton = findViewById(R.id.button_signup_next);
         mNextButton.setOnClickListener(this);
+        mImageViewProfile = findViewById(R.id.imageview_signup_profile);
+        mImageViewProfile.setOnClickListener(this);
 
         mMaleLayout = findViewById(R.id.maleLayout);
         mMaleLayout.setOnClickListener(this);
@@ -89,20 +107,58 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         mMaleIcon = findViewById(R.id.male_icon_select);
         mFemaleIcon = findViewById(R.id.female_icon_select);
 
-        defaultSettings();
+        mPassenger = getResources().getString(R.string.signup_passenger);
+        mDriver = getResources().getString(R.string.signup_driver);
+        mLogin = getResources().getString(R.string.signup_login);
+        mRegisterType = getResources().getString(R.string.signup_type);
+
+        Bundle extras = getIntent().getExtras();
+        if (extras == null) {
+            return;
+        }
+        mRegisterType = extras.getString(mRegisterType);
+        initUI();
     }
 
-    void defaultSettings(){
+    void initUI(){
         mMaleLayout.setSelected(true);
         mMaleTextSelect.setTextColor(getResources().getColor(R.color.colorWhite));
         mFemaleTextSelect.setTextColor(getResources().getColor(R.color.colorBlue));
         mMaleIcon.setImageDrawable(getResources().getDrawable(R.drawable.ic_male_white));
         mFemaleIcon.setImageDrawable(getResources().getDrawable(R.drawable.ic_woman_blue));
         mSaveRadioButtonAnswer = GENDER_MALE;
+
+        mPersonalNumber.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if(!hasFocus && !mPersonalNumber.getText().toString().isEmpty()) {
+                    validatePersonalNumber(mPersonalNumber.getText().toString());
+                }
+            }
+        });
+
+        mEmail.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus && !mEmail.getText().toString().isEmpty()) {
+                    validateEmail(mEmail.getText().toString());
+                    mEmail.setError(ValidateEmailHelper.isValidEmailAddress(mEmail.getText().toString()));
+                }
+            }
+        });
+
+        mPassword.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if(!hasFocus && !mPassword.getText().toString().isEmpty()) {
+                    validatePassword(mPassword.getText().toString());
+                }
+            }
+        });
     }
 
     @Override
-    public void onClick(View v) {
+    public void onClick(final View v) {
         switch(v.getId()) {
             case R.id.maleLayout:
                 if(!mMaleLayout.isSelected()){
@@ -128,26 +184,49 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                 break;
 
             case R.id.button_signup_next:
-                String email = mEmail.getText().toString();
-                String password = mPassword.getText().toString();
+                final String email = mEmail.getText().toString();
+                final String password = mPassword.getText().toString();
                 final String fullName = mFullName.getText().toString();
                 final String personalNumber = mPersonalNumber.getText().toString();
                 final String phone = mPhone.getText().toString();
 
-                if(checkTextFields(email, password, fullName, personalNumber, phone)){
-                    mViewModel.createUserWithEmailAndPassword(email, password, this).observe(this, new Observer<FirebaseUser>() {
-                        @Override
-                        public void onChanged(@Nullable FirebaseUser user) {
-                            if(user != null){
-                                mViewModel.createUser(user.getUid(), new User(user.getUid(), FirebaseInstanceId.getInstance().getToken(),
-                                        User.TYPE_PASSENGER, phone, personalNumber, fullName, null, mSaveRadioButtonAnswer));
-                                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                                startActivity(intent);
-                            } else{
-                                ToastHelper.makeToast(getResources().getString(R.string.toast_could_not_create_user), SignUpActivity.this).show();
-                            }
-                        }
-                    });
+                if (validateUserInput(email, password, fullName, personalNumber, phone)) {
+                    mNextButton.setText("");
+                    progressBar.setVisibility(View.VISIBLE);
+                    if (mRegisterType.equalsIgnoreCase(mPassenger))
+                    {
+                        mType = User.TYPE_PASSENGER;
+                    }
+                    if (mRegisterType.equalsIgnoreCase(mDriver))
+                    {
+                        mType = User.TYPE_DRIVER;
+                    }
+
+                    User userRegister = new User(null, null,
+                            mType,phone,personalNumber,fullName,null,
+                            mSaveRadioButtonAnswer, email, password);
+
+                    Gson gson = new Gson();
+                    String loginArray = gson.toJson(userRegister);
+
+                    if(mRegisterType.equalsIgnoreCase(mDriver))
+                    {
+                        //register as driver need to verify bank id
+                        Intent intent = new Intent(getApplicationContext(), CarDetailActivity.class);
+                        intent.putExtra(LOGINARRAY, loginArray);
+                        startActivity(intent);
+                    }
+
+                    if(mRegisterType.equalsIgnoreCase(mPassenger))
+                    {
+                        //register as passenger need to verify bank id
+                        Intent intent = new Intent(getApplicationContext(), AccountActivity.class);
+                        intent.putExtra(LOGINARRAY, loginArray);
+                        startActivity(intent);
+                    }
+
+                } else{
+                    progressBar.setVisibility(View.GONE);
                 }
                 break;
 
@@ -157,31 +236,79 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         }
     }
 
-    public Boolean checkTextFields(String email, String password, String fullName, String personalNumber, String phone){
-        if(!email.isEmpty() && !password.isEmpty() && !fullName.isEmpty() && !personalNumber.isEmpty() && !phone.isEmpty()){
+    public Boolean validateUserInput(String email, String password, String fullName, String personalNumber, String phone){
+        if(checkEmailValidation && checkPasswordValidation && !fullName.isEmpty() && checkPersonalNumberValidation && !phone.isEmpty()){
             mFilledInTextFields = true;
         } else{
             mFilledInTextFields = false;
         }
-        if(email.isEmpty()){
-            mEmail.setError("Please enter an email");
-        }
-        if(password.isEmpty()){
-            mPassword.setError("Please enter a password");
-        }
-        if(fullName.isEmpty()){
-            mFullName.setError("Please enter your name");
-        }
-        if(personalNumber.isEmpty()){
-            mPersonalNumber.setError("Please enter your personal number");
-        }
-        if(phone.isEmpty()){
-            mPhone.setError("Please enter your phone number");
-        }
+        validateEmail(email);
+        validatePassword(password);
+        validateFullName(fullName);
+        validatePersonalNumber(personalNumber);
+        validatePhone(phone);
         return mFilledInTextFields;
     }
 
+    private void validatePhone(String phone){
+        if(phone.isEmpty()){
+            mPhone.setError(getResources().getString(R.string.please_enter_your_phone_number));
+        }
+    }
 
+    private void validatePersonalNumber(String personalNumber){
+        if(personalNumber.isEmpty()){
+            mPersonalNumber.setError(getResources().getString(R.string.please_enter_your_personal_number));
+            checkPersonalNumberValidation = false;
+        }else if(!personalNumber.isEmpty() && personalNumber.length() == 10 && !ValidatePersonalNumberHelper.hasValidChecksum(personalNumber)){
+            mPersonalNumber.setError("The personal number doesn't exist");
+            checkPersonalNumberValidation = false;
+        }else if(!personalNumber.isEmpty() && personalNumber.length() < 10){
+            mPersonalNumber.setError("You have to enter 10 characters for the personal number");
+            checkPersonalNumberValidation = false;
+        } else{
+            checkPersonalNumberValidation = true;
+        }
+    }
+
+    private void validateFullName(String fullName){
+        if(fullName.isEmpty()){
+            mFullName.setError(getResources().getString(R.string.please_enter_your_name));
+        }
+    }
+
+    private void validatePassword(String password){
+        if(password.isEmpty()){
+            mPassword.setError(getResources().getString(R.string.please_enter_a_password));
+            checkPasswordValidation = false;
+        } else if(!password.isEmpty() && password.length() < 6){
+            mPassword.setError(getResources().getString(R.string.the_given_password_is_invalid));
+            checkPasswordValidation = false;
+        } else{
+            checkPasswordValidation = true;
+        }
+    }
+
+    private void validateEmail(String email) {
+        if(email.isEmpty()){
+            mEmail.setError(getResources().getString(R.string.please_enter_an_email));
+            checkEmailValidation = false;
+        }
+
+        if(!email.isEmpty()) {
+            mViewModel.validateEmail(email).observe(this, new Observer<Boolean>() {
+                @Override
+                public void onChanged(@Nullable Boolean bEmail) {
+                    if (bEmail) {
+                        mEmail.setError(getResources().getString(R.string.email_address_is_already_in_use_by_another_account));
+                        checkEmailValidation = false;
+                    } else{
+                        checkEmailValidation = true;
+                    }
+                }
+            });
+        }
+    }
 
     public void checkpermissions(Activity activity) {
         PackageManager mPackageManager = activity.getPackageManager();
@@ -199,7 +326,9 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
         if (requestCode == REQUEST_CAMERA_PERMISSION){
-            if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+            if (grantResults.length != 2 ||
+                    grantResults[0] != PackageManager.PERMISSION_GRANTED ||
+                    grantResults[1] != PackageManager.PERMISSION_GRANTED) {
                 Timber.d("permission not granted");
             }
             else

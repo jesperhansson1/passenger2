@@ -1,11 +1,13 @@
 package com.cybercom.passenger.flows.main;
 
+import android.annotation.SuppressLint;
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
-
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -22,8 +24,12 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
 
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import timber.log.Timber;
@@ -31,10 +37,15 @@ import timber.log.Timber;
 public class MainViewModel extends AndroidViewModel {
 
     private static final long FIND_MATCH_TIMEOUT_MS = 20 * 1000;
+    public static final double LOWER_LEFT_LATITUDE = 55.0059799;
+    public static final double LOWER_LEFT_LONGITUDE = 10.5798;
+    public static final double UPPER_RIGHT_LATITUDE = 69.0599709;
+    public static final double UPPER_RIGHT_LONGITUDE = 24.1773101;
 
     private FusedLocationProviderClient mFusedLocationClient;
     private PassengerRepository mPassengerRepository = PassengerRepository.getInstance();
     private MutableLiveData<Location> mMyLocation = new MutableLiveData<>();
+    private Boolean isInitialZoomDone = false;
     private LocationCallback mLocationCallback;
     private LocationRequest mLocationRequest;
     private LiveData<Notification> mIncomingNotification;
@@ -66,6 +77,11 @@ public class MainViewModel extends AndroidViewModel {
         mFusedLocationClient.requestLocationUpdates(mLocationRequest,
                 mLocationCallback,
                 Looper.myLooper());
+    }
+
+    @SuppressLint("MissingPermission")
+    public void getLastKnownLocation(OnSuccessListener<Location> onSuccessListener) {
+        mFusedLocationClient.getLastLocation().addOnSuccessListener(onSuccessListener);
     }
 
     private void createLocationRequest() {
@@ -135,7 +151,7 @@ public class MainViewModel extends AndroidViewModel {
         mPassengerRepository.setIncomingNotification(payload);
     }
 
-    public void pollNotificationQueue(Notification notification){
+    public void pollNotificationQueue(Notification notification) {
         mPassengerRepository.pollNotificationQueue(notification);
     }
 
@@ -151,6 +167,10 @@ public class MainViewModel extends AndroidViewModel {
         return mPassengerRepository.getUser();
     }
 
+    public void updateUserType(int type){
+        mPassengerRepository.updateUserType(type);
+    }
+
     public LiveData<Boolean> setFindMatchTimer() {
         final MutableLiveData<Boolean> findMatchTimerLiveData = new MutableLiveData<>();
 
@@ -163,5 +183,118 @@ public class MainViewModel extends AndroidViewModel {
         }), FIND_MATCH_TIMEOUT_MS);
         
         return findMatchTimerLiveData;
+    }
+
+    // CreateDriveFragment
+
+    public static final int PLACE_START_MARKER = 0;
+    public static final int PLACE_END_MARKER = 1;
+    private int mWhichMarkerToAdd = 0;
+    private int numberOfPassengers = 4;
+    private MutableLiveData<String> mStartLocationAddress = new MutableLiveData<>();
+    private MutableLiveData<Location> mStartMarkerLocation = new MutableLiveData<>();
+    private MutableLiveData<Location> mEndMarkerLocation = new MutableLiveData<>();
+    private MutableLiveData<String> mEndLocationAddress = new MutableLiveData<>();
+
+    public void setNumberOfPassengers(int passengers) {
+        numberOfPassengers = passengers;
+    }
+
+    public int getNumberOfPassengers() {
+        return numberOfPassengers;
+    }
+
+    private String getAddressFromLocation(Location location) {
+        List<Address> addresses;
+        Geocoder geocoder = new Geocoder(getApplication(), Locale.getDefault());
+        try {
+            addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+
+            if(addresses.size() != 0){
+                Timber.i(addresses.get(0).toString());
+                return addresses.get(0).getThoroughfare() + " " + addresses.get(0).getFeatureName();
+            }
+
+            return "";
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public Location getLocationFromAddress(String address) {
+        List<Address> addresses;
+        Geocoder geocoder = new Geocoder(getApplication(), Locale.getDefault());
+        try {
+            addresses = geocoder.getFromLocationName(address, 1,
+                    LOWER_LEFT_LATITUDE,
+                    LOWER_LEFT_LONGITUDE,
+                    UPPER_RIGHT_LATITUDE,
+                    UPPER_RIGHT_LONGITUDE);
+
+            if (addresses.size() != 0) {
+                Location locationFromAddress = new Location("LocationFromAddress");
+                locationFromAddress.setLatitude(addresses.get(0).getLatitude());
+                locationFromAddress.setLongitude(addresses.get(0).getLongitude());
+
+                return locationFromAddress;
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public LiveData<String> getStartLocationAddress() {
+        return mStartLocationAddress;
+    }
+
+    public void setStartLocationAddress(String address) {
+        mStartLocationAddress.setValue(address);
+        mStartMarkerLocation.setValue(getLocationFromAddress(address));
+    }
+
+    public void setStartMarkerLocation(Location location) {
+        mStartMarkerLocation.setValue(location);
+        mStartLocationAddress.setValue(getAddressFromLocation(location));
+    }
+
+    public LiveData<Location> getStartMarkerLocation() {
+        return mStartMarkerLocation;
+    }
+
+    public void setEndMarkerLocation(Location location) {
+        mEndMarkerLocation.setValue(location);
+        mEndLocationAddress.setValue(getAddressFromLocation(location));
+    }
+
+    public void setEndLocationAddress(String address) {
+        mEndLocationAddress.setValue(address);
+        mEndMarkerLocation.setValue(getLocationFromAddress(address));
+    }
+
+    public LiveData<Location> getEndMarkerLocation() {
+        return mEndMarkerLocation;
+    }
+
+    public LiveData<String> getEndLocationAddress() {
+        return mEndLocationAddress;
+    }
+
+    public Boolean isInitialZoomDone() {
+        return isInitialZoomDone;
+    }
+
+    public void setInitialZoomDone(Boolean initialZoomDone) {
+        isInitialZoomDone = initialZoomDone;
+    }
+
+    public int getWhichMarkerToAdd() {
+        return mWhichMarkerToAdd;
+    }
+
+    public void setWhichMarkerToAdd(int whichMarkerToAdd) {
+        mWhichMarkerToAdd = whichMarkerToAdd;
     }
 }

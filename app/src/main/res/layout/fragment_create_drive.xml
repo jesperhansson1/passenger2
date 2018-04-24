@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical">
+
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/create_drive_dialog"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="16dp"
+    android:clickable="true"
+    android:focusable="true"
+    app:cardCornerRadius="@dimen/dialog_default_corner_radius"
+    app:cardElevation="7dp"
+    tools:context=".flows.createridefragment.CreateDriveFragment">
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <AutoCompleteTextView
+            android:id="@+id/create_drive_start_location"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/activity_margin"
+            android:layout_marginTop="@dimen/activity_margin"
+            android:backgroundTint="@color/colorLightBlue"
+            android:hint="@string/start_location"
+            app:layout_constraintEnd_toStartOf="@+id/place_start_location"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/place_start_location"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginTop="8dp"
+            android:src="@drawable/ic_map"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/create_drive_start_location" />
+
+
+        <AutoCompleteTextView
+            android:id="@+id/create_drive_end_location"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/activity_margin"
+            android:layout_marginTop="@dimen/activity_margin_half"
+            android:backgroundTint="@color/colorLightBlue"
+            android:hint="@string/create_drive_destination"
+            app:layout_constraintEnd_toStartOf="@id/place_end_location"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/create_drive_start_location" />
+
+        <ImageView
+            android:id="@+id/place_end_location"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginTop="8dp"
+            android:src="@drawable/ic_map"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/create_drive_end_location" />
+
+        <RadioGroup
+            android:id="@+id/create_drive_radio_group_when_selection"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/activity_margin"
+            android:layout_marginTop="@dimen/activity_margin_half_double"
+            android:orientation="horizontal"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/create_drive_end_location">
+
+            <RadioButton
+                android:id="@+id/create_drive_button_right_now"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:background="@drawable/create_drive_right_now_toggle_selection"
+                android:button="@null"
+                android:checked="true"
+                android:gravity="center"
+                android:text="@string/create_drive_right_now"
+                android:textColor="@color/create_drive_text_color_toggle_selection"
+                android:textSize="14sp" />
+
+            <RadioButton
+                android:id="@+id/create_drive_button_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:background="@drawable/create_drive_time_toggle_selection"
+                android:button="@null"
+                android:gravity="center"
+                android:text="@string/create_drive_time"
+                android:textColor="@color/create_drive_text_color_toggle_selection"
+                android:textSize="14sp" />
+        </RadioGroup>
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginStart="16dp"
+            android:gravity="center"
+            android:text="@string/create_drive_passengers_title"
+            android:textColor="@color/colorBlue"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@+id/create_drive_number_of_passengers"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/create_drive_radio_group_when_selection" />
+
+        <ImageView
+            android:id="@+id/create_drive_remove_passenger"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginTop="8dp"
+            android:contentDescription="@string/create_ride_content_description_remove_passenger"
+            android:src="@drawable/ic_remove_passenger"
+            app:layout_constraintBottom_toBottomOf="@+id/create_drive_radio_group_when_selection"
+            app:layout_constraintEnd_toStartOf="@+id/create_drive_number_of_passengers"
+            app:layout_constraintTop_toTopOf="@+id/create_drive_radio_group_when_selection" />
+
+        <TextView
+            android:id="@+id/create_drive_number_of_passengers"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:gravity="center"
+            android:letterSpacing="0.5"
+            android:text="@string/create_drive_default_passengers"
+            android:textColor="@color/colorBlack"
+            android:textSize="20sp"
+            app:layout_constraintBottom_toBottomOf="@+id/create_drive_remove_passenger"
+            app:layout_constraintEnd_toEndOf="@+id/textView"
+            app:layout_constraintStart_toStartOf="@+id/textView"
+            app:layout_constraintTop_toTopOf="@+id/create_drive_remove_passenger" />
+
+        <ImageView
+            android:id="@+id/create_drive_add_passenger"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:contentDescription="@string/create_ride_content_description_add_passenger"
+            android:src="@drawable/ic_add_passenger"
+            app:layout_constraintBottom_toBottomOf="@+id/create_drive_remove_passenger"
+            app:layout_constraintStart_toEndOf="@+id/create_drive_number_of_passengers"
+            app:layout_constraintTop_toTopOf="@+id/create_drive_remove_passenger" />
+
+        <EditText
+            android:id="@+id/create_drive_time_selected"
+            android:layout_width="0dp"
+            android:hint="@string/create_drive_time_selected"
+            android:inputType="text"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/activity_margin"
+            android:layout_marginStart="@dimen/activity_margin"
+            android:layout_marginTop="@dimen/activity_margin"
+            android:backgroundTint="@color/colorLightBlue"
+            android:enabled="false"
+            android:textColor="@color/create_drive_time_selected_disable_color"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/create_drive_radio_group_when_selection"
+            android:visibility="gone"/>
+
+        <FrameLayout
+            android:id="@+id/create_drive_button_container"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/activity_margin"
+            android:layout_marginEnd="@dimen/activity_margin"
+            android:layout_marginStart="@dimen/activity_margin"
+            android:layout_marginTop="@dimen/activity_margin_half_double"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/create_drive_time_selected">
+
+            <ProgressBar
+                android:id="@+id/create_drive_progressbar"
+                style="?android:attr/progressBarStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:indeterminate="true"
+                android:indeterminateTint="@color/colorWhite"
+                android:translationZ="3dp"
+                android:visibility="gone" />
+
+            <Button
+                android:id="@+id/create_drive_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/activity_margin_half"
+                android:background="@drawable/button_corner_round"
+                android:text="@string/create_ride"
+                android:textColor="@color/colorWhite"/>
+        </FrameLayout>
+
+    </android.support.constraint.ConstraintLayout>
+
+</android.support.v7.widget.CardView>
+
+   <com.github.florent37.singledateandtimepicker.SingleDateAndTimePicker
+       android:id="@+id/create_drive_date_and_time_picker"
+       android:layout_width="match_parent"
+       android:layout_height="wrap_content"
+       app:picker_visibleItemCount="4"
+       app:picker_displayDays="true"
+       app:picker_cyclic="true"
+       android:background="@color/colorWhite"
+       android:clickable="true"
+       android:focusable="true"
+       android:visibility="gone"/>
+
+
+</LinearLayout>
+

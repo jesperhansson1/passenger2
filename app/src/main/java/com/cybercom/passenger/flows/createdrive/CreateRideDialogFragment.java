@@ -1,5 +1,6 @@
 package com.cybercom.passenger.flows.createdrive;
 
+import android.app.DialogFragment;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.graphics.Color;
@@ -7,23 +8,17 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.model.Position;
-import com.cybercom.passenger.utils.LocationHelper;
-
-import timber.log.Timber;
 
 public class CreateRideDialogFragment extends DialogFragment{
 
@@ -96,7 +91,7 @@ public class CreateRideDialogFragment extends DialogFragment{
             }
         });
 
-        String[] locationArray = view.getContext().getResources().getStringArray(R.array.location_array);
+       /* String[] locationArray = view.getContext().getResources().getStringArray(R.array.location_array);
         mLocationValueArray = view.getContext().getResources().getStringArray(R.array.location_value);
         Spinner spinnerStartLoc = view.findViewById(R.id.spinner_startLocation);
         CustomAdapter customAdapterStartLoc=new CustomAdapter(view.getContext(), locationArray);
@@ -129,7 +124,7 @@ public class CreateRideDialogFragment extends DialogFragment{
             public void onNothingSelected(final AdapterView<?> parent) {
                 mEndLocation = LocationHelper.getPositionFromString(mLocationValueArray[0]);
             }
-        });
+        });*/
 
         return view;
     }

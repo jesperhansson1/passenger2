@@ -2,6 +2,7 @@ package com.cybercom.passenger.repository;
 
 import android.arch.lifecycle.LiveData;
 
+import com.cybercom.passenger.model.Car;
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Notification;
@@ -16,7 +17,7 @@ public interface PassengerRepositoryInterface {
 
     void updateUserType(int type);
 
-    void createUser(String userId, User user);
+  //  void createUser(String userId, User user);
 
     void sendNotification(Notification notification);
 
@@ -32,4 +33,7 @@ public interface PassengerRepositoryInterface {
 
     LiveData<List<Drive>> getDrives();
 
+    void createCar(String carId, String userId, Car car);
+
+    void removeCar(String carId, String userId);
 }
