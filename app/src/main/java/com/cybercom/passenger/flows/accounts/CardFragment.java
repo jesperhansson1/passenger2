@@ -1,7 +1,9 @@
 package com.cybercom.passenger.flows.accounts;
 
 import android.annotation.SuppressLint;
+import android.arch.lifecycle.Observer;
 import android.content.Intent;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -14,6 +16,7 @@ import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.main.MainActivity;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.repository.PassengerRepository;
+import com.google.firebase.auth.FirebaseUser;
 import com.stripe.android.model.Card;
 
 import timber.log.Timber;
@@ -111,16 +114,35 @@ public class CardFragment extends Fragment {
         {
             if(mExtras.getString("carArray") != null)
             {
-                repository.createUserAddCar(mExtras.getString("loginArray"), mExtras.getString("carArray"));
+                repository.createUserAddCar(mExtras.getString("loginArray"), mExtras.getString("carArray")).observe(this, new Observer<FirebaseUser>() {
+                    @Override
+                    public void onChanged(@Nullable FirebaseUser firebaseUser) {
+                        if(firebaseUser!=null)
+                        {
+                            startActivity(new Intent(getActivity().getApplicationContext(), MainActivity.class));
+                        } else{
+                            Timber.d("Error, no user found");
+                        }
+                    }
+                });
             }
             else
             {
-                repository.createUserWithEmailAndPassword(mExtras.getString("loginArray"));
+                repository.createUserWithEmailAndPassword(mExtras.getString("loginArray")).observe(this, new Observer<FirebaseUser>() {
+                    @Override
+                    public void onChanged(@Nullable FirebaseUser firebaseUser) {
+                        if(firebaseUser!=null)
+                        {
+                            startActivity(new Intent(getActivity().getApplicationContext(), MainActivity.class));
+                        } else{
+                            Timber.d("Error, no user found");
+                        }
+                    }
+                });
             }
-            // repository.createUserAddCar(extraLogin, extraCar);
         }else {
             Timber.e("Nothing to add");
         }
-        startActivity(new Intent(getActivity().getApplicationContext(), MainActivity.class));
+
     }
 }

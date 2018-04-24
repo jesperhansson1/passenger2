@@ -188,7 +188,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         final MutableLiveData<FirebaseUser> userMutableLiveData = new MutableLiveData<>();
         System.out.println("loginArray " + loginArray);
         User userLogin = (new Gson()).fromJson(loginArray,User.class);
-        System.out.println("userLogin " + userLogin);
+
         //  extraLogin.getParcelable("loginArray");
         mAuth.createUserWithEmailAndPassword(userLogin.getmEmail(), userLogin.getPassword())
                 .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
@@ -200,6 +200,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                             userMutableLiveData.setValue(user);
                             userLogin.setUserId(user.getUid());
                             userLogin.setNotificationTokenId(getTokenId());
+                            System.out.println("userLogin " + userLogin);
                             mUsersReference.child(user.getUid()).setValue(userLogin);
                         } else {
                             Timber.w("createUserWithEmail:failure %s", ((FirebaseAuthException)task.getException()).getErrorCode()/*task.getException().getMessage().toString()*/);
