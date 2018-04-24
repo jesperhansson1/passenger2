@@ -122,7 +122,7 @@ public class CarsActivity extends AppCompatActivity {
         if (requestCode == CAR_DETAIL) {
             Bundle extras = data.getExtras();
             if (extras == null) {
-                return;
+                Timber.e("No car values added");
             }
             mCarViewModel.addCar(extras.getString(CAR_NUMBER),
                     extras.getString(CAR_MODEL),

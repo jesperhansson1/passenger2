@@ -10,21 +10,21 @@
     <include
         android:id="@+id/mapfragment_activitymain_map"
         layout="@layout/fragment_maps"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/switch_passenger_driver" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
-    <include
+   <!-- <include
         android:id="@+id/toolbar"
         layout="@layout/passenger_toolbar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent" />-->
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/button_createRide"
@@ -38,7 +38,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:srcCompat="@drawable/circle_end_location" />
 
-    <include
+   <!-- <include
         android:id="@+id/switch_passenger_driver"
         layout="@layout/switch_passenger_driver"
         android:layout_width="0dp"
@@ -46,8 +46,7 @@
         android:layout_marginTop="55dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        />
+        app:layout_constraintTop_toTopOf="parent" />-->
 
     <FrameLayout
         android:id="@+id/main_activity_dialog_container"

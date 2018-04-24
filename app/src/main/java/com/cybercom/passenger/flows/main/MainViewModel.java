@@ -181,7 +181,7 @@ public class MainViewModel extends AndroidViewModel {
                 findMatchTimerLiveData.setValue(true);
             }
         }), FIND_MATCH_TIMEOUT_MS);
-
+        
         return findMatchTimerLiveData;
     }
 

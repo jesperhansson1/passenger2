@@ -24,7 +24,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -63,7 +62,7 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
-public class MainActivity extends AppCompatActivity implements CreateRideDialogFragment.CreateRideDialogFragmentListener, AcceptRejectPassengerDialog.ConfirmationListener, PassengerNotificationDialog.PassengerNotificationListener, OnMapReadyCallback, GoogleMap.OnMarkerDragListener, GoogleMap.OnCameraMoveStartedListener, GoogleMap.OnMapLongClickListener, GoogleMap.OnMapClickListener, ParserTask.OnRouteCompletion, CreateDriveFragment.OnPlaceMarkerIconClickListener {
+public class MainActivity extends AppCompatActivity implements CreateRideDialogFragment.CreateRideDialogFragmentListener, AcceptRejectPassengerDialog.ConfirmationListener, PassengerNotificationDialog.PassengerNotificationListener, OnMapReadyCallback, GoogleMap.OnMarkerDragListener, GoogleMap.OnCameraMoveStartedListener, GoogleMap.OnMapLongClickListener, GoogleMap.OnMapClickListener, ParserTask.OnRouteCompletion, CreateDriveFragment.OnPlaceMarkerIconClickListener, ParserTask.OnRouteCompletion {
 
     private static final float ZOOM_LEVEL_WORLD = 1;
     private static final float ZOOM_LEVEL_LANDMASS_CONTINENT = 5;
@@ -91,15 +90,11 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     private int mMarkerCount = 0;
     private boolean isEndLocationMarkerAdded = false;
     private Polyline mRoute;
-    private Switch mSwitchRide;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = findViewById(R.id.my_toolbar);
-        toolbar.setTitleTextColor(getResources().getColor(R.color.colorWhite));
-        setSupportActionBar(toolbar);
         Timber.i("First log info");
         Fabric.with(this, new Crashlytics());
 
@@ -115,9 +110,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
 
         if (mUser != null) {
             mMainViewModel.refreshToken(FirebaseInstanceId.getInstance().getToken());
-            if (getSupportActionBar() != null) {
-                getSupportActionBar().setTitle(mUser.getEmail());
-            }
+
             mMainViewModel.getUser().observe(this, new Observer<User>() {
                 @Override
                 public void onChanged(@Nullable User user) {
@@ -339,11 +332,6 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
         });
     }
 
-    public void setDefaultLocationToMinc() {
-        mLocation = new Location("Minc");
-        mLocation.setLatitude(55.611473);
-        mLocation.setLongitude(12.994266);
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -377,29 +365,8 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     }
 
     public void initUI() {
-        mSwitchRide = findViewById(R.id.switch_ride);
         mFloatRide = findViewById(R.id.button_createRide);
-
         mFloatRide.setImageResource(R.drawable.passenger);
-        mSwitchRide.setChecked(false);
-        changeLabelFontStyle(false);
-
-
-        mSwitchRide.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton arg0, boolean isChecked) {
-                if (isChecked) {
-                    mFloatRide.setImageResource(R.drawable.driver_floating_button);
-                    mMainViewModel.updateUserType(User.TYPE_DRIVER);
-                    changeLabelFontStyle(true);
-                } else {
-                    mFloatRide.setImageResource(R.drawable.passenger);
-                    mMainViewModel.updateUserType(User.TYPE_PASSENGER);
-                    changeLabelFontStyle(false);
-                }
-            }
-        });
-
         mCreateDriveFragment = CreateDriveFragment.newInstance();
         mFloatRide.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -414,32 +381,15 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
                         }
                     });
 
-                       /* if (!isEndLocationMarkerAdded) {
-                            placeEndLocationMarker();
-                        }*/
                 }
-                mFloatRide.setVisibility(View.INVISIBLE);
-                isCreateDriveFragmentVisible = true;
-
-
             }
         });
+
+                mFloatRide.setVisibility(View.INVISIBLE);
+                isCreateDriveFragmentVisible = true;
     }
 
-    public void changeLabelFontStyle(boolean driverValue) {
-        if (driverValue) {
-            ((TextView) findViewById(R.id.label_driver)).setTypeface(Typeface.DEFAULT_BOLD);
-            ((TextView) findViewById(R.id.label_passenger)).setTypeface(Typeface.DEFAULT);
-        } else {
-            ((TextView) findViewById(R.id.label_passenger)).setTypeface(Typeface.DEFAULT_BOLD);
-            ((TextView) findViewById(R.id.label_driver)).setTypeface(Typeface.DEFAULT);
-        }
-    }
 
-    public void showCreateDriveDialog(int type, String location) {
-        CreateRideDialogFragment dialogFragment = CreateRideDialogFragment.newInstance(type, location);
-        dialogFragment.show(getFragmentManager(), CreateRideDialogFragment.TAG);
-    }
 
     private Boolean isFragmentAdded = false;
 
@@ -620,6 +570,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
                 });
                 break;
         }
+
     }
 
     private void showDriverConfirmationDialogFragment(Notification notification) {

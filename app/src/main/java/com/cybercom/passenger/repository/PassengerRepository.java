@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.location.Location;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 
 import com.cybercom.passenger.model.Car;
@@ -15,7 +16,9 @@ import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.repository.databasemodel.utils.DatabaseModelHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.SignInMethodQueryResult;
 import com.google.firebase.database.ChildEventListener;
@@ -25,6 +28,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -69,6 +74,9 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
     private MutableLiveData<Notification> mNotification = new MutableLiveData<>();
     private User mCurrentlyLoggedInUser;
+    private String mUserId;
+    private LiveData<FirebaseUser> mFireBaseUser;
+
 
     public static PassengerRepository getInstance() {
         if (sPassengerRepository == null) {
@@ -84,6 +92,12 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         mCarsReference = firebaseDatabase.getReference(REFERENCE_CARS);
         mDriveRequestsReference = firebaseDatabase.getReference(REFERENCE_DRIVE_REQUESTS);
         mNotificationsReference = firebaseDatabase.getReference(REFERENCE_NOTIFICATIONS);
+
+    }
+
+    public FirebaseAuth getAuthorization()
+    {
+        return mAuth;
     }
 
 //    String a;
@@ -151,10 +165,111 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         }
     }
 
+    public String getTokenId()
+    {
+        return FirebaseInstanceId.getInstance().getToken();
+    }
+/*
     @Override
     public void createUser(String userId, User user) {
+        userId = getUserId();
         mUsersReference.child(userId).setValue(user);
     }
+
+    repository.createUser(repository.getUserId(), new User(repository.getUserId(),
+                repository.getTokenId(), User.TYPE_PASSENGER,
+            mExtras.getString("phone"), mExtras.getString("personalnumber"),
+            mExtras.getString("fullname"), null,
+            mExtras.getString("gender")
+            ));
+    */
+
+    public LiveData<FirebaseUser> createUserWithEmailAndPassword(String loginArray)
+    {
+        final MutableLiveData<FirebaseUser> userMutableLiveData = new MutableLiveData<>();
+
+        User userLogin = (new Gson()).fromJson(loginArray,User.class);
+
+        //  extraLogin.getParcelable("loginArray");
+        mAuth.createUserWithEmailAndPassword(userLogin.getmEmail(), userLogin.getPassword())
+                .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            FirebaseUser user = getAuthorization().getInstance().getCurrentUser();
+                            Timber.d("createUserWithEmail:success %s", user);
+                            userMutableLiveData.setValue(user);
+                            userLogin.setUserId(user.getUid());
+                            userLogin.setNotificationTokenId(getTokenId());
+
+                            mUsersReference.child(user.getUid()).setValue(userLogin);
+                        } else {
+                            Timber.w("createUserWithEmail:failure %s", ((FirebaseAuthException)task.getException()).getErrorCode()/*task.getException().getMessage().toString()*/);
+                           /* if(((FirebaseAuthException)task.getException()).getErrorCode() == ERROR_WEAK_PASSWORD){
+                                SignUpActivity.mPassword.setError(task.getException().getMessage().toString());
+
+                            }else if(((FirebaseAuthException)task.getException()).getErrorCode() == ERROR_EMAIL_ALREADY_IN_USE){
+                                SignUpActivity.mEmail.setError(task.getException().getMessage().toString());
+                            }
+                            else if(((FirebaseAuthException)task.getException()).getErrorCode() == ERROR_INVALID_EMAIL){
+                                Timber.d("Error %s", ((FirebaseAuthException)task.getException()).getErrorCode());
+
+                                SignUpActivity.mEmail.setError(task.getException().getMessage().toString());
+                            }*/
+                        }
+                    }
+                });
+        return userMutableLiveData;
+    }
+
+    public LiveData<FirebaseUser> createUserAddCar(String loginArray, String carArray)
+    {
+        final MutableLiveData<FirebaseUser> userMutableLiveData = new MutableLiveData<>();
+
+        User userLogin = (new Gson()).fromJson(loginArray,User.class);
+        Car newCar = (new Gson()).fromJson(carArray,Car.class);
+
+        //  extraLogin.getParcelable("loginArray");
+        mAuth.createUserWithEmailAndPassword(userLogin.getmEmail(), userLogin.getPassword())
+                .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            FirebaseUser user = getAuthorization().getInstance().getCurrentUser();
+                            Timber.d("createUserWithEmail:success %s", user);
+                            userMutableLiveData.setValue(user);
+                            userLogin.setUserId(user.getUid());
+                            userLogin.setNotificationTokenId(getTokenId());
+                            mUsersReference.child(user.getUid()).setValue(userLogin);
+                            createCar(newCar.getNumber(),user.getUid(),newCar);
+
+                        } else {
+                            Timber.w("createUserWithEmail:failure %s", ((FirebaseAuthException)task.getException()).getErrorCode()/*task.getException().getMessage().toString()*/);
+                           /* if(((FirebaseAuthException)task.getException()).getErrorCode() == ERROR_WEAK_PASSWORD){
+                                SignUpActivity.mPassword.setError(task.getException().getMessage().toString());
+
+                            }else if(((FirebaseAuthException)task.getException()).getErrorCode() == ERROR_EMAIL_ALREADY_IN_USE){
+                                SignUpActivity.mEmail.setError(task.getException().getMessage().toString());
+                            }
+                            else if(((FirebaseAuthException)task.getException()).getErrorCode() == ERROR_INVALID_EMAIL){
+                                Timber.d("Error %s", ((FirebaseAuthException)task.getException()).getErrorCode());
+
+                                SignUpActivity.mEmail.setError(task.getException().getMessage().toString());
+                            }*/
+                        }
+                    }
+                });
+        return userMutableLiveData;
+    }
+
+
+    public String getUserId()
+    {
+        mUserId = getAuthorization().getInstance().getCurrentUser().getUid();
+        return mUserId;
+    }
+
+
 
     @Override
     public LiveData<List<Drive>> getDrives() {
@@ -360,6 +475,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                                 });
                     }
 
+                    @SuppressLint("TimberArgCount")
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
                         Timber.e("getDriver:onCancelled", databaseError.toException());

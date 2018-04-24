@@ -8,6 +8,7 @@ import android.graphics.Canvas;
 import android.graphics.ColorFilter;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -19,6 +20,9 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.cybercom.passenger.R;
+import com.cybercom.passenger.flows.accounts.AccountActivity;
+import com.cybercom.passenger.model.Car;
+import com.google.gson.Gson;
 
 import timber.log.Timber;
 
@@ -28,11 +32,15 @@ import static com.cybercom.passenger.flows.car.CarsActivity.CAR_MODEL;
 import static com.cybercom.passenger.flows.car.CarsActivity.CAR_NUMBER;
 import static com.cybercom.passenger.flows.car.CarsActivity.CAR_YEAR;
 
+
 public class CarDetailActivity extends AppCompatActivity{
 
     EditText mEditTextCarNumber,mEditTextCarModel,mEditTextCarYear,mEditTextCarColor;
     Button mButtonSave;
     Drawable errorDraw;
+    Bundle mExtras;
+    static final String LOGINARRAY = "loginArray";
+    static final String CARARRAY = "carArray";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +51,8 @@ public class CarDetailActivity extends AppCompatActivity{
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle(R.string.add_car);
         initializeUI();
+        mExtras = getIntent().getExtras();
+
     }
 
     public void initializeUI(){
@@ -56,7 +66,7 @@ public class CarDetailActivity extends AppCompatActivity{
             public void onClick(View v) {
                 if(checkError() == 0)
                 {
-                    addCar();
+                    addCarToList();
                 }
             }
         });
@@ -98,5 +108,28 @@ public class CarDetailActivity extends AppCompatActivity{
         intent.putExtra(CAR_COLOR,mEditTextCarColor.getText().toString());
         setResult(CAR_DETAIL,intent);
         finish();
+    }
+
+    public void addCarToList()
+    {
+        if(mExtras == null)
+        {
+            Timber.e("No values found");
+        }
+        else
+        {
+            Car newCar = new Car(mEditTextCarNumber.getText().toString(),
+                    mEditTextCarModel.getText().toString(),
+                    mEditTextCarYear.getText().toString(),
+                    mEditTextCarColor.getText().toString());
+
+            Gson gson = new Gson();
+            String carArray = gson.toJson(newCar);
+
+            Intent intent=new Intent(getApplicationContext(), AccountActivity.class);
+            intent.putExtra(CARARRAY, carArray);
+            intent.putExtra(LOGINARRAY, mExtras.getString(LOGINARRAY));
+            startActivity(intent);
+        }
     }
 }

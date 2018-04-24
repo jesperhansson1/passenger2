@@ -17,7 +17,7 @@ public interface PassengerRepositoryInterface {
 
     void updateUserType(int type);
 
-    void createUser(String userId, User user);
+  //  void createUser(String userId, User user);
 
     void sendNotification(Notification notification);
 

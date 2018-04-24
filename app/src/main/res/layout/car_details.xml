@@ -35,6 +35,7 @@
                 android:layout_weight="1"
                 android:drawableLeft="@drawable/ic_looks_two"
                 android:ems="10"
+                android:maxLength="@string/car_length"
                 android:hint="@string/car_number_hint"
                 android:inputType="textPersonName"
                 android:translationZ="0dp"
@@ -89,6 +90,7 @@
                 android:layout_weight="1"
                 android:drawableLeft="@drawable/ic_date_range"
                 android:ems="10"
+                android:maxLength="@string/year_length"
                 android:hint="@string/car_year_hint"
                 android:inputType="textPersonName"
                 android:translationZ="0dp"
@@ -132,12 +134,11 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="16dp"
                 android:background="@drawable/button_corner_round"
-                android:text="Button"
+                android:text="@string/next"
                 android:textColor="@color/colorWhite"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/editText_cardetails_color"
-                tools:text="@string/next" />
+                app:layout_constraintTop_toBottomOf="@+id/editText_cardetails_color" />
 
         </android.support.constraint.ConstraintLayout>
 
