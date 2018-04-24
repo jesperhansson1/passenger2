@@ -52,12 +52,16 @@ import timber.log.Timber;
 
 public class CreateDriveFragment extends Fragment {
 
+    private static final String FILTER_COUNTRY = "SE";
+    public static final int DELAY_CLOSE_TIME_DATE_PICKER = 2000;
+    public static final int DEFAULT_PASSENGERS = 4;
+    public static final String EMPTY_STRING = "";
+
     public interface OnPlaceMarkerIconClickListener {
         void onPlaceMarkerIconClicked();
     }
 
     private OnPlaceMarkerIconClickListener onPlaceMarkerIconClickListener;
-
     private int mType;
     private MainViewModel mMainViewModel;
     private TextView mNumberOfPassengers;
@@ -79,15 +83,22 @@ public class CreateDriveFragment extends Fragment {
             new LatLng(MainViewModel.LOWER_LEFT_LATITUDE, MainViewModel.LOWER_LEFT_LONGITUDE),
             new LatLng(MainViewModel.UPPER_RIGHT_LATITUDE, MainViewModel.UPPER_RIGHT_LONGITUDE));
 
+
     private static final AutocompleteFilter AUTOCOMPLETE_LOCATION_FILTER =
             new AutocompleteFilter.Builder()
                     .setTypeFilter(AutocompleteFilter.TYPE_FILTER_ADDRESS)
-                    .setCountry("SE")
+                    .setCountry(FILTER_COUNTRY)
                     .build();
     private ImageView mPlaceStartLocation;
     private ImageView mPlaceEndLocation;
 
     private Handler mHandler;
+    private Runnable mCloseDateTimePickerRunnable = new Runnable() {
+        @Override
+        public void run() {
+            mDateTimePicker.setVisibility(View.GONE);
+        }
+    };
 
     public CreateDriveFragment() {
     }
@@ -164,7 +175,7 @@ public class CreateDriveFragment extends Fragment {
                 mShowSelectedTime.setVisibility(View.VISIBLE);
                 mShowSelectedTime.setText(dateString);
                 mTimeSelected = date.getTime();
-                mHandler.postDelayed(mCloseDateTimePickerRunnable, 2000);
+                mHandler.postDelayed(mCloseDateTimePickerRunnable, DELAY_CLOSE_TIME_DATE_PICKER);
 
             }
         });
@@ -293,13 +304,6 @@ public class CreateDriveFragment extends Fragment {
         return view;
     }
 
-    private Runnable mCloseDateTimePickerRunnable = new Runnable() {
-        @Override
-        public void run() {
-            mDateTimePicker.setVisibility(View.GONE);
-        }
-    };
-
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -321,11 +325,11 @@ public class CreateDriveFragment extends Fragment {
             mCreateRide.setText(R.string.create_drive_find_ride);
         }
 
-        mStartLocation.setText("", false);
-        mEndLocation.setText("", false);
+        mStartLocation.setText(EMPTY_STRING, false);
+        mEndLocation.setText(EMPTY_STRING, false);
         mCreateRide.setEnabled(true);
         mCreatingDrive.setVisibility(View.GONE);
-        mMainViewModel.setNumberOfPassengers(4);
+        mMainViewModel.setNumberOfPassengers(DEFAULT_PASSENGERS);
 
     }
 
@@ -364,8 +368,6 @@ public class CreateDriveFragment extends Fragment {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-
-            System.out.println("StartLocation");
             final AutocompletePrediction location = mAdapter.getItem(position);
             final String locationId = location != null ? location.getPlaceId() : null;
 

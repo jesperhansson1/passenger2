@@ -124,9 +124,9 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
                     Timber.i("User: %s logged in", user);
                     if (user != null) {
                         if (user.getType() == User.TYPE_DRIVER) {
-                            mSwitchRide.setChecked(true);
+                            setUpForDriver();
                         } else {
-                            mSwitchRide.setChecked(false);
+                            setUpForPassenger();
                         }
                     }
                 }
@@ -165,8 +165,15 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
 
     }
 
-    private void initObservers() {
+    private void setUpForDriver() {
+        mFloatRide.setImageResource(R.drawable.driver_floating_button);
+    }
 
+    private void setUpForPassenger(){
+        mFloatRide.setImageResource(R.drawable.passenger);
+    }
+
+    private void initObservers() {
         mMainViewModel.getIncomingNotifications().observe(this, new Observer<Notification>() {
             @Override
             public void onChanged(@Nullable final Notification notification) {

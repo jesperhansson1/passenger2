@@ -18,6 +18,9 @@ import timber.log.Timber;
 
 public class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String, String>>>> {
 
+    public static final int ROUTE_WIDTH = 10;
+    public static final int ROUTE_COLOR = Color.rgb(6, 182, 239);
+
     public interface OnRouteCompletion{
         void onRouteDrawn(Polyline route);
     }
@@ -81,8 +84,8 @@ public class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<Str
 
             // Adding all the points in the route to LineOptions
             polylineOptions.addAll(arraylistPoints);
-            polylineOptions.width(10);
-            polylineOptions.color(Color.rgb(6,182,239));
+            polylineOptions.width(ROUTE_WIDTH);
+            polylineOptions.color(ROUTE_COLOR);
 
             Timber.d("onPostExecute lineoptions decoded");
         }

@@ -50,7 +50,6 @@ public class MainViewModel extends AndroidViewModel {
     private LocationRequest mLocationRequest;
     private LiveData<Notification> mIncomingNotification;
 
-
     public MainViewModel(@NonNull Application application) {
         super(application);
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(application);
