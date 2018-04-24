@@ -34,7 +34,6 @@ import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.createdrive.CreateRideDialogFragment;
 import com.cybercom.passenger.flows.createridefragment.CreateDriveFragment;
 import com.cybercom.passenger.flows.driverconfirmation.AcceptRejectPassengerDialog;
-import com.cybercom.passenger.flows.login.LoginActivity;
 import com.cybercom.passenger.flows.login.RegisterActivity;
 import com.cybercom.passenger.flows.passengernotification.PassengerNotificationDialog;
 import com.cybercom.passenger.model.Drive;
@@ -91,8 +90,8 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     private boolean isStartLocationMarkerAdded = false;
     private int mMarkerCount = 0;
     private boolean isEndLocationMarkerAdded = false;
-    private int mType;
     private Polyline mRoute;
+    private Switch mSwitchRide;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,7 +123,11 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
                 public void onChanged(@Nullable User user) {
                     Timber.i("User: %s logged in", user);
                     if (user != null) {
-                        mType = user.getType();
+                        if (user.getType() == User.TYPE_DRIVER) {
+                            mSwitchRide.setChecked(true);
+                        } else {
+                            mSwitchRide.setChecked(false);
+                        }
                     }
                 }
             });
@@ -151,13 +154,14 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
 //            }
         }
 
-        initUI();
+
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map_activitymap_googlemap);
         mapFragment.getMapAsync(this);
 
         initObservers();
+        initUI();
 
     }
 
@@ -366,22 +370,19 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     }
 
     public void initUI() {
-        changeLabelFontStyle(false);
-        final Switch switchRide = findViewById(R.id.switch_ride);
+        mSwitchRide = findViewById(R.id.switch_ride);
         mFloatRide = findViewById(R.id.button_createRide);
+
         mFloatRide.setImageResource(R.drawable.passenger);
+        mSwitchRide.setChecked(false);
+        changeLabelFontStyle(false);
 
-        if (mType == User.TYPE_DRIVER) {
-            switchRide.setChecked(true);
-            mFloatRide.setImageResource(R.drawable.driver);
-            changeLabelFontStyle(true);
-        }
 
-        switchRide.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        mSwitchRide.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton arg0, boolean isChecked) {
                 if (isChecked) {
-                    mFloatRide.setImageResource(R.drawable.driver);
+                    mFloatRide.setImageResource(R.drawable.driver_floating_button);
                     mMainViewModel.updateUserType(User.TYPE_DRIVER);
                     changeLabelFontStyle(true);
                 } else {

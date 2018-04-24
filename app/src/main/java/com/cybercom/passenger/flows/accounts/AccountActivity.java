@@ -1,13 +1,11 @@
 package com.cybercom.passenger.flows.accounts;
 
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
 import com.cybercom.passenger.R;
-import com.cybercom.passenger.flows.login.LoginActivity;
-import com.cybercom.passenger.flows.signup.SignUpActivity;
 
 public class AccountActivity extends AppCompatActivity implements View.OnClickListener{
 
