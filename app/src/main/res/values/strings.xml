@@ -129,7 +129,7 @@
     <string name="no">No</string>
 
 
-    <string name="account_label">You need to add a credit card and Bank account. Need it to withdraw money</string>
+    <string name="account_label">You need to add a credit card or bank account. You need it to withdraw money</string>
     <string name="bank_account"> Bank account </string>
     <string name="credit_card"> Credit Card </string>
     <string name="card_number">Card Number</string>
@@ -155,5 +155,6 @@
     <string name="signup_driver">driver</string>
     <string name="signup_login">login</string>
     <string name="signup_userid">userid</string>
+    <string name="register_as_title">Register as</string>
 
 </resources>

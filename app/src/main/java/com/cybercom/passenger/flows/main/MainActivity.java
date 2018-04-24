@@ -94,6 +94,9 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
             if (getSupportActionBar() != null) {
                 getSupportActionBar().setTitle(R.string.mainactivity_title);
             }
+
+            Intent intent = new Intent(this, RegisterActivity.class);
+            startActivity(intent);
         }
 
         if (ContextCompat.checkSelfPermission(this.getApplication(),
