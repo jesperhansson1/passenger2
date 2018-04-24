@@ -127,8 +127,6 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         mFemaleIcon.setImageDrawable(getResources().getDrawable(R.drawable.ic_woman_blue));
         mSaveRadioButtonAnswer = GENDER_MALE;
 
-
-
         mPersonalNumber.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
@@ -194,32 +192,6 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                 if (validateUserInput(email, password, fullName, personalNumber, phone)) {
                     mNextButton.setText("");
                     progressBar.setVisibility(View.VISIBLE);
-
-                    /*mViewModel.createUserWithEmailAndPassword(email, password, this).observe(this, new Observer<FirebaseUser>() {
-                        @Override
-                        public void onChanged(@Nullable FirebaseUser user) {
-                            if(user != null){
-                                mViewModel.createUser(user.getUid(), new User(user.getUid(), FirebaseInstanceId.getInstance().getToken(),
-                                        User.TYPE_PASSENGER, phone, personalNumber, fullName, null, mSaveRadioButtonAnswer));
-                                if(mRegisterType.equalsIgnoreCase(mDriver))
-                                {
-                                    //register as driver need to add car and verify bank id
-                                    Intent intent = new Intent(getApplicationContext(), CarsActivity.class);
-                                    intent.putExtra(getResources().getString(R.string.signup_userid),user.getUid());
-                                    startActivity(intent);
-                                }
-                                if(mRegisterType.equalsIgnoreCase(mPassenger))
-                                {
-                                    //register as passenger need to verify bank id
-                                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                                    startActivity(intent);
-                                }
-                            } else{
-                                ToastHelper.makeToast(getResources().getString(R.string.toast_could_not_create_user), SignUpActivity.this).show();
-                            }
-                        }
-                    });*/
-
                     if (mRegisterType.equalsIgnoreCase(mPassenger))
                     {
                         mType = User.TYPE_PASSENGER;
@@ -228,10 +200,6 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                     {
                         mType = User.TYPE_DRIVER;
                     }
-                   /* String[] loginArray =
-                            new String[]{email, password, phone, personalNumber,
-                                    fullName, mSaveRadioButtonAnswer, String.valueOf(mType)};*/
-
 
                     User userRegister = new User(null, null,
                             mType,phone,personalNumber,fullName,null,
@@ -244,12 +212,6 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                     {
                         //register as driver need to verify bank id
                         Intent intent = new Intent(getApplicationContext(), CarDetailActivity.class);
-                        /*intent.putExtra("email",email);
-                        intent.putExtra("password",password);
-                        intent.putExtra("phone",phone);
-                        intent.putExtra("personalnumber",personalNumber);
-                        intent.putExtra("fullname",fullName);
-                        intent.putExtra("gender",mSaveRadioButtonAnswer);*/
                         intent.putExtra("loginArray", loginArray);
                         startActivity(intent);
                     }
@@ -258,12 +220,6 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                     {
                         //register as passenger need to verify bank id
                         Intent intent = new Intent(getApplicationContext(), AccountActivity.class);
-                        /*intent.putExtra("email",email);
-                        intent.putExtra("password",password);
-                        intent.putExtra("phone",phone);
-                        intent.putExtra("personalnumber",personalNumber);
-                        intent.putExtra("fullname",fullName);
-                        intent.putExtra("gender",mSaveRadioButtonAnswer);*/
                         intent.putExtra("loginArray", loginArray);
                         startActivity(intent);
                     }

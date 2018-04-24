@@ -130,25 +130,4 @@ public class CarsActivity extends AppCompatActivity {
                     extras.getString(CAR_COLOR));
         }
     }
-
-
-
-
-   /* public void addIntentValues(Intent intent, String type)
-    {
-        if (mExtras != null) {
-            // intent.putExtra("extraBundle",mExtras);
-            intent.putExtra(BankCard,type);
-            intent.putExtra("email",mExtras.getString("email"));
-            intent.putExtra("password",mExtras.getString("password"));
-            intent.putExtra("phone",mExtras.getString("phone"));
-            intent.putExtra("personalnumber",mExtras.getString("personalnumber"));
-            intent.putExtra("fullname",mExtras.getString("fullname"));
-            intent.putExtra("gender", mExtras.getString("gender"));
-        }
-        else
-        {
-            Timber.e("Error getting values");
-        }
-    }*/
 }

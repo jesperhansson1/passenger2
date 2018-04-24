@@ -22,7 +22,7 @@ import timber.log.Timber;
 public class BankFragment extends Fragment {
 
     EditText mEditTextName, mEditTextAccount;
-    Bundle mExtras;//mExtrasCar, mExtrasLogin;
+    Bundle mExtras;
     PassengerRepository repository = PassengerRepository.getInstance();
 
     public BankFragment() {
@@ -31,8 +31,6 @@ public class BankFragment extends Fragment {
 
     @SuppressLint("ValidFragment")
     public BankFragment(Bundle extras) {
-       // mExtras = extras;
-        // Required empty public constructor
     }
 
     @Override
@@ -50,9 +48,6 @@ public class BankFragment extends Fragment {
         });
 
         mExtras = getActivity().getIntent().getExtras();
-       /* mExtrasCar = getActivity().getIntent().getExtras().getParcelable("carArray");
-        mExtrasLogin = getActivity().getIntent().getExtras().getParcelable("loginArray");*/
-
         return rootView;
     }
 

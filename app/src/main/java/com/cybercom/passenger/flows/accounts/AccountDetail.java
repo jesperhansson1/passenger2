@@ -55,29 +55,19 @@ public class AccountDetail extends AppCompatActivity {
             });
 
             if (mExtras == null) {
-                System.out.println(" accoutn detail Error getting values");
+                Timber.d(" accoutn detail Error getting values");
             }
             else {
                 String value1 = mExtras.getString(BankCard);
-               /* System.out.println("bankcard " + value1 );
-                System.out.println(mExtras.getString("email"));
-                System.out.println(mExtras.getString("password"));
-                System.out.println(mExtras.getString("phone"));
-                System.out.println(mExtras.getString("personalnumber"));
-                System.out.println(mExtras.getString("fullname"));
-                System.out.println(mExtras.getString("gender"));*/
-
                 if (value1.equalsIgnoreCase(Bank)) {
                     mPager.setCurrentItem(1);
                     bankSelected();
-
                 }
                 if (value1.equalsIgnoreCase(Card)) {
                     mPager.setCurrentItem(0);
                     cardSelected();
                 }
             }
-
         }
 
         public void cardClicked(View target){

@@ -33,7 +33,6 @@ public class CardFragment extends Fragment {
     @SuppressLint("ValidFragment")
     public CardFragment(Bundle extras)
     {
-       // mExtras = extras;
     }
 
     @Override
@@ -52,8 +51,6 @@ public class CardFragment extends Fragment {
             }
         });
         mExtras = getActivity().getIntent().getExtras();
-       /* mExtrasCar = getActivity().getIntent().getExtras().getParcelable("carArray");
-        mExtrasLogin = getActivity().getIntent().getExtras().getParcelable("loginArray");*/
         return rootView;
     }
 
