@@ -39,14 +39,24 @@ public class LocationHelper {
        return new Position(hashLocation(location),location.getLatitude(),location.getLongitude());
     }
 
-    public static Location convertPositionToLocation(LatLng latLng){
-        Location location = new Location("onMapLongClickProvider");
+    public static Location convertLatLngToLocation(LatLng latLng){
+        Location location = new Location("fromLatLng");
         location.setLatitude(latLng.latitude);
         location.setLongitude(latLng.longitude);
         return location;
     }
 
+    public static Location convertPositionToLocation(Position position){
+        Location location = new Location("fromPosition");
+        location.setLatitude(position.getLatitude());
+        location.setLongitude(position.getLongitude());
+        return location;
+    }
+
+
     private static String hashLocation(Location location){
         return Geohasher.hash(new com.javadocmd.simplelatlng.LatLng(location.getLatitude(),location.getLongitude()));
     }
+
+
 }

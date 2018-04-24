@@ -642,7 +642,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     @Override
     public void onMapLongClick(LatLng latLng) {
         if (mMainViewModel.getWhichMarkerToAdd() == MainViewModel.PLACE_START_MARKER) {
-            mMainViewModel.setStartMarkerLocation(LocationHelper.convertPositionToLocation(latLng));
+            mMainViewModel.setStartMarkerLocation(LocationHelper.convertLatLngToLocation(latLng));
             placeStartLocationMarker();
             showFragment(mCreateDriveFragment);
             mGoogleMap.setOnMapClickListener(this);
@@ -650,7 +650,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
         }
 
         if (mMainViewModel.getWhichMarkerToAdd() == MainViewModel.PLACE_END_MARKER) {
-            mMainViewModel.setEndMarkerLocation(LocationHelper.convertPositionToLocation(latLng));
+            mMainViewModel.setEndMarkerLocation(LocationHelper.convertLatLngToLocation(latLng));
             placeEndLocationMarker();
             showFragment(mCreateDriveFragment);
         }

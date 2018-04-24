@@ -389,7 +389,7 @@ public class CreateDriveFragment extends Fragment {
                                     }
 
                                     mMainViewModel.setStartMarkerLocation(LocationHelper
-                                            .convertPositionToLocation(clickedLocation.getLatLng()));
+                                            .convertLatLngToLocation(clickedLocation.getLatLng()));
 
                                     locations.release();
                                 }
@@ -426,7 +426,7 @@ public class CreateDriveFragment extends Fragment {
                                     }
 
                                     mMainViewModel.setEndMarkerLocation(LocationHelper
-                                            .convertPositionToLocation(clickedLocation.getLatLng()));
+                                            .convertLatLngToLocation(clickedLocation.getLatLng()));
 
                                     locations.release();
                                 }
