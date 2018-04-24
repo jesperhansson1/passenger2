@@ -8,11 +8,9 @@ import android.view.View;
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.signup.SignUpActivity;
 
-import timber.log.Timber;
-
 public class RegisterActivity extends AppCompatActivity implements View.OnClickListener{
 
-    String mType, PASSENGER, DRIVER, LOGIN, REGISTERTYPE;
+    String mType, mPassenger, mDriver, mLogin, mRegister;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,25 +19,25 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         findViewById(R.id.driver_section).setOnClickListener(this);
         findViewById(R.id.passenger_section).setOnClickListener(this);
         findViewById(R.id.button_register_login).setOnClickListener(this);
-        PASSENGER = getResources().getString(R.string.signup_passenger);
-        DRIVER = getResources().getString(R.string.signup_driver);
-        LOGIN = getResources().getString(R.string.signup_login);
-        REGISTERTYPE = getResources().getString(R.string.signup_type);
+        mPassenger = getResources().getString(R.string.signup_passenger);
+        mDriver = getResources().getString(R.string.signup_driver);
+        mLogin = getResources().getString(R.string.signup_login);
+        mRegister = getResources().getString(R.string.signup_type);
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.passenger_section:
-                mType = PASSENGER;
+                mType = mPassenger;
                 startActivityNext(SignUpActivity.class);
                 break;
             case R.id.driver_section:
-                mType = DRIVER;
+                mType = mDriver;
                 startActivityNext(SignUpActivity.class);
                 break;
             case R.id.button_register_login:
-                mType = LOGIN;
+                mType = mLogin;
                 startActivityNext(LoginActivity.class);
                 break;
         }
@@ -47,7 +45,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
 
     public void startActivityNext(Class target){
         Intent newIntent = new Intent(getApplicationContext(),target);
-        newIntent.putExtra(REGISTERTYPE,mType);
+        newIntent.putExtra(mRegister,mType);
         startActivity(newIntent);
     }
 }

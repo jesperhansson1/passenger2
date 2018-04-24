@@ -14,7 +14,6 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -59,14 +58,18 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     Location mLocation;
     private GoogleMap mGoogleMap;
     Menu mLoginMenu;
+    int mType = -1;
+    static int PASSENGER = 1;
+    static int DRIVER = 0;
+    FloatingActionButton floatRide;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = findViewById(R.id.my_toolbar);
+        /*Toolbar toolbar = findViewById(R.id.my_toolbar);
         toolbar.setTitleTextColor(getResources().getColor(R.color.colorWhite));
-        setSupportActionBar(toolbar);
+        setSupportActionBar(toolbar);*/
         Timber.i("First log info");
         Fabric.with(this, new Crashlytics());
 
@@ -77,19 +80,32 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
                 mMainViewModel.setIncomingNotification(getIntent().getExtras());
             }
         }
-        mUser = FirebaseAuth.getInstance().getCurrentUser();
 
+        mUser = FirebaseAuth.getInstance().getCurrentUser();
         if (mUser != null) {
+
             mMainViewModel.refreshToken(FirebaseInstanceId.getInstance().getToken());
-            if (getSupportActionBar() != null) {
+            /*if (getSupportActionBar() != null) {
                 getSupportActionBar().setTitle(mUser.getEmail());
-            }
+            }*/
+
             mMainViewModel.getUser().observe(this, new Observer<User>() {
                 @Override
                 public void onChanged(@Nullable User user) {
+                    mType = user.getType();
+                    if(mType == PASSENGER)
+                    {
+                        floatRide.setImageResource(R.drawable.passenger);
+                    }
+                    if(mType == DRIVER)
+                    {
+                        floatRide.setImageResource(R.drawable.driver);
+                    }
+
                     Timber.i("User: %s logged in", user);
                 }
             });
+
         } else {
             if (getSupportActionBar() != null) {
                 getSupportActionBar().setTitle(R.string.mainactivity_title);
@@ -237,11 +253,11 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     }
 
     public void initUI() {
-        changeLabelFontStyle(false);
-        final Switch switchRide = findViewById(R.id.switch_ride);
-        final FloatingActionButton floatRide = findViewById(R.id.button_createRide);
-        floatRide.setImageResource(R.drawable.passenger);
-        switchRide.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        //changeLabelFontStyle(false);
+        //final Switch switchRide = findViewById(R.id.switch_ride);
+        floatRide = findViewById(R.id.button_createRide);
+        //floatRide.setImageResource(R.drawable.passenger);
+        /*switchRide.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton arg0, boolean isChecked) {
                 if (isChecked) {
@@ -252,20 +268,37 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
                     changeLabelFontStyle(false);
                 }
             }
-        });
+        });*/
+        Timber.d("clicked before" + mType);
+        if(mType == PASSENGER)
+        {
+
+            floatRide.setImageResource(R.drawable.passenger);
+        }
+        if(mType == DRIVER)
+        {
+            floatRide.setImageResource(R.drawable.driver);
+        }
+
+
         floatRide.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (switchRide.isChecked()) {
+                Timber.d("clicked" + mType);
+                if (mType == DRIVER) {
+                    Timber.d("clicked driver" + mType);
                     showCreateDriveDialog(CreateRideDialogFragment.TYPE_RIDE, LocationHelper.convertLocationToDisplayString(mLocation));
-                } else {
+                }
+                if(mType == PASSENGER)
+                {
+                    Timber.d("clicked passenger" + mType);
                     showCreateDriveDialog(CreateRideDialogFragment.TYPE_REQUEST, LocationHelper.convertLocationToDisplayString(mLocation));
                 }
             }
         });
     }
 
-    public void changeLabelFontStyle(boolean driverValue) {
+    /*public void changeLabelFontStyle(boolean driverValue) {
         if (driverValue) {
             ((TextView) findViewById(R.id.label_driver)).setTypeface(Typeface.DEFAULT_BOLD);
             ((TextView) findViewById(R.id.label_passenger)).setTypeface(Typeface.DEFAULT);
@@ -273,7 +306,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
             ((TextView) findViewById(R.id.label_passenger)).setTypeface(Typeface.DEFAULT_BOLD);
             ((TextView) findViewById(R.id.label_driver)).setTypeface(Typeface.DEFAULT);
         }
-    }
+    }*/
 
     public void showCreateDriveDialog(int type, String location) {
         CreateRideDialogFragment dialogFragment = CreateRideDialogFragment.newInstance(type, location);

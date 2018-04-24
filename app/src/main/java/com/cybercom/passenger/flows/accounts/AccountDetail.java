@@ -15,6 +15,8 @@ import android.widget.ToggleButton;
 
 import com.cybercom.passenger.R;
 
+import timber.log.Timber;
+
 import static com.cybercom.passenger.flows.accounts.AccountActivity.Bank;
 import static com.cybercom.passenger.flows.accounts.AccountActivity.BankCard;
 import static com.cybercom.passenger.flows.accounts.AccountActivity.Card;
@@ -24,6 +26,7 @@ public class AccountDetail extends AppCompatActivity {
 
         private ScreenSlidePageAdapter mPagerAdapter;
         ToggleButton mCardToggle,mBankToggle;
+        Bundle mExtras;
 
         @Override
         protected void onCreate(Bundle savedInstanceState) {
@@ -32,35 +35,40 @@ public class AccountDetail extends AppCompatActivity {
             mCardToggle = findViewById(R.id.toggleButton_activityaccountdetail_card);
             mBankToggle = findViewById(R.id.toggleButton_activityaccountdetail_bank);
             mPager = (ViewPager) findViewById(R.id.ViewPager_activityaccountdetail);
-            mPagerAdapter = new ScreenSlidePageAdapter(getSupportFragmentManager());
+            mPagerAdapter = new ScreenSlidePageAdapter(getSupportFragmentManager(),mExtras);
             mPager.setAdapter(mPagerAdapter);
+            mExtras = getIntent().getExtras();
+
             mPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
                 @Override
                 public void onPageSelected(int position) {
                     if(position == 1){
+                        mPager.setCurrentItem(1);
                         bankSelected();
                     }
                     if(position == 0)
                     {
+                        mPager.setCurrentItem(0);
                         cardSelected();
                     }
                 }
             });
-            Bundle extras = getIntent().getExtras();
-            if (extras == null) {
-                return;
-            }
-            String value1 = extras.getString(BankCard);
-            if (value1.matches(Bank)) {
-                mPager.setCurrentItem(1);
-                bankSelected();
 
+            if (mExtras == null) {
+                Timber.d(" accoutn detail Error getting values");
             }
-            if (value1.matches(Card)) {
-                mPager.setCurrentItem(0);
-                cardSelected();
+            else {
+                String value1 = mExtras.getString(BankCard);
+                if (value1.equalsIgnoreCase(Bank)) {
+                    mPager.setCurrentItem(1);
+                    bankSelected();
+                }
+                if (value1.equalsIgnoreCase(Card)) {
+                    mPager.setCurrentItem(0);
+                    cardSelected();
+                }
             }
-      }
+        }
 
         public void cardClicked(View target){
             if (mPager.getCurrentItem() != 0) {
