@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.location.Location;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 
 import com.cybercom.passenger.model.Car;
@@ -28,6 +29,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -181,11 +183,14 @@ public class PassengerRepository implements PassengerRepositoryInterface {
             ));
     */
 
-    public LiveData<FirebaseUser> createUserWithEmailAndPassword(String[] loginArray)
+    public LiveData<FirebaseUser> createUserWithEmailAndPassword(String loginArray)
     {
         final MutableLiveData<FirebaseUser> userMutableLiveData = new MutableLiveData<>();
-        System.out.println("repo " + loginArray[0] + " " + loginArray[1]);
-        mAuth.createUserWithEmailAndPassword(loginArray[0], loginArray[1])
+        System.out.println("loginArray " + loginArray);
+        User userLogin = (new Gson()).fromJson(loginArray,User.class);
+        System.out.println("userLogin " + userLogin);
+        //  extraLogin.getParcelable("loginArray");
+        mAuth.createUserWithEmailAndPassword(userLogin.getmEmail(), userLogin.getPassword())
                 .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
@@ -193,13 +198,48 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                             FirebaseUser user = getAuthorization().getInstance().getCurrentUser();
                             Timber.d("createUserWithEmail:success %s", user);
                             userMutableLiveData.setValue(user);
-                            mUsersReference.child(user.getUid()).setValue(new User(user.getUid(),
-                                    getTokenId(), Integer.parseInt(loginArray[6]),
-                                    loginArray[2], loginArray[3],
-                                    loginArray[4], null,
-                                    loginArray[5]
-                            ));
+                            userLogin.setUserId(user.getUid());
+                            userLogin.setNotificationTokenId(getTokenId());
+                            mUsersReference.child(user.getUid()).setValue(userLogin);
+                        } else {
+                            Timber.w("createUserWithEmail:failure %s", ((FirebaseAuthException)task.getException()).getErrorCode()/*task.getException().getMessage().toString()*/);
+                           /* if(((FirebaseAuthException)task.getException()).getErrorCode() == ERROR_WEAK_PASSWORD){
+                                SignUpActivity.mPassword.setError(task.getException().getMessage().toString());
 
+                            }else if(((FirebaseAuthException)task.getException()).getErrorCode() == ERROR_EMAIL_ALREADY_IN_USE){
+                                SignUpActivity.mEmail.setError(task.getException().getMessage().toString());
+                            }
+                            else if(((FirebaseAuthException)task.getException()).getErrorCode() == ERROR_INVALID_EMAIL){
+                                Timber.d("Error %s", ((FirebaseAuthException)task.getException()).getErrorCode());
+
+                                SignUpActivity.mEmail.setError(task.getException().getMessage().toString());
+                            }*/
+                        }
+                    }
+                });
+        return userMutableLiveData;
+    }
+
+    public LiveData<FirebaseUser> createUserAddCar(String loginArray, String carArray)
+    {
+        final MutableLiveData<FirebaseUser> userMutableLiveData = new MutableLiveData<>();
+        System.out.println("loginArray " + loginArray);
+        User userLogin = (new Gson()).fromJson(loginArray,User.class);
+        Car newCar = (new Gson()).fromJson(carArray,Car.class);
+        System.out.println("userLogin " + userLogin);
+        //  extraLogin.getParcelable("loginArray");
+        mAuth.createUserWithEmailAndPassword(userLogin.getmEmail(), userLogin.getPassword())
+                .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            FirebaseUser user = getAuthorization().getInstance().getCurrentUser();
+                            Timber.d("createUserWithEmail:success %s", user);
+                            userMutableLiveData.setValue(user);
+                            userLogin.setUserId(user.getUid());
+                            userLogin.setNotificationTokenId(getTokenId());
+                            mUsersReference.child(user.getUid()).setValue(userLogin);
+                            createCar(newCar.getNumber(),user.getUid(),newCar);
 
                         } else {
                             Timber.w("createUserWithEmail:failure %s", ((FirebaseAuthException)task.getException()).getErrorCode()/*task.getException().getMessage().toString()*/);
@@ -220,7 +260,9 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         return userMutableLiveData;
     }
 
-    public LiveData<FirebaseUser> createUserAddCar(String[] loginArray, String[] carArray)
+
+/*
+    public LiveData<FirebaseUser> createUserAddCar(Bundle extraLogin, Bundle extraCar)
     {
         final MutableLiveData<FirebaseUser> userMutableLiveData = new MutableLiveData<>();
         mAuth.createUserWithEmailAndPassword(loginArray[0], loginArray[1])
@@ -241,7 +283,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                                     carArray[1],carArray[2],carArray[3]));
 
                         } else {
-                            Timber.w("createUserWithEmail:failure %s", ((FirebaseAuthException)task.getException()).getErrorCode()/*task.getException().getMessage().toString()*/);
+                            Timber.w("createUserWithEmail:failure %s", ((FirebaseAuthException)task.getException()).getErrorCode()/*task.getException().getMessage().toString());
                            /* if(((FirebaseAuthException)task.getException()).getErrorCode() == ERROR_WEAK_PASSWORD){
                                 SignUpActivity.mPassword.setError(task.getException().getMessage().toString());
 
@@ -252,13 +294,13 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                                 Timber.d("Error %s", ((FirebaseAuthException)task.getException()).getErrorCode());
 
                                 SignUpActivity.mEmail.setError(task.getException().getMessage().toString());
-                            }*/
+                            }
                         }
                     }
                 });
         return userMutableLiveData;
     }
-
+*/
    /* public LiveData<FirebaseUser> createUserWithEmailAndPassword(String email, String password
     ,int type, String phone, String personalNumber, String fullName, String imageLink,
                                                                  String gender

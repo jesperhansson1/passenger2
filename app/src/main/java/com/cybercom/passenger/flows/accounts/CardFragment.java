@@ -30,7 +30,7 @@ public class CardFragment extends Fragment {
     @SuppressLint("ValidFragment")
     public CardFragment(Bundle extras)
     {
-        mExtras = extras;
+       // mExtras = extras;
     }
 
     @Override
@@ -49,6 +49,8 @@ public class CardFragment extends Fragment {
             }
         });
         mExtras = getActivity().getIntent().getExtras();
+       /* mExtrasCar = getActivity().getIntent().getExtras().getParcelable("carArray");
+        mExtrasLogin = getActivity().getIntent().getExtras().getParcelable("loginArray");*/
         return rootView;
     }
 
@@ -98,25 +100,27 @@ public class CardFragment extends Fragment {
             {
                 Timber.e("Card is valid");
                 Toast.makeText(getContext(),"Card is valid",Toast.LENGTH_LONG).show();
-                createUserReturnMain(mExtras);
+                createUserReturnMain();
             }
         }
     }
 
-    public void createUserReturnMain(Bundle mExtras)
+    public void createUserReturnMain()
     {
-        /*repository.createUserWithEmailAndPassword(mExtras.getString("email"),
-                mExtras.getString("password"),User.TYPE_PASSENGER,
-                mExtras.getString("phone"), mExtras.getString("personalnumber"),
-                mExtras.getString("fullname"), null,
-                mExtras.getString("gender"));*/
-        if(mExtras.getStringArray("carArray")!=null  &&
-                (mExtras.getStringArray("carArray").length >0))
+        if(mExtras != null)
         {
-            repository.createUserAddCar(mExtras.getStringArray("loginArray"),
-                    mExtras.getStringArray("carArray"));
+            if(mExtras.getString("carArray") != null)
+            {
+                repository.createUserAddCar(mExtras.getString("loginArray"), mExtras.getString("carArray"));
+            }
+            else
+            {
+                repository.createUserWithEmailAndPassword(mExtras.getString("loginArray"));
+            }
+            // repository.createUserAddCar(extraLogin, extraCar);
+        }else {
+            Timber.e("Nothing to add");
         }
-        repository.createUserWithEmailAndPassword(mExtras.getStringArray("loginArray"));
         startActivity(new Intent(getActivity().getApplicationContext(), MainActivity.class));
     }
 }

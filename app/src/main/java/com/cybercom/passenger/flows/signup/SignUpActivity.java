@@ -13,6 +13,7 @@ import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -42,6 +43,7 @@ import com.cybercom.passenger.utils.ValidateEmailHelper;
 import com.cybercom.passenger.utils.ValidatePersonalNumberHelper;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -226,9 +228,18 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                     {
                         mType = User.TYPE_DRIVER;
                     }
-                    String[] loginArray =
+                   /* String[] loginArray =
                             new String[]{email, password, phone, personalNumber,
-                                    fullName, mSaveRadioButtonAnswer, String.valueOf(mType)};
+                                    fullName, mSaveRadioButtonAnswer, String.valueOf(mType)};*/
+
+
+                    User userRegister = new User(null, null,
+                            mType,phone,personalNumber,fullName,null,
+                            mSaveRadioButtonAnswer, email, password);
+
+                    Gson gson = new Gson();
+                    String loginArray = gson.toJson(userRegister);
+
                     if(mRegisterType.equalsIgnoreCase(mDriver))
                     {
                         //register as driver need to verify bank id

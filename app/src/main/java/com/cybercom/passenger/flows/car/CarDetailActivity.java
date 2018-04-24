@@ -8,6 +8,7 @@ import android.graphics.Canvas;
 import android.graphics.ColorFilter;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -20,6 +21,8 @@ import android.widget.Toast;
 
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.accounts.AccountActivity;
+import com.cybercom.passenger.model.Car;
+import com.google.gson.Gson;
 
 import timber.log.Timber;
 
@@ -112,14 +115,18 @@ public class CarDetailActivity extends AppCompatActivity{
         }
         else
         {
-            String[] carArray = new String[]{mEditTextCarNumber.getText().toString(),
+            Car newCar = new Car(mEditTextCarNumber.getText().toString(),
                     mEditTextCarModel.getText().toString(),
                     mEditTextCarYear.getText().toString(),
-                    mEditTextCarColor.getText().toString()};
+                    mEditTextCarColor.getText().toString());
+
+            Gson gson = new Gson();
+            String carArray = gson.toJson(newCar);
 
             Intent intent=new Intent(getApplicationContext(), AccountActivity.class);
-            intent.putExtra("loginArray", carArray);
-            intent.putExtra("carArray", mExtras.getStringArray("loginArray"));
+            intent.putExtra("carArray", carArray);
+            intent.putExtra("loginArray", mExtras.getString("loginArray"));
+            //getIntent().getExtras().getParcelable("loginArray");
             startActivity(intent);
         }
     }

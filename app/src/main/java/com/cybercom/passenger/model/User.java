@@ -1,5 +1,8 @@
 package com.cybercom.passenger.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 public class User {
 
     public static final int TYPE_DRIVER = 0;
@@ -13,13 +16,57 @@ public class User {
     private String mFullName;
     private String mImageLink;
     private String mGender;
-    
+    private String mEmail;
+    private String mPassword;
+
+    /*public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
+        public User createFromParcel(Parcel in) {
+            return new User(in);
+        }
+
+        public User[] newArray(int size) {
+            return new User[size];
+        }
+    };
+
+    // Parcelling part
+    public User(Parcel in){
+        mUserId = in.readString();
+        mNotificationTokenId = in.readString();
+        mType = in.readInt();
+        mPhone = in.readString();
+        mPersonalNumber = in.readString();
+        mFullName = in.readString();
+        mImageLink = in.readString();
+        mGender = in.readString();
+        mEmail = in.readString();
+        mPassword = in.readString();
+    }
+    public int describeContents() {
+        return 0;
+    }
+
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(mUserId);
+        dest.writeString(mNotificationTokenId);
+        dest.writeInt(mType);
+        dest.writeString(mPhone);
+        dest.writeString(mPersonalNumber);
+        dest.writeString(mFullName);
+        dest.writeString(mImageLink);
+        dest.writeString(mGender);
+        dest.writeString(mEmail);
+        dest.writeString(mPassword);
+
+    }
+
+*/
     public User(){
 
     }
 
     public User(String userId, String notificationTokenId, int type, String phone, String personalNumber, String fullName, String imageLink,
-                String gender) {
+                String gender, String email, String password) {
         mUserId = userId;
         mNotificationTokenId = notificationTokenId;
         mType = type;
@@ -28,6 +75,26 @@ public class User {
         mFullName = fullName;
         mImageLink = imageLink;
         mGender = gender;
+        mEmail = email;
+        mPassword = password;
+    }
+
+
+
+    public String getmEmail() {
+        return mEmail;
+    }
+
+    public void setEmail(String email) {
+        mEmail = email;
+    }
+
+    public String getPassword() {
+        return mPassword;
+    }
+
+    public void setPassword(String password) {
+        mPassword = password;
     }
 
     public String getPhone() {
