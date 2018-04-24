@@ -52,7 +52,7 @@ import timber.log.Timber;
 
 public class CreateDriveFragment extends Fragment {
 
-    public interface OnPlaceMarkerIconClickListener{
+    public interface OnPlaceMarkerIconClickListener {
         void onPlaceMarkerIconClicked();
     }
 
@@ -135,13 +135,13 @@ public class CreateDriveFragment extends Fragment {
         mTimeSelection.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
-                switch (checkedId){
-                    case R.id.create_drive_button_right_now:{
+                switch (checkedId) {
+                    case R.id.create_drive_button_right_now: {
                         mDateTimePicker.setVisibility(View.GONE);
                         mTimeSelected = System.currentTimeMillis();
                         break;
                     }
-                    case R.id.create_drive_button_time:{
+                    case R.id.create_drive_button_time: {
                         mDateTimePicker.setVisibility(View.VISIBLE);
                         break;
                     }
@@ -160,11 +160,11 @@ public class CreateDriveFragment extends Fragment {
             @Override
             public void onDateChanged(String dateString, Date date) {
                 mHandler.removeCallbacks(mCloseDateTimePickerRunnable);
-                Timber.i("Date and time selected: %s",date.getTime());
+                Timber.i("Date and time selected: %s", date.getTime());
                 mShowSelectedTime.setVisibility(View.VISIBLE);
                 mShowSelectedTime.setText(dateString);
                 mTimeSelected = date.getTime();
-                mHandler.postDelayed(mCloseDateTimePickerRunnable,2000);
+                mHandler.postDelayed(mCloseDateTimePickerRunnable, 2000);
 
             }
         });
