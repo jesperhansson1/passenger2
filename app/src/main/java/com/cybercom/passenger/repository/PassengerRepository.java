@@ -1,24 +1,36 @@
 package com.cybercom.passenger.repository;
 
+import android.annotation.SuppressLint;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.location.Location;
+import android.support.annotation.NonNull;
+import android.util.Log;
 
+import com.cybercom.passenger.model.Car;
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Notification;
 import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.repository.databasemodel.utils.DatabaseModelHelper;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.SignInMethodQueryResult;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -28,11 +40,14 @@ import timber.log.Timber;
 
 public class PassengerRepository implements PassengerRepositoryInterface {
 
+
     private static final String NOTIFICATION_TOKEN_ID = "notificationTokenId";
+
     private static final String REFERENCE_NOTIFICATIONS = "notifications";
 
     private static final String REFERENCE_USERS = "users";
     private static final String REFERENCE_DRIVES = "drives";
+    private static final String REFERENCE_CARS = "cars";
     private static final String REFERENCE_DRIVE_REQUESTS = "driveRequests";
     private static final String REFERENCE_USERS_CHILD_TYPE = "type";
     private static final String REFERENCE_DRIVER_ID_BLACK_LIST = "driverIdBlackList";
@@ -49,6 +64,9 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private DatabaseReference mDrivesReference;
     private DatabaseReference mDriveRequestsReference;
     private DatabaseReference mNotificationsReference;
+    private FirebaseAuth mAuth = FirebaseAuth.getInstance();
+    private DatabaseReference mCarsReference;
+    private MutableLiveData<List<Car>> mCarList;
 
     private BlockingQueue<Notification> mNotificationQueue = new LinkedBlockingQueue<>();
 
@@ -66,8 +84,30 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
         mUsersReference = firebaseDatabase.getReference(REFERENCE_USERS);
         mDrivesReference = firebaseDatabase.getReference(REFERENCE_DRIVES);
+        mCarsReference = firebaseDatabase.getReference(REFERENCE_CARS);
         mDriveRequestsReference = firebaseDatabase.getReference(REFERENCE_DRIVE_REQUESTS);
         mNotificationsReference = firebaseDatabase.getReference(REFERENCE_NOTIFICATIONS);
+    }
+//    String a;
+    public LiveData<Boolean> validateEmail(String email){
+        final MutableLiveData<Boolean> checkEmail = new MutableLiveData();
+
+        mAuth.fetchSignInMethodsForEmail(email).addOnCompleteListener(new OnCompleteListener<SignInMethodQueryResult>() {
+            @Override
+            public void onComplete(@NonNull Task<SignInMethodQueryResult> task) {
+
+                if(task.isSuccessful()){
+                    if(task.getResult().getSignInMethods().size() > 0){
+                        boolean email = true;
+                        checkEmail.setValue(email);
+                    } else{
+                        boolean email = false;
+                        checkEmail.setValue(email);
+                    }
+                }
+            }
+        });
+        return checkEmail;
     }
 
     @Override
@@ -163,8 +203,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                                 distance[0], driveRequest.getStartLocation().getLatitude(), driveRequest.getEndLocation().getLongitude(),
                                 drive.getStartLocation().getLatitude(), drive.getStartLocation().getLongitude());
 
-                        if (driveRequest.getDriverIdBlackList().contains(drive.getDriverId())) Timber.i("No match driver blacklisted: %s", drive.getDriverId());
-
+                        if (driveRequest.getDriverIdBlackList().contains(drive.getDriverId())) Timber.i("No match, driver blacklisted: %s", drive.getDriverId());
 
                         if (distance[0] < 700 && !driveRequest.getDriverIdBlackList().contains(drive.getDriverId())) {
                             if (bestMatch == null) {
@@ -264,10 +303,20 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                                                         final com.cybercom.passenger.repository.databasemodel.DriveRequest dBdriveRequest
                                                                 = dataSnapshot.getValue(com.cybercom.passenger.repository.databasemodel.DriveRequest.class);
 
+                                                        GenericTypeIndicator<List<String>> genTypeIndicatore = new GenericTypeIndicator<List<String>>() {};
+                                                        List<String> list = dataSnapshot.child(REFERENCE_DRIVER_ID_BLACK_LIST).getValue(genTypeIndicatore);
+                                                        if (list == null) {
+                                                            list = new ArrayList<>();
+                                                        }
+
                                                         // If it is a Reject-notification add driverId to the driver-request's blacklist
                                                         if (Integer.valueOf(payload.get(NOTIFICATION_TYPE_KEY)) == Notification.REJECT_PASSENGER) {
-                                                            dBdriveRequest.addDriverIdBlackList(driver.getUserId());
+                                                            list.add(driver.getUserId());
+                                                            List<Object> objectList = new ArrayList<Object>(list);
+                                                            dBdriveRequest.setDriverIdBlackList(objectList);
                                                             mDriveRequestsReference.child(driveRequestId).setValue(dBdriveRequest);
+                                                        } else {
+                                                            dBdriveRequest.setDriverIdBlackList(new ArrayList<Object>(list));
                                                         }
 
                                                         // Fetch the passenger (User)
@@ -287,7 +336,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                                                                         addToNotificationQueue(new Notification(Integer.parseInt(payload.get(NOTIFICATION_TYPE_KEY)),
                                                                                 driveRequest, drive));
                                                                     }
-
+                                                                    @SuppressLint("TimberArgCount")
                                                                     @Override
                                                                     public void onCancelled(DatabaseError databaseError) {
                                                                         Timber.i("Failed to fetch user: passenger: %s",
@@ -296,6 +345,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                                                                 });
                                                     }
 
+                                                    @SuppressLint("TimberArgCount")
                                                     @Override
                                                     public void onCancelled(DatabaseError databaseError) {
                                                         Timber.i("Failed to fetch DriveRequest: %s"
@@ -314,7 +364,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
-                        Timber.i("Failed to fetch Drive %s", databaseError.toString());
+                        Timber.e("getDriver:onCancelled", databaseError.toException());
                     }
                 });
     }
@@ -381,7 +431,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
             String uId = firebaseUser.getUid();
 
             final com.cybercom.passenger.repository.databasemodel.DriveRequest dbDriveRequest =
-                new com.cybercom.passenger.repository.databasemodel.DriveRequest(uId, time, startLocation, endLocation, availableSeats, new ArrayList<String>());
+                new com.cybercom.passenger.repository.databasemodel.DriveRequest(uId, time, startLocation, endLocation, availableSeats, new ArrayList<Object>());
             final DatabaseReference ref = mDriveRequestsReference.push();
             final String driveRequestId = ref.getKey();
             ref.setValue(dbDriveRequest);
@@ -418,4 +468,72 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 //
 //    }
 
+
+    public DatabaseReference getCarsReference(){
+        mCarList = new MutableLiveData<>();
+        return mCarsReference;
+    }
+
+    @Override
+    public void createCar(String carId, String userId, Car car) {
+        getCarsReference().child(userId).child(carId).setValue(car);
+    }
+
+    @Override
+    public void removeCar(String carId, String userId) {
+
+        getCarsReference().child(userId).child(carId).removeValue();
+    }
+
+    public void onChangeCarDetails(){
+        getCarsReference().addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                getAllTask(dataSnapshot);
+            }
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                getAllTask(dataSnapshot);
+            }
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+                getAllTask(dataSnapshot);
+            }
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+    }
+
+    private void getAllTask(DataSnapshot dataSnapshot){
+        List<Car> allCar = new ArrayList<Car>();
+        Map<String, Object> objectMap = (HashMap<String, Object>)
+                dataSnapshot.getValue();
+        if(objectMap.values()!= null)
+            for (Object obj : objectMap.values()) {
+                if (obj instanceof Map) {
+                    Map<String, Object> mapObj = (Map<String, Object>) obj;
+                    try
+                    {
+                        Car match = new Car(mapObj.get("number").toString(),
+                                mapObj.get("model").toString(),
+                                mapObj.get("year").toString(),
+                                mapObj.get("color").toString());
+                        allCar.add(match);
+                    }
+                    catch(Exception e)
+                    {
+                        Timber.e(e.getLocalizedMessage());
+                    }
+                }
+            }
+        mCarList.setValue(allCar);
+    }
+
+    public MutableLiveData<List<Car>> getUpdatedCarList() {
+        return mCarList;
+    }
 }

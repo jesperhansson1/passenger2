@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.cybercom.passenger.flows.accounts.BankFragment">
+
+    <TextView
+        android:id="@+id/textView_fragmentbank_fullname"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_span="1"
+        android:text="@string/full_name"
+        android:textColor="@color/colorBlue"
+        android:textSize="@dimen/pad_15sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/editText_fragmentbank_fullname"
+        app:layout_constraintStart_toStartOf="parent" />
+
+
+    <EditText
+        android:id="@+id/editText_fragmentbank_fullname"
+        style="@style/shadow_background_style"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:layout_span="1"
+        android:ems="10"
+        android:hint="@string/full_name_hint"
+        android:textColor="@color/colorBlue"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <TextView
+        android:id="@+id/textView_fragmentbank_number"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_span="1"
+        android:text="@string/number_of_bank_account"
+        android:textColor="@color/colorBlue"
+        android:textSize="@dimen/pad_15sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/editText_fragmentbank_account"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <EditText
+        android:id="@+id/editText_fragmentbank_account"
+        style="@style/shadow_background_style"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:layout_span="1"
+        android:ems="10"
+        android:hint="@string/number_of_bank_account_hint"
+        android:inputType="number|phone"
+        android:maxLength="24"
+        android:textColor="@color/colorBlue"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editText_fragmentbank_fullname" />
+
+
+    <Button
+        android:id="@+id/button_fragmentbank_next"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
+        android:layout_span="1"
+        android:background="@drawable/button_corner_round"
+        android:text="@string/next"
+        android:textColor="@color/colorWhite"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editText_fragmentbank_account" />
+
+
+</android.support.constraint.ConstraintLayout>

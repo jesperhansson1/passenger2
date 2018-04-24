@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.cybercom.passenger.flows.login.RegisterActivity">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <android.support.constraint.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <RelativeLayout
+                android:id="@+id/cardLayout"
+                style="@style/shadow_background_style"
+                android:layout_width="match_parent"
+                android:layout_height="351dp"
+                android:layout_marginTop="16dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/register_as_title">
+
+                <RelativeLayout
+                    android:id="@+id/driver_section"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentStart="true"
+                    android:layout_below="@+id/view">
+
+                    <ImageView
+                        android:id="@+id/imageView_bank3"
+                        android:layout_width="@dimen/size_80dp"
+                        android:layout_height="@dimen/size_80dp"
+                        android:layout_above="@+id/textView_register_driver"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginBottom="13dp"
+                        app:srcCompat="@drawable/ic_steering_wheel" />
+
+                    <TextView
+                        android:id="@+id/textView_register_driver"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentBottom="true"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginBottom="8dp"
+                        android:gravity="center"
+                        android:text="@string/driver"
+                        android:textColor="@color/colorBlue"
+                        android:textStyle="bold"
+                        tools:layout_editor_absoluteX="0dp"
+                        tools:layout_editor_absoluteY="412dp" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/passenger_section"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_above="@+id/view"
+                    android:layout_alignParentStart="true">
+
+                    <ImageView
+                        android:id="@+id/imageView_passenger"
+                        android:layout_width="@dimen/size_80dp"
+                        android:layout_height="@dimen/size_80dp"
+                        android:layout_above="@+id/textView_register_passenger"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginBottom="7dp"
+                        app:srcCompat="@drawable/ic_passenger" />
+
+                    <TextView
+                        android:id="@+id/textView_register_passenger"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentBottom="true"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginBottom="14dp"
+                        android:gravity="center"
+                        android:text="@string/passenger"
+                        android:textColor="@color/colorBlue"
+                        android:textStyle="bold"
+                        tools:layout_editor_absoluteX="0dp"
+                        tools:layout_editor_absoluteY="253dp" />
+                </RelativeLayout>
+
+                <View
+                    android:id="@+id/view"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:background="@color/colorLightBlue" />
+            </RelativeLayout>
+
+            <TextView
+                android:id="@+id/register_as_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="32dp"
+                android:text="@string/register_as_title"
+                android:textColor="@color/colorBlue"
+                android:textSize="@dimen/pad_25dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <Button
+                android:id="@+id/button_register_login"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:layout_marginBottom="32dp"
+                android:layout_marginEnd="24dp"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="32dp"
+                android:background="@drawable/button_corner_round"
+                android:elevation="@dimen/pad_2dp"
+                android:text="@string/login"
+                android:textColor="@color/colorWhite"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/cardLayout" />
+        </android.support.constraint.ConstraintLayout>
+    </ScrollView>
+
+</android.support.constraint.ConstraintLayout>
