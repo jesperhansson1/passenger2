@@ -164,4 +164,9 @@ public class MainViewModel extends AndroidViewModel {
         
         return findMatchTimerLiveData;
     }
+
+    public int getUserType(String uid)
+    {
+        return mPassengerRepository.getUserType(uid);
+    }
 }

@@ -147,6 +147,24 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         }
         return user;
     }
+    int k = -1;
+    public int getUserType(String userId) {
+
+        mUsersReference.child(userId).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                k = (dataSnapshot.getValue(User.class).getType());
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        return k;
+    }
 
     @Override
     public void updateUserType(int type) {
@@ -186,7 +204,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     public LiveData<FirebaseUser> createUserWithEmailAndPassword(String loginArray)
     {
         final MutableLiveData<FirebaseUser> userMutableLiveData = new MutableLiveData<>();
-        System.out.println("loginArray " + loginArray);
+
         User userLogin = (new Gson()).fromJson(loginArray,User.class);
 
         //  extraLogin.getParcelable("loginArray");
@@ -200,7 +218,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                             userMutableLiveData.setValue(user);
                             userLogin.setUserId(user.getUid());
                             userLogin.setNotificationTokenId(getTokenId());
-                            System.out.println("userLogin " + userLogin);
+
                             mUsersReference.child(user.getUid()).setValue(userLogin);
                         } else {
                             Timber.w("createUserWithEmail:failure %s", ((FirebaseAuthException)task.getException()).getErrorCode()/*task.getException().getMessage().toString()*/);
@@ -224,10 +242,10 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     public LiveData<FirebaseUser> createUserAddCar(String loginArray, String carArray)
     {
         final MutableLiveData<FirebaseUser> userMutableLiveData = new MutableLiveData<>();
-        System.out.println("loginArray " + loginArray);
+
         User userLogin = (new Gson()).fromJson(loginArray,User.class);
         Car newCar = (new Gson()).fromJson(carArray,Car.class);
-        System.out.println("userLogin " + userLogin);
+      
         //  extraLogin.getParcelable("loginArray");
         mAuth.createUserWithEmailAndPassword(userLogin.getmEmail(), userLogin.getPassword())
                 .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
