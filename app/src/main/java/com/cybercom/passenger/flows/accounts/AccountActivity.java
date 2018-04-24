@@ -19,6 +19,8 @@ public class AccountActivity extends AppCompatActivity implements View.OnClickLi
     static final String BankCard = "CARDBANK";
     static final String Bank = "BANK";
     static final String Card = "CARD";
+    static final String LOGINARRAY = "loginArray";
+    static final String CARARRAY = "carArray";
 
     Bundle mExtras;
     @Override
@@ -54,10 +56,10 @@ public class AccountActivity extends AppCompatActivity implements View.OnClickLi
     {
         if (mExtras != null) {
             intent.putExtra(BankCard,type);
-            intent.putExtra("loginArray", mExtras.getString("loginArray"));
-            if(mExtras.getString("carArray") != null)
+            intent.putExtra(LOGINARRAY, mExtras.getString(LOGINARRAY));
+            if(mExtras.getString(CARARRAY) != null)
             {
-                intent.putExtra("carArray", mExtras.getString("carArray"));
+                intent.putExtra(CARARRAY, mExtras.getString(CARARRAY));
             }
         }
         else

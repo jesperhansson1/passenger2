@@ -147,24 +147,6 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         }
         return user;
     }
-    int k = -1;
-    public int getUserType(String userId) {
-
-        mUsersReference.child(userId).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-
-                k = (dataSnapshot.getValue(User.class).getType());
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
-        return k;
-    }
 
     @Override
     public void updateUserType(int type) {
@@ -245,7 +227,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
         User userLogin = (new Gson()).fromJson(loginArray,User.class);
         Car newCar = (new Gson()).fromJson(carArray,Car.class);
-      
+
         //  extraLogin.getParcelable("loginArray");
         mAuth.createUserWithEmailAndPassword(userLogin.getmEmail(), userLogin.getPassword())
                 .addOnCompleteListener(new OnCompleteListener<AuthResult>() {

@@ -21,6 +21,9 @@ import com.stripe.android.model.Card;
 
 import timber.log.Timber;
 
+import static com.cybercom.passenger.flows.accounts.AccountActivity.CARARRAY;
+import static com.cybercom.passenger.flows.accounts.AccountActivity.LOGINARRAY;
+
 public class CardFragment extends Fragment {
 
     EditText mEditTextCard, mEditTextExpire, mEditTextCode;
@@ -109,9 +112,9 @@ public class CardFragment extends Fragment {
     {
         if(mExtras != null)
         {
-            if(mExtras.getString("carArray") != null)
+            if(mExtras.getString(CARARRAY) != null)
             {
-                repository.createUserAddCar(mExtras.getString("loginArray"), mExtras.getString("carArray")).observe(this, new Observer<FirebaseUser>() {
+                repository.createUserAddCar(mExtras.getString(LOGINARRAY), mExtras.getString(CARARRAY)).observe(this, new Observer<FirebaseUser>() {
                     @Override
                     public void onChanged(@Nullable FirebaseUser firebaseUser) {
                         if(firebaseUser!=null)
@@ -125,7 +128,7 @@ public class CardFragment extends Fragment {
             }
             else
             {
-                repository.createUserWithEmailAndPassword(mExtras.getString("loginArray")).observe(this, new Observer<FirebaseUser>() {
+                repository.createUserWithEmailAndPassword(mExtras.getString(LOGINARRAY)).observe(this, new Observer<FirebaseUser>() {
                     @Override
                     public void onChanged(@Nullable FirebaseUser firebaseUser) {
                         if(firebaseUser!=null)

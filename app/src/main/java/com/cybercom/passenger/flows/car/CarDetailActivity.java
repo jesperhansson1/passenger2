@@ -32,12 +32,15 @@ import static com.cybercom.passenger.flows.car.CarsActivity.CAR_MODEL;
 import static com.cybercom.passenger.flows.car.CarsActivity.CAR_NUMBER;
 import static com.cybercom.passenger.flows.car.CarsActivity.CAR_YEAR;
 
+
 public class CarDetailActivity extends AppCompatActivity{
 
     EditText mEditTextCarNumber,mEditTextCarModel,mEditTextCarYear,mEditTextCarColor;
     Button mButtonSave;
     Drawable errorDraw;
     Bundle mExtras;
+    static final String LOGINARRAY = "loginArray";
+    static final String CARARRAY = "carArray";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,9 +127,8 @@ public class CarDetailActivity extends AppCompatActivity{
             String carArray = gson.toJson(newCar);
 
             Intent intent=new Intent(getApplicationContext(), AccountActivity.class);
-            intent.putExtra("carArray", carArray);
-            intent.putExtra("loginArray", mExtras.getString("loginArray"));
-            //getIntent().getExtras().getParcelable("loginArray");
+            intent.putExtra(CARARRAY, carArray);
+            intent.putExtra(LOGINARRAY, mExtras.getString(LOGINARRAY));
             startActivity(intent);
         }
     }

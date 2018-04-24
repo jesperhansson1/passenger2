@@ -70,6 +70,7 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
     ProgressBar progressBar;
     String mPassenger, mDriver, mLogin, mRegisterType;
     int mType;
+    static final String LOGINARRAY = "loginArray";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -212,7 +213,7 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                     {
                         //register as driver need to verify bank id
                         Intent intent = new Intent(getApplicationContext(), CarDetailActivity.class);
-                        intent.putExtra("loginArray", loginArray);
+                        intent.putExtra(LOGINARRAY, loginArray);
                         startActivity(intent);
                     }
 
@@ -220,7 +221,7 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                     {
                         //register as passenger need to verify bank id
                         Intent intent = new Intent(getApplicationContext(), AccountActivity.class);
-                        intent.putExtra("loginArray", loginArray);
+                        intent.putExtra(LOGINARRAY, loginArray);
                         startActivity(intent);
                     }
 
