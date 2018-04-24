@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -34,8 +35,8 @@ import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Notification;
 import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
+import com.cybercom.passenger.network.RetrofitHelper;
 import com.cybercom.passenger.route.FetchRouteUrl;
-import com.cybercom.passenger.utils.LocationHelper;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -47,17 +48,28 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.iid.FirebaseInstanceId;
 
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.X509Certificate;
+
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
+
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity implements CreateRideDialogFragment.CreateRideDialogFragmentListener, AcceptRejectPassengerDialog.ConfirmationListener, PassengerNotificationDialog.PassengerNotificationListener, OnMapReadyCallback {
 
+    private static final String KEYSTORE_PASSWORD = "qwerty123";
+    private static final String TRUSTSTORE_PASSWORD = "secret";
     FirebaseUser mUser;
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 0;
     MainViewModel mMainViewModel;
     Location mLocation;
     private GoogleMap mGoogleMap;
     Menu mLoginMenu;
+    private KeyStore keyStore;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,6 +95,9 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
             if (getSupportActionBar() != null) {
                 getSupportActionBar().setTitle(mUser.getEmail());
             }
+
+
+
             mMainViewModel.getUser().observe(this, new Observer<User>() {
                 @Override
                 public void onChanged(@Nullable User user) {
@@ -94,6 +109,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
                 getSupportActionBar().setTitle(R.string.mainactivity_title);
             }
         }
+
 
         if (ContextCompat.checkSelfPermission(this.getApplication(),
                 android.Manifest.permission.ACCESS_FINE_LOCATION)
@@ -116,6 +132,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
         mapFragment.getMapAsync(this);
 
         initObservers();
+
 
     }
 
@@ -252,11 +269,13 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
         floatRide.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (switchRide.isChecked()) {
-                    showCreateDriveDialog(CreateRideDialogFragment.TYPE_RIDE, LocationHelper.convertLocationToDisplayString(mLocation));
-                } else {
-                    showCreateDriveDialog(CreateRideDialogFragment.TYPE_REQUEST, LocationHelper.convertLocationToDisplayString(mLocation));
-                }
+                RetrofitHelper.getInstance(getApplicationContext(), MainActivity.this, mMainViewModel);
+
+//                if (switchRide.isChecked()) {
+//                    showCreateDriveDialog(CreateRideDialogFragment.TYPE_RIDE, LocationHelper.convertLocationToDisplayString(mLocation));
+//                } else {
+//                    showCreateDriveDialog(CreateRideDialogFragment.TYPE_REQUEST, LocationHelper.convertLocationToDisplayString(mLocation));
+//                }
             }
         });
     }
@@ -318,33 +337,191 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     public void onCreateRide(int type, final Position startLocation, final Position endLocation) {
         Timber.i("on create ride");
 
-        switch (type) {
-            case CreateRideDialogFragment.TYPE_RIDE:
-                long time = System.currentTimeMillis();
-                int availableSeats = 4;
 
-                mMainViewModel.createDrive(time ,startLocation, endLocation, availableSeats).observe(this, new Observer<Drive>() {
-                    @Override
-                    public void onChanged(@Nullable Drive drive) {
-                        Timber.i("Drive created: %s", drive);
-                    }
-                });
-                break;
-            case CreateRideDialogFragment.TYPE_REQUEST:
-                final LifecycleOwner lifeCycleOwner = this;
-                long t = System.currentTimeMillis();
-                final int seats = 2;
-                mMainViewModel.createDriveRequest(t, startLocation, endLocation, seats).observe(this, new Observer<DriveRequest>() {
-                    @Override
-                    public void onChanged(@Nullable DriveRequest driveRequest) {
-                        Timber.i("DriveRequest : %s", driveRequest);
-                        matchDriveRequest(driveRequest);
-                    }
-                });
-                break;
-        }
+        printTrustManag();
+//        switch (type) {
+//            case AuthenticateDriverFragment.TYPE_RIDE:
+//                long time = System.currentTimeMillis();
+//                int availableSeats = 4;
+//
+//                mMainViewModel.createDrive(time ,startLocation, endLocation, availableSeats).observe(this, new Observer<Drive>() {
+//                    @Override
+//                    public void onChanged(@Nullable Drive drive) {
+//                        Timber.i("Drive created: %s", drive);
+//                    }
+//                });
+//                break;
+//            case AuthenticateDriverFragment.TYPE_REQUEST:
+//                final LifecycleOwner lifeCycleOwner = this;
+//                long t = System.currentTimeMillis();
+//                final int seats = 2;
+//                mMainViewModel.createDriveRequest(t, startLocation, endLocation, seats).observe(this, new Observer<DriveRequest>() {
+//                    @Override
+//                    public void onChanged(@Nullable DriveRequest driveRequest) {
+//                        Timber.i("DriveRequest : %s", driveRequest);
+//                        matchDriveRequest(driveRequest);
+//                    }
+//                });
+//                break;
+//        }
 
     }
+
+    private void printTrustManag() {
+//        System.setProperty("javax.net.ssl.trustStore", R.)
+        TrustManagerFactory tmf = null;
+        try {
+            tmf = TrustManagerFactory
+                    .getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        try {
+            tmf.init((KeyStore) null);
+        } catch (KeyStoreException e) {
+            e.printStackTrace();
+        }
+        X509TrustManager xtm = (X509TrustManager) tmf.getTrustManagers()[0];
+        for (X509Certificate cert : xtm.getAcceptedIssuers()) {
+            String certStr = "S:" + cert.getSubjectDN().getName() + "\nI:"
+                    + cert.getIssuerDN().getName();
+            Timber.d(certStr);
+        }
+    }
+
+
+    abstract class GetHtmlTask extends AsyncTask<Void, Void, String> {
+        Exception error;
+
+        @Override
+        protected void onPreExecute() {
+            setProgressBarIndeterminateVisibility(true);
+//            resultText.setText("");
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            setProgressBarIndeterminateVisibility(false);
+
+            if (result != null) {
+                Timber.i("resutl: %s", result);
+//                resultText.setText(Html.fromHtml(result));
+            } else {
+                Toast.makeText(MainActivity.this,
+                        "Error: " + error.getMessage(), Toast.LENGTH_LONG)
+                        .show();
+            }
+        }
+    }
+
+//    private void httpClientDefaultSocketFactoryConnect() {
+//        new GetHtmlTask() {
+//
+//            @Override
+//            protected String doInBackground(Void... arg0) {
+//                try {
+//                    KeyStore trustStore = loadTrustStore();
+//                    KeyStore keyStore = loadKeyStore();
+//
+//                    HttpClient client = createHttpClientWithDefaultSocketFactory(
+//                            keyStore, trustStore);
+//
+//                    HttpGet get = new HttpGet();
+//                    HttpResponse response = client.execute(get);
+//                    if (response.getStatusLine().getStatusCode() != 200) {
+//                        return "Error: " + response.getStatusLine();
+//                    } else {
+//                        return EntityUtils.toString(response.getEntity());
+//                    }
+//                } catch (Exception e) {
+//                    Timber.i("Error: " + e.getMessage(), e);
+//
+//                    error = e;
+//                    return null;
+//                }
+//            }
+//        }.execute();
+//    }
+
+//    private HttpClient createHttpClientWithDefaultSocketFactory(
+//            KeyStore keyStore, KeyStore trustStore) {
+//        try {
+//            SSLSocketFactory sslSocketFactory = SSLSocketFactory
+//                    .getSocketFactory();
+//            if (keyStore != null && trustStore != null) {
+//                sslSocketFactory = new SSLSocketFactory(keyStore,
+//                        KEYSTORE_PASSWORD, trustStore);
+//            } else if (trustStore != null) {
+//                sslSocketFactory = new SSLSocketFactory(trustStore);
+//            }
+//
+//            return createHttpClient(sslSocketFactory);
+//        } catch (GeneralSecurityException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
+//
+//    private HttpClient createHttpClient(SocketFactory socketFactory) {
+//        HttpParams params = new BasicHttpParams();
+//        HttpProtocolParams.setContentCharset(params,
+//                HTTP.DEFAULT_CONTENT_CHARSET);
+//        HttpConnectionParams.setConnectionTimeout(params, TIMEOUT);
+//        ConnPerRoute connPerRoute = new ConnPerRouteBean(MAX_CONN_PER_ROUTE);
+//        ConnManagerParams.setMaxConnectionsPerRoute(params, connPerRoute);
+//        ConnManagerParams.setMaxTotalConnections(params, MAX_CONNECTIONS);
+//
+//        SchemeRegistry schemeRegistry = new SchemeRegistry();
+//        schemeRegistry.register(new Scheme("http", PlainSocketFactory
+//                .getSocketFactory(), 80));
+//        SocketFactory sslSocketFactory = SSLSocketFactory.getSocketFactory();
+//        if (socketFactory != null) {
+//            sslSocketFactory = socketFactory;
+//        }
+//        schemeRegistry.register(new Scheme("https", sslSocketFactory, 443));
+//        ClientConnectionManager cm = new ThreadSafeClientConnManager(params,
+//                schemeRegistry);
+//
+//        return new DefaultHttpClient(cm, params);
+//    }
+//
+//
+//    private KeyStore loadTrustStore() {
+//        try {
+//            KeyStore localTrustStore = KeyStore.getInstance("BKS");
+//            //            InputStream in = getResources().openRawResource(R.raw.mytruststore);
+//            InputStream in = new FileInputStream(localTrustStoreFile);
+//            try {
+//                localTrustStore.load(in, TRUSTSTORE_PASSWORD.toCharArray());
+//            } finally {
+//                in.close();
+//            }
+//
+//            return localTrustStore;
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
+//
+//
+//    private KeyStore loadKeyStore() {
+//        if (keyStore != null) {
+//            return keyStore;
+//        }
+//
+//        try {
+//            keyStore = KeyStore.getInstance("PKCS12");
+//            InputStream in = getResources().openRawResource(R.raw.mykeystore);
+//            try {
+//                keyStore.load(in, KEYSTORE_PASSWORD.toCharArray());
+//            } finally {
+//                in.close();
+//            }
+//
+//            return keyStore;
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 
     private void showDriverConfirmationDialogFragment(Notification notification) {
         AcceptRejectPassengerDialog dialogFragment = AcceptRejectPassengerDialog.getInstance(notification);
