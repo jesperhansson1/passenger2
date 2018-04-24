@@ -20,13 +20,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
-        <activity android:name=".flows.main.MainActivity" android:theme="@style/WhiteBackgroundTheme">
-
-                     <intent-filter>
-                     <action android:name="android.intent.action.MAIN" />
-
-                     <category android:name="android.intent.category.LAUNCHER" />
-                 </intent-filter>
+        <activity android:name=".flows.main.MainActivity"
+            android:theme="@style/WhiteBackgroundTheme"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
         <activity android:name=".flows.forgotpassword.ForgotPasswordActivity" android:theme="@style/WhiteBackgroundTheme" />
         <activity android:name=".flows.signup.PasswordSentActivity" android:theme="@style/WhiteBackgroundTheme" />
@@ -53,6 +53,7 @@
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_color"
             android:resource="@color/colorAccent" />
+
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="38256c6824587d6fb8c72978c282a112ba5e1a55" />

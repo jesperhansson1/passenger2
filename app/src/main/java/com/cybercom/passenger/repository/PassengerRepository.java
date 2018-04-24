@@ -99,6 +99,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     {
         return mAuth;
     }
+
 //    String a;
     public LiveData<Boolean> validateEmail(String email){
         final MutableLiveData<Boolean> checkEmail = new MutableLiveData();

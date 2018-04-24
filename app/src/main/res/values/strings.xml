@@ -2,7 +2,7 @@
     <string name="app_name">passenger</string>
     <string name="create_ride">Create Ride</string>
     <string name="create_ride_request">Request Ride</string>
-    <string name="start_location">Start Location</string>
+    <string name="start_location">start location</string>
     <string name="end_location">End Location</string>
     <string name="driver">Driver</string>
     <string name="passenger">Passenger</string>
@@ -108,6 +108,21 @@
         <item>59.329323,18.068581</item>
         <item>57.708870,11.974560</item>
     </string-array>
+
+    <string name="create_drive_right_now">Right now</string>
+    <string name="create_drive_time">Time</string>
+    <string name="create_drive_default_passengers">4</string>
+    <string name="create_drive_passengers_title">PASSENGERS</string>
+    <string name="create_ride_content_description_remove_passenger">remove passenger</string>
+    <string name="create_ride_content_description_add_passenger">add passenger</string>
+    <string name="marker_title_you_are_here">You are here</string>
+    <string name="marker_title_start_location">Start location</string>
+    <string name="marker_title_end_location">Destination</string>
+    <string name="location_provider_marker_drag">MarkerDrag</string>
+    <string name="create_drive_find_ride">Find ride</string>
+    <string name="create_drive_destination">destination</string>
+    <string name="must_implement_on_place_icon_click_listener">You must implement on place marker icon click listener</string>
+    <string name="create_drive_time_selected">time</string>
     <string name="title_activity_cars">CarsActivity</string>
     <string name="car_number_hint">QEG 452</string>
     <string name="car_number">Car number</string>
