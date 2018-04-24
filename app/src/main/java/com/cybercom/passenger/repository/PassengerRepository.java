@@ -76,6 +76,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private User mCurrentlyLoggedInUser;
     private String mUserId;
     private LiveData<FirebaseUser> mFireBaseUser;
+    private String mPersonalnumber;
+    private String mFullName;
 
 
     public static PassengerRepository getInstance() {
@@ -649,5 +651,21 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
     public MutableLiveData<List<Car>> getUpdatedCarList() {
         return mCarList;
+    }
+
+    public String getPersonalnumber() {
+        return mPersonalnumber;
+    }
+
+    public void setPersonalnumber(String personalnumber) {
+        mPersonalnumber = personalnumber;
+    }
+
+    public String getFullName() {
+        return mFullName;
+    }
+
+    public void setFullName(String fullName) {
+        mFullName = fullName;
     }
 }

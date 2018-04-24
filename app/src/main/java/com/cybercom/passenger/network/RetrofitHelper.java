@@ -16,12 +16,14 @@ import android.widget.Toast;
 
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.main.MainViewModel;
+import com.cybercom.passenger.flows.signup.SignUpActivity;
 import com.cybercom.passenger.network.model.AuthRequest;
 import com.cybercom.passenger.network.model.AuthResponse;
 import com.cybercom.passenger.network.model.CollectRequest;
 import com.cybercom.passenger.network.model.CollectResponse;
 import com.cybercom.passenger.network.model.Requirement;
 import com.cybercom.passenger.network.model.SignRequest;
+import com.cybercom.passenger.repository.PassengerRepository;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -77,7 +79,7 @@ public class RetrofitHelper {
 
     private RetrofitHelper(final Context appContext, final Context activityContext) {
 
-        mContext = activityContext;
+        mContext = appContext;
         X509TrustManager trustManager;
         SSLSocketFactory sslSocketFactory;
 
@@ -252,12 +254,14 @@ public class RetrofitHelper {
                     // TODO: send
 
                     Timber.i("show auth ");
+                    PassengerRepository passengerRepository = PassengerRepository.getInstance();
+
+                    passengerRepository.setFullName(response.body().getCompletionData().getUser().getName());
+                    passengerRepository.setPersonalnumber(response.body().getCompletionData().getUser().getPersonalNumber());
 //                        AuthenticateDriverFragment dialogFragment = AuthenticateDriverFragment.newInstance(0, null);
 
 //                        dialogFragment.show(((Activity)mContext).getFragmentManager(), "AUTH_DRIVER_FRAGMENT");
-
-
-
+                    startActivityNext(SignUpActivity.class);
                 } else if (response.body().getStatus().equals(STATUS_FAILED)) {
 
                     Timber.i("Failed: %s", response.message());
@@ -352,4 +356,10 @@ public class RetrofitHelper {
 //
 //        return sslContext;
 //    }
+
+    public void startActivityNext(Class target){
+        Intent newIntent = new Intent(mContext,target);
+        newIntent.putExtra("type","passenger");
+        mContext.startActivity(newIntent);
+    }
 }

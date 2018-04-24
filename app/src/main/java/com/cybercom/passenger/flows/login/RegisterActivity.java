@@ -4,13 +4,16 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ProgressBar;
 
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.signup.SignUpActivity;
+import com.cybercom.passenger.network.RetrofitHelper;
 
 public class RegisterActivity extends AppCompatActivity implements View.OnClickListener{
 
     String mType, mPassenger, mDriver, mLogin, mRegister;
+    private ProgressBar mProgressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,6 +22,9 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         findViewById(R.id.driver_section).setOnClickListener(this);
         findViewById(R.id.passenger_section).setOnClickListener(this);
         findViewById(R.id.button_register_login).setOnClickListener(this);
+        mProgressBar = findViewById(R.id.progressBar2);
+        mProgressBar.setVisibility(View.INVISIBLE);
+
         mPassenger = getResources().getString(R.string.signup_passenger);
         mDriver = getResources().getString(R.string.signup_driver);
         mLogin = getResources().getString(R.string.signup_login);
@@ -34,7 +40,11 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                 break;
             case R.id.driver_section:
                 mType = mDriver;
-                startActivityNext(SignUpActivity.class);
+
+                mProgressBar.setVisibility(View.VISIBLE);
+                RetrofitHelper.getInstance(getApplicationContext(), null, null);
+
+//                startActivityNext(SignUpActivity.class);
                 break;
             case R.id.button_register_login:
                 mType = mLogin;

@@ -38,6 +38,7 @@ import com.cybercom.passenger.flows.car.CarDetailActivity;
 import com.cybercom.passenger.flows.car.CarsActivity;
 import com.cybercom.passenger.flows.main.MainActivity;
 import com.cybercom.passenger.model.User;
+import com.cybercom.passenger.repository.PassengerRepository;
 import com.cybercom.passenger.utils.ToastHelper;
 import com.cybercom.passenger.utils.ValidateEmailHelper;
 import com.cybercom.passenger.utils.ValidatePersonalNumberHelper;
@@ -127,6 +128,18 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         mMaleIcon.setImageDrawable(getResources().getDrawable(R.drawable.ic_male_white));
         mFemaleIcon.setImageDrawable(getResources().getDrawable(R.drawable.ic_woman_blue));
         mSaveRadioButtonAnswer = GENDER_MALE;
+
+        PassengerRepository passRepository = PassengerRepository.getInstance();
+
+        String personalnumber = passRepository.getPersonalnumber();
+        if (personalnumber != null) {
+            mPersonalNumber.setText(personalnumber);
+        }
+        String fullname = passRepository.getFullName();
+        if (fullname != null) {
+            mFullName.setText(fullname);
+        }
+
 
         mPersonalNumber.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override

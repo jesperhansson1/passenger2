@@ -7,9 +7,7 @@ import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Typeface;
 import android.location.Location;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
@@ -19,14 +17,11 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.Switch;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
@@ -61,18 +56,10 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.iid.FirebaseInstanceId;
 
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.X509Certificate;
-
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
-
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
-public class MainActivity extends AppCompatActivity implements CreateRideDialogFragment.CreateRideDialogFragmentListener, AcceptRejectPassengerDialog.ConfirmationListener, PassengerNotificationDialog.PassengerNotificationListener, OnMapReadyCallback, GoogleMap.OnMarkerDragListener, GoogleMap.OnCameraMoveStartedListener, GoogleMap.OnMapLongClickListener, GoogleMap.OnMapClickListener, ParserTask.OnRouteCompletion, CreateDriveFragment.OnPlaceMarkerIconClickListener, ParserTask.OnRouteCompletion {
+public class MainActivity extends AppCompatActivity implements CreateRideDialogFragment.CreateRideDialogFragmentListener, AcceptRejectPassengerDialog.ConfirmationListener, PassengerNotificationDialog.PassengerNotificationListener, OnMapReadyCallback, GoogleMap.OnMarkerDragListener, GoogleMap.OnCameraMoveStartedListener, GoogleMap.OnMapLongClickListener, GoogleMap.OnMapClickListener, ParserTask.OnRouteCompletion, CreateDriveFragment.OnPlaceMarkerIconClickListener {
 
     private static final float ZOOM_LEVEL_WORLD = 1;
     private static final float ZOOM_LEVEL_LANDMASS_CONTINENT = 5;
@@ -80,9 +67,6 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     private static final float ZOOM_LEVEL_STREETS = 15;
     private static final float ZOOM_LEVEL_BUILDINGS = 20;
 
-    private static final String TAG = "complete";
-    private static final String KEYSTORE_PASSWORD = "qwerty123";
-    private static final String TRUSTSTORE_PASSWORD = "secret";
     FirebaseUser mUser;
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 0;
     MainViewModel mMainViewModel;
@@ -102,7 +86,6 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     private int mMarkerCount = 0;
     private boolean isEndLocationMarkerAdded = false;
     private Polyline mRoute;
-    private KeyStore keyStore;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -196,7 +179,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
                         mMainViewModel.dismissNotification();
                         break;
                     case Notification.REJECT_PASSENGER:
-                        matchDriveRequest(notification.getDriveRequest());
+//                        matchDriveRequest(notification.getDriveRequest());
                         mMainViewModel.dismissNotification();
                         break;
                 }
@@ -391,22 +374,22 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
 //                } else {
 //                    showCreateDriveDialog(CreateRideDialogFragment.TYPE_REQUEST, LocationHelper.convertLocationToDisplayString(mLocation));
 //                }
-                showFragment(mCreateDriveFragment);
-                if (!isStartLocationMarkerAdded) {
-                    mMainViewModel.getLastKnownLocation(new OnSuccessListener<Location>() {
-                        @Override
-                        public void onSuccess(Location location) {
-                            mMainViewModel.setStartMarkerLocation(location);
-                            placeStartLocationMarker();
-                        }
-                    });
-
-                }
+//                showFragment(mCreateDriveFragment);
+//                if (!isStartLocationMarkerAdded) {
+//                    mMainViewModel.getLastKnownLocation(new OnSuccessListener<Location>() {
+//                        @Override
+//                        public void onSuccess(Location location) {
+//                            mMainViewModel.setStartMarkerLocation(location);
+//                            placeStartLocationMarker();
+//                        }
+//                    });
+//
+//                }
             }
         });
 
-                mFloatRide.setVisibility(View.INVISIBLE);
-                isCreateDriveFragmentVisible = true;
+//                mFloatRide.setVisibility(View.INVISIBLE);
+//                isCreateDriveFragmentVisible = true;
     }
 
 
@@ -474,36 +457,36 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
 
 
     public void hideFragmentAnimation(final Fragment fragment) {
-        if (isCreateDriveFragmentVisible) {
-            mFloatRide.setVisibility(View.VISIBLE);
-
-            if (fragment != null) {
-                Animation animation = AnimationUtils.loadAnimation(MainActivity.this,
-                        R.anim.dialog_exit_animation);
-
-                animation.setAnimationListener(new Animation.AnimationListener() {
-                    @Override
-                    public void onAnimationStart(Animation animation) {
-
-                    }
-
-                    @Override
-                    public void onAnimationEnd(Animation animation) {
-                        hideFragment(fragment);
-                        isCreateDriveFragmentVisible = false;
-                    }
-
-                    @Override
-                    public void onAnimationRepeat(Animation animation) {
-
-                    }
-                });
-
-
-                findViewById(R.id.create_drive_dialog).startAnimation(animation);
-            }
-
-        }
+//        if (isCreateDriveFragmentVisible) {
+//            mFloatRide.setVisibility(View.VISIBLE);
+//
+//            if (fragment != null) {
+//                Animation animation = AnimationUtils.loadAnimation(MainActivity.this,
+//                        R.anim.dialog_exit_animation);
+//
+//                animation.setAnimationListener(new Animation.AnimationListener() {
+//                    @Override
+//                    public void onAnimationStart(Animation animation) {
+//
+//                    }
+//
+//                    @Override
+//                    public void onAnimationEnd(Animation animation) {
+//                        hideFragment(fragment);
+//                        isCreateDriveFragmentVisible = false;
+//                    }
+//
+//                    @Override
+//                    public void onAnimationRepeat(Animation animation) {
+//
+//                    }
+//                });
+//
+//
+//                findViewById(R.id.create_drive_dialog).startAnimation(animation);
+//            }
+//
+//        }
     }
 
     @Override
