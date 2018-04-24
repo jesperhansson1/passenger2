@@ -108,4 +108,5 @@
     <string name="create_drive_find_ride">Find ride</string>
     <string name="create_drive_destination">destination</string>
     <string name="must_implement_on_place_icon_click_listener">You must implement on place marker icon click listener</string>
+    <string name="create_drive_time_selected">time</string>
 </resources>

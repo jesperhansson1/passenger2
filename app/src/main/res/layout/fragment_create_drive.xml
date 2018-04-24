@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical">
+
 <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -154,6 +161,23 @@
             app:layout_constraintStart_toEndOf="@+id/create_drive_number_of_passengers"
             app:layout_constraintTop_toTopOf="@+id/create_drive_remove_passenger" />
 
+        <EditText
+            android:id="@+id/create_drive_time_selected"
+            android:layout_width="0dp"
+            android:hint="@string/create_drive_time_selected"
+            android:inputType="text"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/activity_margin"
+            android:layout_marginStart="@dimen/activity_margin"
+            android:layout_marginTop="@dimen/activity_margin"
+            android:backgroundTint="@color/colorLightBlue"
+            android:enabled="false"
+            android:textColor="@color/create_drive_time_selected_disable_color"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/create_drive_radio_group_when_selection"
+            android:visibility="gone"/>
+
         <FrameLayout
             android:id="@+id/create_drive_button_container"
             android:layout_width="0dp"
@@ -165,7 +189,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/create_drive_radio_group_when_selection">
+            app:layout_constraintTop_toBottomOf="@+id/create_drive_time_selected">
 
             <ProgressBar
                 android:id="@+id/create_drive_progressbar"
@@ -191,3 +215,19 @@
     </android.support.constraint.ConstraintLayout>
 
 </android.support.v7.widget.CardView>
+
+   <com.github.florent37.singledateandtimepicker.SingleDateAndTimePicker
+       android:id="@+id/create_drive_date_and_time_picker"
+       android:layout_width="match_parent"
+       android:layout_height="wrap_content"
+       app:picker_visibleItemCount="4"
+       app:picker_displayDays="true"
+       app:picker_cyclic="true"
+       android:background="@color/colorWhite"
+       android:clickable="true"
+       android:focusable="true"
+       android:visibility="gone"/>
+
+
+</LinearLayout>
+

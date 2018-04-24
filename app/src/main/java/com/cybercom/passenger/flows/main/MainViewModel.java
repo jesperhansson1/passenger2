@@ -210,8 +210,13 @@ public class MainViewModel extends AndroidViewModel {
         Geocoder geocoder = new Geocoder(getApplication(), Locale.getDefault());
         try {
             addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
-            Timber.i(addresses.get(0).toString());
-            return addresses.get(0).getThoroughfare() + " " + addresses.get(0).getFeatureName();
+
+            if(addresses.size() != 0){
+                Timber.i(addresses.get(0).toString());
+                return addresses.get(0).getThoroughfare() + " " + addresses.get(0).getFeatureName();
+            }
+
+            return "";
         } catch (IOException e) {
             e.printStackTrace();
         }
