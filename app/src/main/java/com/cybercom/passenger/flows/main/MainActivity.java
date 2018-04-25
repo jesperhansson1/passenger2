@@ -58,7 +58,7 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
-public class MainActivity extends AppCompatActivity implements CreateRideDialogFragment.CreateRideDialogFragmentListener, AcceptRejectPassengerDialog.ConfirmationListener, PassengerNotificationDialog.PassengerNotificationListener, OnMapReadyCallback, GoogleMap.OnMarkerDragListener, GoogleMap.OnCameraMoveStartedListener, GoogleMap.OnMapLongClickListener, GoogleMap.OnMapClickListener, CreateDriveFragment.OnPlaceMarkerIconClickListener, ParserTask.OnRouteCompletion {
+public class MainActivity extends AppCompatActivity implements CreateRideDialogFragment.CreateRideDialogFragmentListener, AcceptRejectPassengerDialog.ConfirmationListener, PassengerNotificationDialog.PassengerNotificationListener, OnMapReadyCallback, GoogleMap.OnMarkerDragListener, GoogleMap.OnCameraMoveStartedListener, GoogleMap.OnMapLongClickListener, GoogleMap.OnMapClickListener, CreateDriveFragment.OnPlaceMarkerIconClickListener, ParserTask.OnRouteCompletion, CreateDriveFragment.OnFinishedCreatingDriveOrDriveRequest {
 
     private static final float ZOOM_LEVEL_WORLD = 1;
     private static final float ZOOM_LEVEL_LANDMASS_CONTINENT = 5;
@@ -659,6 +659,11 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
 
     @Override
     public void onPlaceMarkerIconClicked() {
+        hideFragmentAnimation(mCreateDriveFragment);
+    }
+
+    @Override
+    public void onFinish() {
         hideFragmentAnimation(mCreateDriveFragment);
     }
 }

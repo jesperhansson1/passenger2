@@ -46,8 +46,6 @@ import com.google.android.gms.maps.model.RuntimeRemoteException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
-import java.util.Date;
-
 import timber.log.Timber;
 
 public class CreateDriveFragment extends Fragment {
@@ -61,7 +59,12 @@ public class CreateDriveFragment extends Fragment {
         void onPlaceMarkerIconClicked();
     }
 
+    public interface  OnFinishedCreatingDriveOrDriveRequest{
+        void onFinish();
+    }
+
     private OnPlaceMarkerIconClickListener onPlaceMarkerIconClickListener;
+    private OnFinishedCreatingDriveOrDriveRequest onFinishedCreatingDriveOrDriveRequest;
     private int mType;
     private MainViewModel mMainViewModel;
     private TextView mNumberOfPassengers;
@@ -143,19 +146,16 @@ public class CreateDriveFragment extends Fragment {
         mCreatingDrive = view.findViewById(R.id.create_drive_progressbar);
 
         mTimeSelection = view.findViewById(R.id.create_drive_radio_group_when_selection);
-        mTimeSelection.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                switch (checkedId) {
-                    case R.id.create_drive_button_right_now: {
-                        mDateTimePicker.setVisibility(View.GONE);
-                        mTimeSelected = System.currentTimeMillis();
-                        break;
-                    }
-                    case R.id.create_drive_button_time: {
-                        mDateTimePicker.setVisibility(View.VISIBLE);
-                        break;
-                    }
+        mTimeSelection.setOnCheckedChangeListener((group, checkedId) -> {
+            switch (checkedId) {
+                case R.id.create_drive_button_right_now: {
+                    mDateTimePicker.setVisibility(View.GONE);
+                    mTimeSelected = System.currentTimeMillis();
+                    break;
+                }
+                case R.id.create_drive_button_time: {
+                    mDateTimePicker.setVisibility(View.VISIBLE);
+                    break;
                 }
             }
         });
@@ -167,50 +167,38 @@ public class CreateDriveFragment extends Fragment {
 
         mDateTimePicker = view.findViewById(R.id.create_drive_date_and_time_picker);
 
-        mDateTimePicker.addOnDateChangedListener(new SingleDateAndTimePicker.OnDateChangedListener() {
-            @Override
-            public void onDateChanged(String dateString, Date date) {
-                mHandler.removeCallbacks(mCloseDateTimePickerRunnable);
-                Timber.i("Date and time selected: %s", date.getTime());
-                mShowSelectedTime.setVisibility(View.VISIBLE);
-                mShowSelectedTime.setText(dateString);
-                mTimeSelected = date.getTime();
-                mHandler.postDelayed(mCloseDateTimePickerRunnable, DELAY_CLOSE_TIME_DATE_PICKER);
+        mDateTimePicker.addOnDateChangedListener((dateString, date) -> {
+            mHandler.removeCallbacks(mCloseDateTimePickerRunnable);
+            Timber.i("Date and time selected: %s", date.getTime());
+            mShowSelectedTime.setVisibility(View.VISIBLE);
+            mShowSelectedTime.setText(dateString);
+            mTimeSelected = date.getTime();
+            mHandler.postDelayed(mCloseDateTimePickerRunnable, DELAY_CLOSE_TIME_DATE_PICKER);
 
-            }
         });
 
-        mPlaceStartLocation.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mMainViewModel.setWhichMarkerToAdd(MainViewModel.PLACE_START_MARKER);
-                onPlaceMarkerIconClickListener.onPlaceMarkerIconClicked();
-            }
+        mPlaceStartLocation.setOnClickListener(v -> {
+            mMainViewModel.setWhichMarkerToAdd(MainViewModel.PLACE_START_MARKER);
+            onPlaceMarkerIconClickListener.onPlaceMarkerIconClicked();
         });
 
-        mPlaceEndLocation.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mMainViewModel.setWhichMarkerToAdd(MainViewModel.PLACE_END_MARKER);
-                onPlaceMarkerIconClickListener.onPlaceMarkerIconClicked();
-            }
+        mPlaceEndLocation.setOnClickListener(v -> {
+            mMainViewModel.setWhichMarkerToAdd(MainViewModel.PLACE_END_MARKER);
+            onPlaceMarkerIconClickListener.onPlaceMarkerIconClicked();
         });
 
 
         if (getActivity() != null) {
-            mMainViewModel.getUser().observe(getActivity(), new Observer<User>() {
-                @Override
-                public void onChanged(@Nullable User user) {
-                    if (user != null) {
+            mMainViewModel.getUser().observe(getActivity(), user -> {
+                if (user != null) {
 
-                        if (user.getType() == User.TYPE_DRIVER) {
-                            setUpDialogForDrive();
-                            mType = user.getType();
-                        }
-                        if (user.getType() == User.TYPE_PASSENGER) {
-                            setUpDialogForDriveRequest();
-                            mType = user.getType();
-                        }
+                    if (user.getType() == User.TYPE_DRIVER) {
+                        setUpDialogForDrive();
+                        mType = user.getType();
+                    }
+                    if (user.getType() == User.TYPE_PASSENGER) {
+                        setUpDialogForDriveRequest();
+                        mType = user.getType();
                     }
                 }
             });
@@ -229,75 +217,63 @@ public class CreateDriveFragment extends Fragment {
         mStartLocation.setAdapter(mAdapter);
         mEndLocation.setAdapter(mAdapter);
 
-        mAddPassengers.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mMainViewModel.setNumberOfPassengers(mMainViewModel.getNumberOfPassengers() + 1);
-                displayNumberOfPassengers();
-            }
+        mAddPassengers.setOnClickListener(v -> {
+            mMainViewModel.setNumberOfPassengers(mMainViewModel.getNumberOfPassengers() + 1);
+            displayNumberOfPassengers();
         });
 
-        mRemovePassengers.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mMainViewModel.setNumberOfPassengers(mMainViewModel.getNumberOfPassengers() - 1);
-                displayNumberOfPassengers();
-            }
+        mRemovePassengers.setOnClickListener(v -> {
+            mMainViewModel.setNumberOfPassengers(mMainViewModel.getNumberOfPassengers() - 1);
+            displayNumberOfPassengers();
         });
 
 
-        mCreateRide.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mCreateRide.setText(null);
-                mCreateRide.setEnabled(false);
-                mCreatingDrive.setVisibility(View.VISIBLE);
+        mCreateRide.setOnClickListener(v -> {
+            mCreateRide.setText(null);
+            mCreateRide.setEnabled(false);
+            mCreatingDrive.setVisibility(View.VISIBLE);
 
-                if (mMainViewModel.getStartMarkerLocation().getValue() != null
-                        && mMainViewModel.getEndMarkerLocation().getValue() != null)
+            if (mMainViewModel.getStartMarkerLocation().getValue() != null
+                    && mMainViewModel.getEndMarkerLocation().getValue() != null)
 
-                    if (mType == User.TYPE_DRIVER) {
-                        mMainViewModel.createDrive(mTimeSelected,
-                                LocationHelper.convertLocationToPosition(mMainViewModel
-                                        .getStartMarkerLocation().getValue()),
-                                LocationHelper.convertLocationToPosition(mMainViewModel
-                                        .getEndMarkerLocation().getValue()),
-                                mMainViewModel.getNumberOfPassengers())
-                                .observe(CreateDriveFragment.this, new Observer<Drive>() {
-                                    @Override
-                                    public void onChanged(@Nullable Drive drive) {
-                                        if (drive != null) {
-                                            Timber.i("Drive is created: %s",
-                                                    drive.toString());
-                                        }
-                                        ToastHelper.makeToast("Drive is created",
-                                                getActivity()).show();
-                                        setDefaultValuesToDialog();
-                                    }
-                                });
-                    }
-
-                if (mType == User.TYPE_PASSENGER) {
-                    mMainViewModel.createDriveRequest(mTimeSelected,
+                if (mType == User.TYPE_DRIVER) {
+                    mMainViewModel.createDrive(mTimeSelected,
                             LocationHelper.convertLocationToPosition(mMainViewModel
                                     .getStartMarkerLocation().getValue()),
                             LocationHelper.convertLocationToPosition(mMainViewModel
                                     .getEndMarkerLocation().getValue()),
                             mMainViewModel.getNumberOfPassengers())
-                            .observe(CreateDriveFragment.this, new Observer<DriveRequest>() {
+                            .observe(CreateDriveFragment.this, new Observer<Drive>() {
                                 @Override
-                                public void onChanged(@Nullable DriveRequest driveRequest) {
-                                    if (driveRequest != null) {
-                                        Timber.i("Driverequest is created: %s",
-                                                driveRequest.toString());
-                                        matchDriveRequest(driveRequest);
+                                public void onChanged(@Nullable Drive drive) {
+                                    if (drive != null) {
+                                        Timber.i("Drive is created: %s",
+                                                drive.toString());
                                     }
-                                    ToastHelper.makeToast("Driverequest is created",
+                                    ToastHelper.makeToast("Drive is created",
                                             getActivity()).show();
                                     setDefaultValuesToDialog();
                                 }
                             });
                 }
+
+            if (mType == User.TYPE_PASSENGER) {
+                mMainViewModel.createDriveRequest(mTimeSelected,
+                        LocationHelper.convertLocationToPosition(mMainViewModel
+                                .getStartMarkerLocation().getValue()),
+                        LocationHelper.convertLocationToPosition(mMainViewModel
+                                .getEndMarkerLocation().getValue()),
+                        mMainViewModel.getNumberOfPassengers())
+                        .observe(CreateDriveFragment.this, driveRequest -> {
+                            if (driveRequest != null) {
+                                Timber.i("Driverequest is created: %s",
+                                        driveRequest.toString());
+                                matchDriveRequest(driveRequest);
+                            }
+                            ToastHelper.makeToast("Driverequest is created",
+                                    getActivity()).show();
+                            setDefaultValuesToDialog();
+                        });
             }
         });
 
@@ -308,8 +284,10 @@ public class CreateDriveFragment extends Fragment {
     public void onAttach(Context context) {
         super.onAttach(context);
 
-        if (context instanceof OnPlaceMarkerIconClickListener) {
+        if (context instanceof OnPlaceMarkerIconClickListener
+                && context instanceof OnFinishedCreatingDriveOrDriveRequest) {
             onPlaceMarkerIconClickListener = (OnPlaceMarkerIconClickListener) context;
+            onFinishedCreatingDriveOrDriveRequest = (OnFinishedCreatingDriveOrDriveRequest) context;
         } else {
             Toast.makeText(context, R.string.must_implement_on_place_icon_click_listener,
                     Toast.LENGTH_SHORT).show();
@@ -330,6 +308,10 @@ public class CreateDriveFragment extends Fragment {
         mCreateRide.setEnabled(true);
         mCreatingDrive.setVisibility(View.GONE);
         mMainViewModel.setNumberOfPassengers(DEFAULT_PASSENGERS);
+        mShowSelectedTime.setText(EMPTY_STRING);
+        mShowSelectedTime.setVisibility(View.GONE);
+
+        onFinishedCreatingDriveOrDriveRequest.onFinish();
 
     }
 
@@ -342,21 +324,11 @@ public class CreateDriveFragment extends Fragment {
     }
 
     private void displayEndLocation() {
-        mMainViewModel.getEndLocationAddress().observe(this, new Observer<String>() {
-            @Override
-            public void onChanged(@Nullable String endAddress) {
-                mEndLocation.setText(endAddress, false);
-            }
-        });
+        mMainViewModel.getEndLocationAddress().observe(this, endAddress -> mEndLocation.setText(endAddress, false));
     }
 
     private void displayStartLocation() {
-        mMainViewModel.getStartLocationAddress().observe(this, new Observer<String>() {
-            @Override
-            public void onChanged(@Nullable String startAddress) {
-                mStartLocation.setText(startAddress, false);
-            }
-        });
+        mMainViewModel.getStartLocationAddress().observe(this, startAddress -> mStartLocation.setText(startAddress, false));
     }
 
     private void displayNumberOfPassengers() {
@@ -445,30 +417,24 @@ public class CreateDriveFragment extends Fragment {
         final LiveData<Drive> findMatch = mMainViewModel.findBestDriveMatch(driveRequest);
 
         final LiveData<Boolean> timerObserver = mMainViewModel.setFindMatchTimer();
-        final Observer<Drive> matchObserver = new Observer<Drive>() {
-            @Override
-            public void onChanged(@Nullable Drive drive) {
-                if (drive != null) {
-                    Timber.i("matched drive %s", drive);
-                    mMainViewModel.addRequestDriveNotification(driveRequest, drive);
-                    findMatch.removeObservers(lifecycleOwner);
-                    timerObserver.removeObservers(lifecycleOwner);
-                } else {
-                    Timber.i("No drives match for the moment. Keep listening.");
-                }
+        final Observer<Drive> matchObserver = drive -> {
+            if (drive != null) {
+                Timber.i("matched drive %s", drive);
+                mMainViewModel.addRequestDriveNotification(driveRequest, drive);
+                findMatch.removeObservers(lifecycleOwner);
+                timerObserver.removeObservers(lifecycleOwner);
+            } else {
+                Timber.i("No drives match for the moment. Keep listening.");
             }
         };
 
         findMatch.observe(lifecycleOwner, matchObserver);
 
-        timerObserver.observe(lifecycleOwner, new Observer<Boolean>() {
-            @Override
-            public void onChanged(@Nullable Boolean aBoolean) {
-                Toast.makeText(getActivity(), R.string.main_activity_match_not_found_message,
-                        Toast.LENGTH_LONG).show();
-                findMatch.removeObserver(matchObserver);
-                timerObserver.removeObservers(lifecycleOwner);
-            }
+        timerObserver.observe(lifecycleOwner, aBoolean -> {
+            Toast.makeText(getActivity(), R.string.main_activity_match_not_found_message,
+                    Toast.LENGTH_LONG).show();
+            findMatch.removeObserver(matchObserver);
+            timerObserver.removeObservers(lifecycleOwner);
         });
     }
 }
