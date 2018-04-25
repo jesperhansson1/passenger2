@@ -297,4 +297,12 @@ public class MainViewModel extends AndroidViewModel {
     public void setWhichMarkerToAdd(int whichMarkerToAdd) {
         mWhichMarkerToAdd = whichMarkerToAdd;
     }
+
+    public void setEndMarker(MutableLiveData<Location> endMarker) {
+        mEndMarkerLocation = endMarker;
+    }
+
+    public void setEndAddress(MutableLiveData<String> endAddress){
+        mEndLocationAddress = endAddress;
+    }
 }
