@@ -3,6 +3,7 @@ package com.cybercom.passenger.flows.main;
 import android.Manifest;
 import android.arch.lifecycle.LifecycleOwner;
 import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
@@ -67,7 +68,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     private static final float ZOOM_LEVEL_BUILDINGS = 20;
 
     private static final String TAG = "complete";
-    public static final int DELAY_BEFORE_SHOWING_CREATE_DRIVE_AFTER_LOCATION_CHANGED = 2500;
+    public static final int DELAY_BEFORE_SHOWING_CREATE_DRIVE_AFTER_LOCATION_CHANGED = 2000;
     public static final int DELAY_BEFORE_ZOOM_TO_FIT_ROUTE = 1500;
     FirebaseUser mUser;
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 0;
@@ -88,6 +89,9 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     private int mMarkerCount = 0;
     private boolean isEndLocationMarkerAdded = false;
     private Polyline mRoute;
+    private Observer<Location> endLocationObserver;
+    private Observer<Location> mEndLocationObserver;
+    private Observer<Location> mStartLocationObserver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -233,21 +237,20 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
                 mMarkerCount++;
             }
 
-            mMainViewModel.getStartMarkerLocation().observe(this, new Observer<Location>() {
-                @Override
-                public void onChanged(@Nullable Location location) {
-                    if (location != null) {
-                        updateMarkerLocation(mStartLocationMarker, location);
-                        if (isStartLocationMarkerAdded) {
-                            hideFragmentAnimation(mCreateDriveFragment);
-                            Handler handler = new Handler();
-                            handler.postDelayed(() -> showFragment(mCreateDriveFragment), DELAY_BEFORE_SHOWING_CREATE_DRIVE_AFTER_LOCATION_CHANGED);
-                        }
-                        animateToLocation(new LatLng(location.getLatitude(), location.getLongitude()), ZOOM_LEVEL_STREETS);
-                        updateRoute();
+            mStartLocationObserver = location -> {
+                if (location != null) {
+                    updateMarkerLocation(mStartLocationMarker, location);
+                    if (isStartLocationMarkerAdded) {
+                        hideFragmentAnimation(mCreateDriveFragment);
+                        Handler handler = new Handler();
+                        handler.postDelayed(() -> showFragment(mCreateDriveFragment), DELAY_BEFORE_SHOWING_CREATE_DRIVE_AFTER_LOCATION_CHANGED);
                     }
+                    animateToLocation(new LatLng(location.getLatitude(), location.getLongitude()), ZOOM_LEVEL_STREETS);
+                    updateRoute();
                 }
-            });
+            };
+
+            mMainViewModel.getStartMarkerLocation().observe(this, mStartLocationObserver);
 
             isStartLocationMarkerAdded = true;
 
@@ -280,23 +283,21 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
                     .visible(false));
 
             mMarkerCount++;
-            mMainViewModel.getEndMarkerLocation().observe(this, new Observer<Location>() {
-                @Override
-                public void onChanged(@Nullable Location location) {
-                    if (location != null) {
-                        updateMarkerLocation(mEndLocationMarker, location);
-                        mEndLocationMarker.setVisible(true);
-                        if (isEndLocationMarkerAdded) {
-                            hideFragmentAnimation(mCreateDriveFragment);
-                            Handler handler = new Handler();
-                            handler.postDelayed(() -> showFragment(mCreateDriveFragment),DELAY_BEFORE_SHOWING_CREATE_DRIVE_AFTER_LOCATION_CHANGED);
-                        }
-                        animateToLocation(new LatLng(location.getLatitude(), location.getLongitude()), ZOOM_LEVEL_STREETS);
-                        updateRoute();
+            mEndLocationObserver = location -> {
+                if (location != null) {
+                    updateMarkerLocation(mEndLocationMarker, location);
+                    mEndLocationMarker.setVisible(true);
+                    if (isEndLocationMarkerAdded) {
+                        hideFragmentAnimation(mCreateDriveFragment);
+                        Handler handler = new Handler();
+                        handler.postDelayed(() -> showFragment(mCreateDriveFragment),DELAY_BEFORE_SHOWING_CREATE_DRIVE_AFTER_LOCATION_CHANGED);
                     }
+                    animateToLocation(new LatLng(location.getLatitude(), location.getLongitude()), ZOOM_LEVEL_STREETS);
+                    updateRoute();
                 }
-            });
+            };
 
+            mMainViewModel.getEndMarkerLocation().observe(this, mEndLocationObserver);
             isEndLocationMarkerAdded = true;
         } else {
             mEndLocationMarker.setVisible(true);
@@ -582,7 +583,8 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
 
     @Override
     public void onCameraMoveStarted(int reason) {
-        if (reason == GoogleMap.OnCameraMoveStartedListener.REASON_GESTURE) {
+        if (reason == GoogleMap.OnCameraMoveStartedListener.REASON_GESTURE
+                && isFragmentAdded) {
             hideFragmentAnimation(mCreateDriveFragment);
         }
     }
@@ -665,5 +667,21 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     @Override
     public void onFinish() {
         hideFragmentAnimation(mCreateDriveFragment);
+        removeFragment();
+        mGoogleMap.clear();
+        isFragmentAdded = false;
+        isStartLocationMarkerAdded = false;
+        isEndLocationMarkerAdded = false;
+        isCreateDriveFragmentVisible = true;
+        mMainViewModel.getEndMarkerLocation().removeObserver(mEndLocationObserver);
+        mMainViewModel.setEndMarker(new MutableLiveData<>());
+        mMainViewModel.setEndAddress(new MutableLiveData<>());
+        mMarkerCount = 0;
+        mMainViewModel.getStartMarkerLocation().removeObserver(mStartLocationObserver);
+    }
+
+    public void removeFragment(){
+        getSupportFragmentManager().beginTransaction().remove(mCreateDriveFragment).commit();
+        mCreateDriveFragment = CreateDriveFragment.newInstance();
     }
 }

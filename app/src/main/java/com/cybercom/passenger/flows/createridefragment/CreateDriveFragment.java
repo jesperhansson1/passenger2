@@ -310,7 +310,6 @@ public class CreateDriveFragment extends Fragment {
         mMainViewModel.setNumberOfPassengers(DEFAULT_PASSENGERS);
         mShowSelectedTime.setText(EMPTY_STRING);
         mShowSelectedTime.setVisibility(View.GONE);
-
         onFinishedCreatingDriveOrDriveRequest.onFinish();
 
     }
