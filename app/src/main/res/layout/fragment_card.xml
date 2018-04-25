@@ -99,18 +99,44 @@
         app:layout_constraintTop_toTopOf="@+id/editText_fragmentcard_expires" />
 
 
-    <Button
-        android:id="@+id/button_fragmentcard_next"
+    <RelativeLayout
+        android:id="@+id/relativeLayout"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="66dp"
         android:layout_marginEnd="16dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="32dp"
-        android:layout_span="2"
-        android:background="@drawable/button_corner_round"
-        android:text="@string/next"
-        android:textColor="@color/colorWhite"
+        android:layout_marginTop="8dp"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editText_fragmentcard_expires" />
+        app:layout_constraintTop_toBottomOf="@+id/editText_fragmentcard_expires">
+
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/button_fragmentcard_next"
+            android:layout_centerHorizontal="true"
+            android:indeterminateTint="@color/colorWhite"
+            android:indeterminateTintMode="src_in"
+            android:translationZ="@dimen/pad_3dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <Button
+            android:id="@+id/button_fragmentcard_next"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:background="@drawable/button_corner_round"
+            android:elevation="@dimen/pad_2dp"
+            android:text="@string/next"
+            android:textColor="@color/colorWhite"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    </RelativeLayout>
+
 </android.support.constraint.ConstraintLayout>
