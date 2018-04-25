@@ -65,6 +65,13 @@ public class CardFragment extends Fragment {
         return rootView;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        progressBar.setVisibility(View.GONE);
+        mNext.setText(R.string.next);
+    }
+
     public void nextCardClick(View target){
 
         if(mEditTextCard.getText().toString().isEmpty())

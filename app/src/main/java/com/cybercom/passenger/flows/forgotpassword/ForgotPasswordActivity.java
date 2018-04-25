@@ -50,6 +50,13 @@ public class ForgotPasswordActivity extends AppCompatActivity{
         });
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        progressBar.setVisibility(View.GONE);
+        mResetPasswordButton.setText(R.string.send_me_password);
+    }
+
     public void getNewPassword(final String email){
         if(!email.isEmpty()){
             progressBar.setVisibility(View.VISIBLE);

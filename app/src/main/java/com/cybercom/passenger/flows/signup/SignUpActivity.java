@@ -120,6 +120,13 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         initUI();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        progressBar.setVisibility(View.GONE);
+        mNextButton.setText(R.string.next);
+    }
+
     void initUI(){
         mMaleLayout.setSelected(true);
         mMaleTextSelect.setTextColor(getResources().getColor(R.color.colorWhite));

@@ -52,6 +52,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        progressBar.setVisibility(View.GONE);
+        mLogin.setText(R.string.login);
+    }
+
+    @Override
     public void onClick(View v) {
         String email = mEmail.getText().toString();
         String password = mPassword.getText().toString();

@@ -61,6 +61,13 @@ public class CarDetailActivity extends AppCompatActivity{
 
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        progressBar.setVisibility(View.GONE);
+        mButtonSave.setText(R.string.next);
+    }
+
     public void initializeUI(){
         mEditTextCarNumber = findViewById(R.id.editText_cardetails_number);
         mEditTextCarModel = findViewById(R.id.editText_cardetails_model);

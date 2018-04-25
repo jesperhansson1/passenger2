@@ -63,10 +63,18 @@ public class BankFragment extends Fragment {
         return rootView;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+            progressBar.setVisibility(View.GONE);
+            mNext.setText(R.string.next);
+    }
+
     public void nextClick(View target){
         if(mEditTextName.getText().toString().isEmpty())
         {
             mEditTextName.setError(getResources().getString(R.string.account_name_error));
+
         }
         else if(mEditTextAccount.getText().toString().isEmpty())
         {
