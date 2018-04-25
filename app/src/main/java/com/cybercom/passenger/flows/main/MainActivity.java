@@ -7,7 +7,6 @@ import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Typeface;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
@@ -18,14 +17,11 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.Switch;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
@@ -62,7 +58,7 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
-public class MainActivity extends AppCompatActivity implements CreateRideDialogFragment.CreateRideDialogFragmentListener, AcceptRejectPassengerDialog.ConfirmationListener, PassengerNotificationDialog.PassengerNotificationListener, OnMapReadyCallback, GoogleMap.OnMarkerDragListener, GoogleMap.OnCameraMoveStartedListener, GoogleMap.OnMapLongClickListener, GoogleMap.OnMapClickListener, ParserTask.OnRouteCompletion, CreateDriveFragment.OnPlaceMarkerIconClickListener, ParserTask.OnRouteCompletion {
+public class MainActivity extends AppCompatActivity implements CreateRideDialogFragment.CreateRideDialogFragmentListener, AcceptRejectPassengerDialog.ConfirmationListener, PassengerNotificationDialog.PassengerNotificationListener, OnMapReadyCallback, GoogleMap.OnMarkerDragListener, GoogleMap.OnCameraMoveStartedListener, GoogleMap.OnMapLongClickListener, GoogleMap.OnMapClickListener, CreateDriveFragment.OnPlaceMarkerIconClickListener, ParserTask.OnRouteCompletion {
 
     private static final float ZOOM_LEVEL_WORLD = 1;
     private static final float ZOOM_LEVEL_LANDMASS_CONTINENT = 5;
@@ -103,7 +99,9 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
 
         if (savedInstanceState == null) {
             if (getIntent().getExtras() != null) {
-                mMainViewModel.setIncomingNotification(getIntent().getExtras());
+                if (getIntent().getExtras().get("driveId") != null) {
+                    mMainViewModel.setIncomingNotification(getIntent().getExtras());
+                }
             }
         }
         mUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -131,6 +129,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
 
             Intent intent = new Intent(this, RegisterActivity.class);
             startActivity(intent);
+            finish();
         }
 
         if (ContextCompat.checkSelfPermission(this.getApplication(),
@@ -368,25 +367,19 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
         mFloatRide = findViewById(R.id.button_createRide);
         mFloatRide.setImageResource(R.drawable.passenger);
         mCreateDriveFragment = CreateDriveFragment.newInstance();
-        mFloatRide.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showFragment(mCreateDriveFragment);
-                if (!isStartLocationMarkerAdded) {
-                    mMainViewModel.getLastKnownLocation(new OnSuccessListener<Location>() {
-                        @Override
-                        public void onSuccess(Location location) {
-                            mMainViewModel.setStartMarkerLocation(location);
-                            placeStartLocationMarker();
-                        }
-                    });
-
-                }
+        mFloatRide.setOnClickListener(view -> {
+            showFragment(mCreateDriveFragment);
+            if (!isStartLocationMarkerAdded) {
+                mMainViewModel.getLastKnownLocation(location -> {
+                    mMainViewModel.setStartMarkerLocation(location);
+                    placeStartLocationMarker();
+                });
             }
+            mFloatRide.setVisibility(View.INVISIBLE);
+            isCreateDriveFragmentVisible = true;
         });
 
-                mFloatRide.setVisibility(View.INVISIBLE);
-                isCreateDriveFragmentVisible = true;
+
     }
 
 
