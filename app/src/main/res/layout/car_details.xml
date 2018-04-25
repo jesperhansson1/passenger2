@@ -10,7 +10,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:layout_editor_absoluteX="0dp"
-        tools:layout_editor_absoluteY="136dp">
+        tools:layout_editor_absoluteY="136dp"
+        tools:ignore="MissingConstraints">
 
         <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
@@ -34,6 +35,7 @@
                 android:layout_height="78dp"
                 android:layout_weight="1"
                 android:drawableLeft="@drawable/ic_looks_two"
+                android:drawablePadding="@dimen/draw_pad"
                 android:ems="10"
                 android:maxLength="@string/car_length"
                 android:hint="@string/car_number_hint"
@@ -61,7 +63,8 @@
                 android:layout_height="78dp"
                 android:layout_marginTop="30dp"
                 android:layout_weight="1"
-                android:drawableLeft="@drawable/driver"
+                android:drawableLeft="@drawable/driver_blue"
+                android:drawablePadding="@dimen/draw_pad"
                 android:ems="10"
                 android:hint="@string/car_model_hint"
                 android:inputType="textPersonName"
@@ -89,6 +92,7 @@
                 android:layout_marginTop="30dp"
                 android:layout_weight="1"
                 android:drawableLeft="@drawable/ic_date_range"
+                android:drawablePadding="@dimen/draw_pad"
                 android:ems="10"
                 android:maxLength="@string/year_length"
                 android:hint="@string/car_year_hint"
@@ -117,6 +121,7 @@
                 android:layout_marginTop="30dp"
                 android:layout_weight="1"
                 android:drawableLeft="@drawable/ic_color_lens"
+                android:drawablePadding="@dimen/draw_pad"
                 android:ems="10"
                 android:hint="@string/car_color_hint"
                 android:inputType="textPersonName"
