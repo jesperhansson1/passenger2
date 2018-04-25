@@ -67,6 +67,8 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     private static final float ZOOM_LEVEL_BUILDINGS = 20;
 
     private static final String TAG = "complete";
+    public static final int DELAY_BEFORE_SHOWING_CREATE_DRIVE_AFTER_LOCATION_CHANGED = 2500;
+    public static final int DELAY_BEFORE_ZOOM_TO_FIT_ROUTE = 1500;
     FirebaseUser mUser;
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 0;
     MainViewModel mMainViewModel;
@@ -238,6 +240,8 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
                         updateMarkerLocation(mStartLocationMarker, location);
                         if (isStartLocationMarkerAdded) {
                             hideFragmentAnimation(mCreateDriveFragment);
+                            Handler handler = new Handler();
+                            handler.postDelayed(() -> showFragment(mCreateDriveFragment), DELAY_BEFORE_SHOWING_CREATE_DRIVE_AFTER_LOCATION_CHANGED);
                         }
                         animateToLocation(new LatLng(location.getLatitude(), location.getLongitude()), ZOOM_LEVEL_STREETS);
                         updateRoute();
@@ -284,6 +288,8 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
                         mEndLocationMarker.setVisible(true);
                         if (isEndLocationMarkerAdded) {
                             hideFragmentAnimation(mCreateDriveFragment);
+                            Handler handler = new Handler();
+                            handler.postDelayed(() -> showFragment(mCreateDriveFragment),DELAY_BEFORE_SHOWING_CREATE_DRIVE_AFTER_LOCATION_CHANGED);
                         }
                         animateToLocation(new LatLng(location.getLatitude(), location.getLongitude()), ZOOM_LEVEL_STREETS);
                         updateRoute();
@@ -515,22 +521,20 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
 
     public void zoomToFitRoute() {
         final Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            public void run() {
-                LatLngBounds.Builder builder = new LatLngBounds.Builder();
-                builder.include(mStartLocationMarker.getPosition());
-                builder.include(mEndLocationMarker.getPosition());
-                LatLngBounds bounds = builder.build();
+        handler.postDelayed(() -> {
+            LatLngBounds.Builder builder = new LatLngBounds.Builder();
+            builder.include(mStartLocationMarker.getPosition());
+            builder.include(mEndLocationMarker.getPosition());
+            LatLngBounds bounds = builder.build();
 
-                int width = getResources().getDisplayMetrics().widthPixels;
-                int height = getResources().getDisplayMetrics().heightPixels;
-                int padding = (int) (height * 0.15);
+            int width = getResources().getDisplayMetrics().widthPixels;
+            int height = getResources().getDisplayMetrics().heightPixels;
+            int padding = (int) (height * 0.15);
 
-                CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds,width ,height,padding);
+            CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds,width ,height,padding);
 
-                mGoogleMap.animateCamera(cameraUpdate);
-            }
-        }, 2000);
+            mGoogleMap.animateCamera(cameraUpdate);
+        }, DELAY_BEFORE_ZOOM_TO_FIT_ROUTE);
 
     }
 
