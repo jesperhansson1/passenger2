@@ -17,6 +17,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.cybercom.passenger.R;
@@ -41,6 +42,9 @@ public class CarDetailActivity extends AppCompatActivity{
     Bundle mExtras;
     static final String LOGINARRAY = "loginArray";
     static final String CARARRAY = "carArray";
+    ProgressBar progressBar;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +56,8 @@ public class CarDetailActivity extends AppCompatActivity{
         getSupportActionBar().setTitle(R.string.add_car);
         initializeUI();
         mExtras = getIntent().getExtras();
+        progressBar = findViewById(R.id.progress_bar);
+        progressBar.setVisibility(View.GONE);
 
     }
 
@@ -66,6 +72,8 @@ public class CarDetailActivity extends AppCompatActivity{
             public void onClick(View v) {
                 if(checkError() == 0)
                 {
+                    progressBar.setVisibility(View.VISIBLE);
+                    mButtonSave.setText("");
                     addCarToList();
                 }
             }

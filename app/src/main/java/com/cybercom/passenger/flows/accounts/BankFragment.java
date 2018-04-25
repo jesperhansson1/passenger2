@@ -9,7 +9,9 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.main.MainActivity;
@@ -24,9 +26,11 @@ import static com.cybercom.passenger.flows.accounts.AccountActivity.LOGINARRAY;
 
 public class BankFragment extends Fragment {
 
+    Button mNext;
     EditText mEditTextName, mEditTextAccount;
     Bundle mExtras;
     PassengerRepository repository = PassengerRepository.getInstance();
+    ProgressBar progressBar;
 
     public BankFragment() {
         // Required empty public constructor
@@ -41,9 +45,14 @@ public class BankFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_bank, container, false);
         mEditTextName = rootView.findViewById(R.id.editText_fragmentbank_fullname);
         mEditTextAccount = rootView.findViewById(R.id.editText_fragmentbank_account);
+        progressBar = rootView.findViewById(R.id.progress_bar);
+        progressBar.setVisibility(View.GONE);
+
         //after every four digits, add space
         mEditTextAccount.addTextChangedListener(new FormattingTextWatcher(4));
-        rootView.findViewById(R.id.button_fragmentbank_next).setOnClickListener(new View.OnClickListener() {
+        mNext = rootView.findViewById(R.id.button_fragmentbank_next);
+
+        mNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 nextClick(v);
@@ -73,6 +82,8 @@ public class BankFragment extends Fragment {
 
     public void createUserReturnMain()
     {
+        progressBar.setVisibility(View.VISIBLE);
+        mNext.setText("");
         if(mExtras != null)
         {
             if(mExtras.getString(CARARRAY) != null)
@@ -84,6 +95,8 @@ public class BankFragment extends Fragment {
                         {
                             startActivity(new Intent(getActivity().getApplicationContext(), MainActivity.class));
                         } else{
+                            progressBar.setVisibility(View.GONE);
+                            mNext.setText(R.string.next);
                             Timber.d("Error, no user found");
                         }
                     }
@@ -98,6 +111,8 @@ public class BankFragment extends Fragment {
                         {
                             startActivity(new Intent(getActivity().getApplicationContext(), MainActivity.class));
                         } else{
+                            progressBar.setVisibility(View.GONE);
+                            mNext.setText(R.string.next);
                             Timber.d("Error, no user found");
                         }
                     }

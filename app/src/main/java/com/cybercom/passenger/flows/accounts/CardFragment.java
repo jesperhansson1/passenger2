@@ -9,7 +9,9 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.cybercom.passenger.R;
@@ -26,9 +28,12 @@ import static com.cybercom.passenger.flows.accounts.AccountActivity.LOGINARRAY;
 
 public class CardFragment extends Fragment {
 
+    Button mNext;
     EditText mEditTextCard, mEditTextExpire, mEditTextCode;
     Bundle mExtras;
     PassengerRepository repository = PassengerRepository.getInstance();
+    ProgressBar progressBar;
+
     public CardFragment() {
         // Required empty public constructor
     }
@@ -41,13 +46,16 @@ public class CardFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_card, container, false);
+        progressBar = rootView.findViewById(R.id.progress_bar);
+        progressBar.setVisibility(View.GONE);
 
         mEditTextCard = rootView.findViewById(R.id.editText_fragmentcard_card);
         //after every four digits, add space
         mEditTextCard.addTextChangedListener(new FormattingTextWatcher(4));
         mEditTextExpire = rootView.findViewById(R.id.editText_fragmentcard_expires);
         mEditTextCode = rootView.findViewById(R.id.editText_fragmentcard_securitycode);
-        rootView.findViewById(R.id.button_fragmentcard_next).setOnClickListener(new View.OnClickListener() {
+        mNext = rootView.findViewById(R.id.button_fragmentcard_next);
+        mNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 nextCardClick(v);
@@ -110,6 +118,8 @@ public class CardFragment extends Fragment {
 
     public void createUserReturnMain()
     {
+        progressBar.setVisibility(View.VISIBLE);
+        mNext.setText("");
         if(mExtras != null)
         {
             if(mExtras.getString(CARARRAY) != null)
@@ -122,6 +132,8 @@ public class CardFragment extends Fragment {
                             startActivity(new Intent(getActivity().getApplicationContext(), MainActivity.class));
                         } else{
                             Timber.d("Error, no user found");
+                            progressBar.setVisibility(View.GONE);
+                            mNext.setText(R.string.next);
                         }
                     }
                 });
@@ -135,6 +147,8 @@ public class CardFragment extends Fragment {
                         {
                             startActivity(new Intent(getActivity().getApplicationContext(), MainActivity.class));
                         } else{
+                            progressBar.setVisibility(View.GONE);
+                            mNext.setText(R.string.next);
                             Timber.d("Error, no user found");
                         }
                     }
