@@ -150,7 +150,7 @@
     <string name="card_number">Card Number</string>
     <string name="card_number_text_hint">8989 4732 3747 5702</string>
     <string name="expires">Expires</string>
-    <string name="expires_hint">30/19</string>
+    <string name="expires_hint">05/19</string>
     <string name="security_code">Security code</string>
     <string name="security_code_hint">573</string>
     <string name="full_name_hint">Kristofor Cheban</string>

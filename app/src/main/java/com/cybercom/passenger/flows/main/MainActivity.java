@@ -16,7 +16,6 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -51,7 +50,6 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.iid.FirebaseInstanceId;
@@ -138,22 +136,6 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
             finish();
         }
 
-        if (ContextCompat.checkSelfPermission(this.getApplication(),
-                android.Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-//            TODO: Handle the case when the user denied permission and chose 'do not ask again'
-//            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-//                    android.Manifest.permission.ACCESS_FINE_LOCATION)) {
-//            }
-//            else {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                    MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
-//            }
-        }
-
-
-
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map_activitymap_googlemap);
         mapFragment.getMapAsync(this);
@@ -167,7 +149,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
         mFloatRide.setImageResource(R.drawable.driver_floating_button);
     }
 
-    private void setUpForPassenger(){
+    private void setUpForPassenger() {
         mFloatRide.setImageResource(R.drawable.passenger);
     }
 
@@ -278,7 +260,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
                     .position(endLatLng)
                     .title(getString(R.string.marker_title_end_location))
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.circle_end_location))
-                    .anchor(0.5f,0.5f)
+                    .anchor(0.5f, 0.5f)
                     .draggable(true)
                     .visible(false));
 
@@ -290,7 +272,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
                     if (isEndLocationMarkerAdded) {
                         hideFragmentAnimation(mCreateDriveFragment);
                         Handler handler = new Handler();
-                        handler.postDelayed(() -> showFragment(mCreateDriveFragment),DELAY_BEFORE_SHOWING_CREATE_DRIVE_AFTER_LOCATION_CHANGED);
+                        handler.postDelayed(() -> showFragment(mCreateDriveFragment), DELAY_BEFORE_SHOWING_CREATE_DRIVE_AFTER_LOCATION_CHANGED);
                     }
                     animateToLocation(new LatLng(location.getLatitude(), location.getLongitude()), ZOOM_LEVEL_STREETS);
                     updateRoute();
@@ -390,7 +372,6 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     }
 
 
-
     private Boolean isFragmentAdded = false;
 
     public void showFragment(Fragment fragment) {
@@ -435,20 +416,20 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
                     MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
             return;
         }
-        mGoogleMap.setMyLocationEnabled(true);
+
+            mGoogleMap.setMyLocationEnabled(true);
+
+
         placeEndLocationMarker();
 
         if (!mMainViewModel.isInitialZoomDone()) {
-            mMainViewModel.getLastKnownLocation(new OnSuccessListener<Location>() {
-                @Override
-                public void onSuccess(Location location) {
-                    LatLng initialZoom = new LatLng(
-                            location.getLatitude(),
-                            location.getLongitude());
+            mMainViewModel.getLastKnownLocation(location -> {
+                LatLng initialZoom = new LatLng(
+                        location.getLatitude(),
+                        location.getLongitude());
 
-                    animateToLocation(initialZoom, ZOOM_LEVEL_STREETS);
-                    mMainViewModel.setInitialZoomDone(true);
-                }
+                animateToLocation(initialZoom, ZOOM_LEVEL_STREETS);
+                mMainViewModel.setInitialZoomDone(true);
             });
         }
     }
@@ -532,7 +513,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
             int height = getResources().getDisplayMetrics().heightPixels;
             int padding = (int) (height * 0.15);
 
-            CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds,width ,height,padding);
+            CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding);
 
             mGoogleMap.animateCamera(cameraUpdate);
         }, DELAY_BEFORE_ZOOM_TO_FIT_ROUTE);
@@ -680,8 +661,54 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
         mMainViewModel.getStartMarkerLocation().removeObserver(mStartLocationObserver);
     }
 
-    public void removeFragment(){
+    public void removeFragment() {
         getSupportFragmentManager().beginTransaction().remove(mCreateDriveFragment).commit();
         mCreateDriveFragment = CreateDriveFragment.newInstance();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+
+                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        // TODO: Consider calling
+                        //    ActivityCompat#requestPermissions
+                        // here to request the missing permissions, and then overriding
+                        //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                        //                                          int[] grantResults)
+                        // to handle the case where the user grants the permission. See the documentation
+                        // for ActivityCompat#requestPermissions for more details.
+                        return;
+                    }
+                    mGoogleMap.setMyLocationEnabled(true);
+
+                    if (!mMainViewModel.isInitialZoomDone()) {
+                        mMainViewModel.getLastKnownLocation(location -> {
+                            LatLng initialZoom = new LatLng(
+                                    location.getLatitude(),
+                                    location.getLongitude());
+
+                            animateToLocation(initialZoom, ZOOM_LEVEL_STREETS);
+                            mMainViewModel.setInitialZoomDone(true);
+                        });
+                    }
+
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request.
+        }
     }
 }
