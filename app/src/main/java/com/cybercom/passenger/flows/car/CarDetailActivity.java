@@ -14,6 +14,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.text.InputFilter;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -24,6 +25,10 @@ import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.accounts.AccountActivity;
 import com.cybercom.passenger.model.Car;
 import com.google.gson.Gson;
+
+import java.util.Calendar;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import timber.log.Timber;
 
@@ -44,7 +49,7 @@ public class CarDetailActivity extends AppCompatActivity{
     static final String CARARRAY = "carArray";
     ProgressBar progressBar;
 
-
+    final String regex = "[A-Za-z]{3}[0-9]{3}";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +82,7 @@ public class CarDetailActivity extends AppCompatActivity{
         mButtonSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 if(checkError() == 0)
                 {
                     progressBar.setVisibility(View.VISIBLE);
@@ -109,6 +115,22 @@ public class CarDetailActivity extends AppCompatActivity{
         if(mEditTextCarColor.getText().toString().isEmpty()){
             mEditTextCarColor.setError(getResources().getString(R.string.car_color_error),errorDraw);
             k = 4;
+            return k;
+        }
+        if(mEditTextCarNumber.getText().toString().matches(regex)){
+            Timber.d("matched");
+        }
+        else
+        {
+            Timber.d("car number didnot match");
+            k = 5;
+            mEditTextCarNumber.setError(getResources().getString(R.string.car_number_invalid),errorDraw);
+            return k;
+        }
+        if(Integer.parseInt(mEditTextCarYear.getText().toString()) >
+                Calendar.getInstance().get(Calendar.YEAR)){
+            mEditTextCarYear.setError(getResources().getString(R.string.car_year_invalid),errorDraw);
+            k = 6;
             return k;
         }
         return k;

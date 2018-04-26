@@ -134,8 +134,10 @@
     <string name="car_color">Color</string>
     <string name="save">Save</string>
     <string name="car_number_error">Car registration number cannot be empty</string>
+    <string name="car_number_invalid">Car registration number is not valid</string>
     <string name="car_model_error">Car model name cannot be empty</string>
     <string name="car_year_error">Car built year cannot be empty</string>
+    <string name="car_year_invalid">Car built year cannot be greater than current year</string>
     <string name="car_color_error">Car color cannot be empty</string>
     <string name="add_new_car">Add new car</string>
     <string name="numbers">0123456789</string>
@@ -172,7 +174,7 @@
     <string name="signup_userid">userid</string>
     <string name="register_as_title">Register as</string>
     <string name="year_length">4</string>
-    <string name="car_length">7</string>
+    <string name="car_length">6</string>
 
 
 </resources>
