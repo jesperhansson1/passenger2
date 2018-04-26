@@ -90,7 +90,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 }
                 break;
             case R.id.button_loginscreen_signup:
-                        mIntent = new Intent(getApplicationContext(), SignUpActivity.class);
+                        mIntent = new Intent(getApplicationContext(), RegisterActivity.class);
                         startActivity(mIntent);
                         break;
                     case R.id.button_loginscreen_forgotpassword:
