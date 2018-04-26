@@ -20,6 +20,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 
+import timber.log.Timber;
+
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
 
     FirebaseAuth mAuth;
@@ -81,14 +83,14 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                                     } else {
                                         progressBar.setVisibility(View.GONE);
                                         mLogin.setText(R.string.login);
-                                        ToastHelper.makeToast(getResources().getString(R.string.toast_incorrect_email_password), LoginActivity.this).show();
+                                        mEmail.setError(getResources().getString(R.string.toast_incorrect_email_password));
                                     }
                                 }
                             });
                 }
                 break;
             case R.id.button_loginscreen_signup:
-                        mIntent = new Intent(getApplicationContext(), SignUpActivity.class);
+                        mIntent = new Intent(getApplicationContext(), RegisterActivity.class);
                         startActivity(mIntent);
                         break;
                     case R.id.button_loginscreen_forgotpassword:
