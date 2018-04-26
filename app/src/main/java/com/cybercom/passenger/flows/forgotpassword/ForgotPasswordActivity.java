@@ -75,7 +75,6 @@ public class ForgotPasswordActivity extends AppCompatActivity{
                         progressBar.setVisibility(View.GONE);
                         mResetPasswordButton.setText(R.string.send_me_password);
                         mResetPasswordMail.setError(getResources().getString(R.string.toast_forgot_password_incorrect_email));
-                        Timber.d("Result: %s", getResources().getString(R.string.toast_forgot_password_incorrect_email));
                     }
                 }
             });
