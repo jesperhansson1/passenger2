@@ -144,6 +144,8 @@
     <string name="deleteConfirmation">Delete this car ?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="car_base_url">https://api.biluppgifter.se/api/v1/vehicle/regno/</string>
+    <string name="car_api_token">Dr1rKMm2eLgYKg4G1v1Xl0EEF30qeVHb9IZ5Ubji7HolwiCDwDfUZ2HVogo5</string>
 
 
     <string name="account_label">You need to add a credit card or bank account. You need it to withdraw money</string>
@@ -175,6 +177,7 @@
     <string name="register_as_title">Register as</string>
     <string name="year_length">4</string>
     <string name="car_length">6</string>
+    <string name="find_car">Find</string>
 
 
 </resources>

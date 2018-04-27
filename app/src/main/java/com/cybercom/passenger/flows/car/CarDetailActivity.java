@@ -1,20 +1,13 @@
 package com.cybercom.passenger.flows.car;
 
-import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.ColorFilter;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Parcelable;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.text.InputFilter;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -23,13 +16,26 @@ import android.widget.Toast;
 
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.accounts.AccountActivity;
+import com.cybercom.passenger.flows.car.infoapi.APIClient;
+import com.cybercom.passenger.flows.car.infoapi.APIInterface;
+import com.cybercom.passenger.flows.car.infoapi.Data1;
 import com.cybercom.passenger.model.Car;
 import com.google.gson.Gson;
 
-import java.util.Calendar;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.json.JSONObject;
 
+import java.util.Calendar;
+/*
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.http.GET;
+import retrofit2.http.Headers;*/
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 import timber.log.Timber;
 
 import static com.cybercom.passenger.flows.car.CarsActivity.CAR_COLOR;
@@ -42,12 +48,14 @@ import static com.cybercom.passenger.flows.car.CarsActivity.CAR_YEAR;
 public class CarDetailActivity extends AppCompatActivity{
 
     EditText mEditTextCarNumber,mEditTextCarModel,mEditTextCarYear,mEditTextCarColor;
-    Button mButtonSave;
+    Button mButtonSave, mButtonFind;
     Drawable errorDraw;
     Bundle mExtras;
     static final String LOGINARRAY = "loginArray";
     static final String CARARRAY = "carArray";
     ProgressBar progressBar;
+    String mApiToken;
+    String mApiUrl;
 
     final String regex = "[A-Za-z]{3}[0-9]{3}";
 
@@ -63,7 +71,8 @@ public class CarDetailActivity extends AppCompatActivity{
         mExtras = getIntent().getExtras();
         progressBar = findViewById(R.id.progress_bar);
         progressBar.setVisibility(View.GONE);
-
+        mApiToken = getResources().getString(R.string.car_api_token);
+        mApiUrl = getResources().getString(R.string.car_base_url);
     }
 
     @Override
@@ -79,6 +88,30 @@ public class CarDetailActivity extends AppCompatActivity{
         mEditTextCarYear = findViewById(R.id.editText_cardetails_year);
         mEditTextCarColor = findViewById(R.id.editText_cardetails_color);
         mButtonSave = findViewById(R.id.button_cardetails_save);
+        mButtonFind = findViewById(R.id.button_cardetails_find);
+        mButtonFind.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mEditTextCarNumber.getText().toString().isEmpty()){
+                    mEditTextCarNumber.setError(getResources().getString(R.string.car_number_error));
+                }
+                else
+                {
+                    if(mEditTextCarNumber.getText().toString().matches(regex)){
+                        Timber.d("matched");
+                        String url = mApiUrl + mEditTextCarNumber.getText().toString() + "?api_token=" + mApiToken;
+                        OkHttpHandler okHttpHandler = new OkHttpHandler();
+                        okHttpHandler.execute(url);
+                    }
+                    else
+                    {
+                        Timber.d("car number didnot match");
+                        mEditTextCarNumber.setError(getResources().getString(R.string.car_number_invalid),errorDraw);
+                    }
+
+                }
+            }
+        });
         mButtonSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -117,16 +150,7 @@ public class CarDetailActivity extends AppCompatActivity{
             k = 4;
             return k;
         }
-        if(mEditTextCarNumber.getText().toString().matches(regex)){
-            Timber.d("matched");
-        }
-        else
-        {
-            Timber.d("car number didnot match");
-            k = 5;
-            mEditTextCarNumber.setError(getResources().getString(R.string.car_number_invalid),errorDraw);
-            return k;
-        }
+
         if(Integer.parseInt(mEditTextCarYear.getText().toString()) >
                 Calendar.getInstance().get(Calendar.YEAR)){
             mEditTextCarYear.setError(getResources().getString(R.string.car_year_invalid),errorDraw);
@@ -167,6 +191,60 @@ public class CarDetailActivity extends AppCompatActivity{
             intent.putExtra(CARARRAY, carArray);
             intent.putExtra(LOGINARRAY, mExtras.getString(LOGINARRAY));
             startActivity(intent);
+        }
+    }
+
+    public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+    public class OkHttpHandler extends AsyncTask<String, Void, String> {
+
+        OkHttpClient client = new OkHttpClient();
+
+        @Override
+        protected String doInBackground(String... params) {
+            Request.Builder builder = new Request.Builder();
+            builder.url(params[0]);
+            Request request = builder.build();
+
+            try {
+                Response response = client.newCall(request).execute();
+                return response.body().string();
+            } catch (Exception e) {
+                Timber.e(e.getLocalizedMessage());
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            try {
+                JSONObject jsonObj = new JSONObject(s);
+                Timber.d(jsonObj.toString());
+                JSONObject data1 = jsonObj.getJSONObject("data");
+                Timber.d(data1.toString());
+                JSONObject basic = data1.getJSONObject("basic");
+                Timber.d(basic.toString());
+                JSONObject data = basic.getJSONObject("data");
+                Timber.d(data.toString());
+
+                String model = data.getString("make")+" " +
+                        data.getString("model");
+                String year = data.getString("model_year");
+                String color = data.getString("color");
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mEditTextCarModel.setText(model);
+                        mEditTextCarYear.setText(year);
+                        mEditTextCarColor.setText(color);
+                    }
+                });
+
+            }
+            catch(Exception e)
+            {
+                Timber.e(e.getLocalizedMessage());
+            }
         }
     }
 }
