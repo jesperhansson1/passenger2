@@ -12,29 +12,19 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.accounts.AccountActivity;
-import com.cybercom.passenger.flows.car.infoapi.APIClient;
-import com.cybercom.passenger.flows.car.infoapi.APIInterface;
-import com.cybercom.passenger.flows.car.infoapi.Data1;
 import com.cybercom.passenger.model.Car;
 import com.google.gson.Gson;
 
 import org.json.JSONObject;
 
 import java.util.Calendar;
-/*
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.http.GET;
-import retrofit2.http.Headers;*/
+
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.Response;
 import timber.log.Timber;
 
@@ -87,6 +77,10 @@ public class CarDetailActivity extends AppCompatActivity{
         mEditTextCarModel = findViewById(R.id.editText_cardetails_model);
         mEditTextCarYear = findViewById(R.id.editText_cardetails_year);
         mEditTextCarColor = findViewById(R.id.editText_cardetails_color);
+        mEditTextCarModel.setKeyListener(null);
+        mEditTextCarYear.setKeyListener(null);
+        mEditTextCarColor.setKeyListener(null);
+
         mButtonSave = findViewById(R.id.button_cardetails_save);
         mButtonFind = findViewById(R.id.button_cardetails_find);
         mButtonFind.setOnClickListener(new View.OnClickListener() {
