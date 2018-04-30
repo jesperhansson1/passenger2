@@ -23,10 +23,10 @@
         <activity android:name=".flows.main.MainActivity"
             android:theme="@style/WhiteBackgroundTheme"
             android:windowSoftInputMode="adjustResize">
-        <!--    <intent-filter>
+            <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>-->
+            </intent-filter>
         </activity>
         <activity android:name=".flows.forgotpassword.ForgotPasswordActivity" android:theme="@style/WhiteBackgroundTheme" />
         <activity android:name=".flows.signup.PasswordSentActivity" android:theme="@style/WhiteBackgroundTheme" />
@@ -72,10 +72,7 @@
             android:value="@string/google_maps_key" />
 
        <activity android:name=".flows.car.CarDetailActivity">
-           <intent-filter>
-               <action android:name="android.intent.action.MAIN" />
-               <category android:name="android.intent.category.LAUNCHER" />
-           </intent-filter>
+
        </activity>
         <!-- <activity android:name = ".flows.car.CarDetailActivity"
             android:parentActivityName = ".flows.car.CarsActivity" >

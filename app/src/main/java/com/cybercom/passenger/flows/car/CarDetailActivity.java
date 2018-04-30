@@ -1,10 +1,16 @@
 package com.cybercom.passenger.flows.car;
 
+import android.arch.lifecycle.Lifecycle;
+import android.arch.lifecycle.LifecycleOwner;
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -17,15 +23,7 @@ import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.accounts.AccountActivity;
 import com.cybercom.passenger.model.Car;
 import com.google.gson.Gson;
-
-import org.json.JSONObject;
-
 import java.util.Calendar;
-
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 import timber.log.Timber;
 
 import static com.cybercom.passenger.flows.car.CarsActivity.CAR_COLOR;
@@ -46,6 +44,8 @@ public class CarDetailActivity extends AppCompatActivity{
     ProgressBar progressBar;
     String mApiToken;
     String mApiUrl;
+    CarDetailViewModel mCarDetailVeiwModel;
+    LifecycleOwner myLife;
 
     final String regex = "[A-Za-z]{3}[0-9]{3}";
 
@@ -63,6 +63,8 @@ public class CarDetailActivity extends AppCompatActivity{
         progressBar.setVisibility(View.GONE);
         mApiToken = getResources().getString(R.string.car_api_token);
         mApiUrl = getResources().getString(R.string.car_base_url);
+        mCarDetailVeiwModel = ViewModelProviders.of(this).get(CarDetailViewModel.class);
+        myLife = this;
     }
 
     @Override
@@ -94,8 +96,8 @@ public class CarDetailActivity extends AppCompatActivity{
                     if(mEditTextCarNumber.getText().toString().matches(regex)){
                         Timber.d("matched");
                         String url = mApiUrl + mEditTextCarNumber.getText().toString() + "?api_token=" + mApiToken;
-                        OkHttpHandler okHttpHandler = new OkHttpHandler();
-                        okHttpHandler.execute(url);
+
+                        getDetails(url,mEditTextCarNumber.getText().toString());
                     }
                     else
                     {
@@ -188,57 +190,20 @@ public class CarDetailActivity extends AppCompatActivity{
         }
     }
 
-    public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-    public class OkHttpHandler extends AsyncTask<String, Void, String> {
+    public void getDetails(String url, String regno)
+    {
+        mCarDetailVeiwModel.setUrl(url, regno);
 
-        OkHttpClient client = new OkHttpClient();
+        mCarDetailVeiwModel.getCarLiveData().observe(myLife, new Observer<Car>() {
 
-        @Override
-        protected String doInBackground(String... params) {
-            Request.Builder builder = new Request.Builder();
-            builder.url(params[0]);
-            Request request = builder.build();
-
-            try {
-                Response response = client.newCall(request).execute();
-                return response.body().string();
-            } catch (Exception e) {
-                Timber.e(e.getLocalizedMessage());
+            @Override
+            public void onChanged(@Nullable Car car) {
+                mEditTextCarYear.setText(car.getYear());
+                mEditTextCarModel.setText(car.getModel());
+                mEditTextCarColor.setText(car.getColor());
             }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-            try {
-                JSONObject jsonObj = new JSONObject(s);
-                Timber.d(jsonObj.toString());
-                JSONObject data1 = jsonObj.getJSONObject("data");
-                Timber.d(data1.toString());
-                JSONObject basic = data1.getJSONObject("basic");
-                Timber.d(basic.toString());
-                JSONObject data = basic.getJSONObject("data");
-                Timber.d(data.toString());
-
-                String model = data.getString("make")+" " +
-                        data.getString("model");
-                String year = data.getString("model_year");
-                String color = data.getString("color");
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mEditTextCarModel.setText(model);
-                        mEditTextCarYear.setText(year);
-                        mEditTextCarColor.setText(color);
-                    }
-                });
-
-            }
-            catch(Exception e)
-            {
-                Timber.e(e.getLocalizedMessage());
-            }
-        }
+        });
     }
+
+
 }
