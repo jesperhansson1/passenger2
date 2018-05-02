@@ -38,7 +38,7 @@
         app:backgroundTint="@color/colorBlue"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:srcCompat="@drawable/circle_end_location" />
+        app:srcCompat="@drawable/passenger_blue"/>
 
    <!-- <include
         android:id="@+id/switch_passenger_driver"

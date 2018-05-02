@@ -64,7 +64,7 @@
     <string name="name">Name</string>
 
     <string name="toast_enter_email_password">Please enter email and password to login</string>
-    <string name="toast_incorrect_email_password">You have entered an incorrect email or password</string>
+    <string name="toast_incorrect_email_password">You have entered an incorrect email or an invalid password</string>
     <string name="toast_forgot_password_incorrect_email">You have entered an incorrect email</string>
     <string name="toast_send_forgot_password_email">You haven\'t entered any email</string>
     <string name="toast_could_not_create_user">Could not create user</string>
@@ -176,6 +176,18 @@
     <string name="signup_userid">userid</string>
     <string name="register_as_title">Register as</string>
     <string name="year_length">4</string>
+    <string name="car_length">7</string>
+    <string name="fragment_driver_pick_up_time_to_go">Time to go</string>
+    <string name="fragment_driver_pick_up_count_down_text">00:15</string>
+    <string name="fragment_driver_pick_up_button_text_pick_up">Pick up</string>
+    <string name="fragment_driver_pick_up_passenger_name">Alice Hicks</string>
+    <string name="fragment_driver_pick_up_button_text_no_show">No show</string>
+    <string name="fragment_driver_pick_up_passenger_image_content_description">Profile image</string>
+    <string name="fragment_driver_drop_off_title">Did you drop off Alice?</string>
+    <string name="fragment_driver_drop_off_passenger_image_content_description">Passenger image</string>
+    <string name="fragment_driver_drop_off_passenger_name">Alice Hicks</string>
+    <string name="fragment_driver_drop_off_button_text_confirm">Confirm drop off</string>
+    <string name="fragment_driver_drop_off_button_text_cancel">Cancel</string>
     <string name="car_length">6</string>
     <string name="find_car">Find</string>
 

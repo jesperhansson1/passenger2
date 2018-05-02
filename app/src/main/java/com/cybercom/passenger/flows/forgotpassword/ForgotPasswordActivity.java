@@ -16,6 +16,8 @@ import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.signup.PasswordSentActivity;
 import com.cybercom.passenger.utils.ToastHelper;
 
+import timber.log.Timber;
+
 
 public class ForgotPasswordActivity extends AppCompatActivity{
     EditText mResetPasswordMail;
@@ -72,6 +74,7 @@ public class ForgotPasswordActivity extends AppCompatActivity{
                     } else{
                         progressBar.setVisibility(View.GONE);
                         mResetPasswordButton.setText(R.string.send_me_password);
+                        mResetPasswordMail.setError(getResources().getString(R.string.toast_forgot_password_incorrect_email));
                     }
                 }
             });
