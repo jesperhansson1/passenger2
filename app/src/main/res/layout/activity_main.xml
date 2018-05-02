@@ -27,12 +27,14 @@
         app:layout_constraintTop_toTopOf="parent" />-->
 
     <android.support.design.widget.FloatingActionButton
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/button_createRide"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/activity_margin"
         android:clickable="true"
         android:focusable="true"
+        app:elevation="6dp"
         app:backgroundTint="@color/colorBlue"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

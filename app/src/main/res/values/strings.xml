@@ -134,14 +134,18 @@
     <string name="car_color">Color</string>
     <string name="save">Save</string>
     <string name="car_number_error">Car registration number cannot be empty</string>
+    <string name="car_number_invalid">Car registration number is not valid</string>
     <string name="car_model_error">Car model name cannot be empty</string>
     <string name="car_year_error">Car built year cannot be empty</string>
+    <string name="car_year_invalid">Car built year cannot be greater than current year</string>
     <string name="car_color_error">Car color cannot be empty</string>
     <string name="add_new_car">Add new car</string>
     <string name="numbers">0123456789</string>
     <string name="deleteConfirmation">Delete this car ?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="car_base_url">https://api.biluppgifter.se/api/v1/vehicle/regno/</string>
+    <string name="car_api_token">Dr1rKMm2eLgYKg4G1v1Xl0EEF30qeVHb9IZ5Ubji7HolwiCDwDfUZ2HVogo5</string>
 
 
     <string name="account_label">You need to add a credit card or bank account. You need it to withdraw money</string>
@@ -184,6 +188,8 @@
     <string name="fragment_driver_drop_off_passenger_name">Alice Hicks</string>
     <string name="fragment_driver_drop_off_button_text_confirm">Confirm drop off</string>
     <string name="fragment_driver_drop_off_button_text_cancel">Cancel</string>
+    <string name="car_length">6</string>
+    <string name="find_car">Find</string>
 
 
 </resources>
