@@ -19,5 +19,6 @@
     <color name="enable_thumb_blue">#ff0099cc</color>
     <color name="colorBlack">#000000</color>
     <color name="halfWhite">#00f5f3f3</color>
+    <color name="main_activity_place_marker_information_background">#99000000</color>
 
 </resources>
