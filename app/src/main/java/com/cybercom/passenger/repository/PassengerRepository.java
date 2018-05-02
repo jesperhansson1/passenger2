@@ -201,6 +201,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                             userMutableLiveData.setValue(user);
                             userLogin.setUserId(user.getUid());
                             userLogin.setNotificationTokenId(getTokenId());
+                            userLogin.setPassword(null);
 
                             mUsersReference.child(user.getUid()).setValue(userLogin);
                         } else {
@@ -240,6 +241,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                             userMutableLiveData.setValue(user);
                             userLogin.setUserId(user.getUid());
                             userLogin.setNotificationTokenId(getTokenId());
+                            userLogin.setPassword(null);
                             mUsersReference.child(user.getUid()).setValue(userLogin);
                             createCar(newCar.getNumber(),user.getUid(),newCar);
 
