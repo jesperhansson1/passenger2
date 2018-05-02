@@ -179,6 +179,11 @@
     <string name="fragment_driver_pick_up_passenger_name">Alice Hicks</string>
     <string name="fragment_driver_pick_up_button_text_no_show">No show</string>
     <string name="fragment_driver_pick_up_passenger_image_content_description">Profile image</string>
+    <string name="fragment_driver_drop_off_title">Did you drop off Alice?</string>
+    <string name="fragment_driver_drop_off_passenger_image_content_description">Passenger image</string>
+    <string name="fragment_driver_drop_off_passenger_name">Alice Hicks</string>
+    <string name="fragment_driver_drop_off_button_text_confirm">Confirm drop off</string>
+    <string name="fragment_driver_drop_off_button_text_cancel">Cancel</string>
 
 
 </resources>

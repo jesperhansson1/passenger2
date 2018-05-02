@@ -41,5 +41,5 @@
     <dimen name="pad_18sp">18sp</dimen>
 
     <dimen name="draw_pad">10dp</dimen>
-    <dimen name="deafult_dialog_elevation">8dp</dimen>
+    <dimen name="default_dialog_elevation">8dp</dimen>
 </resources>
