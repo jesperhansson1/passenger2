@@ -23,6 +23,7 @@ import timber.log.Timber;
 public class PassengerNotificationDialog extends DialogFragment implements View.OnClickListener {
 
     private static final String NOTIFICATION_KEY = "NOTIFICATION";
+    public static final String TAG = "PASSENGER_NOTIFICATION_DIALOG";
     private Notification mNotification;
 
     public interface PassengerNotificationListener {

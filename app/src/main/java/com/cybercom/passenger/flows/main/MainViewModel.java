@@ -152,12 +152,8 @@ public class MainViewModel extends AndroidViewModel {
         mPassengerRepository.setIncomingNotification(payload);
     }
 
-    public void pollNotificationQueue(Notification notification) {
-        mPassengerRepository.pollNotificationQueue(notification);
-    }
-
-    public void dismissNotification() {
-        mPassengerRepository.dismissNotification();
+    public void getNextNotification(Notification notification) {
+        mPassengerRepository.getNextNotification(notification);
     }
 
     public void refreshToken(String token) {
