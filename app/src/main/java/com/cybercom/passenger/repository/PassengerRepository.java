@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.location.Location;
-import android.os.Bundle;
 import android.support.annotation.NonNull;
 
 import com.cybercom.passenger.model.Car;
@@ -92,7 +91,6 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         mCarsReference = firebaseDatabase.getReference(REFERENCE_CARS);
         mDriveRequestsReference = firebaseDatabase.getReference(REFERENCE_DRIVE_REQUESTS);
         mNotificationsReference = firebaseDatabase.getReference(REFERENCE_NOTIFICATIONS);
-
     }
 
     public FirebaseAuth getAuthorization()

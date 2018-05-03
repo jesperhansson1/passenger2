@@ -36,7 +36,7 @@ import timber.log.Timber;
 
 public class MainViewModel extends AndroidViewModel {
 
-    private static final long FIND_MATCH_TIMEOUT_MS = 20 * 1000;
+    private static final long FIND_MATCH_TIMEOUT_MS = 2 * 60 * 1000;
     public static final double LOWER_LEFT_LATITUDE = 55.0059799;
     public static final double LOWER_LEFT_LONGITUDE = 10.5798;
     public static final double UPPER_RIGHT_LATITUDE = 69.0599709;
@@ -49,6 +49,7 @@ public class MainViewModel extends AndroidViewModel {
     private LocationCallback mLocationCallback;
     private LocationRequest mLocationRequest;
     private LiveData<Notification> mIncomingNotification;
+    private LiveData<Drive> mFindBestDriveMatch;
 
     public MainViewModel(@NonNull Application application) {
         super(application);
@@ -100,11 +101,11 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     public LiveData<Drive> findBestDriveMatch(DriveRequest driveRequest) {
-        return mPassengerRepository.findBestRideMatch(driveRequest);
+        mFindBestDriveMatch = mPassengerRepository.findBestRideMatch(driveRequest);
+        return mFindBestDriveMatch;
     }
 
     public void addRequestDriveNotification(DriveRequest driveRequest, Drive drive) {
-
         Notification pendingPassengerNotification = new Notification(Notification.REQUEST_DRIVE, driveRequest, drive);
         mPassengerRepository.sendNotification(pendingPassengerNotification);
     }

@@ -26,7 +26,6 @@ import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
 import com.cybercom.passenger.R;
-import com.cybercom.passenger.flows.createdrive.CreateRideDialogFragment;
 import com.cybercom.passenger.flows.createridefragment.CreateDriveFragment;
 import com.cybercom.passenger.flows.driverconfirmation.AcceptRejectPassengerDialog;
 import com.cybercom.passenger.flows.login.RegisterActivity;
@@ -57,7 +56,7 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
-public class MainActivity extends AppCompatActivity implements CreateRideDialogFragment.CreateRideDialogFragmentListener, AcceptRejectPassengerDialog.ConfirmationListener, PassengerNotificationDialog.PassengerNotificationListener, OnMapReadyCallback, GoogleMap.OnMarkerDragListener, GoogleMap.OnCameraMoveStartedListener, GoogleMap.OnMapLongClickListener, GoogleMap.OnMapClickListener, CreateDriveFragment.OnPlaceMarkerIconClickListener, ParserTask.OnRouteCompletion, CreateDriveFragment.OnFinishedCreatingDriveOrDriveRequest {
+public class MainActivity extends AppCompatActivity implements CreateDriveFragment.CreateRideFragmentListener, AcceptRejectPassengerDialog.ConfirmationListener, PassengerNotificationDialog.PassengerNotificationListener, OnMapReadyCallback, GoogleMap.OnMarkerDragListener, GoogleMap.OnCameraMoveStartedListener, GoogleMap.OnMapLongClickListener, GoogleMap.OnMapClickListener, CreateDriveFragment.OnPlaceMarkerIconClickListener, ParserTask.OnRouteCompletion, CreateDriveFragment.OnFinishedCreatingDriveOrDriveRequest {
 
     private static final float ZOOM_LEVEL_WORLD = 1;
     private static final float ZOOM_LEVEL_LANDMASS_CONTINENT = 5;
@@ -82,8 +81,8 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
 
     private GoogleMap mGoogleMap;
     private Marker mStartLocationMarker;
-    private Marker mEndLocationMarker;
-    private boolean isStartLocationMarkerAdded = false;
+    private boolean isStartLocationMarkerAdded = false;    private Marker mEndLocationMarker;
+
     private int mMarkerCount = 0;
     private boolean isEndLocationMarkerAdded = false;
     private Polyline mRoute;
@@ -520,38 +519,6 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
 
     }
 
-    @Override
-    public void onCreateRide(int type, final Position startLocation, final Position endLocation) {
-        Timber.i("on create ride");
-
-        switch (type) {
-            case CreateRideDialogFragment.TYPE_RIDE:
-                long time = System.currentTimeMillis();
-                int availableSeats = 4;
-
-                mMainViewModel.createDrive(time, startLocation, endLocation, availableSeats).observe(this, new Observer<Drive>() {
-                    @Override
-                    public void onChanged(@Nullable Drive drive) {
-                        Timber.i("Drive created: %s", drive);
-                    }
-                });
-                break;
-            case CreateRideDialogFragment.TYPE_REQUEST:
-                final LifecycleOwner lifeCycleOwner = this;
-                long t = System.currentTimeMillis();
-                final int seats = 2;
-                mMainViewModel.createDriveRequest(t, startLocation, endLocation, seats).observe(this, new Observer<DriveRequest>() {
-                    @Override
-                    public void onChanged(@Nullable DriveRequest driveRequest) {
-                        Timber.i("DriveRequest : %s", driveRequest);
-                        matchDriveRequest(driveRequest);
-                    }
-                });
-                break;
-        }
-
-    }
-
     private void showDriverConfirmationDialogFragment(Notification notification) {
         AcceptRejectPassengerDialog dialogFragment = AcceptRejectPassengerDialog.getInstance(notification);
         dialogFragment.show(getSupportFragmentManager(), dialogFragment.getTag());
@@ -708,7 +675,27 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
             }
 
             // other 'case' lines to check for other
+            // other 'case' lines to check for other
             // permissions this app might request.
+        }
+    }
+
+    @Override
+    public void onCreateRide(long time, int type, Position startLocation, Position endLocation, int seats) {
+        switch (type) {
+            case User.TYPE_DRIVER:
+                mMainViewModel.createDrive(time, startLocation, endLocation, seats).observe(this, drive -> {
+                    Timber.i("Drive created: %s", drive);
+                    mCreateDriveFragment.setDefaultValuesToDialog();
+                });
+                break;
+            case User.TYPE_PASSENGER:
+                mMainViewModel.createDriveRequest(time, startLocation, endLocation, seats).observe(this, driveRequest -> {
+                    Timber.i("DriveRequest : %s", driveRequest);
+                    matchDriveRequest(driveRequest);
+                    mCreateDriveFragment.setDefaultValuesToDialog();
+                });
+                break;
         }
     }
 }
