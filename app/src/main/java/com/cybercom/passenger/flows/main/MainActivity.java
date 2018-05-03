@@ -22,6 +22,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
@@ -68,17 +69,20 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     private static final String TAG = "complete";
     public static final int DELAY_BEFORE_SHOWING_CREATE_DRIVE_AFTER_LOCATION_CHANGED = 2000;
     public static final int DELAY_BEFORE_ZOOM_TO_FIT_ROUTE = 1500;
+    public static final int PLACE_MARKER_INFO_FADE_DURATION = 1000;
+    public static final float PLACE_MARKER_INFO_FADE_OUT_TO = 0.0f;
+    public static final float PLACE_MARKER_INFO_FADE_IN_TO = 1.0f;
     FirebaseUser mUser;
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 0;
     MainViewModel mMainViewModel;
     Location mLocation;
     Menu mLoginMenu;
     FloatingActionButton mFloatRide;
+    private TextView mPlaceMarkerInformation;
 
     private FragmentManager mFragmentManager;
     CreateDriveFragment mCreateDriveFragment;
     private boolean isCreateDriveFragmentVisible = false;
-
 
     private GoogleMap mGoogleMap;
     private Marker mStartLocationMarker;
@@ -356,6 +360,9 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
         mFloatRide = findViewById(R.id.button_createRide);
         mFloatRide.setImageResource(R.drawable.passenger);
         mCreateDriveFragment = CreateDriveFragment.newInstance();
+
+        mPlaceMarkerInformation = findViewById(R.id.main_activity_place_marker_info);
+
         mFloatRide.setOnClickListener(view -> {
             showFragment(mCreateDriveFragment);
             if (!isStartLocationMarkerAdded) {
@@ -376,11 +383,13 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
 
     public void showFragment(Fragment fragment) {
         if (isFragmentAdded) {
+            mPlaceMarkerInformation.animate().alpha(PLACE_MARKER_INFO_FADE_OUT_TO).setDuration(PLACE_MARKER_INFO_FADE_DURATION);
             mFragmentManager.beginTransaction()
                     .setCustomAnimations(R.anim.dialog_enter_animation, R.anim.dialog_exit_animation)
                     .show(fragment).commit();
             isCreateDriveFragmentVisible = true;
         } else {
+
             mFragmentManager.beginTransaction()
                     .setCustomAnimations(R.anim.dialog_enter_animation, R.anim.dialog_exit_animation)
                     .replace(R.id.main_activity_dialog_container, fragment).commit();
@@ -642,6 +651,21 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
 
     @Override
     public void onPlaceMarkerIconClicked() {
+
+        switch (mMainViewModel.getWhichMarkerToAdd()){
+            case MainViewModel.PLACE_START_MARKER:{
+                mPlaceMarkerInformation.setText(R.string.place_start_marker_information_text);
+                break;
+            }
+            case MainViewModel.PLACE_END_MARKER:{
+                mPlaceMarkerInformation.setText(R.string.place_end_marker_information_text);
+                break;
+            }
+        }
+
+
+        mPlaceMarkerInformation.animate().alpha(PLACE_MARKER_INFO_FADE_IN_TO)
+                .setDuration(PLACE_MARKER_INFO_FADE_DURATION);
         hideFragmentAnimation(mCreateDriveFragment);
     }
 
@@ -674,7 +698,6 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
 
                     if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                         // TODO: Consider calling
