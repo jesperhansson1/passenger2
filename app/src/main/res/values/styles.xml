@@ -75,5 +75,16 @@
         <item name="android:textColor">@color/colorWhite</item>
     </style>
 
+    <style name="CardWidgetStyle" parent="@android:style/Theme.DeviceDefault">
+        <item name="android:background">@color/colorBlue</item>
+        <item name="editTextStyle">@style/EditTextOverride</item>
+        <item name="android:editTextStyle">@style/EditTextOverride</item>
+    </style>
+
+    <style name="EditTextOverride" parent="@android:style/Widget.EditText">
+        <item name="android:textColor">@color/colorWhite</item>
+        <item name="android:textColorHint">#00FF00</item>
+    </style>
+
 
 </resources>

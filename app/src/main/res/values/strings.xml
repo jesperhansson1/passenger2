@@ -176,7 +176,6 @@
     <string name="signup_userid">userid</string>
     <string name="register_as_title">Register as</string>
     <string name="year_length">4</string>
-    <string name="car_length">7</string>
     <string name="fragment_driver_pick_up_time_to_go">Time to go</string>
     <string name="fragment_driver_pick_up_count_down_text">00:15</string>
     <string name="fragment_driver_pick_up_button_text_pick_up">Pick up</string>
@@ -191,5 +190,6 @@
     <string name="car_length">6</string>
     <string name="find_car">Find</string>
 
-
+    <string name="calculate">Calculate</string>
+    <string name="pay">Pay</string>
 </resources>

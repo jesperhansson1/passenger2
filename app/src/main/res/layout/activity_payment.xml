@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.cybercom.passenger.flows.payment.PaymentActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/textView_payment_start"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/start_location" />
+
+        <EditText
+            android:id="@+id/editText_payment_start"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="@string/start_location"
+            android:inputType="text" />
+
+        <TextView
+            android:id="@+id/textView_payment_end"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/end_location" />
+
+        <EditText
+            android:id="@+id/editText_payment_end"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="@string/end_location"
+            android:inputType="text" />
+
+        <TextView
+            android:id="@+id/textView_payment_distanceamount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:id="@+id/button_payment_calculate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/calculate" />
+
+        <com.stripe.android.view.CardInputWidget
+            android:id="@+id/card_input_widget_payment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:theme="@style/CardWidgetStyle">
+
+
+        </com.stripe.android.view.CardInputWidget>
+
+        <Button
+            android:id="@+id/button_payment_pay"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/pay" />
+
+        <TextView
+            android:id="@+id/textView_payment_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+</android.support.constraint.ConstraintLayout>

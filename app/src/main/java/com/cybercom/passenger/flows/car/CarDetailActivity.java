@@ -31,6 +31,8 @@ import static com.cybercom.passenger.flows.car.CarsActivity.CAR_DETAIL;
 import static com.cybercom.passenger.flows.car.CarsActivity.CAR_MODEL;
 import static com.cybercom.passenger.flows.car.CarsActivity.CAR_NUMBER;
 import static com.cybercom.passenger.flows.car.CarsActivity.CAR_YEAR;
+import static com.cybercom.passenger.model.ConstantValues.CAR_API_BASE_URL;
+import static com.cybercom.passenger.model.ConstantValues.CAR_API_KEY;
 
 
 public class CarDetailActivity extends AppCompatActivity{
@@ -61,8 +63,8 @@ public class CarDetailActivity extends AppCompatActivity{
         mExtras = getIntent().getExtras();
         progressBar = findViewById(R.id.progress_bar);
         progressBar.setVisibility(View.GONE);
-        mApiToken = getResources().getString(R.string.car_api_token);
-        mApiUrl = getResources().getString(R.string.car_base_url);
+        mApiToken = CAR_API_KEY;
+        mApiUrl = CAR_API_BASE_URL;
         mCarDetailVeiwModel = ViewModelProviders.of(this).get(CarDetailViewModel.class);
         myLife = this;
     }
