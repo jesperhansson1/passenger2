@@ -150,15 +150,13 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
 
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
+    public void sendDriverPositionToDB(String driveId){
         mMainViewModel.startLocationUpdates();
 
-        Timber.d("Last location DRIVE ID %s", mDriveId);
-            mMainViewModel.getUpdatedLocationLiveData().observe(this, location -> {
-                mMainViewModel.setCurrentLocationToDrive(mDriveId, location);
-            });
+        Timber.d("Last location DRIVE ID %s", driveId);
+        mMainViewModel.getUpdatedLocationLiveData().observe(this, location -> {
+            mMainViewModel.setCurrentLocationToDrive(driveId, location);
+        });
     }
 
     private void setUpForDriver() {
@@ -715,6 +713,8 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
             case User.TYPE_DRIVER:
                 mMainViewModel.createDrive(time, startLocation, endLocation, seats).observe(this, drive -> {
                     mDriveId = drive.getId();
+
+                    sendDriverPositionToDB(drive.getId());
                     Timber.i("Drive created: %s", drive.getId());
                     mCreateDriveFragment.setDefaultValuesToDialog();
                 });
