@@ -1,4 +1,6 @@
-package com.cybercom.passenger.model;
+package com.cybercom.passenger.repository.databasemodel;
+
+import com.cybercom.passenger.model.Position;
 
 public class PassengerRide {
 
