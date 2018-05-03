@@ -152,10 +152,15 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
 
     public void sendDriverPositionToDB(String driveId){
         mMainViewModel.startLocationUpdates();
-
-        Timber.d("Last location DRIVE ID %s", driveId);
         mMainViewModel.getUpdatedLocationLiveData().observe(this, location -> {
             mMainViewModel.setCurrentLocationToDrive(driveId, location);
+        });
+    }
+
+    public void sendPassengerRideToDB(String driveId){
+        mMainViewModel.startLocationUpdates();
+        mMainViewModel.getUpdatedLocationLiveData().observe(this, location -> {
+            mMainViewModel.sendPassengerRideToDB(driveId, location);
         });
     }
 
@@ -538,6 +543,7 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
     }
 
     private void showPassengerNotificationDialog(Notification notification) {
+        sendPassengerRideToDB(notification.getDrive().getId());
         PassengerNotificationDialog dialogFragment = PassengerNotificationDialog.getInstance(notification);
         dialogFragment.show(getSupportFragmentManager(), dialogFragment.getTag());
     }

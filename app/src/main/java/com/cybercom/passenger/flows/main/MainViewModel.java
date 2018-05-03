@@ -311,4 +311,10 @@ public class MainViewModel extends AndroidViewModel {
     public void setCurrentLocationToDrive(String driveId, Location location) {
         mPassengerRepository.setCurrentLocationToDrive(driveId, location);
     }
+
+    @SuppressLint("MissingPermission")
+    public void sendPassengerRideToDB(String driveId, Location location) {
+        mPassengerRepository.setPassengerRideCurrentLocation(driveId, location);
+
+    }
 }

@@ -12,6 +12,7 @@ import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Notification;
 import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
+import com.cybercom.passenger.repository.databasemodel.PassengerRide;
 import com.cybercom.passenger.repository.databasemodel.utils.DatabaseModelHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -52,6 +53,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private static final String REFERENCE_DRIVE_REQUESTS = "driveRequests";
     private static final String REFERENCE_USERS_CHILD_TYPE = "type";
     private static final String REFERENCE_DRIVER_ID_BLACK_LIST = "driverIdBlackList";
+    private static final String REFERENCE_PASSENGER_RIDE = "passengerRide";
+
 
     private static final String DRIVE_DRIVER_ID = "driveDriverId";
 
@@ -67,6 +70,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private static PassengerRepository sPassengerRepository;
     private DatabaseReference mUsersReference;
     private DatabaseReference mDrivesReference;
+    private DatabaseReference mPassengerRideReference;
     private DatabaseReference mDriveRequestsReference;
     private DatabaseReference mNotificationsReference;
     private FirebaseAuth mAuth = FirebaseAuth.getInstance();
@@ -92,6 +96,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
         mUsersReference = firebaseDatabase.getReference(REFERENCE_USERS);
         mDrivesReference = firebaseDatabase.getReference(REFERENCE_DRIVES);
+        mPassengerRideReference = firebaseDatabase.getReference(REFERENCE_PASSENGER_RIDE);
         mCarsReference = firebaseDatabase.getReference(REFERENCE_CARS);
         mDriveRequestsReference = firebaseDatabase.getReference(REFERENCE_DRIVE_REQUESTS);
         mNotificationsReference = firebaseDatabase.getReference(REFERENCE_NOTIFICATIONS);
@@ -655,13 +660,22 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         return mCarList;
     }
 
-    public void setCurrentLocationToDrive(String driverId, Location location) {
-        Timber.d("Last location: %s, %s ID %s", location.getLatitude(), location.getLongitude(), driverId);
-        if(driverId != null){
+    public void setCurrentLocationToDrive(String driveId, Location location) {
+        Timber.d("Last location: %s, %s ID %s", location.getLatitude(), location.getLongitude(), driveId);
+        if(driveId != null){
             Map<String,Object> locationMap = new HashMap<>();
             locationMap.put(LATITUDE, location.getLatitude());
             locationMap.put(LONGITUDE, location.getLongitude());
-            mDrivesReference.child(driverId).child(CURRENT_POSITION).setValue(locationMap);
+            mDrivesReference.child(driveId).child(CURRENT_POSITION).setValue(locationMap);
         }
+    }
+
+    public void setPassengerRideCurrentLocation(String driveId, Location location) {
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        Timber.d("Last location: %s, %s ID %s, USERID %s ", location.getLatitude(), location.getLongitude(), driveId, firebaseUser.getUid());
+
+        Position passengerPosition = new Position(null, location.getLatitude(), location.getLongitude());
+        PassengerRide passengerRide = new PassengerRide(driveId, firebaseUser.getUid(), passengerPosition);
+        mPassengerRideReference.push().setValue(passengerRide);
     }
 }
