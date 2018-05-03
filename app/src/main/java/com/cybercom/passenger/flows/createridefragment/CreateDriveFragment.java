@@ -2,9 +2,6 @@ package com.cybercom.passenger.flows.createridefragment;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.arch.lifecycle.LifecycleOwner;
-import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.os.Bundle;
@@ -28,11 +25,9 @@ import android.widget.Toast;
 
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.main.MainViewModel;
-import com.cybercom.passenger.model.Drive;
-import com.cybercom.passenger.model.DriveRequest;
+import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.utils.LocationHelper;
-import com.cybercom.passenger.utils.ToastHelper;
 import com.github.florent37.singledateandtimepicker.SingleDateAndTimePicker;
 import com.google.android.gms.location.places.AutocompleteFilter;
 import com.google.android.gms.location.places.AutocompletePrediction;
@@ -49,18 +44,24 @@ import com.google.android.gms.tasks.Task;
 import timber.log.Timber;
 
 public class CreateDriveFragment extends Fragment {
-
     private static final String FILTER_COUNTRY = "SE";
+
     public static final int DELAY_CLOSE_TIME_DATE_PICKER = 2000;
     public static final int DEFAULT_PASSENGERS = 4;
     public static final String EMPTY_STRING = "";
+    private CreateRideFragmentListener mCreateRideDialogListener;
 
     public interface OnPlaceMarkerIconClickListener {
         void onPlaceMarkerIconClicked();
-    }
 
+    }
     public interface  OnFinishedCreatingDriveOrDriveRequest{
         void onFinish();
+
+    }
+
+    public interface CreateRideFragmentListener {
+        void onCreateRide(long time, int type, Position startLocation, Position endLocation, int seats);
     }
 
     private OnPlaceMarkerIconClickListener onPlaceMarkerIconClickListener;
@@ -76,6 +77,7 @@ public class CreateDriveFragment extends Fragment {
     private RadioGroup mTimeSelection;
     private EditText mShowSelectedTime;
     private long mTimeSelected;
+
     private SingleDateAndTimePicker mDateTimePicker;
 
     protected GeoDataClient mGeoDataClient;
@@ -86,16 +88,16 @@ public class CreateDriveFragment extends Fragment {
             new LatLng(MainViewModel.LOWER_LEFT_LATITUDE, MainViewModel.LOWER_LEFT_LONGITUDE),
             new LatLng(MainViewModel.UPPER_RIGHT_LATITUDE, MainViewModel.UPPER_RIGHT_LONGITUDE));
 
-
     private static final AutocompleteFilter AUTOCOMPLETE_LOCATION_FILTER =
             new AutocompleteFilter.Builder()
                     .setTypeFilter(AutocompleteFilter.TYPE_FILTER_ADDRESS)
                     .setCountry(FILTER_COUNTRY)
                     .build();
     private ImageView mPlaceStartLocation;
-    private ImageView mPlaceEndLocation;
 
+    private ImageView mPlaceEndLocation;
     private Handler mHandler;
+
     private Runnable mCloseDateTimePickerRunnable = new Runnable() {
         @Override
         public void run() {
@@ -227,54 +229,18 @@ public class CreateDriveFragment extends Fragment {
             displayNumberOfPassengers();
         });
 
-
         mCreateRide.setOnClickListener(v -> {
-            mCreateRide.setText(null);
-            mCreateRide.setEnabled(false);
-            mCreatingDrive.setVisibility(View.VISIBLE);
 
             if (mMainViewModel.getStartMarkerLocation().getValue() != null
-                    && mMainViewModel.getEndMarkerLocation().getValue() != null)
+                    && mMainViewModel.getEndMarkerLocation().getValue() != null) {
 
-                if (mType == User.TYPE_DRIVER) {
-                    mMainViewModel.createDrive(mTimeSelected,
-                            LocationHelper.convertLocationToPosition(mMainViewModel
-                                    .getStartMarkerLocation().getValue()),
-                            LocationHelper.convertLocationToPosition(mMainViewModel
-                                    .getEndMarkerLocation().getValue()),
-                            mMainViewModel.getNumberOfPassengers())
-                            .observe(CreateDriveFragment.this, new Observer<Drive>() {
-                                @Override
-                                public void onChanged(@Nullable Drive drive) {
-                                    if (drive != null) {
-                                        Timber.i("Drive is created: %s",
-                                                drive.toString());
-                                    }
-                                    ToastHelper.makeToast("Drive is created",
-                                            getActivity()).show();
-                                    setDefaultValuesToDialog();
-                                }
-                            });
-                }
+                disableDialog();
 
-            if (mType == User.TYPE_PASSENGER) {
-                mMainViewModel.createDriveRequest(mTimeSelected,
-                        LocationHelper.convertLocationToPosition(mMainViewModel
-                                .getStartMarkerLocation().getValue()),
-                        LocationHelper.convertLocationToPosition(mMainViewModel
-                                .getEndMarkerLocation().getValue()),
-                        mMainViewModel.getNumberOfPassengers())
-                        .observe(CreateDriveFragment.this, driveRequest -> {
-                            if (driveRequest != null) {
-                                Timber.i("Driverequest is created: %s",
-                                        driveRequest.toString());
-                                matchDriveRequest(driveRequest);
-                            }
-                            ToastHelper.makeToast("Driverequest is created",
-                                    getActivity()).show();
-                            setDefaultValuesToDialog();
-                        });
+                mCreateRideDialogListener.onCreateRide(mTimeSelected, mType, LocationHelper.convertLocationToPosition(
+                        mMainViewModel.getStartMarkerLocation().getValue()),
+                        LocationHelper.convertLocationToPosition(mMainViewModel.getEndMarkerLocation().getValue()), mMainViewModel.getNumberOfPassengers());
             }
+
         });
 
         return view;
@@ -292,9 +258,22 @@ public class CreateDriveFragment extends Fragment {
             Toast.makeText(context, R.string.must_implement_on_place_icon_click_listener,
                     Toast.LENGTH_SHORT).show();
         }
+
+        if (context instanceof CreateRideFragmentListener) {
+            mCreateRideDialogListener = (CreateRideFragmentListener) context;
+        } else {
+            Toast.makeText(context, R.string.must_implement_passenger_notification_listener,
+                    Toast.LENGTH_SHORT).show();
+        }
     }
 
-    private void setDefaultValuesToDialog() {
+    public void disableDialog() {
+        mCreateRide.setText(null);
+        mCreateRide.setEnabled(false);
+        mCreatingDrive.setVisibility(View.VISIBLE);
+    }
+
+    public void setDefaultValuesToDialog() {
 
         if (mType == User.TYPE_DRIVER) {
             mCreateRide.setText(R.string.create_ride);
@@ -410,30 +389,11 @@ public class CreateDriveFragment extends Fragment {
         }
     };
 
-    private void matchDriveRequest(final DriveRequest driveRequest) {
-        final LifecycleOwner lifecycleOwner = this;
+    @Override
+    public void onDetach() {
+        super.onDetach();
 
-        final LiveData<Drive> findMatch = mMainViewModel.findBestDriveMatch(driveRequest);
-
-        final LiveData<Boolean> timerObserver = mMainViewModel.setFindMatchTimer();
-        final Observer<Drive> matchObserver = drive -> {
-            if (drive != null) {
-                Timber.i("matched drive %s", drive);
-                mMainViewModel.addRequestDriveNotification(driveRequest, drive);
-                findMatch.removeObservers(lifecycleOwner);
-                timerObserver.removeObservers(lifecycleOwner);
-            } else {
-                Timber.i("No drives match for the moment. Keep listening.");
-            }
-        };
-
-        findMatch.observe(lifecycleOwner, matchObserver);
-
-        timerObserver.observe(lifecycleOwner, aBoolean -> {
-            Toast.makeText(getActivity(), R.string.main_activity_match_not_found_message,
-                    Toast.LENGTH_LONG).show();
-            findMatch.removeObserver(matchObserver);
-            timerObserver.removeObservers(lifecycleOwner);
-        });
+        mCreateRideDialogListener = null;
     }
+
 }

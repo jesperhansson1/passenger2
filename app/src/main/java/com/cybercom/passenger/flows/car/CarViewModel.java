@@ -4,6 +4,7 @@ import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 
 import com.cybercom.passenger.model.Car;
@@ -13,6 +14,8 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -21,6 +24,9 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import timber.log.Timber;
 
 import static com.cybercom.passenger.utils.CarNumberHelper.getKeyFromNumber;
@@ -57,5 +63,6 @@ public class CarViewModel extends AndroidViewModel {
         mCarList = repository.getUpdatedCarList();
         return mCarList;
     }
+
 
 }

@@ -22,11 +22,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
 import com.cybercom.passenger.R;
-import com.cybercom.passenger.flows.createdrive.CreateRideDialogFragment;
 import com.cybercom.passenger.flows.createridefragment.CreateDriveFragment;
 import com.cybercom.passenger.flows.driverconfirmation.AcceptRejectPassengerDialog;
 import com.cybercom.passenger.flows.login.RegisterActivity;
@@ -57,7 +57,7 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
-public class MainActivity extends AppCompatActivity implements CreateRideDialogFragment.CreateRideDialogFragmentListener, AcceptRejectPassengerDialog.ConfirmationListener, PassengerNotificationDialog.PassengerNotificationListener, OnMapReadyCallback, GoogleMap.OnMarkerDragListener, GoogleMap.OnCameraMoveStartedListener, GoogleMap.OnMapLongClickListener, GoogleMap.OnMapClickListener, CreateDriveFragment.OnPlaceMarkerIconClickListener, ParserTask.OnRouteCompletion, CreateDriveFragment.OnFinishedCreatingDriveOrDriveRequest {
+public class MainActivity extends AppCompatActivity implements CreateDriveFragment.CreateRideFragmentListener, AcceptRejectPassengerDialog.ConfirmationListener, PassengerNotificationDialog.PassengerNotificationListener, OnMapReadyCallback, GoogleMap.OnMarkerDragListener, GoogleMap.OnCameraMoveStartedListener, GoogleMap.OnMapLongClickListener, GoogleMap.OnMapClickListener, CreateDriveFragment.OnPlaceMarkerIconClickListener, ParserTask.OnRouteCompletion, CreateDriveFragment.OnFinishedCreatingDriveOrDriveRequest {
 
     private static final float ZOOM_LEVEL_WORLD = 1;
     private static final float ZOOM_LEVEL_LANDMASS_CONTINENT = 5;
@@ -68,22 +68,25 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     private static final String TAG = "complete";
     public static final int DELAY_BEFORE_SHOWING_CREATE_DRIVE_AFTER_LOCATION_CHANGED = 2000;
     public static final int DELAY_BEFORE_ZOOM_TO_FIT_ROUTE = 1500;
+    public static final int PLACE_MARKER_INFO_FADE_DURATION = 1000;
+    public static final float PLACE_MARKER_INFO_FADE_OUT_TO = 0.0f;
+    public static final float PLACE_MARKER_INFO_FADE_IN_TO = 1.0f;
     FirebaseUser mUser;
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 0;
     MainViewModel mMainViewModel;
     Location mLocation;
     Menu mLoginMenu;
     FloatingActionButton mFloatRide;
+    private TextView mPlaceMarkerInformation;
 
     private FragmentManager mFragmentManager;
     CreateDriveFragment mCreateDriveFragment;
     private boolean isCreateDriveFragmentVisible = false;
 
-
     private GoogleMap mGoogleMap;
     private Marker mStartLocationMarker;
-    private Marker mEndLocationMarker;
-    private boolean isStartLocationMarkerAdded = false;
+    private boolean isStartLocationMarkerAdded = false;    private Marker mEndLocationMarker;
+
     private int mMarkerCount = 0;
     private boolean isEndLocationMarkerAdded = false;
     private Polyline mRoute;
@@ -356,6 +359,9 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
         mFloatRide = findViewById(R.id.button_createRide);
         mFloatRide.setImageResource(R.drawable.passenger);
         mCreateDriveFragment = CreateDriveFragment.newInstance();
+
+        mPlaceMarkerInformation = findViewById(R.id.main_activity_place_marker_info);
+
         mFloatRide.setOnClickListener(view -> {
             showFragment(mCreateDriveFragment);
             if (!isStartLocationMarkerAdded) {
@@ -376,11 +382,13 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
 
     public void showFragment(Fragment fragment) {
         if (isFragmentAdded) {
+            mPlaceMarkerInformation.animate().alpha(PLACE_MARKER_INFO_FADE_OUT_TO).setDuration(PLACE_MARKER_INFO_FADE_DURATION);
             mFragmentManager.beginTransaction()
                     .setCustomAnimations(R.anim.dialog_enter_animation, R.anim.dialog_exit_animation)
                     .show(fragment).commit();
             isCreateDriveFragmentVisible = true;
         } else {
+
             mFragmentManager.beginTransaction()
                     .setCustomAnimations(R.anim.dialog_enter_animation, R.anim.dialog_exit_animation)
                     .replace(R.id.main_activity_dialog_container, fragment).commit();
@@ -520,38 +528,6 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
 
     }
 
-    @Override
-    public void onCreateRide(int type, final Position startLocation, final Position endLocation) {
-        Timber.i("on create ride");
-
-        switch (type) {
-            case CreateRideDialogFragment.TYPE_RIDE:
-                long time = System.currentTimeMillis();
-                int availableSeats = 4;
-
-                mMainViewModel.createDrive(time, startLocation, endLocation, availableSeats).observe(this, new Observer<Drive>() {
-                    @Override
-                    public void onChanged(@Nullable Drive drive) {
-                        Timber.i("Drive created: %s", drive);
-                    }
-                });
-                break;
-            case CreateRideDialogFragment.TYPE_REQUEST:
-                final LifecycleOwner lifeCycleOwner = this;
-                long t = System.currentTimeMillis();
-                final int seats = 2;
-                mMainViewModel.createDriveRequest(t, startLocation, endLocation, seats).observe(this, new Observer<DriveRequest>() {
-                    @Override
-                    public void onChanged(@Nullable DriveRequest driveRequest) {
-                        Timber.i("DriveRequest : %s", driveRequest);
-                        matchDriveRequest(driveRequest);
-                    }
-                });
-                break;
-        }
-
-    }
-
     private void showDriverConfirmationDialogFragment(Notification notification) {
         AcceptRejectPassengerDialog dialogFragment = AcceptRejectPassengerDialog.getInstance(notification);
         dialogFragment.show(getSupportFragmentManager(), dialogFragment.getTag());
@@ -642,6 +618,21 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
 
     @Override
     public void onPlaceMarkerIconClicked() {
+
+        switch (mMainViewModel.getWhichMarkerToAdd()){
+            case MainViewModel.PLACE_START_MARKER:{
+                mPlaceMarkerInformation.setText(R.string.place_start_marker_information_text);
+                break;
+            }
+            case MainViewModel.PLACE_END_MARKER:{
+                mPlaceMarkerInformation.setText(R.string.place_end_marker_information_text);
+                break;
+            }
+        }
+
+
+        mPlaceMarkerInformation.animate().alpha(PLACE_MARKER_INFO_FADE_IN_TO)
+                .setDuration(PLACE_MARKER_INFO_FADE_DURATION);
         hideFragmentAnimation(mCreateDriveFragment);
     }
 
@@ -675,7 +666,6 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-
                     if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                         // TODO: Consider calling
                         //    ActivityCompat#requestPermissions
@@ -708,7 +698,27 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
             }
 
             // other 'case' lines to check for other
+            // other 'case' lines to check for other
             // permissions this app might request.
+        }
+    }
+
+    @Override
+    public void onCreateRide(long time, int type, Position startLocation, Position endLocation, int seats) {
+        switch (type) {
+            case User.TYPE_DRIVER:
+                mMainViewModel.createDrive(time, startLocation, endLocation, seats).observe(this, drive -> {
+                    Timber.i("Drive created: %s", drive);
+                    mCreateDriveFragment.setDefaultValuesToDialog();
+                });
+                break;
+            case User.TYPE_PASSENGER:
+                mMainViewModel.createDriveRequest(time, startLocation, endLocation, seats).observe(this, driveRequest -> {
+                    Timber.i("DriveRequest : %s", driveRequest);
+                    matchDriveRequest(driveRequest);
+                    mCreateDriveFragment.setDefaultValuesToDialog();
+                });
+                break;
         }
     }
 }
