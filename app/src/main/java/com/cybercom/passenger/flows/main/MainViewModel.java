@@ -182,7 +182,7 @@ public class MainViewModel extends AndroidViewModel {
                 findMatchTimerLiveData.setValue(true);
             }
         }), FIND_MATCH_TIMEOUT_MS);
-        
+
         return findMatchTimerLiveData;
     }
 
@@ -305,5 +305,10 @@ public class MainViewModel extends AndroidViewModel {
 
     public void setEndAddress(MutableLiveData<String> endAddress){
         mEndLocationAddress = endAddress;
+    }
+
+    @SuppressLint("MissingPermission")
+    public void setCurrentLocationToDrive(String driveId, Location location) {
+        mPassengerRepository.setCurrentLocationToDrive(driveId, location);
     }
 }

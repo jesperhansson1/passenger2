@@ -59,6 +59,10 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private static final String NOTIFICATION_TYPE_KEY = "type";
     private static final String KEY_PAYLOAD_DRIVE_REQUEST_ID = "driveRequest";
     private static final String KEY_PAYLOAD_DRIVE_ID = "driveId";
+    private static final String CURRENT_POSITION = "currentPosition";
+    private static final String LATITUDE = "latitude";
+    private static final String LONGITUDE = "longitude";
+
 
     private static PassengerRepository sPassengerRepository;
     private DatabaseReference mUsersReference;
@@ -649,5 +653,15 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
     public MutableLiveData<List<Car>> getUpdatedCarList() {
         return mCarList;
+    }
+
+    public void setCurrentLocationToDrive(String driverId, Location location) {
+        Timber.d("Last location: %s, %s ID %s", location.getLatitude(), location.getLongitude(), driverId);
+        if(driverId != null){
+            Map<String,Object> locationMap = new HashMap<>();
+            locationMap.put(LATITUDE, location.getLatitude());
+            locationMap.put(LONGITUDE, location.getLongitude());
+            mDrivesReference.child(driverId).child(CURRENT_POSITION).setValue(locationMap);
+        }
     }
 }

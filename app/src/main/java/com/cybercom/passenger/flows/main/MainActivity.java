@@ -85,7 +85,8 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
 
     private GoogleMap mGoogleMap;
     private Marker mStartLocationMarker;
-    private boolean isStartLocationMarkerAdded = false;    private Marker mEndLocationMarker;
+    private boolean isStartLocationMarkerAdded = false;
+    private Marker mEndLocationMarker;
 
     private int mMarkerCount = 0;
     private boolean isEndLocationMarkerAdded = false;
@@ -93,6 +94,7 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
     private Observer<Location> endLocationObserver;
     private Observer<Location> mEndLocationObserver;
     private Observer<Location> mStartLocationObserver;
+    private String mDriveId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -146,6 +148,17 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
         initObservers();
         initUI();
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mMainViewModel.startLocationUpdates();
+
+        Timber.d("Last location DRIVE ID %s", mDriveId);
+            mMainViewModel.getUpdatedLocationLiveData().observe(this, location -> {
+                mMainViewModel.setCurrentLocationToDrive(mDriveId, location);
+            });
     }
 
     private void setUpForDriver() {
@@ -349,12 +362,6 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // mMainViewModel.startLocationUpdates();
-    }
-
     public void initUI() {
         mFloatRide = findViewById(R.id.button_createRide);
         mFloatRide.setImageResource(R.drawable.passenger);
@@ -425,8 +432,7 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
             return;
         }
 
-            mGoogleMap.setMyLocationEnabled(true);
-
+        mGoogleMap.setMyLocationEnabled(true);
 
         placeEndLocationMarker();
 
@@ -708,7 +714,8 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
         switch (type) {
             case User.TYPE_DRIVER:
                 mMainViewModel.createDrive(time, startLocation, endLocation, seats).observe(this, drive -> {
-                    Timber.i("Drive created: %s", drive);
+                    mDriveId = drive.getId();
+                    Timber.i("Drive created: %s", drive.getId());
                     mCreateDriveFragment.setDefaultValuesToDialog();
                 });
                 break;
