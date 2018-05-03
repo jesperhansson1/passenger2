@@ -166,15 +166,13 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
                 switch (notification.getType()) {
                     case Notification.REQUEST_DRIVE:
                         showDriverConfirmationDialogFragment(notification);
-                        mMainViewModel.dismissNotification();
                         break;
                     case Notification.ACCEPT_PASSENGER:
                         showPassengerNotificationDialog(notification);
-                        mMainViewModel.dismissNotification();
                         break;
                     case Notification.REJECT_PASSENGER:
                         matchDriveRequest(notification.getDriveRequest());
-                        mMainViewModel.dismissNotification();
+                        mMainViewModel.getNextNotification(notification);
                         break;
                 }
             }
@@ -469,7 +467,6 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
                     }
                 });
 
-
                 findViewById(R.id.create_drive_dialog).startAnimation(animation);
             }
 
@@ -529,13 +526,21 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
     }
 
     private void showDriverConfirmationDialogFragment(Notification notification) {
-        AcceptRejectPassengerDialog dialogFragment = AcceptRejectPassengerDialog.getInstance(notification);
-        dialogFragment.show(getSupportFragmentManager(), dialogFragment.getTag());
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        AcceptRejectPassengerDialog dialogFragment = (AcceptRejectPassengerDialog)fragmentManager.findFragmentByTag(AcceptRejectPassengerDialog.TAG);
+        if (dialogFragment != null) dialogFragment.dismiss();
+
+        AcceptRejectPassengerDialog dFragment = AcceptRejectPassengerDialog.getInstance(notification);
+        dFragment.show(getSupportFragmentManager(), AcceptRejectPassengerDialog.TAG);
     }
 
     private void showPassengerNotificationDialog(Notification notification) {
-        PassengerNotificationDialog dialogFragment = PassengerNotificationDialog.getInstance(notification);
-        dialogFragment.show(getSupportFragmentManager(), dialogFragment.getTag());
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        PassengerNotificationDialog dialogFragment = (PassengerNotificationDialog)fragmentManager.findFragmentByTag(PassengerNotificationDialog.TAG);
+        if (dialogFragment != null) dialogFragment.dismiss();
+
+        PassengerNotificationDialog dFragment = PassengerNotificationDialog.getInstance(notification);
+        dFragment.show(getSupportFragmentManager(), PassengerNotificationDialog.TAG);
     }
 
     @Override
@@ -570,12 +575,12 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
         } else {
             mMainViewModel.sendRejectPassengerNotification(notification.getDrive(), notification.getDriveRequest());
         }
-        mMainViewModel.pollNotificationQueue(notification);
+        mMainViewModel.getNextNotification(notification);
     }
 
     @Override
     public void onCancelDrive(Notification notification) {
-        mMainViewModel.pollNotificationQueue(notification);
+        mMainViewModel.getNextNotification(notification);
     }
 
     @Override
