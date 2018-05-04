@@ -466,8 +466,9 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
 
                     }
                 });
-
-                findViewById(R.id.create_drive_dialog).startAnimation(animation);
+                if (findViewById(R.id.create_drive_dialog) != null) {
+                    findViewById(R.id.create_drive_dialog).startAnimation(animation);
+                }
             }
 
         }
