@@ -676,6 +676,36 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
         Position passengerPosition = new Position(null, location.getLatitude(), location.getLongitude());
         PassengerRide passengerRide = new PassengerRide(driveId, firebaseUser.getUid(), passengerPosition);
-        mPassengerRideReference.child(firebaseUser.getUid()).setValue(passengerRide);
+        mPassengerRideReference.child(driveId).setValue(passengerRide);
+    }
+
+    public void updatePassengerRideCurrentLocation(String driveId, Location location) {
+
+    }
+
+
+
+    public LiveData<Position> getPassengerPositionOnMap() {
+        return null;
+        //mPassengerRideReference.orderByChild()
+        /*
+        *
+        *  mUsersReference.child(firebaseUser.getUid()).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    User user = dataSnapshot.getValue(User.class);
+                    DriveRequest driveRequest = new DriveRequest(driveRequestId, user, dbDriveRequest.getTime(),
+                            dbDriveRequest.getStartLocation(), dbDriveRequest.getEndLocation(),
+                            dbDriveRequest.getExtraPassengers(), dbDriveRequest.getDriverIdBlackList());
+
+                    driveRequestMutableLiveData.setValue(driveRequest);
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        * */
     }
 }

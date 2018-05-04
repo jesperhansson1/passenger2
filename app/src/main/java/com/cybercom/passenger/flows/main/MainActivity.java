@@ -71,7 +71,10 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
     public static final int PLACE_MARKER_INFO_FADE_DURATION = 1000;
     public static final float PLACE_MARKER_INFO_FADE_OUT_TO = 0.0f;
     public static final float PLACE_MARKER_INFO_FADE_IN_TO = 1.0f;
+    public static final int PASSENGER = 1;
+
     FirebaseUser mUser;
+    User mGetUserType;
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 0;
     MainViewModel mMainViewModel;
     Location mLocation;
@@ -123,6 +126,7 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
                 public void onChanged(@Nullable User user) {
                     Timber.i("User: %s logged in", user);
                     if (user != null) {
+                        mGetUserType = user;
                         if (user.getType() == User.TYPE_DRIVER) {
                             setUpForDriver();
                         } else {
@@ -174,6 +178,7 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
 
     private void initObservers() {
         mMainViewModel.getIncomingNotifications().observe(this, new Observer<Notification>() {
+
             @Override
             public void onChanged(@Nullable final Notification notification) {
                 if (notification == null) return;
@@ -186,6 +191,7 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
                         break;
                     case Notification.ACCEPT_PASSENGER:
                         showPassengerNotificationDialog(notification);
+                        //obeserveOtherUsersPositionOnMap();
                         mMainViewModel.dismissNotification();
                         break;
                     case Notification.REJECT_PASSENGER:
@@ -195,8 +201,6 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
                 }
             }
         });
-
-
         // TODO Only start this when drive is started
        /* mMainViewModel.getUpdatedLocationLiveData().observe(this, new Observer<Location>() {
             @Override
@@ -217,6 +221,20 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
             Timber.i("get updated --> minc");
             setDefaultLocationToMinc();
         }*/
+    }
+
+    private void obeserveOtherUsersPositionOnMap(){
+        if(mGetUserType.getType() == PASSENGER){
+
+        } else{
+            mMainViewModel.getPassengerPositionOnMap().observe(this, new Observer<Position>() {
+                @Override
+                public void onChanged(@Nullable Position position) {
+                    Timber.d("Passenger pos: %s", position);
+                }
+            });
+        }
+
     }
 
     private void placeStartLocationMarker() {
