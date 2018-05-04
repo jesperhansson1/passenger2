@@ -676,6 +676,6 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
         Position passengerPosition = new Position(null, location.getLatitude(), location.getLongitude());
         PassengerRide passengerRide = new PassengerRide(driveId, firebaseUser.getUid(), passengerPosition);
-        mPassengerRideReference.push().setValue(passengerRide);
+        mPassengerRideReference.child(firebaseUser.getUid()).setValue(passengerRide);
     }
 }
