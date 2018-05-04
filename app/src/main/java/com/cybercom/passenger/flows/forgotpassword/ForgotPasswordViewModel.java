@@ -36,6 +36,7 @@ public class ForgotPasswordViewModel extends AndroidViewModel {
                                 emailSent.setValue(true);
                             } else {
                                 ToastHelper.makeToast(activity.getResources().getString(R.string.toast_forgot_password_incorrect_email), activity).show();
+                                emailSent.setValue(false);
                             }
                         }
                     });

@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/Toolbar_cardetails"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="0dp"
+        tools:layout_editor_absoluteY="0dp">
+
+        <android.support.constraint.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/textView_cardetails_number"
+                style="@style/SignUpLogInTitles"
+                android:layout_width="wrap_content"
+                android:layout_height="15dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="100dp"
+                android:text="@string/car_number"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <EditText
+                android:id="@+id/editText_cardetails_number"
+                style="@style/shadow_background_style"
+                android:layout_width="219dp"
+                android:layout_height="78dp"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:drawableLeft="@drawable/ic_looks_two"
+                android:drawablePadding="@dimen/draw_pad"
+                android:ems="10"
+                android:hint="@string/car_number_hint"
+                android:inputType="textCapSentences"
+                android:maxLength="@string/car_length"
+                android:translationZ="0dp"
+                app:layout_constraintEnd_toStartOf="@+id/button_cardetails_find"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textView_cardetails_number" />
+
+            <TextView
+                android:id="@+id/textView_cardetails_model"
+                style="@style/SignUpLogInTitles"
+                android:layout_width="wrap_content"
+                android:layout_height="15dp"
+                android:layout_marginStart="16dp"
+                android:text="@string/car_model"
+                app:layout_constraintBottom_toTopOf="@+id/editText_cardetails_model"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <EditText
+                android:id="@+id/editText_cardetails_model"
+                style="@style/shadow_background_style"
+                android:layout_width="0dp"
+                android:layout_height="78dp"
+                android:layout_marginTop="30dp"
+                android:layout_weight="1"
+                android:drawableLeft="@drawable/driver_blue"
+                android:drawablePadding="@dimen/draw_pad"
+                android:ems="10"
+                android:hint="@string/car_model_hint"
+                android:inputType="textPersonName"
+                android:translationZ="0dp"
+                android:clickable="false"
+                android:cursorVisible="false"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/editText_cardetails_number" />
+
+            <TextView
+                android:id="@+id/textView_cardetails_year"
+                style="@style/SignUpLogInTitles"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_marginStart="16dp"
+                android:text="@string/car_year"
+                app:layout_constraintBottom_toTopOf="@+id/editText_cardetails_year"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <EditText
+                android:id="@+id/editText_cardetails_year"
+                style="@style/shadow_background_style"
+                android:layout_width="0dp"
+                android:layout_height="78dp"
+                android:layout_marginTop="30dp"
+                android:layout_weight="1"
+                android:drawableLeft="@drawable/ic_date_range"
+                android:drawablePadding="@dimen/draw_pad"
+                android:ems="10"
+                android:hint="@string/car_year_hint"
+                android:inputType="number"
+                android:maxLength="@string/year_length"
+                android:translationZ="0dp"
+                android:clickable="false"
+                android:cursorVisible="false"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/editText_cardetails_model" />
+
+            <TextView
+                android:id="@+id/textView_cardetails_color"
+                style="@style/SignUpLogInTitles"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_marginStart="16dp"
+                android:text="@string/car_color"
+                app:layout_constraintBottom_toTopOf="@+id/editText_cardetails_color"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <EditText
+                android:id="@+id/editText_cardetails_color"
+                style="@style/shadow_background_style"
+                android:layout_width="0dp"
+                android:layout_height="78dp"
+                android:layout_marginTop="30dp"
+                android:layout_weight="1"
+                android:drawableLeft="@drawable/ic_color_lens"
+                android:drawablePadding="@dimen/draw_pad"
+                android:ems="10"
+                android:hint="@string/car_color_hint"
+                android:inputType="textPersonName"
+                android:translationZ="0dp"
+                android:clickable="false"
+                android:cursorVisible="false"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/editText_cardetails_year" />
+
+            <RelativeLayout
+                android:id="@+id/relativeLayout"
+                android:layout_width="0dp"
+                android:layout_height="68dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="8dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/editText_cardetails_color">
+
+                <ProgressBar
+                    android:id="@+id/progress_bar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignTop="@+id/button_cardetails_save"
+                    android:layout_centerHorizontal="true"
+                    android:indeterminateTint="@color/colorWhite"
+                    android:indeterminateTintMode="src_in"
+                    android:translationZ="@dimen/pad_3dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent" />
+
+                <Button
+                    android:id="@+id/button_cardetails_save"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:background="@drawable/button_corner_round"
+                    android:elevation="@dimen/pad_2dp"
+                    android:text="@string/next"
+                    android:textColor="@color/colorWhite"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent" />
+
+            </RelativeLayout>
+
+            <Button
+                android:id="@+id/button_cardetails_find"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_marginTop="8dp"
+                android:text="@string/find_car"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/editText_cardetails_number" />
+
+
+        </android.support.constraint.ConstraintLayout>
+
+    </ScrollView>
+
+    <include
+        layout="@layout/passenger_toolbar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+</android.support.constraint.ConstraintLayout>

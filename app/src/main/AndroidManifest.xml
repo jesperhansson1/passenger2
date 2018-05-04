@@ -4,10 +4,11 @@
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES"/>
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.CAMERA" />
+
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
 
@@ -19,16 +20,23 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
-        <activity android:name=".flows.main.MainActivity">
+        <activity android:name=".flows.main.MainActivity"
+            android:theme="@style/WhiteBackgroundTheme"
+            android:windowSoftInputMode="adjustResize" android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".flows.forgotpassword.ForgotPasswordActivity" />
-        <activity android:name=".flows.signup.PasswordSentActivity" />
-        <activity android:name=".flows.signup.SignUpActivity" />
-        <activity android:name=".flows.login.LoginActivity" />
+        <activity android:name=".flows.forgotpassword.ForgotPasswordActivity" android:theme="@style/WhiteBackgroundTheme" android:screenOrientation="portrait"/>
+        <activity android:name=".flows.signup.PasswordSentActivity" android:theme="@style/WhiteBackgroundTheme" android:screenOrientation="portrait"/>
+        <activity android:name=".flows.signup.SignUpActivity" android:theme="@style/WhiteBackgroundTheme" android:screenOrientation="portrait"/>
+        <activity android:name=".flows.login.LoginActivity" android:theme="@style/WhiteBackgroundTheme" android:screenOrientation="portrait"/>
+        <activity android:name=".flows.car.CarsActivity" android:theme="@style/WhiteBackgroundTheme" android:screenOrientation="portrait" />
+        <activity android:name=".flows.car.CarDetailActivity" android:theme="@style/WhiteBackgroundTheme" android:screenOrientation="portrait"></activity>
+        <activity android:name=".flows.accounts.AccountActivity" android:theme="@style/WhiteBackgroundTheme" android:screenOrientation="portrait"></activity>
+        <activity android:name=".flows.accounts.AccountDetail" android:theme="@style/WhiteBackgroundTheme" android:screenOrientation="portrait"></activity>
+        <activity android:name=".flows.login.RegisterActivity" android:theme="@style/WhiteBackgroundTheme" android:screenOrientation="portrait"></activity>
 
         <service android:name=".service.PassengerInstanceIdService">
             <intent-filter>
@@ -65,5 +73,7 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
+
     </application>
+
 </manifest>

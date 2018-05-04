@@ -18,9 +18,11 @@ import timber.log.Timber;
 public class FetchRouteUrl extends AsyncTask<String, Void, String> {
 
     private GoogleMap mGoogleMap;
-    public FetchRouteUrl(GoogleMap googleMap, LatLng origin, LatLng destination)
+    private ParserTask.OnRouteCompletion mCaller;
+    public FetchRouteUrl(GoogleMap googleMap, LatLng origin, LatLng destination, ParserTask.OnRouteCompletion caller)
     {
         mGoogleMap = googleMap;
+        mCaller = caller;
         execute(getURL(origin,destination));
     }
 
@@ -51,7 +53,7 @@ public class FetchRouteUrl extends AsyncTask<String, Void, String> {
     @Override
     protected void onPostExecute(String result) {
         super.onPostExecute(result);
-        ParserTask parserTask = new ParserTask(mGoogleMap);
+        ParserTask parserTask = new ParserTask(mGoogleMap, mCaller);
         // Invokes the thread for parsing the JSON data
         parserTask.execute(result);
 

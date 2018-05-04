@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.cybercom.passenger.flows.accounts.CardFragment">
+
+    <TextView
+        android:id="@+id/textView_fragmentcard_cardnumber"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_span="2"
+        android:text="@string/card_number"
+        android:textColor="@color/colorBlue"
+        android:textSize="@dimen/pad_15sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/editText_fragmentcard_card"
+        app:layout_constraintStart_toStartOf="parent" />
+
+
+    <EditText
+        android:id="@+id/editText_fragmentcard_card"
+        style="@style/shadow_background_style"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:layout_span="2"
+        android:ems="10"
+        android:hint="@string/card_number_text_hint"
+        android:inputType="number|phone"
+        android:maxLength="@string/card_digits"
+        android:textColor="@color/colorBlue"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <TextView
+        android:id="@+id/textView_fragmentcard_expires"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_span="1"
+        android:text="@string/expires"
+        android:textColor="@color/colorBlue"
+        android:textSize="@dimen/pad_15sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/editText_fragmentcard_expires"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/textView_fragmentcard_securitycode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_span="1"
+        android:text="@string/security_code"
+        android:textColor="@color/colorBlue"
+        android:textSize="@dimen/pad_15sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/editText_fragmentcard_securitycode"
+        app:layout_constraintStart_toStartOf="@+id/editText_fragmentcard_securitycode" />
+
+
+    <EditText
+        android:id="@+id/editText_fragmentcard_expires"
+        style="@style/shadow_background_style"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:layout_span="1"
+        android:ems="10"
+        android:hint="@string/expires_hint"
+        android:inputType="number|phone"
+        android:maxLength="@string/expiry_digits"
+        android:textColor="@color/colorBlue"
+        app:layout_constraintEnd_toStartOf="@+id/editText_fragmentcard_securitycode"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_chainStyle="spread_inside"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editText_fragmentcard_card" />
+
+    <EditText
+        android:id="@+id/editText_fragmentcard_securitycode"
+        style="@style/shadow_background_style"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_span="1"
+        android:ems="10"
+        android:hint="@string/security_code_hint"
+        android:inputType="number"
+        android:maxLength="@string/code_digits"
+        android:textColor="@color/colorBlue"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/editText_fragmentcard_expires"
+        app:layout_constraintTop_toTopOf="@+id/editText_fragmentcard_expires" />
+
+
+    <RelativeLayout
+        android:id="@+id/relativeLayout"
+        android:layout_width="0dp"
+        android:layout_height="66dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editText_fragmentcard_expires">
+
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/button_fragmentcard_next"
+            android:layout_centerHorizontal="true"
+            android:indeterminateTint="@color/colorWhite"
+            android:indeterminateTintMode="src_in"
+            android:translationZ="@dimen/pad_3dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <Button
+            android:id="@+id/button_fragmentcard_next"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:background="@drawable/button_corner_round"
+            android:elevation="@dimen/pad_2dp"
+            android:text="@string/next"
+            android:textColor="@color/colorWhite"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    </RelativeLayout>
+
+</android.support.constraint.ConstraintLayout>

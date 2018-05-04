@@ -3,6 +3,9 @@ package com.cybercom.passenger.flows.driverconfirmation;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -19,9 +22,16 @@ import com.cybercom.passenger.R;
 import com.cybercom.passenger.model.Notification;
 import com.cybercom.passenger.utils.LocationHelper;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
+
+import timber.log.Timber;
+
 public class AcceptRejectPassengerDialog extends DialogFragment implements View.OnClickListener {
 
     public static final String NOTIFICATION_KEY = "NOTIFICATION";
+    public static final String TAG = "ACCEPT_REJECT_PASSENGER_DIALOG";
     private Notification mNotification;
 
     public interface ConfirmationListener {
@@ -67,13 +77,15 @@ public class AcceptRejectPassengerDialog extends DialogFragment implements View.
 
             TextView driverConfirmationPassengerStartLocation
                     = rootView.findViewById(R.id.driver_confirmation_passenger_start_location);
-            driverConfirmationPassengerStartLocation.setText(LocationHelper
-                    .getStringFromPosition(mNotification.getDriveRequest().getStartLocation()));
+            driverConfirmationPassengerStartLocation.setText(getAddressFromLocation(
+                    LocationHelper.convertPositionToLocation(mNotification.getDriveRequest()
+                            .getStartLocation())));
 
             TextView driverConfirmationPassengerEndLocation
                     = rootView.findViewById(R.id.driver_confirmation_passenger_end_location);
             driverConfirmationPassengerEndLocation
-                    .setText(LocationHelper.getStringFromPosition(mNotification.getDriveRequest().getEndLocation()));
+                    .setText(getAddressFromLocation(LocationHelper
+                            .convertPositionToLocation(mNotification.getDriveRequest().getEndLocation())));
         }
 
         return rootView;
@@ -122,5 +134,23 @@ public class AcceptRejectPassengerDialog extends DialogFragment implements View.
                 break;
             }
         }
+    }
+
+    private String getAddressFromLocation(Location location) {
+        List<Address> addresses;
+        Geocoder geocoder = new Geocoder(getActivity(), Locale.getDefault());
+        try {
+            addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+
+            if(addresses.size() != 0){
+                Timber.i(addresses.get(0).toString());
+                return addresses.get(0).getThoroughfare() + " " + addresses.get(0).getFeatureName();
+            }
+
+            return "";
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

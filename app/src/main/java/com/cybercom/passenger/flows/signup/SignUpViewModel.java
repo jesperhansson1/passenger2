@@ -15,20 +15,26 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.SignInMethodQueryResult;
 
 import timber.log.Timber;
 
 public class SignUpViewModel extends AndroidViewModel {
-    private FirebaseAuth mAuth;
+   // private FirebaseAuth mAuth;
     private PassengerRepository repository = PassengerRepository.getInstance();
+
+    private static final String ERROR_WEAK_PASSWORD = "ERROR_WEAK_PASSWORD";
+    private static final String ERROR_EMAIL_ALREADY_IN_USE = "ERROR_EMAIL_ALREADY_IN_USE";
+    private static final String ERROR_INVALID_EMAIL = "ERROR_INVALID_EMAIL";
 
     public SignUpViewModel(@NonNull Application application) {
         super(application);
-        mAuth = FirebaseAuth.getInstance();
+     //   mAuth = FirebaseAuth.getInstance();
     }
 
-    public LiveData<FirebaseUser> createUserWithEmailAndPassword(String email, String password, final Activity activity){
+   /* LiveData<FirebaseUser> createUserWithEmailAndPassword(String email, String password, final Activity activity){
         final MutableLiveData<FirebaseUser> userMutableLiveData = new MutableLiveData<>();
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(activity , new OnCompleteListener<AuthResult>() {
@@ -39,15 +45,45 @@ public class SignUpViewModel extends AndroidViewModel {
                             Timber.d("createUserWithEmail:success %s", user);
                             userMutableLiveData.setValue(user);
                         } else {
-                            Timber.w("createUserWithEmail:failure %s", task.getException());
-                            ToastHelper.makeToast(activity.getResources().getString(R.string.toast_badly_formatted_email), activity).show();
+                            Timber.w("createUserWithEmail:failure %s", ((FirebaseAuthException)task.getException()).getErrorCode()/*task.getException().getMessage().toString());
+                        /*    if(((FirebaseAuthException)task.getException()).getErrorCode() == ERROR_WEAK_PASSWORD){
+                                SignUpActivity.mPassword.setError(task.getException().getMessage().toString());
+
+                            }else if(((FirebaseAuthException)task.getException()).getErrorCode() == ERROR_EMAIL_ALREADY_IN_USE){
+                                SignUpActivity.mEmail.setError(task.getException().getMessage().toString());
+                            }
+                            else if(((FirebaseAuthException)task.getException()).getErrorCode() == ERROR_INVALID_EMAIL){
+                                Timber.d("Error %s", ((FirebaseAuthException)task.getException()).getErrorCode());
+
+                                SignUpActivity.mEmail.setError(task.getException().getMessage().toString());
+                            }
                         }
                     }
                 });
         return userMutableLiveData;
-    }
+    }*/
 
-    public void createUser(String userId, User user){
+    /*public void createUser(String userId, User user){
         repository.createUser(userId, user);
+    }*/
+
+    public LiveData<Boolean> validateEmail(String email){
+        return repository.validateEmail(email);
     }
+        /*mAuth.fetchSignInMethodsForEmail("e@e.se").addOnCompleteListener(new OnCompleteListener<SignInMethodQueryResult>() {
+            @Override
+            public void onComplete(@NonNull Task<SignInMethodQueryResult> task) {
+                if(task.isSuccessful()){
+                    if(task.getResult().getSignInMethods().size() > 0){
+                        Timber.d("Email exists");
+                    } else{
+                        Timber.d("Email DOESNT exist");
+                    }
+                }
+            }
+        });
+
+        return mAuth.fetchSignInMethodsForEmail("e@e.se");
+
+    }*/
 }

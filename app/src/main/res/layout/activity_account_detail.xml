@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.cybercom.passenger.flows.accounts.AccountDetail">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <android.support.constraint.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+
+            <ToggleButton
+                android:id="@+id/toggleButton_activityaccountdetail_card"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="32dp"
+                android:layout_span="1"
+                android:gravity="center"
+                android:onClick="cardClicked"
+                android:text="@string/credit_card"
+                android:textColor="@color/colorWhite"
+                android:textOff="@string/credit_card"
+                android:textOn="@string/credit_card"
+                app:layout_constraintEnd_toStartOf="@+id/toggleButton_activityaccountdetail_bank"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ToggleButton
+                android:id="@+id/toggleButton_activityaccountdetail_bank"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
+                android:layout_span="1"
+                android:fitsSystemWindows="true"
+                android:gravity="center"
+                android:onClick="bankClicked"
+                android:text="@string/bank_account"
+                android:textColor="@color/colorWhite"
+                android:textOff="@string/bank_account"
+                android:textOn="@string/bank_account"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toEndOf="@+id/toggleButton_activityaccountdetail_card"
+                app:layout_constraintTop_toTopOf="@+id/toggleButton_activityaccountdetail_card" />
+
+            <android.support.v4.view.ViewPager
+                android:id="@+id/ViewPager_activityaccountdetail"
+                android:layout_width="match_parent"
+                android:layout_height="399dp"
+                android:layout_marginBottom="8dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="24dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/toggleButton_activityaccountdetail_card" />
+        </android.support.constraint.ConstraintLayout>
+
+    </ScrollView>
+
+</android.support.constraint.ConstraintLayout>

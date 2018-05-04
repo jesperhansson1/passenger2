@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import org.json.JSONObject;
@@ -17,10 +18,20 @@ import timber.log.Timber;
 
 public class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String, String>>>> {
 
+    public static final int ROUTE_WIDTH = 10;
+    public static final int ROUTE_COLOR = Color.rgb(6, 182, 239);
+
+    public interface OnRouteCompletion{
+        void onRouteDrawn(Polyline route);
+    }
+
+    public OnRouteCompletion delegate = null;
+
     private GoogleMap mGoogleMap;
-    ParserTask(GoogleMap googleMap)
+    ParserTask(GoogleMap googleMap, OnRouteCompletion caller)
     {
         mGoogleMap = googleMap;
+        delegate = caller;
     }
     // Parsing the data in non-ui thread
     @Override
@@ -73,8 +84,9 @@ public class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<Str
 
             // Adding all the points in the route to LineOptions
             polylineOptions.addAll(arraylistPoints);
-            polylineOptions.width(10);
-            polylineOptions.color(Color.BLUE);
+            polylineOptions.width(ROUTE_WIDTH);
+            polylineOptions.color(ROUTE_COLOR);
+
             Timber.d("onPostExecute lineoptions decoded");
         }
 
@@ -82,7 +94,8 @@ public class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<Str
         if(polylineOptions != null) {
             Timber.d(String.valueOf(polylineOptions));
             if(mGoogleMap!=null) {
-                mGoogleMap.addPolyline(polylineOptions);
+                Polyline route = mGoogleMap.addPolyline(polylineOptions);
+                delegate.onRouteDrawn(route);
             }
         }
         else {

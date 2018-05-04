@@ -1,48 +1,55 @@
 package com.cybercom.passenger.flows.main;
 
+import android.Manifest;
 import android.arch.lifecycle.LifecycleOwner;
+import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Typeface;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.CompoundButton;
-import android.widget.Switch;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
-import com.cybercom.passenger.MainViewModel;
 import com.cybercom.passenger.R;
-import com.cybercom.passenger.flows.createdrive.CreateRideDialogFragment;
+import com.cybercom.passenger.flows.createridefragment.CreateDriveFragment;
 import com.cybercom.passenger.flows.driverconfirmation.AcceptRejectPassengerDialog;
+import com.cybercom.passenger.flows.login.RegisterActivity;
 import com.cybercom.passenger.flows.passengernotification.PassengerNotificationDialog;
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Notification;
 import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
-import com.cybercom.passenger.repository.PassengerRepository;
 import com.cybercom.passenger.route.FetchRouteUrl;
+import com.cybercom.passenger.route.ParserTask;
 import com.cybercom.passenger.utils.LocationHelper;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
-import com.cybercom.passenger.flows.login.LoginActivity;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.iid.FirebaseInstanceId;
@@ -50,67 +57,103 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
-public class MainActivity extends AppCompatActivity implements CreateRideDialogFragment.CreateRideDialogFragmentListener, AcceptRejectPassengerDialog.ConfirmationListener, PassengerNotificationDialog.PassengerNotificationListener, OnMapReadyCallback {
+public class MainActivity extends AppCompatActivity implements CreateDriveFragment.CreateRideFragmentListener, AcceptRejectPassengerDialog.ConfirmationListener, PassengerNotificationDialog.PassengerNotificationListener, OnMapReadyCallback, GoogleMap.OnMarkerDragListener, GoogleMap.OnCameraMoveStartedListener, GoogleMap.OnMapLongClickListener, GoogleMap.OnMapClickListener, CreateDriveFragment.OnPlaceMarkerIconClickListener, ParserTask.OnRouteCompletion, CreateDriveFragment.OnFinishedCreatingDriveOrDriveRequest {
 
+    private static final float ZOOM_LEVEL_WORLD = 1;
+    private static final float ZOOM_LEVEL_LANDMASS_CONTINENT = 5;
+    private static final float ZOOM_LEVEL_CITY = 10;
+    private static final float ZOOM_LEVEL_STREETS = 15;
+    private static final float ZOOM_LEVEL_BUILDINGS = 20;
+
+    private static final String TAG = "complete";
+    public static final int DELAY_BEFORE_SHOWING_CREATE_DRIVE_AFTER_LOCATION_CHANGED = 2000;
+    public static final int DELAY_BEFORE_ZOOM_TO_FIT_ROUTE = 1500;
+    public static final int PLACE_MARKER_INFO_FADE_DURATION = 1000;
+    public static final float PLACE_MARKER_INFO_FADE_OUT_TO = 0.0f;
+    public static final float PLACE_MARKER_INFO_FADE_IN_TO = 1.0f;
     FirebaseUser mUser;
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 0;
     MainViewModel mMainViewModel;
     Location mLocation;
-    private GoogleMap mGoogleMap;
     Menu mLoginMenu;
+    FloatingActionButton mFloatRide;
+    private TextView mPlaceMarkerInformation;
+
+    private FragmentManager mFragmentManager;
+    CreateDriveFragment mCreateDriveFragment;
+    private boolean isCreateDriveFragmentVisible = false;
+
+    private GoogleMap mGoogleMap;
+    private Marker mStartLocationMarker;
+    private boolean isStartLocationMarkerAdded = false;    private Marker mEndLocationMarker;
+
+    private int mMarkerCount = 0;
+    private boolean isEndLocationMarkerAdded = false;
+    private Polyline mRoute;
+    private Observer<Location> endLocationObserver;
+    private Observer<Location> mEndLocationObserver;
+    private Observer<Location> mStartLocationObserver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = findViewById(R.id.my_toolbar);
-        toolbar.setTitleTextColor(getResources().getColor(R.color.colorWhite));
-        setSupportActionBar(toolbar);
         Timber.i("First log info");
         Fabric.with(this, new Crashlytics());
 
         mMainViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
+        mFragmentManager = getSupportFragmentManager();
 
         if (savedInstanceState == null) {
             if (getIntent().getExtras() != null) {
-                mMainViewModel.setIncomingNotification(getIntent().getExtras());
+                if (getIntent().getExtras().get("driveId") != null) {
+                    mMainViewModel.setIncomingNotification(getIntent().getExtras());
+                }
             }
         }
         mUser = FirebaseAuth.getInstance().getCurrentUser();
 
         if (mUser != null) {
             mMainViewModel.refreshToken(FirebaseInstanceId.getInstance().getToken());
-            if (getSupportActionBar() != null) {
-                getSupportActionBar().setTitle(mUser.getEmail());
-            }
+
+            mMainViewModel.getUser().observe(this, new Observer<User>() {
+                @Override
+                public void onChanged(@Nullable User user) {
+                    Timber.i("User: %s logged in", user);
+                    if (user != null) {
+                        if (user.getType() == User.TYPE_DRIVER) {
+                            setUpForDriver();
+                        } else {
+                            setUpForPassenger();
+                        }
+                    }
+                }
+            });
         } else {
             if (getSupportActionBar() != null) {
                 getSupportActionBar().setTitle(R.string.mainactivity_title);
             }
-        }
 
-        if (ContextCompat.checkSelfPermission(this.getApplication(),
-                android.Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-//            TODO: Handle the case when the user denied permission and chose 'do not ask again'
-//            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-//                    android.Manifest.permission.ACCESS_FINE_LOCATION)) {
-//            }
-//            else {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                    MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
-//            }
+            Intent intent = new Intent(this, RegisterActivity.class);
+            startActivity(intent);
+            finish();
         }
-
-        initUI();
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map_activitymap_googlemap);
         mapFragment.getMapAsync(this);
 
         initObservers();
+        initUI();
 
+    }
+
+    private void setUpForDriver() {
+        mFloatRide.setImageResource(R.drawable.driver_floating_button);
+    }
+
+    private void setUpForPassenger() {
+        mFloatRide.setImageResource(R.drawable.passenger);
     }
 
     private void initObservers() {
@@ -123,54 +166,161 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
                 switch (notification.getType()) {
                     case Notification.REQUEST_DRIVE:
                         showDriverConfirmationDialogFragment(notification);
-                        mMainViewModel.removeNotification();
                         break;
                     case Notification.ACCEPT_PASSENGER:
                         showPassengerNotificationDialog(notification);
-                        mMainViewModel.removeNotification();
                         break;
                     case Notification.REJECT_PASSENGER:
-                        // TODO: Currently the matching does not handle configuration changes...
-                        // Also matching should timeout
-//                        mMainViewModel.findBestDriveMatch(notification.getDriveRequest().getStartLocation(), notification.getDriveRequest().getEndLocation()).observe(lifecycleOwner, new Observer<Drive>() {
-//                            @Override
-//                            public void onChanged(@Nullable Drive drive) {
-//                                if (drive != null) {
-//                                    mMainViewModel.addReque                                                                                                                   stDriveNotification(notification.getDriveRequest(), drive);
-//                                }
-//                            }
-//                        });
-
-                        mMainViewModel.removeNotification();
+                        matchDriveRequest(notification.getDriveRequest());
+                        mMainViewModel.getNextNotification(notification);
                         break;
                 }
             }
         });
 
-        mMainViewModel.getUpdatedLocationLiveData().observe(this, new Observer<Location>() {
+
+        // TODO Only start this when drive is started
+       /* mMainViewModel.getUpdatedLocationLiveData().observe(this, new Observer<Location>() {
             @Override
             public void onChanged(@Nullable Location location) {
                 // TODO: Need to handle if there is no data och display info. Need to send this location to spinner
-                if(location == null) {
-                    Timber.d("get updated --> null");
-                }else {
+                if (location == null) {
+                    Timber.i("get updated --> null");
+                } else {
                     mLocation = location;
+
                 }
             }
-        });
-        if (mLocation == null)
-        {
-            //Permission not granted to access user location
+        });*/
+
+        /*
+        if (mLocation == null) {
+            // Permission not granted to access user location
+            Timber.i("get updated --> minc");
             setDefaultLocationToMinc();
+        }*/
+    }
+
+    private void placeStartLocationMarker() {
+
+        if (!isStartLocationMarkerAdded) {
+            if (mMainViewModel.getStartMarkerLocation().getValue() != null) {
+                LatLng startLatLng = new LatLng(mMainViewModel.getStartMarkerLocation().getValue().getLatitude(),
+                        mMainViewModel.getStartMarkerLocation().getValue().getLongitude());
+
+                mStartLocationMarker =
+                        mGoogleMap.addMarker(new MarkerOptions()
+                                .position(startLatLng)
+                                .title(getString(R.string.marker_title_start_location))
+                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.start_marker_location))
+                                .anchor(0.5f, 0.5f)
+                                .draggable(true));
+                animateToLocation(startLatLng, ZOOM_LEVEL_STREETS);
+
+                mMarkerCount++;
+            }
+
+            mStartLocationObserver = location -> {
+                if (location != null) {
+                    updateMarkerLocation(mStartLocationMarker, location);
+                    if (isStartLocationMarkerAdded) {
+                        hideFragmentAnimation(mCreateDriveFragment);
+                        Handler handler = new Handler();
+                        handler.postDelayed(() -> showFragment(mCreateDriveFragment), DELAY_BEFORE_SHOWING_CREATE_DRIVE_AFTER_LOCATION_CHANGED);
+                    }
+                    animateToLocation(new LatLng(location.getLatitude(), location.getLongitude()), ZOOM_LEVEL_STREETS);
+                    updateRoute();
+                }
+            };
+
+            mMainViewModel.getStartMarkerLocation().observe(this, mStartLocationObserver);
+
+            isStartLocationMarkerAdded = true;
+
+        } else {
+            updateMarkerLocation(mStartLocationMarker, mMainViewModel.getStartMarkerLocation().getValue());
+
         }
     }
 
-    public void setDefaultLocationToMinc()
-    {
-        mLocation = new Location("Minc");
-        mLocation.setLatitude(55.611473);
-        mLocation.setLongitude(12.994266);
+    /**
+     * Animates the camera to the given location
+     *
+     * @param locationToAnimateTo LatLng
+     * @param zoomLevel           float with desired zoom level
+     */
+    private void animateToLocation(LatLng locationToAnimateTo, float zoomLevel) {
+        mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(locationToAnimateTo, zoomLevel));
     }
+
+    private void placeEndLocationMarker() {
+
+        if (!isEndLocationMarkerAdded) {
+            LatLng endLatLng = new LatLng(0, 0);
+            mEndLocationMarker = mGoogleMap.addMarker(new MarkerOptions()
+                    .position(endLatLng)
+                    .title(getString(R.string.marker_title_end_location))
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.circle_end_location))
+                    .anchor(0.5f, 0.5f)
+                    .draggable(true)
+                    .visible(false));
+
+            mMarkerCount++;
+            mEndLocationObserver = location -> {
+                if (location != null) {
+                    updateMarkerLocation(mEndLocationMarker, location);
+                    mEndLocationMarker.setVisible(true);
+                    if (isEndLocationMarkerAdded) {
+                        hideFragmentAnimation(mCreateDriveFragment);
+                        Handler handler = new Handler();
+                        handler.postDelayed(() -> showFragment(mCreateDriveFragment), DELAY_BEFORE_SHOWING_CREATE_DRIVE_AFTER_LOCATION_CHANGED);
+                    }
+                    animateToLocation(new LatLng(location.getLatitude(), location.getLongitude()), ZOOM_LEVEL_STREETS);
+                    updateRoute();
+                }
+            };
+
+            mMainViewModel.getEndMarkerLocation().observe(this, mEndLocationObserver);
+            isEndLocationMarkerAdded = true;
+        } else {
+            mEndLocationMarker.setVisible(true);
+            updateMarkerLocation(mEndLocationMarker, mMainViewModel.getEndMarkerLocation().getValue());
+        }
+    }
+
+    private void matchDriveRequest(final DriveRequest driveRequest) {
+        final LifecycleOwner lifecycleOwner = this;
+
+        final LiveData<Drive> findMatch = mMainViewModel.findBestDriveMatch(driveRequest);
+
+        final LiveData<Boolean> timerObserver = mMainViewModel.setFindMatchTimer();
+        final Observer<Drive> matchObserver = new Observer<Drive>() {
+            @Override
+            public void onChanged(@Nullable Drive drive) {
+                if (drive != null) {
+                    Timber.i("matched drive %s", drive);
+                    mMainViewModel.addRequestDriveNotification(driveRequest, drive);
+                    findMatch.removeObservers(lifecycleOwner);
+                    timerObserver.removeObservers(lifecycleOwner);
+                } else {
+                    Timber.i("No drives match for the moment. Keep listening.");
+                }
+            }
+        };
+
+        findMatch.observe(lifecycleOwner, matchObserver);
+
+        timerObserver.observe(lifecycleOwner, new Observer<Boolean>() {
+            @Override
+            public void onChanged(@Nullable Boolean aBoolean) {
+                Toast.makeText(MainActivity.this, R.string.main_activity_match_not_found_message,
+                        Toast.LENGTH_LONG).show();
+                findMatch.removeObserver(matchObserver);
+                timerObserver.removeObservers(lifecycleOwner);
+            }
+        });
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -190,7 +340,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
         int menuId = item.getItemId();
         //noinspection SimplifiableIfStatement
         if (menuId == R.id.menu_action_login) {
-            Intent intent = new Intent(this, LoginActivity.class);
+            Intent intent = new Intent(this, RegisterActivity.class);
             startActivity(intent);
             return true;
         }
@@ -200,62 +350,128 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
     @Override
     protected void onResume() {
         super.onResume();
-        mMainViewModel.startLocationUpdates();
+        // mMainViewModel.startLocationUpdates();
     }
 
     public void initUI() {
-        changeLabelFontStyle(false);
-        final Switch switchRide = findViewById(R.id.switch_ride);
-        final FloatingActionButton floatRide = findViewById(R.id.button_createRide);
-        floatRide.setImageResource(R.drawable.passenger);
-        switchRide.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton arg0, boolean isChecked) {
-                if (isChecked) {
-                    floatRide.setImageResource(R.drawable.driver);
-                    changeLabelFontStyle(true);
-                } else {
-                    floatRide.setImageResource(R.drawable.passenger);
-                    changeLabelFontStyle(false);
-                }
+        mFloatRide = findViewById(R.id.button_createRide);
+        mFloatRide.setImageResource(R.drawable.passenger);
+        mCreateDriveFragment = CreateDriveFragment.newInstance();
+
+        mPlaceMarkerInformation = findViewById(R.id.main_activity_place_marker_info);
+
+        mFloatRide.setOnClickListener(view -> {
+            showFragment(mCreateDriveFragment);
+            if (!isStartLocationMarkerAdded) {
+                mMainViewModel.getLastKnownLocation(location -> {
+                    mMainViewModel.setStartMarkerLocation(location);
+                    placeStartLocationMarker();
+                });
             }
+            mFloatRide.setVisibility(View.INVISIBLE);
+            isCreateDriveFragmentVisible = true;
         });
-        floatRide.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (switchRide.isChecked()) {
-                    showCreateDriveDialog(CreateRideDialogFragment.TYPE_RIDE, LocationHelper.convertLocationToDisplayString(mLocation));
-                } else {
-                    showCreateDriveDialog(CreateRideDialogFragment.TYPE_REQUEST, LocationHelper.convertLocationToDisplayString(mLocation));
-                }
-            }
-        });
+
+
     }
 
-    public void changeLabelFontStyle(boolean driverValue) {
-        if (driverValue) {
-            ((TextView) findViewById(R.id.label_driver)).setTypeface(Typeface.DEFAULT_BOLD);
-            ((TextView) findViewById(R.id.label_passenger)).setTypeface(Typeface.DEFAULT);
+
+    private Boolean isFragmentAdded = false;
+
+    public void showFragment(Fragment fragment) {
+        if (isFragmentAdded) {
+            mPlaceMarkerInformation.animate().alpha(PLACE_MARKER_INFO_FADE_OUT_TO).setDuration(PLACE_MARKER_INFO_FADE_DURATION);
+            mFragmentManager.beginTransaction()
+                    .setCustomAnimations(R.anim.dialog_enter_animation, R.anim.dialog_exit_animation)
+                    .show(fragment).commit();
+            isCreateDriveFragmentVisible = true;
         } else {
-            ((TextView) findViewById(R.id.label_passenger)).setTypeface(Typeface.DEFAULT_BOLD);
-            ((TextView) findViewById(R.id.label_driver)).setTypeface(Typeface.DEFAULT);
+
+            mFragmentManager.beginTransaction()
+                    .setCustomAnimations(R.anim.dialog_enter_animation, R.anim.dialog_exit_animation)
+                    .replace(R.id.main_activity_dialog_container, fragment).commit();
+            isFragmentAdded = true;
         }
+
     }
 
-    public void showCreateDriveDialog(int type, String location) {
-        CreateRideDialogFragment dialogFragment = CreateRideDialogFragment.newInstance(type, location);
-        dialogFragment.show(getFragmentManager(), CreateRideDialogFragment.TAG);
+    public void hideFragment(Fragment fragment) {
+        mFragmentManager.beginTransaction()
+                .hide(fragment).commit();
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mGoogleMap = googleMap;
+
+        mGoogleMap.setOnCameraMoveStartedListener(this);
+        mGoogleMap.setOnMapLongClickListener(this);
+        mGoogleMap.setOnMapClickListener(this);
+
         mGoogleMap.setMinZoomPreference(4.0f);
-        mGoogleMap.setMaxZoomPreference(14.0f);
         //To show +/- zoom options
         mGoogleMap.getUiSettings().setZoomGesturesEnabled(true);
-        updateMyLocation(mLocation);
+        mGoogleMap.setOnMarkerDragListener(this);
+        if (ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this,
+                        Manifest.permission.ACCESS_COARSE_LOCATION)
+                        != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                    MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
+            return;
+        }
 
+            mGoogleMap.setMyLocationEnabled(true);
+
+
+        placeEndLocationMarker();
+
+        if (!mMainViewModel.isInitialZoomDone()) {
+            mMainViewModel.getLastKnownLocation(location -> {
+                LatLng initialZoom = new LatLng(
+                        location.getLatitude(),
+                        location.getLongitude());
+
+                animateToLocation(initialZoom, ZOOM_LEVEL_STREETS);
+                mMainViewModel.setInitialZoomDone(true);
+            });
+        }
+    }
+
+
+    public void hideFragmentAnimation(final Fragment fragment) {
+        if (isCreateDriveFragmentVisible) {
+            mFloatRide.setVisibility(View.VISIBLE);
+
+            if (fragment != null) {
+                Animation animation = AnimationUtils.loadAnimation(MainActivity.this,
+                        R.anim.dialog_exit_animation);
+
+                animation.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        hideFragment(fragment);
+                        isCreateDriveFragmentVisible = false;
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+
+                    }
+                });
+                if (findViewById(R.id.create_drive_dialog) != null) {
+                    findViewById(R.id.create_drive_dialog).startAnimation(animation);
+                }
+            }
+
+        }
     }
 
     @Override
@@ -263,74 +479,94 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
 
     }
 
-    public void updateMyLocation(Location myLocation)
-    {
-        if(mGoogleMap!=null) {
-            MarkerOptions markerOptions = new MarkerOptions().position(new LatLng(myLocation.getLatitude(), myLocation.getLongitude())).title("You are Here");
-            mGoogleMap.addMarker(markerOptions);
-            mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(myLocation.getLatitude(), myLocation.getLongitude()), 8.0f));
+    public void updateMarkerLocation(Marker marker, Location location) {
+        if (mGoogleMap != null) {
+            LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+            marker.setPosition(latLng);
         }
     }
 
-    public void updateMap(LatLng startLocation, LatLng endLocation){
+    public void updateRoute() {
+        if (mMarkerCount == 2) {
+            if (mMainViewModel.getStartMarkerLocation().getValue() != null
+                    && mMainViewModel.getEndMarkerLocation().getValue() != null) {
 
-        mGoogleMap.addMarker(new MarkerOptions().position(startLocation).title(getApplicationContext().getResources().getString(R.string.start_location)));
-        mGoogleMap.addMarker(new MarkerOptions().position(endLocation).title(getApplicationContext().getResources().getString(R.string.end_location)));
-        LatLngBounds.Builder latlngBuilder = new LatLngBounds.Builder();
-        latlngBuilder.include(startLocation);
-        latlngBuilder.include(endLocation);
+                if (mRoute != null) {
+                    mRoute.remove();
+                }
 
-        mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(latlngBuilder.build(), 100));
-        FetchRouteUrl fetchRouteUrl = new FetchRouteUrl(mGoogleMap, startLocation, endLocation);
+                LatLng origin = new LatLng(mMainViewModel.getStartMarkerLocation().getValue().getLatitude(),
+                        mMainViewModel.getStartMarkerLocation().getValue().getLongitude());
 
+                LatLng destination = new LatLng(mMainViewModel.getEndMarkerLocation().getValue().getLatitude(),
+                        mMainViewModel.getEndMarkerLocation().getValue().getLongitude());
+
+                new FetchRouteUrl(mGoogleMap, origin, destination, this);
+
+            }
+        }
     }
 
-    @Override
-    public void onCreateRide(int type, final Position startLocation, final Position endLocation) {
-        Timber.i("on create ride");
+    public void zoomToFitRoute() {
+        final Handler handler = new Handler();
+        handler.postDelayed(() -> {
+            LatLngBounds.Builder builder = new LatLngBounds.Builder();
+            builder.include(mStartLocationMarker.getPosition());
+            builder.include(mEndLocationMarker.getPosition());
+            LatLngBounds bounds = builder.build();
 
-        switch (type) {
-            case CreateRideDialogFragment.TYPE_RIDE:
-                PassengerRepository.getInstance().getUser().observe(this, new Observer<User>() {
-                    @Override
-                    public void onChanged(@Nullable User user) {
-                        mMainViewModel.createDrive(user, startLocation, endLocation);
-                        updateMap(new LatLng(startLocation.getLatitude(),startLocation.getLongitude()),
-                                new LatLng(endLocation.getLatitude(),endLocation.getLongitude()));
-                    }
-                });
-                break;
-            case CreateRideDialogFragment.TYPE_REQUEST:
-                final LifecycleOwner lifeCycleOwner = this;
+            int width = getResources().getDisplayMetrics().widthPixels;
+            int height = getResources().getDisplayMetrics().heightPixels;
+            int padding = (int) (height * 0.15);
 
-                PassengerRepository.getInstance().getUser().observe(this, new Observer<User>() {
-                    @Override
-                    public void onChanged(@Nullable User user) {
-                        final DriveRequest driveRequest = mMainViewModel.createDriveRequest(user, startLocation, endLocation);
-                        mMainViewModel.findBestDriveMatch(startLocation, endLocation).observe(lifeCycleOwner, new Observer<Drive>() {
-                            @Override
-                            public void onChanged(@Nullable Drive drive) {
-                                if (drive != null) {
-                                    mMainViewModel.addRequestDriveNotification(driveRequest, drive);
-                                }
-                            }
-                        });
-                    }
-                });
+            CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding);
 
-                break;
-        }
+            mGoogleMap.animateCamera(cameraUpdate);
+        }, DELAY_BEFORE_ZOOM_TO_FIT_ROUTE);
 
     }
 
     private void showDriverConfirmationDialogFragment(Notification notification) {
-        AcceptRejectPassengerDialog dialogFragment = AcceptRejectPassengerDialog.getInstance(notification);
-        dialogFragment.show(getSupportFragmentManager(), dialogFragment.getTag());
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        AcceptRejectPassengerDialog dialogFragment = (AcceptRejectPassengerDialog)fragmentManager.findFragmentByTag(AcceptRejectPassengerDialog.TAG);
+        if (dialogFragment != null) dialogFragment.dismiss();
+
+        AcceptRejectPassengerDialog dFragment = AcceptRejectPassengerDialog.getInstance(notification);
+        dFragment.show(getSupportFragmentManager(), AcceptRejectPassengerDialog.TAG);
     }
 
     private void showPassengerNotificationDialog(Notification notification) {
-        PassengerNotificationDialog dialogFragment = PassengerNotificationDialog.getInstance(notification);
-        dialogFragment.show(getSupportFragmentManager(), dialogFragment.getTag());
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        PassengerNotificationDialog dialogFragment = (PassengerNotificationDialog)fragmentManager.findFragmentByTag(PassengerNotificationDialog.TAG);
+        if (dialogFragment != null) dialogFragment.dismiss();
+
+        PassengerNotificationDialog dFragment = PassengerNotificationDialog.getInstance(notification);
+        dFragment.show(getSupportFragmentManager(), PassengerNotificationDialog.TAG);
+    }
+
+    @Override
+    public void onCameraMoveStarted(int reason) {
+        if (reason == GoogleMap.OnCameraMoveStartedListener.REASON_GESTURE
+                && isFragmentAdded) {
+            hideFragmentAnimation(mCreateDriveFragment);
+        }
+    }
+
+    @Override
+    public void onMapLongClick(LatLng latLng) {
+        if (mMainViewModel.getWhichMarkerToAdd() == MainViewModel.PLACE_START_MARKER) {
+            mMainViewModel.setStartMarkerLocation(LocationHelper.convertLatLngToLocation(latLng));
+            placeStartLocationMarker();
+            showFragment(mCreateDriveFragment);
+            mGoogleMap.setOnMapClickListener(this);
+
+        }
+
+        if (mMainViewModel.getWhichMarkerToAdd() == MainViewModel.PLACE_END_MARKER) {
+            mMainViewModel.setEndMarkerLocation(LocationHelper.convertLatLngToLocation(latLng));
+            placeEndLocationMarker();
+            showFragment(mCreateDriveFragment);
+        }
     }
 
     @Override
@@ -340,12 +576,155 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
         } else {
             mMainViewModel.sendRejectPassengerNotification(notification.getDrive(), notification.getDriveRequest());
         }
-        mMainViewModel.pollNotificationQueue(notification);
+        mMainViewModel.getNextNotification(notification);
     }
 
     @Override
     public void onCancelDrive(Notification notification) {
-        mMainViewModel.pollNotificationQueue(notification);
+        mMainViewModel.getNextNotification(notification);
     }
 
+    @Override
+    public void onMarkerDragStart(Marker marker) {
+
+    }
+
+    @Override
+    public void onMarkerDrag(Marker marker) {
+
+    }
+
+    @Override
+    public void onMarkerDragEnd(Marker marker) {
+        if (marker.getTitle().equals(getString(R.string.marker_title_start_location))) {
+            Location markerLocation = new Location(getString(R.string.location_provider_marker_drag));
+            markerLocation.setLatitude(marker.getPosition().latitude);
+            markerLocation.setLongitude(marker.getPosition().longitude);
+            mMainViewModel.setStartMarkerLocation(markerLocation);
+        }
+
+        if (marker.getTitle().equals(getString(R.string.marker_title_end_location))) {
+            Location markerLocation = new Location(getString(R.string.location_provider_marker_drag));
+            markerLocation.setLatitude(marker.getPosition().latitude);
+            markerLocation.setLongitude(marker.getPosition().longitude);
+            mMainViewModel.setEndMarkerLocation(markerLocation);
+        }
+    }
+
+    @Override
+    public void onMapClick(LatLng latLng) {
+        hideFragmentAnimation(mCreateDriveFragment);
+    }
+
+    @Override
+    public void onRouteDrawn(Polyline route) {
+        mRoute = route;
+        zoomToFitRoute();
+    }
+
+    @Override
+    public void onPlaceMarkerIconClicked() {
+
+        switch (mMainViewModel.getWhichMarkerToAdd()){
+            case MainViewModel.PLACE_START_MARKER:{
+                mPlaceMarkerInformation.setText(R.string.place_start_marker_information_text);
+                break;
+            }
+            case MainViewModel.PLACE_END_MARKER:{
+                mPlaceMarkerInformation.setText(R.string.place_end_marker_information_text);
+                break;
+            }
+        }
+
+
+        mPlaceMarkerInformation.animate().alpha(PLACE_MARKER_INFO_FADE_IN_TO)
+                .setDuration(PLACE_MARKER_INFO_FADE_DURATION);
+        hideFragmentAnimation(mCreateDriveFragment);
+    }
+
+    @Override
+    public void onFinish() {
+        hideFragmentAnimation(mCreateDriveFragment);
+        removeFragment();
+        mGoogleMap.clear();
+        isFragmentAdded = false;
+        isStartLocationMarkerAdded = false;
+        isEndLocationMarkerAdded = false;
+        isCreateDriveFragmentVisible = true;
+        mMainViewModel.getEndMarkerLocation().removeObserver(mEndLocationObserver);
+        mMainViewModel.setEndMarker(new MutableLiveData<>());
+        mMainViewModel.setEndAddress(new MutableLiveData<>());
+        mMarkerCount = 0;
+        mMainViewModel.getStartMarkerLocation().removeObserver(mStartLocationObserver);
+    }
+
+    public void removeFragment() {
+        getSupportFragmentManager().beginTransaction().remove(mCreateDriveFragment).commit();
+        mCreateDriveFragment = CreateDriveFragment.newInstance();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        // TODO: Consider calling
+                        //    ActivityCompat#requestPermissions
+                        // here to request the missing permissions, and then overriding
+                        //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                        //                                          int[] grantResults)
+                        // to handle the case where the user grants the permission. See the documentation
+                        // for ActivityCompat#requestPermissions for more details.
+                        return;
+                    }
+                    mGoogleMap.setMyLocationEnabled(true);
+
+                    if (!mMainViewModel.isInitialZoomDone()) {
+                        mMainViewModel.getLastKnownLocation(location -> {
+                            LatLng initialZoom = new LatLng(
+                                    location.getLatitude(),
+                                    location.getLongitude());
+
+                            animateToLocation(initialZoom, ZOOM_LEVEL_STREETS);
+                            mMainViewModel.setInitialZoomDone(true);
+                        });
+                    }
+
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // other 'case' lines to check for other
+            // permissions this app might request.
+        }
+    }
+
+    @Override
+    public void onCreateRide(long time, int type, Position startLocation, Position endLocation, int seats) {
+        switch (type) {
+            case User.TYPE_DRIVER:
+                mMainViewModel.createDrive(time, startLocation, endLocation, seats).observe(this, drive -> {
+                    Timber.i("Drive created: %s", drive);
+                    mCreateDriveFragment.setDefaultValuesToDialog();
+                });
+                break;
+            case User.TYPE_PASSENGER:
+                mMainViewModel.createDriveRequest(time, startLocation, endLocation, seats).observe(this, driveRequest -> {
+                    Timber.i("DriveRequest : %s", driveRequest);
+                    matchDriveRequest(driveRequest);
+                    mCreateDriveFragment.setDefaultValuesToDialog();
+                });
+                break;
+        }
+    }
 }
