@@ -58,8 +58,8 @@ public class CreateDriveFragment extends Fragment {
     public static final int UP_ARROW_ANIMATION = 0;
     public static final int MARGIN = 40;
     private CreateRideFragmentListener mCreateRideDialogListener;
-    private boolean isCreateDialogUp = true;
-    private float DEFAULT_SHOW_AND_HIDE_POSITION = 0;
+    private boolean mIsCreateDialogUp = true;
+    private static final float DEFAULT_SHOW_AND_HIDE_POSITION = 0;
 
     public interface OnPlaceMarkerIconClickListener {
         void onPlaceMarkerIconClicked();
@@ -73,7 +73,6 @@ public class CreateDriveFragment extends Fragment {
     public interface CreateRideFragmentListener {
         void onCreateRide(long time, int type, Position startLocation, Position endLocation, int seats);
     }
-
 
     private OnPlaceMarkerIconClickListener onPlaceMarkerIconClickListener;
     private OnFinishedCreatingDriveOrDriveRequest onFinishedCreatingDriveOrDriveRequest;
@@ -261,13 +260,13 @@ public class CreateDriveFragment extends Fragment {
 
         mShowAndHide = view.findViewById(R.id.create_drive_show_and_hide);
         mShowAndHide.setOnClickListener(v -> {
-            if(isCreateDialogUp){
+            if(mIsCreateDialogUp){
                 hideCreateDialog();
             }else{
                 showCreateDialog();
             }
 
-            isCreateDialogUp = !isCreateDialogUp;
+            mIsCreateDialogUp = !mIsCreateDialogUp;
 
         });
 

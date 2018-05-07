@@ -11,13 +11,12 @@ import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.CardView;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
@@ -70,9 +69,8 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
     public static final int PLACE_MARKER_INFO_FADE_DURATION = 1000;
     public static final float PLACE_MARKER_INFO_FADE_OUT_TO = 0.0f;
     public static final float PLACE_MARKER_INFO_FADE_IN_TO = 1.0f;
-    public static final int CREATE_DIALOG_ANIMATION_DURATION = 1000;
-    public static final int CREATE_DIALOG_ORIGIN_POSITION = 0;
     public static final int PASSENGER = 1;
+    public static final int ZOOM_LEVEL_MY_LOCATION = 17;
 
     FirebaseUser mUser;
     User mGetUserType;
@@ -80,12 +78,10 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
     MainViewModel mMainViewModel;
     Location mLocation;
     Menu mLoginMenu;
-    FloatingActionButton mFloatRide;
     private TextView mPlaceMarkerInformation;
 
     private FragmentManager mFragmentManager;
     CreateDriveFragment mCreateDriveFragment;
-    private boolean isCreateDriveFragmentVisible = false;
 
     private GoogleMap mGoogleMap;
     private Marker mStartLocationMarker;
@@ -97,7 +93,6 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
     private Polyline mRoute;
     private Observer<Location> mEndLocationObserver;
     private Observer<Location> mStartLocationObserver;
-    private CardView mCreateDriveCard;
     private LiveData<Drive> mFindMatch;
     private LiveData<Boolean> mTimer;
     private Observer<Drive> mMatchObserver;
@@ -150,14 +145,14 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
         initObservers();
     }
 
-    public void sendDriverPositionToDB(String driveId){
+    public void sendDriverPositionToDB(String driveId) {
         mMainViewModel.startLocationUpdates();
         mMainViewModel.getUpdatedLocationLiveData().observe(this, location -> {
             mMainViewModel.setCurrentLocationToDrive(driveId, location);
         });
     }
 
-    public void sendPassengerRideToDB(String driveId){
+    public void sendPassengerRideToDB(String driveId) {
         mMainViewModel.createPassengerRide(driveId).observe(this, passengerRide -> {
             mMainViewModel.startLocationUpdates();
             mMainViewModel.getUpdatedLocationLiveData().observe(this, location -> {
@@ -209,10 +204,10 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
         }*/
     }
 
-    private void obeserveOtherUsersPositionOnMap(){
-        if(mGetUserType.getType() == PASSENGER){
+    private void obeserveOtherUsersPositionOnMap() {
+        if (mGetUserType.getType() == PASSENGER) {
 
-        } else{
+        } else {
             mMainViewModel.getPassengerPositionOnMap().observe(this, new Observer<Position>() {
                 @Override
                 public void onChanged(@Nullable Position position) {
@@ -414,7 +409,6 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
             mFragmentManager.beginTransaction()
                     .setCustomAnimations(R.anim.dialog_enter_animation, R.anim.dialog_exit_animation)
                     .show(fragment).commit();
-            isCreateDriveFragmentVisible = true;
         } else {
             mFragmentManager.beginTransaction()
                     .setCustomAnimations(R.anim.dialog_enter_animation, R.anim.dialog_exit_animation)
@@ -649,7 +643,6 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
         mGoogleMap.clear();
         isStartLocationMarkerAdded = false;
         isEndLocationMarkerAdded = false;
-        isCreateDriveFragmentVisible = true;
         mMainViewModel.getStartMarkerLocation().removeObserver(mStartLocationObserver);
         mMainViewModel.getEndMarkerLocation().removeObserver(mEndLocationObserver);
 
@@ -733,7 +726,7 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
 
     @Override
     public boolean onMyLocationButtonClick() {
-        mGoogleMap.moveCamera(CameraUpdateFactory.zoomTo(17));
+        mGoogleMap.moveCamera(CameraUpdateFactory.zoomTo(ZOOM_LEVEL_MY_LOCATION));
         return false;
     }
 }
