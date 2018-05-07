@@ -209,7 +209,7 @@ public class MainViewModel extends AndroidViewModel {
 
             if(addresses.size() != 0){
                 Timber.i(addresses.get(0).toString());
-                return addresses.get(0).getThoroughfare() + " " + addresses.get(0).getFeatureName();
+                return addresses.get(0).getAddressLine(0).split(",")[0];
             }
 
             return "";
@@ -219,7 +219,7 @@ public class MainViewModel extends AndroidViewModel {
         return null;
     }
 
-    public Location getLocationFromAddress(String address) {
+    private Location getLocationFromAddress(String address) {
         List<Address> addresses;
         Geocoder geocoder = new Geocoder(getApplication(), Locale.getDefault());
         try {
