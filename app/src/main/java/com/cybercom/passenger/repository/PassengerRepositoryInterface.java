@@ -1,6 +1,7 @@
 package com.cybercom.passenger.repository;
 
 import android.arch.lifecycle.LiveData;
+import android.location.Location;
 
 import com.cybercom.passenger.model.Car;
 import com.cybercom.passenger.model.Drive;
@@ -8,6 +9,7 @@ import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Notification;
 import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
+import com.google.android.gms.tasks.Task;
 
 import java.util.List;
 import java.util.Map;
@@ -36,4 +38,6 @@ public interface PassengerRepositoryInterface {
     void createCar(String carId, String userId, Car car);
 
     void removeCar(String carId, String userId);
+
+    void updateDriveCurrentLocation(String driverId, Location location);
 }
