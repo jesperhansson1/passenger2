@@ -156,13 +156,13 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
 
         initObservers();
         initUI();
-
     }
 
     public void sendDriverPositionToDB(String driveId){
         mMainViewModel.startLocationUpdates();
         mMainViewModel.getUpdatedLocationLiveData().observe(this, location -> {
             mMainViewModel.setCurrentLocationToDrive(driveId, location);
+            mMainViewModel.setStartMarkerLocation(location);
         });
     }
 
@@ -170,9 +170,35 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
         mMainViewModel.createPassengerRide(driveId).observe(this, passengerRide -> {
             mMainViewModel.startLocationUpdates();
             mMainViewModel.getUpdatedLocationLiveData().observe(this, location -> {
-                mMainViewModel.updatePassengerRideCurrentLocation(location);
+                mMainViewModel.updatePassengerRideCurrentLocation(location).observe(this, s -> {
+
+                    Timber.d("get passengeride key %s", s);
+                    if(s != null){
+                        getPassengerRidePosition(driveId);
+                    }
+
+                });
             });
         });
+    }
+
+    public void getPassengerRidePosition(String driveId){
+        mMainViewModel.getPassengerRides(driveId).observe(
+                this, passengerRide -> Timber.d("Passenger loc: lat: %s", passengerRide));
+    }
+
+    private void obeserveOtherUsersPositionOnMap(){
+        if(mGetUserType.getType() == PASSENGER){
+
+        } else{
+            mMainViewModel.getPassengerPositionOnMap().observe(this, new Observer<Position>() {
+                @Override
+                public void onChanged(@Nullable Position position) {
+                    Timber.d("Passenger pos: %s", position);
+                }
+            });
+        }
+
     }
 
     private void setUpForDriver() {
@@ -228,20 +254,6 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
             Timber.i("get updated --> minc");
             setDefaultLocationToMinc();
         }*/
-    }
-
-    private void obeserveOtherUsersPositionOnMap(){
-        if(mGetUserType.getType() == PASSENGER){
-
-        } else{
-            mMainViewModel.getPassengerPositionOnMap().observe(this, new Observer<Position>() {
-                @Override
-                public void onChanged(@Nullable Position position) {
-                    Timber.d("Passenger pos: %s", position);
-                }
-            });
-        }
-
     }
 
     private void placeStartLocationMarker() {

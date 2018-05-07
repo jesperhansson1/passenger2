@@ -40,4 +40,5 @@ public interface PassengerRepositoryInterface {
     void removeCar(String carId, String userId);
 
     void updateDriveCurrentLocation(String driverId, Location location);
+
 }

@@ -6,15 +6,15 @@ public class PassengerRide {
 
     private String mDriveId;
     private String mPassengerId;
-    private Position mPassengerPos;
+    private Position mPosition;
 
     public PassengerRide() {
     }
 
-    public PassengerRide(String driveId, String passengerId, Position passengerPos) {
+    public PassengerRide(String driveId, String passengerId, Position position) {
         mDriveId = driveId;
         mPassengerId = passengerId;
-        mPassengerPos = passengerPos;
+        mPosition = position;
     }
 
     public String getDriveId() {
@@ -33,12 +33,12 @@ public class PassengerRide {
         mPassengerId = passegnerId;
     }
 
-    public Position getPassengerPos() {
-        return mPassengerPos;
+    public Position getPosition() {
+        return mPosition;
     }
 
-    public void setPassengerPos(Position passengerPos) {
-        mPassengerPos = passengerPos;
+    public void setPosition(Position passengerPos) {
+        mPosition = passengerPos;
     }
 
     @Override
@@ -46,7 +46,7 @@ public class PassengerRide {
         return "PassengerRide{" +
                 "mDriveId='" + mDriveId + '\'' +
                 ", mPassegnerId='" + mPassengerId + '\'' +
-                ", mPassengerPos=" + mPassengerPos +
+                ", mPosition=" + mPosition +
                 '}';
     }
 

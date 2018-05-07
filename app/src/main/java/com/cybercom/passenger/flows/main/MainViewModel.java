@@ -314,11 +314,15 @@ public class MainViewModel extends AndroidViewModel {
         return mPassengerRepository.createPassengerRide(driveId);
     }
 
-    public void updatePassengerRideCurrentLocation(Location location) {
-        mPassengerRepository.updatePassengerRideCurrentLocation(location);
+    public LiveData<String> updatePassengerRideCurrentLocation(Location location) {
+        return mPassengerRepository.updatePassengerRideCurrentLocation(location);
     }
 
     public LiveData<Position> getPassengerPositionOnMap() {
         return mPassengerRepository.getPassengerPositionOnMap();
+    }
+
+    public LiveData<PassengerRide> getPassengerRides(String driveId) {
+        return mPassengerRepository.getPassengerRides(driveId);
     }
 }
