@@ -16,6 +16,7 @@ import android.support.annotation.NonNull;
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Notification;
+import com.cybercom.passenger.model.PassengerRide;
 import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.repository.PassengerRepository;
@@ -164,7 +165,7 @@ public class MainViewModel extends AndroidViewModel {
         return mPassengerRepository.getUser();
     }
 
-    public void updateUserType(int type){
+    public void updateUserType(int type) {
         mPassengerRepository.updateUserType(type);
     }
 
@@ -178,7 +179,7 @@ public class MainViewModel extends AndroidViewModel {
                 findMatchTimerLiveData.setValue(true);
             }
         }), FIND_MATCH_TIMEOUT_MS);
-        
+
         return findMatchTimerLiveData;
     }
 
@@ -207,7 +208,7 @@ public class MainViewModel extends AndroidViewModel {
         try {
             addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
 
-            if(addresses.size() != 0){
+            if (addresses.size() != 0) {
                 Timber.i(addresses.get(0).toString());
                 return addresses.get(0).getAddressLine(0).split(",")[0];
             }
@@ -299,7 +300,25 @@ public class MainViewModel extends AndroidViewModel {
         mEndMarkerLocation = endMarker;
     }
 
-    public void setEndAddress(MutableLiveData<String> endAddress){
+    public void setEndAddress(MutableLiveData<String> endAddress) {
         mEndLocationAddress = endAddress;
+    }
+
+    @SuppressLint("MissingPermission")
+    public void setCurrentLocationToDrive(String driveId, Location location) {
+        mPassengerRepository.updateDriveCurrentLocation(driveId, location);
+    }
+
+    @SuppressLint("MissingPermission")
+    public LiveData<PassengerRide> createPassengerRide(String driveId) {
+        return mPassengerRepository.createPassengerRide(driveId);
+    }
+
+    public void updatePassengerRideCurrentLocation(Location location) {
+        mPassengerRepository.updatePassengerRideCurrentLocation(location);
+    }
+
+    public LiveData<Position> getPassengerPositionOnMap() {
+        return mPassengerRepository.getPassengerPositionOnMap();
     }
 }

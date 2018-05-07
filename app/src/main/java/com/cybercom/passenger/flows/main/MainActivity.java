@@ -72,7 +72,10 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
     public static final float PLACE_MARKER_INFO_FADE_IN_TO = 1.0f;
     public static final int CREATE_DIALOG_ANIMATION_DURATION = 1000;
     public static final int CREATE_DIALOG_ORIGIN_POSITION = 0;
+    public static final int PASSENGER = 1;
+
     FirebaseUser mUser;
+    User mGetUserType;
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 0;
     MainViewModel mMainViewModel;
     Location mLocation;
@@ -98,6 +101,7 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
     private LiveData<Drive> mFindMatch;
     private LiveData<Boolean> mTimer;
     private Observer<Drive> mMatchObserver;
+    private String mDriveId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -144,7 +148,22 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
         mapFragment.getMapAsync(this);
 
         initObservers();
+    }
 
+    public void sendDriverPositionToDB(String driveId){
+        mMainViewModel.startLocationUpdates();
+        mMainViewModel.getUpdatedLocationLiveData().observe(this, location -> {
+            mMainViewModel.setCurrentLocationToDrive(driveId, location);
+        });
+    }
+
+    public void sendPassengerRideToDB(String driveId){
+        mMainViewModel.createPassengerRide(driveId).observe(this, passengerRide -> {
+            mMainViewModel.startLocationUpdates();
+            mMainViewModel.getUpdatedLocationLiveData().observe(this, location -> {
+                mMainViewModel.updatePassengerRideCurrentLocation(location);
+            });
+        });
     }
 
     private void initObservers() {
@@ -188,6 +207,20 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
             Timber.i("get updated --> minc");
             setDefaultLocationToMinc();
         }*/
+    }
+
+    private void obeserveOtherUsersPositionOnMap(){
+        if(mGetUserType.getType() == PASSENGER){
+
+        } else{
+            mMainViewModel.getPassengerPositionOnMap().observe(this, new Observer<Position>() {
+                @Override
+                public void onChanged(@Nullable Position position) {
+                    Timber.d("Passenger pos: %s", position);
+                }
+            });
+        }
+
     }
 
     private void placeStartLocationMarker() {
@@ -358,12 +391,6 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // mMainViewModel.startLocationUpdates();
-    }
-
     public void initUI() {
         mCreateDriveFragment = CreateDriveFragment.newInstance();
 
@@ -510,6 +537,7 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
 
         PassengerNotificationDialog dFragment = PassengerNotificationDialog.getInstance(notification);
         dFragment.show(getSupportFragmentManager(), PassengerNotificationDialog.TAG);
+        sendPassengerRideToDB(notification.getDrive().getId());
     }
 
     @Override
@@ -681,7 +709,10 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
         switch (type) {
             case User.TYPE_DRIVER:
                 mMainViewModel.createDrive(time, startLocation, endLocation, seats).observe(this, drive -> {
-                    Timber.i("Drive created: %s", drive);
+                    mDriveId = drive.getId();
+
+                    sendDriverPositionToDB(drive.getId());
+                    Timber.i("Drive created: %s", drive.getId());
                     mCreateDriveFragment.setDefaultValuesToDialog();
                 });
                 break;
