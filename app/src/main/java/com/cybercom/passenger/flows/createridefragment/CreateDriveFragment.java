@@ -52,8 +52,14 @@ public class CreateDriveFragment extends Fragment {
     public static final String EMPTY_STRING = "";
     public static final int DEFAULT_PASSENGER_DRIVE_REQUEST = 1;
     private static final int DEFAULT_PASSENGER_DRIVE = 4;
+    public static final int DOWN_ARROW_ROTATION = 180;
+    public static final int DIALOG_ANIMATION_DURATION = 300;
+    public static final int ARROW_ANIMATION_DURATION = 500;
+    public static final int UP_ARROW_ANIMATION = 0;
+    public static final int MARGIN = 40;
     private CreateRideFragmentListener mCreateRideDialogListener;
     private boolean isCreateDialogUp = true;
+    private float DEFAULT_SHOW_AND_HIDE_POSITION = 0;
 
     public interface OnPlaceMarkerIconClickListener {
         void onPlaceMarkerIconClicked();
@@ -338,16 +344,16 @@ public class CreateDriveFragment extends Fragment {
     }
 
     public void showCreateDialog(){
-        mCreateDriveDialog.animate().translationY(0).setDuration(300);
-        mShowAndHide.animate().rotation(180).setDuration(300);
+        mCreateDriveDialog.animate().translationY(DEFAULT_SHOW_AND_HIDE_POSITION).setDuration(DIALOG_ANIMATION_DURATION);
+        mShowAndHide.animate().rotation(DOWN_ARROW_ROTATION).setDuration(ARROW_ANIMATION_DURATION);
     }
 
     public void hideCreateDialog(){
         mStartLocation.clearFocus();
         mCreateDriveDialog.animate()
-                .translationY(mCreateDriveDialog.getHeight() - mShowAndHide.getMeasuredHeight())
-                .setDuration(300);
-        mShowAndHide.animate().rotation(0).setDuration(300);
+                .translationY((mCreateDriveDialog.getHeight() + MARGIN) - mShowAndHide.getHeight())
+                .setDuration(DIALOG_ANIMATION_DURATION);
+        mShowAndHide.animate().rotation(UP_ARROW_ANIMATION).setDuration(ARROW_ANIMATION_DURATION);
 
     }
 

@@ -13,7 +13,7 @@
     android:id="@+id/create_drive_dialog"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="16dp"
+    android:layout_margin="@dimen/activity_margin"
     android:clickable="true"
     android:focusable="true"
     app:cardCornerRadius="@dimen/dialog_default_corner_radius"
