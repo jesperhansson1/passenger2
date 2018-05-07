@@ -14,6 +14,7 @@ import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
@@ -31,6 +32,7 @@ import com.cybercom.passenger.flows.createridefragment.CreateDriveFragment;
 import com.cybercom.passenger.flows.driverconfirmation.AcceptRejectPassengerDialog;
 import com.cybercom.passenger.flows.login.RegisterActivity;
 import com.cybercom.passenger.flows.passengernotification.PassengerNotificationDialog;
+import com.cybercom.passenger.flows.progressfindingcar.FindingCarProgressDialog;
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Notification;
@@ -57,7 +59,7 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
-public class MainActivity extends AppCompatActivity implements CreateDriveFragment.CreateRideFragmentListener, AcceptRejectPassengerDialog.ConfirmationListener, PassengerNotificationDialog.PassengerNotificationListener, OnMapReadyCallback, GoogleMap.OnMarkerDragListener, GoogleMap.OnCameraMoveStartedListener, GoogleMap.OnMapLongClickListener, GoogleMap.OnMapClickListener, CreateDriveFragment.OnPlaceMarkerIconClickListener, ParserTask.OnRouteCompletion, CreateDriveFragment.OnFinishedCreatingDriveOrDriveRequest {
+public class MainActivity extends AppCompatActivity implements CreateDriveFragment.CreateRideFragmentListener, AcceptRejectPassengerDialog.ConfirmationListener, PassengerNotificationDialog.PassengerNotificationListener, OnMapReadyCallback, GoogleMap.OnMarkerDragListener, GoogleMap.OnCameraMoveStartedListener, GoogleMap.OnMapLongClickListener, GoogleMap.OnMapClickListener, CreateDriveFragment.OnPlaceMarkerIconClickListener, ParserTask.OnRouteCompletion, CreateDriveFragment.OnFinishedCreatingDriveOrDriveRequest, FindingCarProgressDialog.FindingCarListener {
 
     private static final float ZOOM_LEVEL_WORLD = 1;
     private static final float ZOOM_LEVEL_LANDMASS_CONTINENT = 5;
@@ -85,7 +87,8 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
 
     private GoogleMap mGoogleMap;
     private Marker mStartLocationMarker;
-    private boolean isStartLocationMarkerAdded = false;    private Marker mEndLocationMarker;
+    private boolean isStartLocationMarkerAdded = false;
+    private Marker mEndLocationMarker;
 
     private int mMarkerCount = 0;
     private boolean isEndLocationMarkerAdded = false;
@@ -93,6 +96,9 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
     private Observer<Location> endLocationObserver;
     private Observer<Location> mEndLocationObserver;
     private Observer<Location> mStartLocationObserver;
+    private LiveData<Drive> mFindMatch;
+    private LiveData<Boolean> mTimer;
+    private Observer<Drive> mMatchObserver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -169,6 +175,7 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
                         break;
                     case Notification.ACCEPT_PASSENGER:
                         showPassengerNotificationDialog(notification);
+                        dismissMatchingInProgressDialog();
                         break;
                     case Notification.REJECT_PASSENGER:
                         matchDriveRequest(notification.getDriveRequest());
@@ -291,34 +298,55 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
     private void matchDriveRequest(final DriveRequest driveRequest) {
         final LifecycleOwner lifecycleOwner = this;
 
-        final LiveData<Drive> findMatch = mMainViewModel.findBestDriveMatch(driveRequest);
+        mFindMatch = mMainViewModel.findBestDriveMatch(driveRequest);
 
-        final LiveData<Boolean> timerObserver = mMainViewModel.setFindMatchTimer();
-        final Observer<Drive> matchObserver = new Observer<Drive>() {
-            @Override
-            public void onChanged(@Nullable Drive drive) {
-                if (drive != null) {
-                    Timber.i("matched drive %s", drive);
-                    mMainViewModel.addRequestDriveNotification(driveRequest, drive);
-                    findMatch.removeObservers(lifecycleOwner);
-                    timerObserver.removeObservers(lifecycleOwner);
-                } else {
-                    Timber.i("No drives match for the moment. Keep listening.");
-                }
+        showMatchingInProgressDialog();
+
+        mTimer = mMainViewModel.setFindMatchTimer();
+
+        mMatchObserver = drive -> {
+            if (drive != null) {
+                Timber.i("matched drive %s", drive);
+                mMainViewModel.addRequestDriveNotification(driveRequest, drive);
+                mFindMatch.removeObservers(lifecycleOwner);
+            } else {
+                Timber.i("No drives match for the moment. Keep listening.");
             }
         };
 
-        findMatch.observe(lifecycleOwner, matchObserver);
+        mFindMatch.observe(lifecycleOwner, mMatchObserver);
 
-        timerObserver.observe(lifecycleOwner, new Observer<Boolean>() {
-            @Override
-            public void onChanged(@Nullable Boolean aBoolean) {
-                Toast.makeText(MainActivity.this, R.string.main_activity_match_not_found_message,
-                        Toast.LENGTH_LONG).show();
-                findMatch.removeObserver(matchObserver);
-                timerObserver.removeObservers(lifecycleOwner);
-            }
+        mTimer.observe(lifecycleOwner, aBoolean -> {
+            Toast.makeText(MainActivity.this, R.string.main_activity_match_not_found_message,
+                    Toast.LENGTH_LONG).show();
+            cancelMatchingDrive();
         });
+    }
+
+    private void cancelMatchingDrive() {
+        final LifecycleOwner lifecycleOwner = this;
+        if (mFindMatch != null) mFindMatch.removeObserver(mMatchObserver);
+        if (mTimer != null) mTimer.removeObservers(lifecycleOwner);
+        dismissMatchingInProgressDialog();
+    }
+
+    private void showMatchingInProgressDialog() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        DialogFragment f = (DialogFragment)fragmentManager.findFragmentByTag(FindingCarProgressDialog.MATCHING_IN_PROGRESS);
+
+        if (f != null) {
+            f.dismiss();
+        }
+
+        FindingCarProgressDialog findingCarProgressDialog = FindingCarProgressDialog.getInstance();
+        findingCarProgressDialog.show(fragmentManager, FindingCarProgressDialog.MATCHING_IN_PROGRESS);
+    }
+
+    private void dismissMatchingInProgressDialog() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+
+        DialogFragment f = (DialogFragment)fragmentManager.findFragmentByTag(FindingCarProgressDialog.MATCHING_IN_PROGRESS);
+        if (f != null) f.dismiss();
     }
 
 
@@ -726,5 +754,10 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
                 });
                 break;
         }
+    }
+
+    @Override
+    public void onCancelFindingCarPressed(Boolean isCancelPressed) {
+        cancelMatchingDrive();
     }
 }
