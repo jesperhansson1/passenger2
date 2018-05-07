@@ -17,6 +17,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -85,7 +86,8 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
 
     private GoogleMap mGoogleMap;
     private Marker mStartLocationMarker;
-    private boolean isStartLocationMarkerAdded = false;    private Marker mEndLocationMarker;
+    private boolean isStartLocationMarkerAdded = false;
+    private Marker mEndLocationMarker;
 
     private int mMarkerCount = 0;
     private boolean isEndLocationMarkerAdded = false;
@@ -93,6 +95,7 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
     private Observer<Location> endLocationObserver;
     private Observer<Location> mEndLocationObserver;
     private Observer<Location> mStartLocationObserver;
+    private CardView mCreateDriveCard;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -358,9 +361,18 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
         mFloatRide.setImageResource(R.drawable.passenger);
         mCreateDriveFragment = CreateDriveFragment.newInstance();
 
+        mMainViewModel.getLastKnownLocation(location -> {
+            mMainViewModel.setStartMarkerLocation(location);
+            placeStartLocationMarker();
+            mFragmentManager.beginTransaction()
+                    .replace(R.id.main_activity_dialog_container, mCreateDriveFragment).commit();
+
+
+        });
+
         mPlaceMarkerInformation = findViewById(R.id.main_activity_place_marker_info);
 
-        mFloatRide.setOnClickListener(view -> {
+       /* mFloatRide.setOnClickListener(view -> {
             showFragment(mCreateDriveFragment);
             if (!isStartLocationMarkerAdded) {
                 mMainViewModel.getLastKnownLocation(location -> {
@@ -370,17 +382,21 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
             }
             mFloatRide.setVisibility(View.INVISIBLE);
             isCreateDriveFragmentVisible = true;
-        });
-
+        });*/
 
     }
 
+    public void hideCreateDialog(){
+        mCreateDriveCard = findViewById(R.id.create_drive_dialog);
+        mCreateDriveCard.animate().translationY(mCreateDriveCard.getHeight() - 64).setDuration(2000);
+    }
 
     private Boolean isFragmentAdded = false;
 
     public void showFragment(Fragment fragment) {
         if (isFragmentAdded) {
-            mPlaceMarkerInformation.animate().alpha(PLACE_MARKER_INFO_FADE_OUT_TO).setDuration(PLACE_MARKER_INFO_FADE_DURATION);
+            mPlaceMarkerInformation.animate().alpha(PLACE_MARKER_INFO_FADE_OUT_TO)
+                    .setDuration(PLACE_MARKER_INFO_FADE_DURATION);
             mFragmentManager.beginTransaction()
                     .setCustomAnimations(R.anim.dialog_enter_animation, R.anim.dialog_exit_animation)
                     .show(fragment).commit();
@@ -423,7 +439,7 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
             return;
         }
 
-            mGoogleMap.setMyLocationEnabled(true);
+        mGoogleMap.setMyLocationEnabled(true);
 
 
         placeEndLocationMarker();
@@ -528,7 +544,7 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
 
     private void showDriverConfirmationDialogFragment(Notification notification) {
         FragmentManager fragmentManager = getSupportFragmentManager();
-        AcceptRejectPassengerDialog dialogFragment = (AcceptRejectPassengerDialog)fragmentManager.findFragmentByTag(AcceptRejectPassengerDialog.TAG);
+        AcceptRejectPassengerDialog dialogFragment = (AcceptRejectPassengerDialog) fragmentManager.findFragmentByTag(AcceptRejectPassengerDialog.TAG);
         if (dialogFragment != null) dialogFragment.dismiss();
 
         AcceptRejectPassengerDialog dFragment = AcceptRejectPassengerDialog.getInstance(notification);
@@ -537,7 +553,7 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
 
     private void showPassengerNotificationDialog(Notification notification) {
         FragmentManager fragmentManager = getSupportFragmentManager();
-        PassengerNotificationDialog dialogFragment = (PassengerNotificationDialog)fragmentManager.findFragmentByTag(PassengerNotificationDialog.TAG);
+        PassengerNotificationDialog dialogFragment = (PassengerNotificationDialog) fragmentManager.findFragmentByTag(PassengerNotificationDialog.TAG);
         if (dialogFragment != null) dialogFragment.dismiss();
 
         PassengerNotificationDialog dFragment = PassengerNotificationDialog.getInstance(notification);
@@ -548,6 +564,7 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
     public void onCameraMoveStarted(int reason) {
         if (reason == GoogleMap.OnCameraMoveStartedListener.REASON_GESTURE
                 && isFragmentAdded) {
+
             hideFragmentAnimation(mCreateDriveFragment);
         }
     }
@@ -613,7 +630,8 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
 
     @Override
     public void onMapClick(LatLng latLng) {
-        hideFragmentAnimation(mCreateDriveFragment);
+        hideCreateDialog();
+        //hideFragmentAnimation(mCreateDriveFragment);
     }
 
     @Override
@@ -625,12 +643,12 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
     @Override
     public void onPlaceMarkerIconClicked() {
 
-        switch (mMainViewModel.getWhichMarkerToAdd()){
-            case MainViewModel.PLACE_START_MARKER:{
+        switch (mMainViewModel.getWhichMarkerToAdd()) {
+            case MainViewModel.PLACE_START_MARKER: {
                 mPlaceMarkerInformation.setText(R.string.place_start_marker_information_text);
                 break;
             }
-            case MainViewModel.PLACE_END_MARKER:{
+            case MainViewModel.PLACE_END_MARKER: {
                 mPlaceMarkerInformation.setText(R.string.place_end_marker_information_text);
                 break;
             }
