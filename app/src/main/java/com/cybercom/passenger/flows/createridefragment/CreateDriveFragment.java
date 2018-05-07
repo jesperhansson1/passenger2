@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.CardView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +18,7 @@ import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RadioGroup;
@@ -38,7 +40,6 @@ import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.RuntimeRemoteException;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
 import timber.log.Timber;
@@ -49,7 +50,16 @@ public class CreateDriveFragment extends Fragment {
     public static final int DELAY_CLOSE_TIME_DATE_PICKER = 2000;
     public static final int DEFAULT_PASSENGERS = 4;
     public static final String EMPTY_STRING = "";
+    public static final int DEFAULT_PASSENGER_DRIVE_REQUEST = 1;
+    private static final int DEFAULT_PASSENGER_DRIVE = 4;
+    public static final int DOWN_ARROW_ROTATION = 180;
+    public static final int DIALOG_ANIMATION_DURATION = 300;
+    public static final int ARROW_ANIMATION_DURATION = 500;
+    public static final int UP_ARROW_ANIMATION = 0;
+    public static final int MARGIN = 40;
     private CreateRideFragmentListener mCreateRideDialogListener;
+    private boolean mIsCreateDialogUp = true;
+    private static final float DEFAULT_SHOW_AND_HIDE_POSITION = 0;
 
     public interface OnPlaceMarkerIconClickListener {
         void onPlaceMarkerIconClicked();
@@ -77,6 +87,8 @@ public class CreateDriveFragment extends Fragment {
     private RadioGroup mTimeSelection;
     private EditText mShowSelectedTime;
     private long mTimeSelected;
+    private FrameLayout mShowAndHide;
+    private CardView mCreateDriveDialog;
 
     private SingleDateAndTimePicker mDateTimePicker;
 
@@ -132,6 +144,8 @@ public class CreateDriveFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_create_drive, container, false);
+
+        mCreateDriveDialog = view.findViewById(R.id.create_drive_dialog);
         mHandler = new Handler();
 
         mTimeSelected = System.currentTimeMillis();
@@ -153,6 +167,7 @@ public class CreateDriveFragment extends Fragment {
                 case R.id.create_drive_button_right_now: {
                     mDateTimePicker.setVisibility(View.GONE);
                     mTimeSelected = System.currentTimeMillis();
+                    mShowSelectedTime.setVisibility(View.GONE);
                     break;
                 }
                 case R.id.create_drive_button_time: {
@@ -243,6 +258,18 @@ public class CreateDriveFragment extends Fragment {
 
         });
 
+        mShowAndHide = view.findViewById(R.id.create_drive_show_and_hide);
+        mShowAndHide.setOnClickListener(v -> {
+            if(mIsCreateDialogUp){
+                hideCreateDialog();
+            }else{
+                showCreateDialog();
+            }
+
+            mIsCreateDialogUp = !mIsCreateDialogUp;
+
+        });
+
         return view;
     }
 
@@ -294,10 +321,12 @@ public class CreateDriveFragment extends Fragment {
     }
 
     private void setUpDialogForDrive() {
+        mMainViewModel.setNumberOfPassengers(DEFAULT_PASSENGER_DRIVE);
         mCreateRide.setText(R.string.create_ride);
     }
 
     private void setUpDialogForDriveRequest() {
+        mMainViewModel.setNumberOfPassengers(DEFAULT_PASSENGER_DRIVE_REQUEST);
         mCreateRide.setText(R.string.create_drive_find_ride);
     }
 
@@ -313,8 +342,23 @@ public class CreateDriveFragment extends Fragment {
         mNumberOfPassengers.setText(String.valueOf(mMainViewModel.getNumberOfPassengers()));
     }
 
+    public void showCreateDialog(){
+        mCreateDriveDialog.animate().translationY(DEFAULT_SHOW_AND_HIDE_POSITION).setDuration(DIALOG_ANIMATION_DURATION);
+        mShowAndHide.animate().rotation(DOWN_ARROW_ROTATION).setDuration(ARROW_ANIMATION_DURATION);
+    }
+
+    public void hideCreateDialog(){
+        mStartLocation.clearFocus();
+        mCreateDriveDialog.animate()
+                .translationY((mCreateDriveDialog.getHeight() + MARGIN) - mShowAndHide.getHeight())
+                .setDuration(DIALOG_ANIMATION_DURATION);
+        mShowAndHide.animate().rotation(UP_ARROW_ANIMATION).setDuration(ARROW_ANIMATION_DURATION);
+
+    }
+
     private AdapterView.OnItemClickListener mStartLocationAutoCompleteClickListener
             = new AdapterView.OnItemClickListener() {
+        @SuppressLint("RestrictedApi")
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
@@ -322,31 +366,27 @@ public class CreateDriveFragment extends Fragment {
             final String locationId = location != null ? location.getPlaceId() : null;
 
             mGeoDataClient.getPlaceById(locationId)
-                    .addOnCompleteListener(new OnCompleteListener<PlaceBufferResponse>() {
-                        @SuppressLint("RestrictedApi")
-                        @Override
-                        public void onComplete(@NonNull Task<PlaceBufferResponse> task) {
-                            try {
-                                PlaceBufferResponse locations = task.getResult();
-                                Place clickedLocation = locations.get(0);
+                    .addOnCompleteListener((Task<PlaceBufferResponse> task) -> {
+                        try {
+                            PlaceBufferResponse locations = task.getResult();
+                            Place clickedLocation = locations.get(0);
 
-                                if (getActivity() != null) {
-                                    InputMethodManager imm = (InputMethodManager) getActivity()
-                                            .getSystemService(Activity.INPUT_METHOD_SERVICE);
-                                    if (imm != null) {
-                                        imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY,
-                                                0);
-                                    }
-
-                                    mMainViewModel.setStartMarkerLocation(LocationHelper
-                                            .convertLatLngToLocation(clickedLocation.getLatLng()));
-
-                                    locations.release();
+                            if (getActivity() != null) {
+                                InputMethodManager imm = (InputMethodManager) getActivity()
+                                        .getSystemService(Activity.INPUT_METHOD_SERVICE);
+                                if (imm != null) {
+                                    imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY,
+                                            0);
                                 }
 
-                            } catch (RuntimeRemoteException e) {
-                                Timber.e("Couldn't find location. &s", e);
+                                mMainViewModel.setStartMarkerLocation(LocationHelper
+                                        .convertLatLngToLocation(clickedLocation.getLatLng()));
+
+                                locations.release();
                             }
+
+                        } catch (RuntimeRemoteException e) {
+                            Timber.e("Couldn't find location. &s", e);
                         }
                     });
         }
@@ -361,29 +401,26 @@ public class CreateDriveFragment extends Fragment {
             final String locationId = location != null ? location.getPlaceId() : null;
 
             mGeoDataClient.getPlaceById(locationId)
-                    .addOnCompleteListener(new OnCompleteListener<PlaceBufferResponse>() {
-                        @SuppressLint("RestrictedApi")
-                        @Override
-                        public void onComplete(@NonNull Task<PlaceBufferResponse> task) {
-                            try {
-                                PlaceBufferResponse locations = task.getResult();
-                                Place clickedLocation = locations.get(0);
+                    .addOnCompleteListener(task -> {
+                        try {
+                            PlaceBufferResponse locations = task.getResult();
+                            Place clickedLocation = locations.get(0);
 
-                                if (getActivity() != null) {
-                                    InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Activity.INPUT_METHOD_SERVICE);
-                                    if (imm != null) {
-                                        imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
-                                    }
-
-                                    mMainViewModel.setEndMarkerLocation(LocationHelper
-                                            .convertLatLngToLocation(clickedLocation.getLatLng()));
-
-                                    locations.release();
+                            if (getActivity() != null) {
+                                InputMethodManager imm = (InputMethodManager)
+                                        getActivity().getSystemService(Activity.INPUT_METHOD_SERVICE);
+                                if (imm != null) {
+                                    imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
                                 }
 
-                            } catch (RuntimeRemoteException e) {
-                                Timber.e("Couldn't find location. &s", e);
+                                mMainViewModel.setEndMarkerLocation(LocationHelper
+                                        .convertLatLngToLocation(clickedLocation.getLatLng()));
+
+                                locations.release();
                             }
+
+                        } catch (RuntimeRemoteException e) {
+                            Timber.e("Couldn't find location. &s", e);
                         }
                     });
         }

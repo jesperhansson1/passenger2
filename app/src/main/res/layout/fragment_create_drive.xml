@@ -4,7 +4,8 @@
     android:layout_height="wrap_content"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:id="@+id/create_drive_container">
 
 <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -12,7 +13,7 @@
     android:id="@+id/create_drive_dialog"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="16dp"
+    android:layout_margin="@dimen/activity_margin"
     android:clickable="true"
     android:focusable="true"
     app:cardCornerRadius="@dimen/dialog_default_corner_radius"
@@ -23,17 +24,36 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <FrameLayout
+            android:id="@+id/create_drive_show_and_hide"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:rotation="180"
+            >
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_keyboard_arrow"/>
+        </FrameLayout>
+
         <AutoCompleteTextView
             android:id="@+id/create_drive_start_location"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/activity_margin"
-            android:layout_marginTop="@dimen/activity_margin"
+            android:layout_marginTop="0dp"
+            android:textCursorDrawable="@null"
             android:backgroundTint="@color/colorLightBlue"
+            android:textColor="@color/colorBlack"
             android:hint="@string/start_location"
             app:layout_constraintEnd_toStartOf="@+id/place_start_location"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@+id/create_drive_show_and_hide" />
 
         <ImageView
             android:id="@+id/place_start_location"
@@ -44,7 +64,6 @@
             android:src="@drawable/ic_map"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/create_drive_start_location" />
-
 
         <AutoCompleteTextView
             android:id="@+id/create_drive_end_location"
