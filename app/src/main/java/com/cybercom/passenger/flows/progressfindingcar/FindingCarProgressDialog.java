@@ -19,8 +19,10 @@ import timber.log.Timber;
 
 public class FindingCarProgressDialog extends DialogFragment implements View.OnClickListener {
 
+    public static final String MATCHING_IN_PROGRESS = "MATCHING_IN_PROGRESS";
+
     public interface FindingCarListener {
-        void onCancelPressed(Boolean isCancelPressed);
+        void onCancelFindingCarPressed(Boolean isCancelPressed);
     }
 
     public static FindingCarProgressDialog getInstance() {
@@ -75,7 +77,7 @@ public class FindingCarProgressDialog extends DialogFragment implements View.OnC
         switch (v.getId()){
             case R.id.finding_car_cancel:{
                 Timber.i("Finding car cancel button pressed");
-                mFindingCarListener.onCancelPressed(true);
+                mFindingCarListener.onCancelFindingCarPressed(true);
                 dismiss();
                 break;
             }

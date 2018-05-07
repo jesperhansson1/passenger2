@@ -495,19 +495,19 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     }
 
     private void addToNotificationQueue(Notification notification) {
+        Timber.d("Add %s to notification queue", notification.toString());
         mNotificationQueue.add(notification);
-        if (mNotification.getValue() == null) {
-            mNotification.postValue(mNotificationQueue.poll());
+        if (mNotificationQueue.size() == 1) {
+            mNotification.postValue(mNotificationQueue.peek());
         }
+        Timber.d("Notifcation queue size after add: %d", mNotificationQueue.size());
     }
 
-    public void pollNotificationQueue(Notification notification) {
-        mNotificationQueue.remove(notification);
-        mNotification.postValue(mNotificationQueue.poll());
-    }
-
-    public void dismissNotification() {
-        mNotification.postValue(null);
+    public void getNextNotification(Notification notification) {
+        Notification n = mNotificationQueue.poll();
+        Timber.d("Get next notification: %s", notification.toString());
+        mNotification.postValue(mNotificationQueue.peek());
+        Timber.d("Notifcation queue size after get: %d", mNotificationQueue.size());
     }
 
     public LiveData<Drive> createDrive(long time, Position startLocation, Position endLocation, int availableSeats) {

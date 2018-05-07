@@ -11,8 +11,8 @@ android {
         applicationId "com.cybercom.passenger"
         minSdkVersion 21
         targetSdkVersion 27
-        versionCode 1
-        versionName "0.01 - sprint2"
+        versionCode 2
+        versionName "0.02 - sprint3_5"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
