@@ -3,7 +3,6 @@ package com.cybercom.passenger.flows.main;
 import android.Manifest;
 import android.arch.lifecycle.LifecycleOwner;
 import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
@@ -11,7 +10,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.Nullable;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
@@ -70,8 +69,8 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
     private static final float ZOOM_LEVEL_BUILDINGS = 20;
 
     private static final String TAG = "complete";
-    public static final int DELAY_BEFORE_SHOWING_CREATE_DRIVE_AFTER_LOCATION_CHANGED = 2000;
-    public static final int DELAY_BEFORE_ZOOM_TO_FIT_ROUTE = 1500;
+    public static final int DELAY_BEFORE_SHOWING_CREATE_DRIVE_AFTER_LOCATION_CHANGED = 1500;
+    public static final int DELAY_BEFORE_ZOOM_TO_FIT_ROUTE = 1000;
     public static final int PLACE_MARKER_INFO_FADE_DURATION = 1000;
     public static final float PLACE_MARKER_INFO_FADE_OUT_TO = 0.0f;
     public static final float PLACE_MARKER_INFO_FADE_IN_TO = 1.0f;
@@ -97,7 +96,6 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
     private int mMarkerCount = 0;
     private boolean isEndLocationMarkerAdded = false;
     private Polyline mRoute;
-    private Observer<Location> endLocationObserver;
     private Observer<Location> mEndLocationObserver;
     private Observer<Location> mStartLocationObserver;
     private CardView mCreateDriveCard;
@@ -127,16 +125,11 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
         if (mUser != null) {
             mMainViewModel.refreshToken(FirebaseInstanceId.getInstance().getToken());
 
-            mMainViewModel.getUser().observe(this, new Observer<User>() {
-                @Override
-                public void onChanged(@Nullable User user) {
-                    Timber.i("User: %s logged in", user);
-                    if (user != null) {
-                        if (user.getType() == User.TYPE_DRIVER) {
-                          //  setUpForDriver();
-                        } else {
-                          //  setUpForPassenger();
-                        }
+            mMainViewModel.getUser().observe(this, user -> {
+                Timber.i("User: %s logged in", user);
+                if (user != null) {
+                    if (user.getType() == User.TYPE_DRIVER) {
+                    } else {
                     }
                 }
             });
@@ -158,34 +151,23 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
 
     }
 
-    private void setUpForDriver() {
-        mFloatRide.setImageResource(R.drawable.driver_floating_button);
-    }
-
-    private void setUpForPassenger() {
-        mFloatRide.setImageResource(R.drawable.passenger);
-    }
-
     private void initObservers() {
-        mMainViewModel.getIncomingNotifications().observe(this, new Observer<Notification>() {
-            @Override
-            public void onChanged(@Nullable final Notification notification) {
-                if (notification == null) return;
-                Timber.d("Notification to be displayed: %s", notification.toString());
+        mMainViewModel.getIncomingNotifications().observe(this, notification -> {
+            if (notification == null) return;
+            Timber.d("Notification to be displayed: %s", notification.toString());
 
-                switch (notification.getType()) {
-                    case Notification.REQUEST_DRIVE:
-                        showDriverConfirmationDialogFragment(notification);
-                        break;
-                    case Notification.ACCEPT_PASSENGER:
-                        showPassengerNotificationDialog(notification);
-                        dismissMatchingInProgressDialog();
-                        break;
-                    case Notification.REJECT_PASSENGER:
-                        matchDriveRequest(notification.getDriveRequest());
-                        mMainViewModel.getNextNotification(notification);
-                        break;
-                }
+            switch (notification.getType()) {
+                case Notification.REQUEST_DRIVE:
+                    showDriverConfirmationDialogFragment(notification);
+                    break;
+                case Notification.ACCEPT_PASSENGER:
+                    showPassengerNotificationDialog(notification);
+                    dismissMatchingInProgressDialog();
+                    break;
+                case Notification.REJECT_PASSENGER:
+                    matchDriveRequest(notification.getDriveRequest());
+                    mMainViewModel.getNextNotification(notification);
+                    break;
             }
         });
 
@@ -606,13 +588,10 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
         if (mMainViewModel.getWhichMarkerToAdd() == MainViewModel.PLACE_START_MARKER) {
             mMainViewModel.setStartMarkerLocation(LocationHelper.convertLatLngToLocation(latLng));
             placeStartLocationMarker();
-
-
         }
         if (mMainViewModel.getWhichMarkerToAdd() == MainViewModel.PLACE_END_MARKER) {
             mMainViewModel.setEndMarkerLocation(LocationHelper.convertLatLngToLocation(latLng));
             placeEndLocationMarker();
-
         }
 
         hidePlaceMarkerInformation();
@@ -693,7 +672,7 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
     private void hidePlaceMarkerInformation(){
         mPlaceMarkerInformation.animate().alpha(PLACE_MARKER_INFO_FADE_OUT_TO)
                 .setDuration(PLACE_MARKER_INFO_FADE_DURATION);
-    };
+    }
 
     private void showPlaceMarkerInformation() {
         mPlaceMarkerInformation.animate().alpha(PLACE_MARKER_INFO_FADE_IN_TO)
@@ -703,25 +682,20 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
     @Override
     public void onFinish() {
         mGoogleMap.clear();
-        isFragmentAdded = false;
         isStartLocationMarkerAdded = false;
         isEndLocationMarkerAdded = false;
         isCreateDriveFragmentVisible = true;
-        mMainViewModel.getEndMarkerLocation().removeObserver(mEndLocationObserver);
-        mMainViewModel.setEndMarker(new MutableLiveData<>());
-        mMainViewModel.setEndAddress(new MutableLiveData<>());
-        mMarkerCount = 0;
         mMainViewModel.getStartMarkerLocation().removeObserver(mStartLocationObserver);
+        mMainViewModel.getEndMarkerLocation().removeObserver(mEndLocationObserver);
+
+        mMarkerCount = 0;
+
     }
 
-    public void removeFragment() {
-        getSupportFragmentManager().beginTransaction().remove(mCreateDriveFragment).commit();
-        mCreateDriveFragment = CreateDriveFragment.newInstance();
-    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
+                                           @NonNull String permissions[], @NonNull int[] grantResults) {
         switch (requestCode) {
             case MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION: {
                 // If request is cancelled, the result arrays are empty.
