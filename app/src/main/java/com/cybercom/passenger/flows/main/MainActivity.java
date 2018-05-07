@@ -162,9 +162,11 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
     }
 
     public void sendPassengerRideToDB(String driveId){
-        mMainViewModel.startLocationUpdates();
-        mMainViewModel.getUpdatedLocationLiveData().observe(this, location -> {
-            mMainViewModel.sendPassengerRideToDB(driveId, location);
+        mMainViewModel.createPassengerRide(driveId).observe(this, passengerRide -> {
+            mMainViewModel.startLocationUpdates();
+            mMainViewModel.getUpdatedLocationLiveData().observe(this, location -> {
+                mMainViewModel.updatePassengerRideCurrentLocation(location);
+            });
         });
     }
 

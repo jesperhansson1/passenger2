@@ -1,19 +1,19 @@
-package com.cybercom.passenger.repository.databasemodel;
-
-import com.cybercom.passenger.model.Position;
+package com.cybercom.passenger.model;
 
 public class PassengerRide {
 
+    private String mId;
     private String mDriveId;
-    private String mPassengerId;
+    private String mPassegnerId;
     private Position mPassengerPos;
 
     public PassengerRide() {
     }
 
-    public PassengerRide(String driveId, String passengerId, Position passengerPos) {
+    public PassengerRide(String id, String driveId, String passengerId, Position passengerPos) {
+        mId = id;
         mDriveId = driveId;
-        mPassengerId = passengerId;
+        mPassegnerId = passengerId;
         mPassengerPos = passengerPos;
     }
 
@@ -25,12 +25,12 @@ public class PassengerRide {
         mDriveId = driveId;
     }
 
-    public String getPassengerId() {
-        return mPassengerId;
+    public String getPassegnerId() {
+        return mPassegnerId;
     }
 
-    public void setPassengerId(String passegnerId) {
-        mPassengerId = passegnerId;
+    public void setPassegnerId(String passegnerId) {
+        mPassegnerId = passegnerId;
     }
 
     public Position getPassengerPos() {
@@ -45,9 +45,16 @@ public class PassengerRide {
     public String toString() {
         return "PassengerRide{" +
                 "mDriveId='" + mDriveId + '\'' +
-                ", mPassegnerId='" + mPassengerId + '\'' +
+                ", mPassegnerId='" + mPassegnerId + '\'' +
                 ", mPassengerPos=" + mPassengerPos +
                 '}';
     }
 
+    public String getId() {
+        return mId;
+    }
+
+    public void setId(String mId) {
+        this.mId = mId;
+    }
 }

@@ -14,6 +14,7 @@ import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.repository.databasemodel.PassengerRide;
 import com.cybercom.passenger.repository.databasemodel.utils.DatabaseModelHelper;
+import com.cybercom.passenger.utils.LocationHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -62,6 +63,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private static final String NOTIFICATION_TYPE_KEY = "type";
     private static final String KEY_PAYLOAD_DRIVE_REQUEST_ID = "driveRequest";
     private static final String KEY_PAYLOAD_DRIVE_ID = "driveId";
+    private static final String KEY_PASSENGER_ID = "passengerId";
     private static final String CURRENT_POSITION = "currentPosition";
     private static final String LATITUDE = "latitude";
     private static final String LONGITUDE = "longitude";
@@ -660,8 +662,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         return mCarList;
     }
 
-    public void setCurrentLocationToDrive(String driveId, Location location) {
-        Timber.d("Last location: %s, %s ID %s", location.getLatitude(), location.getLongitude(), driveId);
+    public void updateDriveCurrentLocation(String driveId, Location location) {
         if(driveId != null){
             Map<String,Object> locationMap = new HashMap<>();
             locationMap.put(LATITUDE, location.getLatitude());
@@ -670,20 +671,60 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         }
     }
 
-    public void setPassengerRideCurrentLocation(String driveId, Location location) {
+    public void updatePassengerRideCurrentLocation(Location location) {
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        Timber.d("Last location: %s, %s ID %s, USERID %s ", location.getLatitude(), location.getLongitude(), driveId, firebaseUser.getUid());
+        String uId = firebaseUser.getUid();
 
-        Position passengerPosition = new Position(null, location.getLatitude(), location.getLongitude());
-        PassengerRide passengerRide = new PassengerRide(driveId, firebaseUser.getUid(), passengerPosition);
-        mPassengerRideReference.child(driveId).setValue(passengerRide);
+        if (firebaseUser != null) {
+            mPassengerRideReference.orderByChild(KEY_PASSENGER_ID).equalTo(uId)
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+
+                                String passengerRideKey = snapshot.getKey();
+                                mPassengerRideReference.child(passengerRideKey).child("position")
+                                        .setValue(LocationHelper.convertLocationToPosition(location));
+                            }
+                        }
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+                            Timber.i("updatePassengerRideCurrentLocation Cancelled");
+                        }
+                    });
+        }
     }
 
-    public void updatePassengerRideCurrentLocation(String driveId, Location location) {
+    public LiveData<com.cybercom.passenger.model.PassengerRide> createPassengerRide(String driveId) {
+        final MutableLiveData<com.cybercom.passenger.model.PassengerRide> passengerRideMutableLiveData = new MutableLiveData<>();
 
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (firebaseUser != null) {
+            String uId = firebaseUser.getUid();
+
+            final com.cybercom.passenger.repository.databasemodel.PassengerRide dbPassengerRide =
+                    new com.cybercom.passenger.repository.databasemodel.PassengerRide(driveId, uId, null);
+            final DatabaseReference ref = mPassengerRideReference.push();
+            final String passengerRideId = ref.getKey();
+            ref.setValue(dbPassengerRide);
+
+            mUsersReference.child(firebaseUser.getUid()).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    com.cybercom.passenger.model.PassengerRide passengerRide = new com.cybercom.passenger.model.PassengerRide(passengerRideId, driveId, uId, null);
+                    passengerRideMutableLiveData.setValue(passengerRide);
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {}
+            });
+        } else {
+            // Not logged in
+            passengerRideMutableLiveData.setValue(null);
+        }
+        return passengerRideMutableLiveData;
     }
-
-
 
     public LiveData<Position> getPassengerPositionOnMap() {
         return null;
