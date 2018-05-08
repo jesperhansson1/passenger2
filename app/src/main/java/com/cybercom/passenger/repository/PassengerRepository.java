@@ -520,7 +520,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
             String uId = firebaseUser.getUid();
 
             final com.cybercom.passenger.repository.databasemodel.Drive dbDrive =
-                new com.cybercom.passenger.repository.databasemodel.Drive(uId, time, startLocation, endLocation, availableSeats);
+                new com.cybercom.passenger.repository.databasemodel.Drive(uId, time, startLocation, endLocation, availableSeats, null);
             final DatabaseReference ref = mDrivesReference.push();
             final String driveId = ref.getKey();
             ref.setValue(dbDrive);
@@ -778,5 +778,28 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         });
         return passengerRidesLiveData;
 
+    }
+
+    public LiveData<Position> getDriverPosition(String driveId) {
+        MutableLiveData<Position> driverPositionLiveData = new MutableLiveData<>();
+
+        mDrivesReference.child(driveId).child(CURRENT_POSITION).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Position position = dataSnapshot.getValue(Position.class);
+
+                if (position != null) {
+                    driverPositionLiveData.setValue(position);
+                } else {
+                    driverPositionLiveData.setValue(null);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                driverPositionLiveData.setValue(null);
+            }
+        });
+        return driverPositionLiveData;
     }
 }

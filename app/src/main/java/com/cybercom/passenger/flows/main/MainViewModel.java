@@ -332,6 +332,10 @@ public class MainViewModel extends AndroidViewModel {
         return mPassengerRepository.getPassengerRides(driveId);
     }
 
+    public LiveData<Position> getDriverPosition(String driveId) {
+        return mPassengerRepository.getDriverPosition(driveId);
+    }
+
     public DriveRequest getMostRecentDriveRequest() {
         return mMostRecentDriveRequest;
     }
