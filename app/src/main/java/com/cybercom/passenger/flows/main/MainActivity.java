@@ -365,11 +365,13 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
     }
 
     private void showNoMatchDialog() {
+        mCreateDriveFragment.setIsOtherFragmentUp(true);
         mFragmentManager.beginTransaction()
                 .add(R.id.main_activity_dialog_container, mNoMatchFragment).commit();
     }
 
     private void dismissNoMatchDialog() {
+        mCreateDriveFragment.setIsOtherFragmentUp(false);
         mFragmentManager.beginTransaction().remove(mNoMatchFragment).commit();
     }
 

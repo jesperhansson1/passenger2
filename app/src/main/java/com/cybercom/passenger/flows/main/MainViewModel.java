@@ -37,7 +37,7 @@ import timber.log.Timber;
 
 public class MainViewModel extends AndroidViewModel {
 
-    private static final long FIND_MATCH_TIMEOUT_MS = 1 * 60 * 1000;
+    private static final long FIND_MATCH_TIMEOUT_MS = 2 * 60 * 1000;
     public static final double LOWER_LEFT_LATITUDE = 55.0059799;
     public static final double LOWER_LEFT_LONGITUDE = 10.5798;
     public static final double UPPER_RIGHT_LATITUDE = 69.0599709;
