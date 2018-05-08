@@ -8,6 +8,7 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 
 import com.cybercom.passenger.R;
+import com.cybercom.passenger.flows.accounts.StripeAccount;
 import com.cybercom.passenger.flows.signup.SignUpActivity;
 
 public class RegisterActivity extends AppCompatActivity implements View.OnClickListener{
@@ -48,6 +49,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                 break;
             case R.id.driver_section:
                 mType = mDriver;
+
                 startActivityNext(SignUpActivity.class);
                 break;
             case R.id.button_register_login:
@@ -64,4 +66,6 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         newIntent.putExtra(mRegister,mType);
         startActivity(newIntent);
     }
+
+
 }

@@ -90,12 +90,14 @@ public class BankFragment extends Fragment {
 
     public void createUserReturnMain()
     {
+
         progressBar.setVisibility(View.VISIBLE);
         mNext.setText("");
         if(mExtras != null)
         {
             if(mExtras.getString(CARARRAY) != null)
             {
+
                 repository.createUserAddCar(mExtras.getString(LOGINARRAY), mExtras.getString(CARARRAY)).observe(this, new Observer<FirebaseUser>() {
                     @Override
                     public void onChanged(@Nullable FirebaseUser firebaseUser) {
@@ -130,5 +132,10 @@ public class BankFragment extends Fragment {
             Timber.e("Nothing to add");
         }
 
+    }
+
+    public void createCustomer()
+    {
+        new StripeAccount(repository).execute();
     }
 }

@@ -34,7 +34,6 @@ class DataParser {
                 // Traversing all legs
                 for(int j=0;j<jsonArrayLegs.length();j++){
                     jsonArraySteps = ( (JSONObject)jsonArrayLegs.get(j)).getJSONArray("steps");
-
                     // Traversing all steps
                     for(int k=0;k<jsonArraySteps.length();k++){
                         String polyline;

@@ -118,6 +118,7 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
                 public void onChanged(@Nullable User user) {
                     Timber.i("User: %s logged in", user);
                     if (user != null) {
+                        Toast.makeText(getApplicationContext(),user.getAccId(),Toast.LENGTH_LONG).show();
                         if (user.getType() == User.TYPE_DRIVER) {
                             setUpForDriver();
                         } else {

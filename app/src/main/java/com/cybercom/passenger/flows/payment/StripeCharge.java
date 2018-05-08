@@ -53,6 +53,21 @@ public class StripeCharge extends AsyncTask<String, Void, String> {
             chargeParams.put("description", description);
             chargeParams.put("source", token);
             Charge.create(chargeParams);
+
+
+            //destination charge for connected account
+
+            Map<String, Object> params = new HashMap<String, Object>();
+            params.put("amount", amount);
+            params.put("currency", "sek");
+            params.put("source", token);
+            Map<String, Object> destinationParams = new HashMap<String, Object>();
+            destinationParams.put("amount", 877);
+            destinationParams.put("account", "{CONNECTED_STRIPE_ACCOUNT_ID}");
+            params.put("destination", destinationParams);
+            Charge.create(params);
+
+
         }
         catch(Exception e)
         {

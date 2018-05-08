@@ -20,5 +20,7 @@ public class ConstantValues {
 
     public static final String STRIPE_API_KEY = "sk_test_hOEYoyhsiD3MOJiWW33ztX48";
 
+    public static final String IP = "10.90.192.123";
+
 
 }

@@ -211,7 +211,7 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
 
                     User userRegister = new User(null, null,
                             mType,phone,personalNumber,fullName,null,
-                            mSaveRadioButtonAnswer, email, password);
+                            mSaveRadioButtonAnswer, email, password,null);
 
                     Gson gson = new Gson();
                     String loginArray = gson.toJson(userRegister);

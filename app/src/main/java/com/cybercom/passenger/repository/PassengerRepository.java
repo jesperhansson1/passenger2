@@ -7,6 +7,7 @@ import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 
+import com.cybercom.passenger.flows.accounts.StripeAccount;
 import com.cybercom.passenger.model.Car;
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
@@ -53,6 +54,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private static final String REFERENCE_DRIVE_REQUESTS = "driveRequests";
     private static final String REFERENCE_USERS_CHILD_TYPE = "type";
     private static final String REFERENCE_DRIVER_ID_BLACK_LIST = "driverIdBlackList";
+    private static final String REFERENCE_ACCOUNT = "account";
 
     private static final String DRIVE_DRIVER_ID = "driveDriverId";
 
@@ -76,6 +78,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private User mCurrentlyLoggedInUser;
     private String mUserId;
     private LiveData<FirebaseUser> mFireBaseUser;
+    private String mAccId;
 
 
     public static PassengerRepository getInstance() {
@@ -241,9 +244,12 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                             userMutableLiveData.setValue(user);
                             userLogin.setUserId(user.getUid());
                             userLogin.setNotificationTokenId(getTokenId());
+                            userLogin.setAccId("test id");
                             userLogin.setPassword(null);
                             mUsersReference.child(user.getUid()).setValue(userLogin);
+
                             createCar(newCar.getNumber(),user.getUid(),newCar);
+                            getNewAccId(user.getUid(), user.getDisplayName());
 
                         } else {
                             Timber.w("createUserWithEmail:failure %s", ((FirebaseAuthException)task.getException()).getErrorCode()/*task.getException().getMessage().toString()*/);
@@ -652,4 +658,27 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     public MutableLiveData<List<Car>> getUpdatedCarList() {
         return mCarList;
     }
+
+   /* public void updateAcc(String userId) {
+        mUsersReference.child(userId).child("accId").setValue(getAccId());
+    }*/
+
+    public String getAccId(String uId) {
+        return mUsersReference.child(uId).child("accId").toString();
+    }
+
+
+    public void getNewAccId(String uId, String uName){
+        new StripeAccount(getInstance(),uId,uName,"000123456789").execute();
+    }
+
+    public void updateAccId(String uId, String accId)
+    {
+        mUsersReference.child(uId).child("accId").setValue(accId);
+    }
+  /*  public void setAccId(String accId) {
+        mAccId = accId;
+    }*/
+
+
 }

@@ -18,6 +18,7 @@ public class User {
     private String mGender;
     private String mEmail;
     private String mPassword;
+    private String mAccId;
 
     /*public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
         public User createFromParcel(Parcel in) {
@@ -66,7 +67,7 @@ public class User {
     }
 
     public User(String userId, String notificationTokenId, int type, String phone, String personalNumber, String fullName, String imageLink,
-                String gender, String email, String password) {
+                String gender, String email, String password, String accId) {
         mUserId = userId;
         mNotificationTokenId = notificationTokenId;
         mType = type;
@@ -77,6 +78,7 @@ public class User {
         mGender = gender;
         mEmail = email;
         mPassword = password;
+        mAccId = accId;
     }
 
 
@@ -116,6 +118,7 @@ public class User {
                 ", mFullName='" + mFullName + '\'' +
                 ", mImageLink='" + mImageLink + '\'' +
                 ", mGender='" + mGender + '\'' +
+                ", mAccId='" + mAccId + '\'' +
                 '}';
     }
 
@@ -174,6 +177,14 @@ public class User {
 
     public void setType(int type) {
         mType = type;
+    }
+
+    public String getAccId() {
+        return mAccId;
+    }
+
+    public void setAccId(String accId) {
+        mAccId = accId;
     }
 
 }
