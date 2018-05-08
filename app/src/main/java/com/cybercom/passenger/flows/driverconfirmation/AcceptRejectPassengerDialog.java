@@ -144,7 +144,7 @@ public class AcceptRejectPassengerDialog extends DialogFragment implements View.
 
             if(addresses.size() != 0){
                 Timber.i(addresses.get(0).toString());
-                return addresses.get(0).getThoroughfare() + " " + addresses.get(0).getFeatureName();
+                return addresses.get(0).getAddressLine(0).split(",")[0];
             }
 
             return "";
