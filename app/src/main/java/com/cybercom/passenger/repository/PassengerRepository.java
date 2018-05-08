@@ -758,7 +758,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     public LiveData<com.cybercom.passenger.model.PassengerRide> getPassengerRides(String driveId) {
         MutableLiveData<com.cybercom.passenger.model.PassengerRide> passengerRidesLiveData = new MutableLiveData<>();
 
-        Timber.i("getPassengerRidePosition %s", driveId);
+        Timber.i("getPassengerRides %s", driveId);
         mPassengerRideReference.orderByChild(DRIVE_ID).equalTo(driveId).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
