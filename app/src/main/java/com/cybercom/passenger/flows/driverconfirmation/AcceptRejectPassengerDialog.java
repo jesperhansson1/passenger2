@@ -15,12 +15,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.model.Notification;
 import com.cybercom.passenger.utils.LocationHelper;
+import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
 import java.util.List;
@@ -66,6 +68,15 @@ public class AcceptRejectPassengerDialog extends DialogFragment implements View.
 
         Button declineButton = rootView.findViewById(R.id.driver_confirmation_decline_button);
         declineButton.setOnClickListener(this);
+
+        ImageView leafImageView = rootView.findViewById(R.id.driver_confirmation_leaf);
+        Picasso.with(getActivity()).load(R.drawable.leaf).into(leafImageView);
+
+        ImageView startLocationImageView = rootView.findViewById(R.id.driver_confirmation_start_location_icon);
+        Picasso.with(getActivity()).load(R.drawable.map_marker_start).into(startLocationImageView);
+
+        ImageView endLocationImageView = rootView.findViewById(R.id.driver_confirmation_end_icon);
+        Picasso.with(getActivity()).load(R.drawable.map_marker_end).into(endLocationImageView);
 
         Bundle arguments = getArguments();
         if (arguments != null) {

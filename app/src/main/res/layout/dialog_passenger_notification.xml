@@ -2,6 +2,7 @@
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:padding="8dp"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -12,6 +13,16 @@
         android:layout_height="wrap_content"
         android:background="@drawable/driver_confirmation_back">
 
+        <TextView
+            android:id="@+id/passenger_notification_you_have_been_matched"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="24dp"
+            android:text="@string/you_have_been_matched"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
         <ImageView
             android:id="@+id/passenger_notification_thumbnail"
             android:layout_width="50dp"
@@ -21,7 +32,7 @@
             android:scaleType="centerCrop"
             android:contentDescription="@string/content_description_passenger_notification_thumbnail"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/passenger_notification_you_have_been_matched"
             app:srcCompat="@drawable/ic_person_profile" />
 
         <RatingBar
@@ -58,16 +69,31 @@
             app:layout_constraintTop_toBottomOf="@+id/passenger_notification_thumbnail" />
 
         <TextView
+            android:id="@+id/passenger_notification_country_sign"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/passenger_notification_country_sign"
+            android:textColor="@color/colorWhite"
+            android:paddingTop="@dimen/activity_margin_half_half"
+            android:paddingBottom="@dimen/activity_margin_half_half"
+            android:paddingRight="@dimen/activity_margin_half"
+            android:paddingLeft="@dimen/activity_margin_half"
+            android:background="@drawable/passenger_notification_country_sign_back"
+            android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+            app:layout_constraintStart_toStartOf="@+id/passenger_notification_car_model"
+            app:layout_constraintTop_toBottomOf="@+id/passenger_notification_car_model" />
+
+        <TextView
             android:id="@+id/passenger_notification_license_plate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:background="@drawable/passenger_notification_license_plate_back"
+            android:padding="@dimen/activity_margin_half_half"
             android:text="@string/passenger_notification_license_plate"
             android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-            android:padding="4dp"
             android:textColor="@color/colorBlue"
-            android:background="@drawable/passenger_notification_license_plate_back"
-            app:layout_constraintStart_toStartOf="@+id/passenger_notification_car_model"
-            app:layout_constraintTop_toBottomOf="@+id/passenger_notification_car_model" />
+            app:layout_constraintStart_toEndOf="@+id/passenger_notification_country_sign"
+            app:layout_constraintTop_toTopOf="@+id/passenger_notification_country_sign" />
 
         <TextView
             android:id="@+id/passenger_notification_eta_title"
@@ -132,7 +158,6 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/passenger_notification_license_plate" />
-
     </android.support.constraint.ConstraintLayout>
 
 </FrameLayout>

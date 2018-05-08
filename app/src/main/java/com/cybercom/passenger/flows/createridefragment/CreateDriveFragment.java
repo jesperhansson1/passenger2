@@ -41,6 +41,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.RuntimeRemoteException;
 import com.google.android.gms.tasks.Task;
+import com.squareup.picasso.Picasso;
 
 import timber.log.Timber;
 
@@ -181,7 +182,9 @@ public class CreateDriveFragment extends Fragment {
         mShowSelectedTime = view.findViewById(R.id.create_drive_time_selected);
 
         mPlaceStartLocation = view.findViewById(R.id.place_start_location);
+        Picasso.with(getActivity()).load(R.drawable.map_marker_start).into(mPlaceStartLocation);
         mPlaceEndLocation = view.findViewById(R.id.place_end_location);
+        Picasso.with(getActivity()).load(R.drawable.map_marker_end).into(mPlaceEndLocation);
 
         mDateTimePicker = view.findViewById(R.id.create_drive_date_and_time_picker);
 

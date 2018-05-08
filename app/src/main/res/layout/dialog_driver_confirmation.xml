@@ -19,7 +19,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/activity_margin_half_double"
             android:layout_marginTop="@dimen/activity_margin_half_double"
-            android:text="You have been matched"
+            android:text="@string/you_have_been_matched"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
             android:textColor="@color/colorLightGrey"
             android:textStyle="normal"
@@ -87,8 +87,7 @@
             android:layout_marginTop="@dimen/activity_margin"
             android:contentDescription="@string/content_description_start_location_icon"
             app:layout_constraintStart_toStartOf="@+id/driver_confirmation_passenger_thumbnail"
-            app:layout_constraintTop_toBottomOf="@+id/driver_confirmation_passenger_thumbnail"
-            app:srcCompat="@drawable/map_marker_start" />
+            app:layout_constraintTop_toBottomOf="@+id/driver_confirmation_passenger_thumbnail" />
 
         <ImageView
             android:id="@+id/driver_confirmation_dots_icon"
@@ -105,8 +104,7 @@
             android:layout_height="@dimen/create_drive_fragment_icon_size"
             android:contentDescription="@string/content_description_end_location_icon"
             app:layout_constraintStart_toStartOf="@+id/driver_confirmation_dots_icon"
-            app:layout_constraintTop_toBottomOf="@+id/driver_confirmation_dots_icon"
-            app:srcCompat="@drawable/map_marker_end" />
+            app:layout_constraintTop_toBottomOf="@+id/driver_confirmation_dots_icon" />
 
         <TextView
             android:id="@+id/driver_confirmation_passenger_end_location"
@@ -118,7 +116,6 @@
             app:layout_constraintBottom_toBottomOf="@+id/driver_confirmation_end_icon"
             app:layout_constraintStart_toEndOf="@+id/driver_confirmation_end_icon"
             app:layout_constraintTop_toBottomOf="@+id/driver_confirmation_dots_icon" />
-
 
         <Button
             android:id="@+id/driver_confirmation_decline_button"
@@ -155,8 +152,8 @@
         <TextView
             android:id="@+id/driver_confirmation_total_leafs"
             android:layout_width="wrap_content"
-            android:layout_height="19dp"
-            android:layout_marginEnd="4dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/activity_margin_half_half"
             android:text="@string/driver_confirmation_total_leafs"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
             android:textColor="@color/colorBlack"
@@ -170,7 +167,7 @@
             android:layout_height="@dimen/create_drive_fragment_icon_size"
             app:layout_constraintEnd_toEndOf="@+id/driver_confirmation_drive_cost"
             app:layout_constraintTop_toBottomOf="@+id/driver_confirmation_drive_cost"
-            app:srcCompat="@drawable/leaf" />
+          />
 
 
     </android.support.constraint.ConstraintLayout>

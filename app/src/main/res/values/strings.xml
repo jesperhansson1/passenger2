@@ -199,6 +199,8 @@
     <string name="fragment_no_match_cancel">Cancel</string>
     <string name="no_match_fragment_must_implement_listener">Must implement NoMatchButtonListener</string>
     <string name="driver_confirmation_total_leafs">1500</string>
+    <string name="you_have_been_matched">You have been matched!</string>
+    <string name="passenger_notification_country_sign">S</string>
 
 
 </resources>
