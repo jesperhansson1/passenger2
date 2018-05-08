@@ -4,7 +4,7 @@ const admin = require('firebase-admin');
 admin.initializeApp();
 
 exports.pushNotifications = functions.database.ref('notifications/{notificationId}')
-  .onWrite((change, context) => {
+  .onCreate((snapshot, context) => {
 
     const DRIVE_REQUEST = 0;
     const PASSENGER_ACCEPT = 1;
@@ -12,7 +12,7 @@ exports.pushNotifications = functions.database.ref('notifications/{notificationI
 
     var notificationId = context.params.notificationId;
 
-    var notificationData = change.after.val();
+    var notificationData = snapshot.val();
     var driveId = notificationData.driveId;
     var driveRequestId = notificationData.driveRequestId;
 

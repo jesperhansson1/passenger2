@@ -9,7 +9,6 @@ import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Notification;
 import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
-import com.google.android.gms.tasks.Task;
 
 import java.util.List;
 import java.util.Map;
@@ -31,7 +30,7 @@ public interface PassengerRepositoryInterface {
 
     LiveData<DriveRequest> createDriveRequest(long time, Position startLocation, Position endLocation, int availableSeats);
 
-    LiveData<Drive> findBestRideMatch(final DriveRequest driveRequest);
+    LiveData<Drive> findBestRideMatch(final DriveRequest driveRequest, int radiusMultiplier);
 
     LiveData<List<Drive>> getDrives();
 

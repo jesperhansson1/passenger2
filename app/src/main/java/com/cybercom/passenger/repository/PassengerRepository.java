@@ -12,7 +12,6 @@ import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Notification;
 import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
-import com.cybercom.passenger.repository.databasemodel.PassengerRide;
 import com.cybercom.passenger.repository.databasemodel.utils.DatabaseModelHelper;
 import com.cybercom.passenger.utils.LocationHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -68,6 +67,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private static final String LATITUDE = "latitude";
     private static final String LONGITUDE = "longitude";
 
+    public static final int DEFAULT_DRIVE_REQUEST_RADIUS = 700;
 
     private static PassengerRepository sPassengerRepository;
     private DatabaseReference mUsersReference;
@@ -304,7 +304,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         return drivesList;
     }
 
-    public LiveData<Drive> findBestRideMatch(final DriveRequest driveRequest) {
+    public LiveData<Drive> findBestRideMatch(final DriveRequest driveRequest, int radiusMultiplier) {
 
         final MutableLiveData<Drive> bestDriveMatch = new MutableLiveData<>();
 
@@ -329,7 +329,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
                         if (driveRequest.getDriverIdBlackList().contains(drive.getDriverId())) Timber.i("No match, driver blacklisted: %s", drive.getDriverId());
 
-                        if (distance[0] < 700 && !driveRequest.getDriverIdBlackList().contains(drive.getDriverId())) {
+                        if (distance[0] < DEFAULT_DRIVE_REQUEST_RADIUS * radiusMultiplier && !driveRequest.getDriverIdBlackList().contains(drive.getDriverId())) {
                             if (bestMatch == null) {
                                 bestMatch = drive;
                                 bestMatchDriveId = snapshot.getKey();
