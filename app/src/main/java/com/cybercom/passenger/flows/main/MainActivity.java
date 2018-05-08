@@ -89,9 +89,10 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
     private GoogleMap mGoogleMap;
     private Marker mStartLocationMarker;
     private HashMap<String, Marker> mPassengerMarkerMap = new HashMap<>();
+    private HashMap<String, Marker> mDriverMarkerMap = new HashMap<>();
     private boolean isStartLocationMarkerAdded = false;
-    private Marker mEndLocationMarker;
 
+    private Marker mEndLocationMarker;
     private int mMarkerCount = 0;
     private boolean isEndLocationMarkerAdded = false;
     private Polyline mRoute;
@@ -167,6 +168,29 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
         });
     }
 
+    private void updateDriversMarkerPosition(String driveId) {
+        mMainViewModel.getDriverPosition(driveId).observe(this, position -> {
+
+            if (position != null) {
+                if (mDriverMarkerMap.containsKey(driveId)) {
+                    Marker driverMarker = mDriverMarkerMap.get(driveId);
+                    updateMarkerLocation(driverMarker, LocationHelper.convertPositionToLocation(position));
+                } else {
+                    LatLng startLatLng = new LatLng(position.getLatitude(),
+                            position.getLongitude());
+
+                    Marker marker = mGoogleMap.addMarker(new MarkerOptions()
+                            .position(startLatLng)
+                            .title(driveId)
+                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.start_marker_location))
+                            .anchor(0.5f, 0.5f)
+                            .draggable(false));
+                    mDriverMarkerMap.put(driveId, marker);
+                }
+            }
+        });
+    }
+
     public void updatePassengersMarkerPosition(String driveId){
         mMainViewModel.getPassengerRides(driveId).observe(
             this, passengerRide -> {
@@ -206,6 +230,7 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
                     case Notification.ACCEPT_PASSENGER:
                         showPassengerNotificationDialog(notification);
                         sendPassengerRideToDB(notification.getDrive().getId());
+                        updateDriversMarkerPosition(notification.getDrive().getId());
                         dismissMatchingInProgressDialog();
                         break;
                     case Notification.REJECT_PASSENGER:
@@ -216,20 +241,8 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
             });
         }
 
+    // TODO Only start this when drive is started
 
-        // TODO Only start this when drive is started
-       /* mMainViewModel.getUpdatedLocationLiveData().observe(this, new Observer<Location>() {
-            @Override
-            public void onChanged(@Nullable Location location) {
-                // TODO: Need to handle if there is no data och display info. Need to send this location to spinner
-                if (location == null) {
-                    Timber.i("get updated --> null");
-                } else {
-                    mLocation = location;
-
-                }
-            }
-        });*/
 
         /*
         if (mLocation == null) {
