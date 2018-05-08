@@ -209,7 +209,7 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
                         Marker m = mGoogleMap.addMarker(new MarkerOptions()
                                 .position(startLatLng)
                                 .title(getString(R.string.marker_title_passenger))
-                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.passenger_marker_location))
+                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.passenger_loc))
                                 .anchor(0.5f, 0.5f)
                                 .draggable(false));
                         mPassengerMarkerMap.put(passengerRideId, m);
