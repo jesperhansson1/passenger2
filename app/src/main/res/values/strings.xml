@@ -193,6 +193,11 @@
     <string name="place_start_marker_information_text">Place start location with a long press on the map</string>
     <string name="place_end_marker_information_text">Place end location with a long press on the map</string>
     <string name="must_implement_on_show_and_hide_click_listener">Must implement on show and hide click listener</string>
+    <string name="fragment_no_match_we_didnt_find_anything">We didn’t find anything</string>
+    <string name="fragment_no_match_try_again">Try again</string>
+    <string name="fragment_no_match_increase_radius">Increase radius by 700 meters</string>
+    <string name="fragment_no_match_cancel">Cancel</string>
+    <string name="no_match_fragment_must_implement_listener">Must implement NoMatchButtonListener</string>
 
 
 </resources>

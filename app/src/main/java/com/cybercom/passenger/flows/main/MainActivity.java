@@ -15,19 +15,18 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.createridefragment.CreateDriveFragment;
 import com.cybercom.passenger.flows.driverconfirmation.AcceptRejectPassengerDialog;
 import com.cybercom.passenger.flows.login.RegisterActivity;
+import com.cybercom.passenger.flows.nomatchfragment.NoMatchFragment;
 import com.cybercom.passenger.flows.passengernotification.PassengerNotificationDialog;
 import com.cybercom.passenger.flows.progressfindingcar.FindingCarProgressDialog;
 import com.cybercom.passenger.model.Drive;
@@ -58,7 +57,7 @@ import java.util.HashMap;
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
-public class MainActivity extends AppCompatActivity implements CreateDriveFragment.CreateRideFragmentListener, AcceptRejectPassengerDialog.ConfirmationListener, PassengerNotificationDialog.PassengerNotificationListener, OnMapReadyCallback, GoogleMap.OnMarkerDragListener, GoogleMap.OnCameraMoveStartedListener, GoogleMap.OnMapLongClickListener, GoogleMap.OnMapClickListener, CreateDriveFragment.OnPlaceMarkerIconClickListener, ParserTask.OnRouteCompletion, CreateDriveFragment.OnFinishedCreatingDriveOrDriveRequest, FindingCarProgressDialog.FindingCarListener, GoogleMap.OnMyLocationButtonClickListener {
+public class MainActivity extends AppCompatActivity implements CreateDriveFragment.CreateRideFragmentListener, AcceptRejectPassengerDialog.ConfirmationListener, PassengerNotificationDialog.PassengerNotificationListener, OnMapReadyCallback, GoogleMap.OnMarkerDragListener, GoogleMap.OnCameraMoveStartedListener, GoogleMap.OnMapLongClickListener, GoogleMap.OnMapClickListener, CreateDriveFragment.OnPlaceMarkerIconClickListener, ParserTask.OnRouteCompletion, CreateDriveFragment.OnFinishedCreatingDriveOrDriveRequest, FindingCarProgressDialog.FindingCarListener, GoogleMap.OnMyLocationButtonClickListener, NoMatchFragment.NoMatchButtonListener {
 
     private static final float ZOOM_LEVEL_WORLD = 1;
     private static final float ZOOM_LEVEL_LANDMASS_CONTINENT = 5;
@@ -102,6 +101,9 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
     private LiveData<Boolean> mTimer;
     private Observer<Drive> mMatchObserver;
     private String mDriveId;
+
+    private Boolean isFragmentAdded = false;
+    private NoMatchFragment mNoMatchFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -223,23 +225,24 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
             if (notification == null) return;
             Timber.d("Notification to be displayed: %s", notification.toString());
 
-                switch (notification.getType()) {
-                    case Notification.REQUEST_DRIVE:
-                        showDriverConfirmationDialogFragment(notification);
-                        break;
-                    case Notification.ACCEPT_PASSENGER:
-                        showPassengerNotificationDialog(notification);
-                        sendPassengerRideToDB(notification.getDrive().getId());
-                        updateDriversMarkerPosition(notification.getDrive().getId());
-                        dismissMatchingInProgressDialog();
-                        break;
-                    case Notification.REJECT_PASSENGER:
-                        matchDriveRequest(notification.getDriveRequest());
-                        mMainViewModel.getNextNotification(notification);
-                        break;
-                }
-            });
-        }
+            switch (notification.getType()) {
+                case Notification.REQUEST_DRIVE:
+                    showDriverConfirmationDialogFragment(notification);
+                    break;
+                case Notification.ACCEPT_PASSENGER:
+                    showPassengerNotificationDialog(notification);
+                    sendPassengerRideToDB(notification.getDrive().getId());
+                    updateDriversMarkerPosition(notification.getDrive().getId());
+                    dismissMatchingInProgressDialog();
+                    break;
+                case Notification.REJECT_PASSENGER:
+                    matchDriveRequest(notification.getDriveRequest(),
+                            mMainViewModel.getDriveRequestRadiusMultiplier());
+                    mMainViewModel.getNextNotification(notification);
+                    break;
+            }
+        });
+    }
 
     // TODO Only start this when drive is started
 
@@ -339,10 +342,10 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
         }
     }
 
-    private void matchDriveRequest(final DriveRequest driveRequest) {
+    private void matchDriveRequest(final DriveRequest driveRequest, int radiusMultiplier) {
         final LifecycleOwner lifecycleOwner = this;
 
-        mFindMatch = mMainViewModel.findBestDriveMatch(driveRequest);
+        mFindMatch = mMainViewModel.findBestDriveMatch(driveRequest, radiusMultiplier);
 
         showMatchingInProgressDialog();
 
@@ -352,7 +355,8 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
             if (drive != null) {
                 Timber.i("matched drive %s", drive);
                 mMainViewModel.addRequestDriveNotification(driveRequest, drive);
-                mFindMatch.removeObservers(lifecycleOwner);
+                if (mFindMatch != null) mFindMatch.removeObserver(mMatchObserver);
+                if (mTimer != null) mTimer.removeObservers(lifecycleOwner);
             } else {
                 Timber.i("No drives match for the moment. Keep listening.");
             }
@@ -361,8 +365,7 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
         mFindMatch.observe(lifecycleOwner, mMatchObserver);
 
         mTimer.observe(lifecycleOwner, aBoolean -> {
-            Toast.makeText(MainActivity.this, R.string.main_activity_match_not_found_message,
-                    Toast.LENGTH_LONG).show();
+            showNoMatchDialog();
             cancelMatchingDrive();
         });
     }
@@ -393,6 +396,17 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
         if (f != null) f.dismiss();
     }
 
+    private void showNoMatchDialog() {
+        mCreateDriveFragment.setIsOtherFragmentUp(true);
+        mFragmentManager.beginTransaction()
+                .add(R.id.main_activity_dialog_container, mNoMatchFragment).commit();
+    }
+
+    private void dismissNoMatchDialog() {
+        mCreateDriveFragment.setIsOtherFragmentUp(false);
+        mFragmentManager.beginTransaction().remove(mNoMatchFragment).commit();
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -421,33 +435,18 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
 
     public void initUI() {
         mCreateDriveFragment = CreateDriveFragment.newInstance();
+        mNoMatchFragment = NoMatchFragment.newInstance();
 
         mMainViewModel.getLastKnownLocation(location -> {
             mMainViewModel.setStartMarkerLocation(location);
             placeStartLocationMarker();
             mFragmentManager.beginTransaction()
-                    .replace(R.id.main_activity_dialog_container, mCreateDriveFragment).commit();
+                    .add(R.id.main_activity_dialog_container, mCreateDriveFragment).commit();
             isFragmentAdded = true;
 
         });
 
         mPlaceMarkerInformation = findViewById(R.id.main_activity_place_marker_info);
-
-    }
-
-    private Boolean isFragmentAdded = false;
-
-    public void showFragment(Fragment fragment) {
-        if (isFragmentAdded) {
-            mFragmentManager.beginTransaction()
-                    .setCustomAnimations(R.anim.dialog_enter_animation, R.anim.dialog_exit_animation)
-                    .show(fragment).commit();
-        } else {
-            mFragmentManager.beginTransaction()
-                    .setCustomAnimations(R.anim.dialog_enter_animation, R.anim.dialog_exit_animation)
-                    .replace(R.id.main_activity_dialog_container, fragment).commit();
-            isFragmentAdded = true;
-        }
 
     }
 
@@ -461,7 +460,6 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
         mGoogleMap.setOnMyLocationButtonClickListener(this);
 
         mGoogleMap.setMinZoomPreference(4.0f);
-        mGoogleMap.setPadding(0, 0, 0, 112);
         mGoogleMap.getUiSettings().setMapToolbarEnabled(false);
         //To show +/- zoom options
         mGoogleMap.getUiSettings().setZoomGesturesEnabled(true);
@@ -586,7 +584,7 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
         }
 
         hidePlaceMarkerInformation();
-        showFragment(mCreateDriveFragment);
+        mCreateDriveFragment.showCreateDialog();
     }
 
     @Override
@@ -629,6 +627,8 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
             markerLocation.setLongitude(marker.getPosition().longitude);
             mMainViewModel.setEndMarkerLocation(markerLocation);
         }
+
+        hidePlaceMarkerInformation();
     }
 
     @Override
@@ -729,6 +729,7 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
 
     @Override
     public void onCreateRide(long time, int type, Position startLocation, Position endLocation, int seats) {
+        mCreateDriveFragment.hideCreateDialog();
         switch (type) {
             case User.TYPE_DRIVER:
                 mMainViewModel.createDrive(time, startLocation, endLocation, seats).observe(this, drive -> {
@@ -742,8 +743,11 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
                 break;
             case User.TYPE_PASSENGER:
                 mMainViewModel.createDriveRequest(time, startLocation, endLocation, seats).observe(this, driveRequest -> {
+                    mMainViewModel.setDriveRequestRadiusMultiplier(
+                            MainViewModel.DRIVE_REQUEST_DEFAULT_MULTIPLIER);
                     Timber.i("DriveRequest : %s", driveRequest);
-                    matchDriveRequest(driveRequest);
+                    matchDriveRequest(driveRequest, mMainViewModel.getDriveRequestRadiusMultiplier());
+
                     mCreateDriveFragment.setDefaultValuesToDialog();
                 });
                 break;
@@ -759,5 +763,31 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
     public boolean onMyLocationButtonClick() {
         mGoogleMap.moveCamera(CameraUpdateFactory.zoomTo(ZOOM_LEVEL_MY_LOCATION));
         return false;
+    }
+
+    @Override
+    public void OnNoMatchButtonClicked(int type) {
+        switch (type) {
+            case NoMatchFragment.BUTTON_TRY_AGAIN: {
+                matchDriveRequest(mMainViewModel.getMostRecentDriveRequest(),
+                        mMainViewModel.getDriveRequestRadiusMultiplier());
+                dismissNoMatchDialog();
+                break;
+            }
+            case NoMatchFragment.BUTTON_INCREASE_RADIUS: {
+                mMainViewModel.setDriveRequestRadiusMultiplier(
+                        mMainViewModel.getDriveRequestRadiusMultiplier()
+                                + MainViewModel.DRIVE_REQUEST_INCREASE_MULTIPLIER_BY_ONE
+                );
+                matchDriveRequest(mMainViewModel.getMostRecentDriveRequest(),
+                        mMainViewModel.getDriveRequestRadiusMultiplier());
+                dismissNoMatchDialog();
+                break;
+            }
+            case NoMatchFragment.BUTTON_CANCEL: {
+                dismissNoMatchDialog();
+                break;
+            }
+        }
     }
 }

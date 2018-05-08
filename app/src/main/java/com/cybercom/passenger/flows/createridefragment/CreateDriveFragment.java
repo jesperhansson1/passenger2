@@ -59,6 +59,7 @@ public class CreateDriveFragment extends Fragment {
     public static final int MARGIN = 40;
     private CreateRideFragmentListener mCreateRideDialogListener;
     private boolean mIsCreateDialogUp = true;
+    private boolean mIsOtherFragmentUp = false;
     private static final float DEFAULT_SHOW_AND_HIDE_POSITION = 0;
 
     public interface OnPlaceMarkerIconClickListener {
@@ -260,14 +261,15 @@ public class CreateDriveFragment extends Fragment {
 
         mShowAndHide = view.findViewById(R.id.create_drive_show_and_hide);
         mShowAndHide.setOnClickListener(v -> {
-            if(mIsCreateDialogUp){
-                hideCreateDialog();
-            }else{
-                showCreateDialog();
+            if(!mIsOtherFragmentUp){
+                if(mIsCreateDialogUp){
+                    hideCreateDialog();
+                }else{
+                    showCreateDialog();
+                }
+
+                mIsCreateDialogUp = !mIsCreateDialogUp;
             }
-
-            mIsCreateDialogUp = !mIsCreateDialogUp;
-
         });
 
         return view;
@@ -350,12 +352,14 @@ public class CreateDriveFragment extends Fragment {
     }
 
     public void hideCreateDialog(){
-        mStartLocation.clearFocus();
         mCreateDriveDialog.animate()
                 .translationY((mCreateDriveDialog.getHeight() + MARGIN) - mShowAndHide.getHeight())
                 .setDuration(DIALOG_ANIMATION_DURATION);
         mShowAndHide.animate().rotation(UP_ARROW_ANIMATION).setDuration(ARROW_ANIMATION_DURATION);
+    }
 
+    public void setIsOtherFragmentUp(boolean isOtherFragmentUp) {
+        mIsOtherFragmentUp = isOtherFragmentUp;
     }
 
     private AdapterView.OnItemClickListener mStartLocationAutoCompleteClickListener
