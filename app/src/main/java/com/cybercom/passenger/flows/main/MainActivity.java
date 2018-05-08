@@ -147,7 +147,6 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
         mapFragment.getMapAsync(this);
 
         initObservers();
-        initUI();
     }
 
     public void sendDriverPositionToDB(String driveId) {
@@ -214,8 +213,8 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
                         mMainViewModel.getNextNotification(notification);
                         break;
                 }
-            }
-        });
+            });
+        }
 
 
         // TODO Only start this when drive is started
@@ -238,7 +237,6 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
             Timber.i("get updated --> minc");
             setDefaultLocationToMinc();
         }*/
-    }
 
     private void placeStartLocationMarker() {
 
