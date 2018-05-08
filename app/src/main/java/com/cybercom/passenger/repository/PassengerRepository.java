@@ -12,6 +12,7 @@ import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Notification;
 import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
+import com.cybercom.passenger.repository.databasemodel.PassengerRide;
 import com.cybercom.passenger.repository.databasemodel.utils.DatabaseModelHelper;
 import com.cybercom.passenger.utils.LocationHelper;
 import com.google.android.gms.tasks.OnCompleteListener;

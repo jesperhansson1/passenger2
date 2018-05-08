@@ -324,11 +324,13 @@ public class CreateDriveFragment extends Fragment {
 
     private void setUpDialogForDrive() {
         mMainViewModel.setNumberOfPassengers(DEFAULT_PASSENGER_DRIVE);
+        displayNumberOfPassengers();
         mCreateRide.setText(R.string.create_ride);
     }
 
     private void setUpDialogForDriveRequest() {
         mMainViewModel.setNumberOfPassengers(DEFAULT_PASSENGER_DRIVE_REQUEST);
+        displayNumberOfPassengers();
         mCreateRide.setText(R.string.create_drive_find_ride);
     }
 
@@ -362,7 +364,7 @@ public class CreateDriveFragment extends Fragment {
 
     private AdapterView.OnItemClickListener mStartLocationAutoCompleteClickListener
             = new AdapterView.OnItemClickListener() {
-        @SuppressLint("RestrictedApi")
+        @SuppressLint({"RestrictedApi", "TimberArgCount"})
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
@@ -398,6 +400,7 @@ public class CreateDriveFragment extends Fragment {
 
     private AdapterView.OnItemClickListener mEndLocationAutoCompleteClickListener
             = new AdapterView.OnItemClickListener() {
+        @SuppressLint({"RestrictedApi", "TimberArgCount"})
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
