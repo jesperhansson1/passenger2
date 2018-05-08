@@ -25,7 +25,7 @@ public class DatabaseModelHelper {
     public static com.cybercom.passenger.repository.databasemodel.Drive convertToDataBaseDrive(Drive drive) {
 
         return new com.cybercom.passenger.repository.databasemodel.Drive(drive.getDriver().getUserId(), drive.getTime(),
-                drive.getStartLocation(), drive.getEndLocation(), drive.getAvailableSeats());
+                drive.getStartLocation(), drive.getEndLocation(), drive.getAvailableSeats(), null);
     }
 
     public static com.cybercom.passenger.repository.databasemodel.DriveRequest convertDriveRequest(DriveRequest driveRequest) {

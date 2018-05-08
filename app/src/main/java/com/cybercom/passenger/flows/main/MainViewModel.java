@@ -325,4 +325,8 @@ public class MainViewModel extends AndroidViewModel {
     public LiveData<PassengerRide> getPassengerRides(String driveId) {
         return mPassengerRepository.getPassengerRides(driveId);
     }
+
+    public LiveData<Position> getDriverPosition(String driveId) {
+        return mPassengerRepository.getDriverPosition(driveId);
+    }
 }
