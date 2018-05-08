@@ -26,6 +26,7 @@ import timber.log.Timber;
 
 import static com.cybercom.passenger.model.ConstantValues.PRICE;
 import static com.cybercom.passenger.model.ConstantValues.STRIPE_API_KEY;
+import static com.cybercom.passenger.model.ConstantValues.STRIPE_API_KEY1;
 
 public class PaymentActivity extends AppCompatActivity {
 
@@ -111,14 +112,15 @@ public class PaymentActivity extends AppCompatActivity {
 
     public void payC()
     {
-        PaymentConfiguration.init(STRIPE_API_KEY);
+        PaymentConfiguration.init(STRIPE_API_KEY1);
         new Stripe(getApplicationContext()).createToken(
                 mCardToSave,
                 PaymentConfiguration.getInstance().getPublishableKey(),
                 new TokenCallback() {
                     public void onSuccess(Token token) {
                         Timber.d("token " + token);
-                        new StripeCharge(token.getId(),"test",mTextViewCharge.getText().toString()).execute();
+                       // new StripeCharge(token.getId(),"test",mTextViewCharge.getText().toString()).execute();
+                        new StripeCharge(token.getId(),"test","12345").execute();
                     }
                     public void onError(Exception error) {
                         Timber.e("error " + error.getLocalizedMessage());
