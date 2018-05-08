@@ -208,13 +208,13 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
                         LatLng startLatLng = new LatLng(passengerRide.getPassengerPos().getLatitude(),
                                 passengerRide.getPassengerPos().getLongitude());
 
-                        Marker m = mGoogleMap.addMarker(new MarkerOptions()
+                        Marker marker = mGoogleMap.addMarker(new MarkerOptions()
                                 .position(startLatLng)
                                 .title(getString(R.string.marker_title_passenger))
                                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.passenger_loc))
                                 .anchor(0.5f, 0.5f)
                                 .draggable(false));
-                        mPassengerMarkerMap.put(passengerRideId, m);
+                        mPassengerMarkerMap.put(passengerRideId, marker);
                     }
                 }
             });
