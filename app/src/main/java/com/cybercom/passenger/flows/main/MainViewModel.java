@@ -42,6 +42,8 @@ public class MainViewModel extends AndroidViewModel {
     public static final double LOWER_LEFT_LONGITUDE = 10.5798;
     public static final double UPPER_RIGHT_LATITUDE = 69.0599709;
     public static final double UPPER_RIGHT_LONGITUDE = 24.1773101;
+    public static final int DRIVE_REQUEST_DEFAULT_MULTIPLIER = 1;
+    public static final int DRIVE_REQUEST_INCREASE_MULTIPLIER_BY_ONE = 1;
 
     private FusedLocationProviderClient mFusedLocationClient;
     private PassengerRepository mPassengerRepository = PassengerRepository.getInstance();
@@ -51,6 +53,9 @@ public class MainViewModel extends AndroidViewModel {
     private LocationRequest mLocationRequest;
     private LiveData<Notification> mIncomingNotification;
     private LiveData<Drive> mFindBestDriveMatch;
+    private DriveRequest mMostRecentDriveRequest;
+
+    private int mDriveRequestRadiusMultiplier;
 
     public MainViewModel(@NonNull Application application) {
         super(application);
@@ -101,8 +106,9 @@ public class MainViewModel extends AndroidViewModel {
         return mPassengerRepository.createDriveRequest(time, startLocation, endLocation, seats);
     }
 
-    public LiveData<Drive> findBestDriveMatch(DriveRequest driveRequest) {
-        mFindBestDriveMatch = mPassengerRepository.findBestRideMatch(driveRequest);
+    public LiveData<Drive> findBestDriveMatch(DriveRequest driveRequest, int radiusMultiplier) {
+        mMostRecentDriveRequest = driveRequest;
+        mFindBestDriveMatch = mPassengerRepository.findBestRideMatch(driveRequest, radiusMultiplier);
         return mFindBestDriveMatch;
     }
 
@@ -328,5 +334,17 @@ public class MainViewModel extends AndroidViewModel {
 
     public LiveData<Position> getDriverPosition(String driveId) {
         return mPassengerRepository.getDriverPosition(driveId);
+    }
+
+    public DriveRequest getMostRecentDriveRequest() {
+        return mMostRecentDriveRequest;
+    }
+
+    public int getDriveRequestRadiusMultiplier() {
+        return mDriveRequestRadiusMultiplier;
+    }
+
+    public void setDriveRequestRadiusMultiplier(int mDriveRequestRadiusMultiplier) {
+        this.mDriveRequestRadiusMultiplier = mDriveRequestRadiusMultiplier;
     }
 }
