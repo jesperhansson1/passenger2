@@ -118,6 +118,7 @@
     <string name="marker_title_you_are_here">You are here</string>
     <string name="marker_title_start_location">Start location</string>
     <string name="marker_title_end_location">Destination</string>
+    <string name="marker_title_passenger">Passenger</string>
     <string name="location_provider_marker_drag">MarkerDrag</string>
     <string name="create_drive_find_ride">Find ride</string>
     <string name="create_drive_destination">destination</string>

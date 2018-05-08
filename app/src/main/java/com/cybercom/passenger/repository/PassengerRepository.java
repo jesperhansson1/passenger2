@@ -57,6 +57,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
 
     private static final String DRIVE_DRIVER_ID = "driveDriverId";
+    private static final String DRIVE_ID = "driveId";
+
 
     private static final int DRIVE_REQUEST_MATCH_TIME_THRESHOLD = 15 * 60 * 60 * 1000;
     private static final String NOTIFICATION_TYPE_KEY = "type";
@@ -109,7 +111,6 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         return mAuth;
     }
 
-//    String a;
     public LiveData<Boolean> validateEmail(String email){
         final MutableLiveData<Boolean> checkEmail = new MutableLiveData();
 
@@ -671,7 +672,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         }
     }
 
-    public void updatePassengerRideCurrentLocation(Location location) {
+    public LiveData<String> updatePassengerRideCurrentLocation(Location location) {
+        MutableLiveData<String> getPassengerRideKey = new MutableLiveData<>();
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         String uId = firebaseUser.getUid();
 
@@ -685,6 +687,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                                 String passengerRideKey = snapshot.getKey();
                                 mPassengerRideReference.child(passengerRideKey).child("position")
                                         .setValue(LocationHelper.convertLocationToPosition(location));
+
+                                getPassengerRideKey.setValue(passengerRideKey);
                             }
                         }
                         @Override
@@ -693,6 +697,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                         }
                     });
         }
+        return getPassengerRideKey;
     }
 
     public LiveData<com.cybercom.passenger.model.PassengerRide> createPassengerRide(String driveId) {
@@ -748,5 +753,30 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                 }
             });
         * */
+    }
+
+    public LiveData<com.cybercom.passenger.model.PassengerRide> getPassengerRides(String driveId) {
+        MutableLiveData<com.cybercom.passenger.model.PassengerRide> passengerRidesLiveData = new MutableLiveData<>();
+
+        Timber.i("getPassengerRides %s", driveId);
+        mPassengerRideReference.orderByChild(DRIVE_ID).equalTo(driveId).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    PassengerRide passengerRide = snapshot.getValue(PassengerRide.class);
+                    Timber.d("result: %s", passengerRide);
+
+                    passengerRidesLiveData.setValue(new com.cybercom.passenger.model.PassengerRide(
+                            snapshot.getKey(), passengerRide.getDriveId(),
+                            passengerRide.getPassengerId(), passengerRide.getPosition()));
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+            }
+        });
+        return passengerRidesLiveData;
+
     }
 }
