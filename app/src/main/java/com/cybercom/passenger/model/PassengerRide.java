@@ -44,7 +44,8 @@ public class PassengerRide {
     @Override
     public String toString() {
         return "PassengerRide{" +
-                "mDriveId='" + mDriveId + '\'' +
+                "mId='" + mId + '\'' +
+                ", mDriveId='" + mDriveId + '\'' +
                 ", mPassegnerId='" + mPassegnerId + '\'' +
                 ", mPassengerPos=" + mPassengerPos +
                 '}';

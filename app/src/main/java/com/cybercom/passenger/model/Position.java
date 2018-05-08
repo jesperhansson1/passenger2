@@ -23,7 +23,7 @@ public class Position implements Serializable {
     }
 
     public void setGeoHash(String geoHash) {
-        mGeoHash = mGeoHash;
+        mGeoHash = geoHash;
     }
 
     public double getLatitude() {

@@ -3,6 +3,7 @@ package com.cybercom.passenger.flows.main;
 import android.Manifest;
 import android.arch.lifecycle.LifecycleOwner;
 import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
@@ -52,6 +53,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.iid.FirebaseInstanceId;
 
+import java.util.HashMap;
+
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
@@ -85,6 +88,7 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
 
     private GoogleMap mGoogleMap;
     private Marker mStartLocationMarker;
+    private HashMap<String, Marker> mPassengerMarkerMap = new HashMap<>();
     private boolean isStartLocationMarkerAdded = false;
     private Marker mEndLocationMarker;
 
@@ -149,6 +153,7 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
         mMainViewModel.startLocationUpdates();
         mMainViewModel.getUpdatedLocationLiveData().observe(this, location -> {
             mMainViewModel.setCurrentLocationToDrive(driveId, location);
+            mMainViewModel.setStartMarkerLocation(location);
         });
     }
 
@@ -156,9 +161,37 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
         mMainViewModel.createPassengerRide(driveId).observe(this, passengerRide -> {
             mMainViewModel.startLocationUpdates();
             mMainViewModel.getUpdatedLocationLiveData().observe(this, location -> {
-                mMainViewModel.updatePassengerRideCurrentLocation(location);
+                mMainViewModel.updatePassengerRideCurrentLocation(location).observe(this, s -> {
+                });
             });
         });
+    }
+
+    public void updatePassengersMarkerPosition(String driveId){
+        mMainViewModel.getPassengerRides(driveId).observe(
+            this, passengerRide -> {
+                if (passengerRide.getPassengerPos() != null) {
+                    passengerRide.getPassengerPos();
+
+                    String passengerRideId = passengerRide.getId();
+                    if (mPassengerMarkerMap.containsKey(passengerRideId)) {
+                        Marker passengerMarker = mPassengerMarkerMap.get(passengerRideId);
+                        updateMarkerLocation(passengerMarker, LocationHelper.convertPositionToLocation(passengerRide.getPassengerPos()));
+                    } else {
+
+                        LatLng startLatLng = new LatLng(passengerRide.getPassengerPos().getLatitude(),
+                                passengerRide.getPassengerPos().getLongitude());
+
+                        Marker m = mGoogleMap.addMarker(new MarkerOptions()
+                                .position(startLatLng)
+                                .title(getString(R.string.marker_title_passenger))
+                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.passenger_marker_location))
+                                .anchor(0.5f, 0.5f)
+                                .draggable(false));
+                        mPassengerMarkerMap.put(passengerRideId, m);
+                    }
+                }
+            });
     }
 
     private void initObservers() {
@@ -166,20 +199,22 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
             if (notification == null) return;
             Timber.d("Notification to be displayed: %s", notification.toString());
 
-            switch (notification.getType()) {
-                case Notification.REQUEST_DRIVE:
-                    showDriverConfirmationDialogFragment(notification);
-                    break;
-                case Notification.ACCEPT_PASSENGER:
-                    showPassengerNotificationDialog(notification);
-                    dismissMatchingInProgressDialog();
-                    break;
-                case Notification.REJECT_PASSENGER:
-                    matchDriveRequest(notification.getDriveRequest());
-                    mMainViewModel.getNextNotification(notification);
-                    break;
-            }
-        });
+                switch (notification.getType()) {
+                    case Notification.REQUEST_DRIVE:
+                        showDriverConfirmationDialogFragment(notification);
+                        break;
+                    case Notification.ACCEPT_PASSENGER:
+                        showPassengerNotificationDialog(notification);
+                        sendPassengerRideToDB(notification.getDrive().getId());
+                        dismissMatchingInProgressDialog();
+                        break;
+                    case Notification.REJECT_PASSENGER:
+                        matchDriveRequest(notification.getDriveRequest());
+                        mMainViewModel.getNextNotification(notification);
+                        break;
+                }
+            });
+        }
 
 
         // TODO Only start this when drive is started
@@ -202,21 +237,6 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
             Timber.i("get updated --> minc");
             setDefaultLocationToMinc();
         }*/
-    }
-
-    private void obeserveOtherUsersPositionOnMap() {
-        if (mGetUserType.getType() == PASSENGER) {
-
-        } else {
-            mMainViewModel.getPassengerPositionOnMap().observe(this, new Observer<Position>() {
-                @Override
-                public void onChanged(@Nullable Position position) {
-                    Timber.d("Passenger pos: %s", position);
-                }
-            });
-        }
-
-    }
 
     private void placeStartLocationMarker() {
 
@@ -531,7 +551,6 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
 
         PassengerNotificationDialog dFragment = PassengerNotificationDialog.getInstance(notification);
         dFragment.show(getSupportFragmentManager(), PassengerNotificationDialog.TAG);
-        sendPassengerRideToDB(notification.getDrive().getId());
     }
 
     @Override
@@ -679,9 +698,7 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
 
                             animateToLocation(initialZoom, ZOOM_LEVEL_STREETS);
                             mMainViewModel.setInitialZoomDone(true);
-
                         });
-
                     }
 
                     initUI();
@@ -702,9 +719,10 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
         switch (type) {
             case User.TYPE_DRIVER:
                 mMainViewModel.createDrive(time, startLocation, endLocation, seats).observe(this, drive -> {
-                    mDriveId = drive.getId();
+//                    mDriveId = drive.getId();
 
                     sendDriverPositionToDB(drive.getId());
+                    updatePassengersMarkerPosition(drive.getId());
                     Timber.i("Drive created: %s", drive.getId());
                     mCreateDriveFragment.setDefaultValuesToDialog();
                 });
