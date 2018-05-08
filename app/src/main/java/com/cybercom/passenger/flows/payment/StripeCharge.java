@@ -14,65 +14,63 @@ public class StripeCharge extends AsyncTask<String, Void, String> {
     String mToken;
     String mDescription = "test";
     String mAmount = "20";
+    String mDriverAmount = "0";
+    String mTotalAmount = "0";
+    String mConnectedAccount = "acct_1CPENbJPkd6VZmZY";
 
-    public StripeCharge(String token, String description, String amount) {
-        mToken = token;
-        mDescription = description;
-        mAmount = amount;
-    }
+    public StripeCharge(String token, String description, double driverAmount, double totalAmount) {
+            mToken = token;
+            mDescription = description;
+            mDriverAmount =  String.valueOf(Math.round(driverAmount));
+            mTotalAmount =  String.valueOf(Math.round(totalAmount));
+            System.out.println(mDriverAmount + " " + mTotalAmount);
+        }
     public StripeCharge()
-    {
-
-    }
-
-    @Override
-    protected String doInBackground(String... params) {
-        new Thread() {
-            @Override
-            public void run() {
-                postData(mDescription,mToken,mAmount);
-
-            }
-        }.start();
-        return "Done";
-    }
-
-    @Override
-    protected void onPostExecute(String s) {
-        super.onPostExecute(s);
-        Timber.d(s);
-    }
-
-    public void postData(String description, String token, String amount) {
-
-        Stripe.apiKey = STRIPE_API_KEY;
-        try {
-            Map<String, Object> chargeParams = new HashMap<String, Object>();
-            chargeParams.put("amount", amount);
-            chargeParams.put("currency", "sek");
-            chargeParams.put("description", description);
-            chargeParams.put("source", token);
-            Charge.create(chargeParams);
-
-
-            //destination charge for connected account
-
-            Map<String, Object> params = new HashMap<String, Object>();
-            params.put("amount", amount);
-            params.put("currency", "sek");
-            params.put("source", token);
-            Map<String, Object> destinationParams = new HashMap<String, Object>();
-            destinationParams.put("amount", 877);
-            destinationParams.put("account", "{CONNECTED_STRIPE_ACCOUNT_ID}");
-            params.put("destination", destinationParams);
-            Charge.create(params);
-
-
-        }
-        catch(Exception e)
         {
-            Timber.e(e.getLocalizedMessage());
+
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            new Thread() {
+                @Override
+                public void run() {
+                    postData(mDescription,mToken,mDriverAmount,mTotalAmount);
+
+                }
+            }.start();
+            return "Done";
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            Timber.d(s);
+        }
+
+        public void postData (String description, String token, String driverAmount, String
+        totalAmount ){
+
+            Stripe.apiKey = STRIPE_API_KEY;
+
+            try {
+
+
+                Map<String, Object> params = new HashMap<String, Object>();
+                params.put("amount", 1000);
+                params.put("amount", totalAmount);
+                params.put("currency", "sek");
+                params.put("source", token);
+                Map<String, Object> destinationParams = new HashMap<String, Object>();
+                destinationParams.put("amount", 877);
+                destinationParams.put("amount", driverAmount);
+                destinationParams.put("account", mConnectedAccount);
+                params.put("destination", destinationParams);
+                Charge charge = Charge.create(params);
+
+            } catch (Exception e) {
+                Timber.e(e.getLocalizedMessage());
+            }
         }
     }
 
-}

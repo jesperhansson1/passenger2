@@ -31,11 +31,13 @@ import com.cybercom.passenger.flows.createridefragment.CreateDriveFragment;
 import com.cybercom.passenger.flows.driverconfirmation.AcceptRejectPassengerDialog;
 import com.cybercom.passenger.flows.login.RegisterActivity;
 import com.cybercom.passenger.flows.passengernotification.PassengerNotificationDialog;
+import com.cybercom.passenger.flows.payment.PaymentActivity;
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Notification;
 import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
+import com.cybercom.passenger.repository.PassengerRepository;
 import com.cybercom.passenger.route.FetchRouteUrl;
 import com.cybercom.passenger.route.ParserTask;
 import com.cybercom.passenger.utils.LocationHelper;
@@ -369,7 +371,20 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
             isCreateDriveFragmentVisible = true;
         });
 
+        findViewById(R.id.pay).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startPayment();
+            }
+        });
+    }
 
+    public void startPayment()
+    {
+        PassengerRepository pr = PassengerRepository.getInstance();
+        System.out.println(pr.accToPay());//account to pay
+        Intent intent = new Intent(getApplicationContext(), PaymentActivity.class);
+        startActivity(intent);
     }
 
 
@@ -691,12 +706,17 @@ public class MainActivity extends AppCompatActivity implements CreateRideDialogF
 
                     if (!mMainViewModel.isInitialZoomDone()) {
                         mMainViewModel.getLastKnownLocation(location -> {
-                            LatLng initialZoom = new LatLng(
-                                    location.getLatitude(),
-                                    location.getLongitude());
+                            if(location!=null)
+                            {
+                                LatLng initialZoom = new LatLng(
+                                        location.getLatitude(),
+                                        location.getLongitude());
+                                animateToLocation(initialZoom, ZOOM_LEVEL_STREETS);
+                                mMainViewModel.setInitialZoomDone(true);
+                            }
 
-                            animateToLocation(initialZoom, ZOOM_LEVEL_STREETS);
-                            mMainViewModel.setInitialZoomDone(true);
+
+
                         });
                     }
 

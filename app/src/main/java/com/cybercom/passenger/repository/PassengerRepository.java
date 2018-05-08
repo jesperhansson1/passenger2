@@ -375,6 +375,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     }
 
     public void sendNotification(Notification notification) {
+
+        updateCurrentDriveRequestDetail(notification);
         com.cybercom.passenger.repository.databasemodel.Notification dataBaseNotification =
                 DatabaseModelHelper.convertNotification(notification);
 
@@ -680,5 +682,25 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         mAccId = accId;
     }*/
 
+  String mAccPay;
+
+  public String accToPay()
+  {
+   return mAccPay;
+  }
+
+    Notification mNotificationVal;
+  public void updateCurrentDriveRequestDetail(Notification notification)
+  {
+      mNotificationVal = notification;
+      mAccPay = notification.getDrive().getDriver().getAccId().toString();
+      System.out.println(notification.getDrive().getDriver().getAccId().toString());
+  }
+
+
+  public Notification currentNotificationValue()
+  {
+      return mNotificationVal;
+  }
 
 }

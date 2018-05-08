@@ -18,6 +18,7 @@ import android.widget.Toast;
 
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.accounts.StripeAccount;
+import com.cybercom.passenger.model.Notification;
 import com.cybercom.passenger.model.RideFare;
 import com.cybercom.passenger.repository.PassengerRepository;
 import com.google.android.gms.maps.model.LatLng;
@@ -37,6 +38,8 @@ import java.util.Map;
 
 import timber.log.Timber;
 
+import static com.cybercom.passenger.model.ConstantValues.APP_SHARE;
+import static com.cybercom.passenger.model.ConstantValues.DRIVER_SHARE;
 import static com.cybercom.passenger.model.ConstantValues.PRICE;
 import static com.cybercom.passenger.model.ConstantValues.STRIPE_API_KEY;
 
@@ -74,7 +77,7 @@ public class PaymentActivity extends AppCompatActivity {
             public void onClick(View v) {
                // createCustomer();
                 Toast.makeText(getApplicationContext(),"creating customer " ,Toast.LENGTH_LONG).show();
-                uploadFile();
+               // uploadFile();
             }
         });
         mPaymentViewModel = ViewModelProviders.of(this).get(PaymentViewModel.class);
@@ -82,8 +85,19 @@ public class PaymentActivity extends AppCompatActivity {
 
     public void calculatePayment()
     {
+
+        Notification not = PassengerRepository.getInstance().currentNotificationValue();
+        double startLong = not.getDriveRequest().getStartLocation().getLongitude();
+        double startLati = not.getDriveRequest().getStartLocation().getLatitude();
+        double endLong = not.getDriveRequest().getEndLocation().getLongitude();
+        double endLati = not.getDriveRequest().getEndLocation().getLatitude();
+
+
         LatLng start = new LatLng(55.604981,13.003822);
         LatLng end = new LatLng(56.046467,12.694512);
+
+        start = new LatLng(startLati,startLong);
+        end = new LatLng(endLati,endLong);
         mPaymentViewModel.getRideFare(start,end).observe(myLife, new Observer<RideFare>() {
 
             @Override
@@ -99,11 +113,32 @@ public class PaymentActivity extends AppCompatActivity {
 
     }
 
-    public String getCharge(String dist)
+    /*public String getCharge(String dist)
     {
         double dd = Double.valueOf(dist)*PRICE/10;
         return String.valueOf(Math.round(dd));
+    }*/
+
+    public double mDriverAmount = 0.0,mAppAmount=0.0,mTotalAmount=0.0;
+
+    public String getCharge(String dist)
+    {
+        //distance is in meters
+        //meter to km
+        System.out.println("distance is " + dist + " in meter ");
+        System.out.println("distance is " + Double.valueOf(dist)/1000 + " in km ");
+        mTotalAmount = (Double.valueOf(dist)/1000)*PRICE;
+        mAppAmount = (Double.valueOf(dist)/1000)*APP_SHARE;
+        mDriverAmount = (Double.valueOf(dist)/1000)*DRIVER_SHARE;
+
+        System.out.println("Total amount " + (Double.valueOf(dist)/1000)*PRICE + " 35kr per 10 km ");
+        System.out.println("Total amount " + (Double.valueOf(dist)/1000)*DRIVER_SHARE + " 18.5kr per 10 km driver  ");
+        System.out.println("Total amount " + (Double.valueOf(dist)/1000)*APP_SHARE + " 16.5kr per 10 km pass");
+
+        double dd = Double.valueOf(dist)*PRICE/10;
+        return String.valueOf(Math.round(dd));
     }
+
 
     public void startPayment()
     {
@@ -141,7 +176,8 @@ public class PaymentActivity extends AppCompatActivity {
                 new TokenCallback() {
                     public void onSuccess(Token token) {
                         Timber.d("token " + token);
-                        new StripeCharge(token.getId(),"test",mTextViewCharge.getText().toString()).execute();
+                      //  new StripeCharge(token.getId(),"test",mTextViewCharge.getText().toString()).execute();
+                        new StripeCharge(token.getId(),"test",mDriverAmount,mTotalAmount).execute();
                     }
                     public void onError(Exception error) {
                         Timber.e("error " + error.getLocalizedMessage());
