@@ -380,10 +380,13 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     }
 
     public void sendNotification(Notification notification) {
+        updateCurrentNotification(notification);
         com.cybercom.passenger.repository.databasemodel.Notification dataBaseNotification =
                 DatabaseModelHelper.convertNotification(notification);
 
         mNotificationsReference.push().setValue(dataBaseNotification);
+
+
     }
 
     public LiveData<Notification> receiveIncomingNotifications() {
@@ -802,5 +805,10 @@ public class PassengerRepository implements PassengerRepositoryInterface {
             }
         });
         return driverPositionLiveData;
+    }
+
+    public void updateCurrentNotification(Notification notification){
+        System.out.println(notification.getDrive().getDriver().getAcc);
+        System.out.println(notification.getDriveRequest());
     }
 }
