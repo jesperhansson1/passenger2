@@ -192,6 +192,7 @@
     <string name="find_car">Find</string>
     <string name="place_start_marker_information_text">Place start location with a long press on the map</string>
     <string name="place_end_marker_information_text">Place end location with a long press on the map</string>
+    <string name="must_implement_on_show_and_hide_click_listener">Must implement on show and hide click listener</string>
 
 
 </resources>

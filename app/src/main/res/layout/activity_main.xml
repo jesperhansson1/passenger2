@@ -17,39 +17,6 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-   <!-- <include
-        android:id="@+id/toolbar"
-        layout="@layout/passenger_toolbar"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />-->
-
-    <android.support.design.widget.FloatingActionButton
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/button_createRide"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/activity_margin"
-        android:clickable="true"
-        android:focusable="true"
-        app:elevation="6dp"
-        app:backgroundTint="@color/colorBlue"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:srcCompat="@drawable/passenger_blue"/>
-
-   <!-- <include
-        android:id="@+id/switch_passenger_driver"
-        layout="@layout/switch_passenger_driver"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="55dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />-->
-
     <FrameLayout
         android:id="@+id/main_activity_dialog_container"
         android:layout_width="match_parent"
