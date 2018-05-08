@@ -42,8 +42,8 @@ public class MainViewModel extends AndroidViewModel {
     public static final double LOWER_LEFT_LONGITUDE = 10.5798;
     public static final double UPPER_RIGHT_LATITUDE = 69.0599709;
     public static final double UPPER_RIGHT_LONGITUDE = 24.1773101;
-    public static final int INTERVAL = 2000;
-    public static final int FASTEST_INTERVAL = 2000;
+    public static final int INTERVAL = 1000;
+    public static final int FASTEST_INTERVAL = 1000;
 
     public static final int DRIVE_REQUEST_DEFAULT_MULTIPLIER = 1;
     public static final int DRIVE_REQUEST_INCREASE_MULTIPLIER_BY_ONE = 1;
