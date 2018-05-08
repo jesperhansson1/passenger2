@@ -8,7 +8,9 @@ public class ConstantValues {
     public static final int SUCCESS = 0;
     public static final int PENDING = 1;
     public static final int CANCELED = 2;
-    public static final double PRICE = 18.5;
+    public static final double PRICE = 350;//3.5Kr per km - 350 ore
+    public static final double DRIVER_SHARE = 185;//18.5Kr per 10km - 185 ore
+    public static final double APP_SHARE = 165;//16.5Kr per 10km - 165 ore
     public static final String CURRENCY = "SEK";
     public static final String UNIT = "metric";
     public static final String GOOGLE_API_BASE_URL = "http://maps.googleapis.com/";
