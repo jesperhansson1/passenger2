@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@android:color/transparent"
@@ -14,13 +15,13 @@
 
         <TextView
             android:id="@+id/driver_confirmation_title"
-            android:layout_width="180dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/activity_margin_half_double"
             android:layout_marginTop="@dimen/activity_margin_half_double"
-            android:text="@string/driver_confirmation_share_your_ride"
-            android:textAppearance="@style/TextAppearance.AppCompat.Large"
-            android:textColor="@color/colorBlue"
+            android:text="You have been matched"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:textColor="@color/colorLightGrey"
             android:textStyle="normal"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -31,7 +32,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/activity_margin_half_double"
             android:text="@string/driver_confirmation_drive_cost"
-            android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+            android:textAppearance="@style/TextAppearance.AppCompat.Large"
             android:textColor="@color/colorBlue"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/driver_confirmation_title" />
@@ -81,13 +82,13 @@
 
         <ImageView
             android:id="@+id/driver_confirmation_start_location_icon"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="@dimen/create_drive_fragment_icon_size"
+            android:layout_height="@dimen/create_drive_fragment_icon_size"
             android:layout_marginTop="@dimen/activity_margin"
             android:contentDescription="@string/content_description_start_location_icon"
             app:layout_constraintStart_toStartOf="@+id/driver_confirmation_passenger_thumbnail"
             app:layout_constraintTop_toBottomOf="@+id/driver_confirmation_passenger_thumbnail"
-            app:srcCompat="@drawable/circle_outline" />
+            app:srcCompat="@drawable/map_marker_start" />
 
         <ImageView
             android:id="@+id/driver_confirmation_dots_icon"
@@ -100,12 +101,12 @@
 
         <ImageView
             android:id="@+id/driver_confirmation_end_icon"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="@dimen/create_drive_fragment_icon_size"
+            android:layout_height="@dimen/create_drive_fragment_icon_size"
             android:contentDescription="@string/content_description_end_location_icon"
             app:layout_constraintStart_toStartOf="@+id/driver_confirmation_dots_icon"
             app:layout_constraintTop_toBottomOf="@+id/driver_confirmation_dots_icon"
-            app:srcCompat="@drawable/ic_place_black_24dp" />
+            app:srcCompat="@drawable/map_marker_end" />
 
         <TextView
             android:id="@+id/driver_confirmation_passenger_end_location"
@@ -150,6 +151,26 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/driver_confirmation_decline_button" />
+
+        <TextView
+            android:id="@+id/driver_confirmation_total_leafs"
+            android:layout_width="wrap_content"
+            android:layout_height="19dp"
+            android:layout_marginEnd="4dp"
+            android:text="@string/driver_confirmation_total_leafs"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:textColor="@color/colorBlack"
+            app:layout_constraintBottom_toBottomOf="@+id/driver_confirmation_leaf"
+            app:layout_constraintEnd_toStartOf="@+id/driver_confirmation_leaf"
+            app:layout_constraintTop_toTopOf="@+id/driver_confirmation_leaf" />
+
+        <ImageView
+            android:id="@+id/driver_confirmation_leaf"
+            android:layout_width="@dimen/create_drive_fragment_icon_size"
+            android:layout_height="@dimen/create_drive_fragment_icon_size"
+            app:layout_constraintEnd_toEndOf="@+id/driver_confirmation_drive_cost"
+            app:layout_constraintTop_toBottomOf="@+id/driver_confirmation_drive_cost"
+            app:srcCompat="@drawable/leaf" />
 
 
     </android.support.constraint.ConstraintLayout>
