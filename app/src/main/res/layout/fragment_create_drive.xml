@@ -127,7 +127,7 @@
         </RadioGroup>
 
         <TextView
-            android:id="@+id/textView"
+            android:id="@+id/textview_createdrivefragment_nbrpassengerstitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
@@ -166,8 +166,8 @@
             android:textColor="@color/colorBlack"
             android:textSize="20sp"
             app:layout_constraintBottom_toBottomOf="@+id/create_drive_remove_passenger"
-            app:layout_constraintEnd_toEndOf="@+id/textView"
-            app:layout_constraintStart_toStartOf="@+id/textView"
+            app:layout_constraintEnd_toEndOf="@+id/textview_createdrivefragment_nbrpassengerstitle"
+            app:layout_constraintStart_toStartOf="@+id/textview_createdrivefragment_nbrpassengerstitle"
             app:layout_constraintTop_toTopOf="@+id/create_drive_remove_passenger" />
 
         <ImageView
