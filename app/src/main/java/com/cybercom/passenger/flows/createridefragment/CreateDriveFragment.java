@@ -322,7 +322,6 @@ public class CreateDriveFragment extends Fragment {
         mShowSelectedTime.setText(EMPTY_STRING);
         mShowSelectedTime.setVisibility(View.GONE);
         onFinishedCreatingDriveOrDriveRequest.onFinish();
-
     }
 
     private void setUpDialogForDrive() {
