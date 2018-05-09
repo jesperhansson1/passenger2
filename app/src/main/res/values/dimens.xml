@@ -44,4 +44,5 @@
 
     <dimen name="draw_pad">10dp</dimen>
     <dimen name="default_dialog_elevation">8dp</dimen>
+    <dimen name="create_drive_fragment_icon_size">24dp</dimen>
 </resources>

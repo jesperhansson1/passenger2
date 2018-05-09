@@ -3,7 +3,6 @@ package com.cybercom.passenger.flows.main;
 import android.Manifest;
 import android.arch.lifecycle.LifecycleOwner;
 import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
@@ -12,7 +11,6 @@ import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
@@ -265,8 +263,7 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
                         mGoogleMap.addMarker(new MarkerOptions()
                                 .position(startLatLng)
                                 .title(getString(R.string.marker_title_start_location))
-                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.start_marker_location))
-                                .anchor(0.5f, 0.5f)
+                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.map_marker_start))
                                 .draggable(true));
                 animateToLocation(startLatLng, ZOOM_LEVEL_STREETS);
 
@@ -313,8 +310,7 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
             mEndLocationMarker = mGoogleMap.addMarker(new MarkerOptions()
                     .position(endLatLng)
                     .title(getString(R.string.marker_title_end_location))
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.circle_end_location))
-                    .anchor(0.5f, 0.5f)
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.map_marker_end))
                     .draggable(true)
                     .visible(false));
 
