@@ -62,8 +62,8 @@ public class CreateDriveFragment extends Fragment {
     private boolean mIsCreateDialogUp = true;
     private boolean mIsOtherFragmentUp = false;
     private static final float DEFAULT_SHOW_AND_HIDE_POSITION = 0;
-
     public interface OnPlaceMarkerIconClickListener {
+
         void onPlaceMarkerIconClicked();
 
     }
@@ -71,8 +71,8 @@ public class CreateDriveFragment extends Fragment {
         void onFinish();
 
     }
-
     public interface CreateRideFragmentListener {
+
         void onCreateRide(long time, int type, Position startLocation, Position endLocation, int seats);
     }
 
@@ -80,6 +80,7 @@ public class CreateDriveFragment extends Fragment {
     private OnFinishedCreatingDriveOrDriveRequest onFinishedCreatingDriveOrDriveRequest;
     private int mType;
     private MainViewModel mMainViewModel;
+    private TextView mNumberOfPassengersTitle;
     private TextView mNumberOfPassengers;
     private AutoCompleteTextView mStartLocation, mEndLocation;
     private Button mCreateRide;
@@ -157,6 +158,7 @@ public class CreateDriveFragment extends Fragment {
         mEndLocation = view.findViewById(R.id.create_drive_end_location);
         mEndLocation.setOnItemClickListener(mEndLocationAutoCompleteClickListener);
 
+        mNumberOfPassengersTitle = view.findViewById(R.id.textview_createdrivefragment_nbrpassengerstitle);
         mNumberOfPassengers = view.findViewById(R.id.create_drive_number_of_passengers);
         mAddPassengers = view.findViewById(R.id.create_drive_add_passenger);
         mRemovePassengers = view.findViewById(R.id.create_drive_remove_passenger);
@@ -328,12 +330,14 @@ public class CreateDriveFragment extends Fragment {
         mMainViewModel.setNumberOfPassengers(DEFAULT_PASSENGER_DRIVE);
         displayNumberOfPassengers();
         mCreateRide.setText(R.string.create_ride);
+        mNumberOfPassengersTitle.setText(R.string.create_drive_available_seats);
     }
 
     private void setUpDialogForDriveRequest() {
         mMainViewModel.setNumberOfPassengers(DEFAULT_PASSENGER_DRIVE_REQUEST);
         displayNumberOfPassengers();
         mCreateRide.setText(R.string.create_drive_find_ride);
+        mNumberOfPassengersTitle.setText(R.string.create_drive_passengers_title);
     }
 
     private void displayEndLocation() {

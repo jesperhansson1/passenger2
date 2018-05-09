@@ -1,12 +1,16 @@
 <resources>
+    <!-- remove?-->
+    <string name="start_location">start location</string>
+    <string name="end_location">End Location</string>
+    <string name="ride">Ride Detail</string>
+    <string name="main_activity_match_not_found_message">Could not find any ride. Try again later</string>
+    <!-- end -->
+
     <string name="app_name">passenger</string>
     <string name="create_ride">Create Ride</string>
     <string name="create_ride_request">Request Ride</string>
-    <string name="start_location">start location</string>
-    <string name="end_location">End Location</string>
     <string name="driver">Driver</string>
     <string name="passenger">Passenger</string>
-    <string name="ride">Ride Detail</string>
 
     <string name="driver_confirmation_share_your_ride">This person wants to share your ride</string>
     <string name="driver_confirmation_drive_cost">18,50 kr</string>
@@ -30,7 +34,7 @@
     <string name="passenger_notification_license_plate">ABC 123</string>
     <string name="passenger_notification_cancel">Cancel</string>
     <string name="content_description_passenger_notification_thumbnail">Passenger notification thumbnail</string>
-    <string name="finding_car_info">Searching for a car...</string>
+    <string name="finding_car_info">Searching for a car…</string>
     <string name="finding_driver_cancel">Cancel</string>
     <string name="must_implement_finding_car_listener">Must implement FindingCarListener</string>
     <string name="finding_car_price">Price 45</string>
@@ -76,7 +80,6 @@
     <string name="library">Library</string>
     <string name="take_photo">Take Photo</string>
     <string name="cancel">Cancel</string>
-    <string name="main_activity_match_not_found_message">Could not find any ride. Try again later</string>
 
     <string name="desc_male_icon">Male Icon</string>
     <string name="desc_female_icon">Female Icon</string>
@@ -113,6 +116,7 @@
     <string name="create_drive_time">Time</string>
     <string name="create_drive_default_passengers">4</string>
     <string name="create_drive_passengers_title">PASSENGERS</string>
+    <string name="create_drive_available_seats">Available seats</string>
     <string name="create_ride_content_description_remove_passenger">remove passenger</string>
     <string name="create_ride_content_description_add_passenger">add passenger</string>
     <string name="marker_title_you_are_here">You are here</string>

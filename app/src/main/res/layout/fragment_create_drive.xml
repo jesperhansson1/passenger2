@@ -139,20 +139,20 @@
                  android:textSize="14sp" />
          </RadioGroup>
 
-         <TextView
-             android:id="@+id/textView"
-             android:layout_width="0dp"
-             android:layout_height="wrap_content"
-             android:layout_marginBottom="8dp"
-             android:layout_marginEnd="16dp"
-             android:layout_marginStart="16dp"
-             android:gravity="center"
-             android:text="@string/create_drive_passengers_title"
-             android:textColor="@color/colorBlue"
-             android:textStyle="bold"
-             app:layout_constraintBottom_toTopOf="@+id/create_drive_number_of_passengers"
-             app:layout_constraintEnd_toEndOf="parent"
-             app:layout_constraintStart_toEndOf="@+id/create_drive_radio_group_when_selection" />
+        <TextView
+            android:id="@+id/textview_createdrivefragment_nbrpassengerstitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginStart="16dp"
+            android:gravity="center"
+            android:text="@string/create_drive_passengers_title"
+            android:textColor="@color/colorBlue"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@+id/create_drive_number_of_passengers"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/create_drive_radio_group_when_selection" />
 
          <ImageView
              android:id="@+id/create_drive_remove_passenger"
@@ -167,21 +167,21 @@
              app:layout_constraintEnd_toStartOf="@+id/create_drive_number_of_passengers"
              app:layout_constraintTop_toTopOf="@+id/create_drive_radio_group_when_selection" />
 
-         <TextView
-             android:id="@+id/create_drive_number_of_passengers"
-             android:layout_width="wrap_content"
-             android:layout_height="wrap_content"
-             android:layout_marginEnd="8dp"
-             android:layout_marginStart="8dp"
-             android:gravity="center"
-             android:letterSpacing="0.5"
-             android:text="@string/create_drive_default_passengers"
-             android:textColor="@color/colorBlack"
-             android:textSize="20sp"
-             app:layout_constraintBottom_toBottomOf="@+id/create_drive_remove_passenger"
-             app:layout_constraintEnd_toEndOf="@+id/textView"
-             app:layout_constraintStart_toStartOf="@+id/textView"
-             app:layout_constraintTop_toTopOf="@+id/create_drive_remove_passenger" />
+        <TextView
+            android:id="@+id/create_drive_number_of_passengers"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:gravity="center"
+            android:letterSpacing="0.5"
+            android:text="@string/create_drive_default_passengers"
+            android:textColor="@color/colorBlack"
+            android:textSize="20sp"
+            app:layout_constraintBottom_toBottomOf="@+id/create_drive_remove_passenger"
+            app:layout_constraintEnd_toEndOf="@+id/textview_createdrivefragment_nbrpassengerstitle"
+            app:layout_constraintStart_toStartOf="@+id/textview_createdrivefragment_nbrpassengerstitle"
+            app:layout_constraintTop_toTopOf="@+id/create_drive_remove_passenger" />
 
          <ImageView
              android:id="@+id/create_drive_add_passenger"
