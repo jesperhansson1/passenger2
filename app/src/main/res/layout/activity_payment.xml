@@ -27,7 +27,8 @@
             android:layout_height="wrap_content"
             android:ems="10"
             android:hint="@string/start_location"
-            android:inputType="text" />
+            android:inputType="text"
+            android:text="55.604981,13.003822" />
 
         <TextView
             android:id="@+id/textView_payment_end"
@@ -41,7 +42,8 @@
             android:layout_height="wrap_content"
             android:ems="10"
             android:hint="@string/end_location"
-            android:inputType="text" />
+            android:inputType="text"
+            android:text="56.046467,12.694512" />
 
         <TextView
             android:id="@+id/textView_payment_distanceamount"
