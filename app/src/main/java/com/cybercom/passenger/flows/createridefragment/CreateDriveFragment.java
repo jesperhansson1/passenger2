@@ -27,6 +27,7 @@ import android.widget.Toast;
 
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.main.MainViewModel;
+import com.cybercom.passenger.interfaces.FragmentIsVisibleListener;
 import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.utils.LocationHelper;
@@ -76,8 +77,9 @@ public class CreateDriveFragment extends Fragment {
         void onCreateRide(long time, int type, Position startLocation, Position endLocation, int seats);
     }
 
-    private OnPlaceMarkerIconClickListener onPlaceMarkerIconClickListener;
-    private OnFinishedCreatingDriveOrDriveRequest onFinishedCreatingDriveOrDriveRequest;
+    private OnPlaceMarkerIconClickListener mOnPlaceMarkerIconClickListener;
+    private OnFinishedCreatingDriveOrDriveRequest mOnFinishedCreatingDriveOrDriveRequest;
+    private FragmentIsVisibleListener mFragmentIsVisibleListener;
     private int mType;
     private MainViewModel mMainViewModel;
     private TextView mNumberOfPassengersTitle;
@@ -202,12 +204,12 @@ public class CreateDriveFragment extends Fragment {
 
         mPlaceStartLocation.setOnClickListener(v -> {
             mMainViewModel.setWhichMarkerToAdd(MainViewModel.PLACE_START_MARKER);
-            onPlaceMarkerIconClickListener.onPlaceMarkerIconClicked();
+            mOnPlaceMarkerIconClickListener.onPlaceMarkerIconClicked();
         });
 
         mPlaceEndLocation.setOnClickListener(v -> {
             mMainViewModel.setWhichMarkerToAdd(MainViewModel.PLACE_END_MARKER);
-            onPlaceMarkerIconClickListener.onPlaceMarkerIconClicked();
+            mOnPlaceMarkerIconClickListener.onPlaceMarkerIconClicked();
         });
 
 
@@ -286,8 +288,8 @@ public class CreateDriveFragment extends Fragment {
 
         if (context instanceof OnPlaceMarkerIconClickListener
                 && context instanceof OnFinishedCreatingDriveOrDriveRequest) {
-            onPlaceMarkerIconClickListener = (OnPlaceMarkerIconClickListener) context;
-            onFinishedCreatingDriveOrDriveRequest = (OnFinishedCreatingDriveOrDriveRequest) context;
+            mOnPlaceMarkerIconClickListener = (OnPlaceMarkerIconClickListener) context;
+            mOnFinishedCreatingDriveOrDriveRequest = (OnFinishedCreatingDriveOrDriveRequest) context;
         } else {
             Toast.makeText(context, R.string.must_implement_on_place_icon_click_listener,
                     Toast.LENGTH_SHORT).show();
@@ -297,6 +299,13 @@ public class CreateDriveFragment extends Fragment {
             mCreateRideDialogListener = (CreateRideFragmentListener) context;
         } else {
             Toast.makeText(context, R.string.must_implement_passenger_notification_listener,
+                    Toast.LENGTH_SHORT).show();
+        }
+
+        if (context instanceof FragmentIsVisibleListener) {
+            mFragmentIsVisibleListener = (FragmentIsVisibleListener) context;
+        } else {
+            Toast.makeText(context, R.string.must_implement_fragment_is_visible_listener,
                     Toast.LENGTH_SHORT).show();
         }
     }
@@ -323,7 +332,7 @@ public class CreateDriveFragment extends Fragment {
         mMainViewModel.setNumberOfPassengers(DEFAULT_PASSENGERS);
         mShowSelectedTime.setText(EMPTY_STRING);
         mShowSelectedTime.setVisibility(View.GONE);
-        onFinishedCreatingDriveOrDriveRequest.onFinish();
+        mOnFinishedCreatingDriveOrDriveRequest.onFinish();
     }
 
     private void setUpDialogForDrive() {
@@ -355,6 +364,7 @@ public class CreateDriveFragment extends Fragment {
     public void showCreateDialog(){
         mCreateDriveDialog.animate().translationY(DEFAULT_SHOW_AND_HIDE_POSITION).setDuration(DIALOG_ANIMATION_DURATION);
         mShowAndHide.animate().rotation(DOWN_ARROW_ROTATION).setDuration(ARROW_ANIMATION_DURATION);
+        mFragmentIsVisibleListener.onFragmentVisibleChanges(mCreateDriveDialog.getHeight() + MARGIN);
     }
 
     public void hideCreateDialog(){
@@ -362,6 +372,7 @@ public class CreateDriveFragment extends Fragment {
                 .translationY((mCreateDriveDialog.getHeight() + MARGIN) - mShowAndHide.getHeight())
                 .setDuration(DIALOG_ANIMATION_DURATION);
         mShowAndHide.animate().rotation(UP_ARROW_ANIMATION).setDuration(ARROW_ANIMATION_DURATION);
+        mFragmentIsVisibleListener.onFragmentVisibleChanges(mShowAndHide.getHeight());
     }
 
     public void setIsOtherFragmentUp(boolean isOtherFragmentUp) {
