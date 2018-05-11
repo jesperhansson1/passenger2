@@ -103,6 +103,7 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
 
     private Boolean isFragmentAdded = false;
     private NoMatchFragment mNoMatchFragment;
+    private boolean mCountMarker = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -290,7 +291,6 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
 
         } else {
             updateMarkerLocation(mStartLocationMarker, mMainViewModel.getStartMarkerLocation().getValue());
-
         }
     }
 
@@ -315,11 +315,14 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
                     .draggable(true)
                     .visible(false));
 
-            mMarkerCount++;
             mEndLocationObserver = location -> {
                 if (location != null) {
                     updateMarkerLocation(mEndLocationMarker, location);
                     mEndLocationMarker.setVisible(true);
+                    if (mCountMarker) {
+                        mMarkerCount++;
+                        mCountMarker = false;
+                    }
                     if (isEndLocationMarkerAdded) {
                         mCreateDriveFragment.hideCreateDialog();
                         Handler handler = new Handler();
@@ -526,7 +529,7 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
 
     public void zoomToFitRoute() {
         final Handler handler = new Handler();
-        handler.postDelayed(() -> {
+       //handler.postDelayed(() -> {
             LatLngBounds.Builder builder = new LatLngBounds.Builder();
             builder.include(mStartLocationMarker.getPosition());
             builder.include(mEndLocationMarker.getPosition());
@@ -539,7 +542,7 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
             CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding);
 
             mGoogleMap.animateCamera(cameraUpdate);
-        }, DELAY_BEFORE_ZOOM_TO_FIT_ROUTE);
+       // }, DELAY_BEFORE_ZOOM_TO_FIT_ROUTE);
 
     }
 
@@ -566,6 +569,7 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
         if (reason == GoogleMap.OnCameraMoveStartedListener.REASON_GESTURE
                 && isFragmentAdded) {
             mCreateDriveFragment.hideCreateDialog();
+            Timber.i("onCameraMoveStarted");
         }
     }
 
