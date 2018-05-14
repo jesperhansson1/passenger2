@@ -27,7 +27,7 @@ import android.widget.Toast;
 
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.main.MainViewModel;
-import com.cybercom.passenger.interfaces.FragmentIsVisibleListener;
+import com.cybercom.passenger.interfaces.FragmentSizeListener;
 import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.utils.LocationHelper;
@@ -79,7 +79,7 @@ public class CreateDriveFragment extends Fragment {
 
     private OnPlaceMarkerIconClickListener mOnPlaceMarkerIconClickListener;
     private OnFinishedCreatingDriveOrDriveRequest mOnFinishedCreatingDriveOrDriveRequest;
-    private FragmentIsVisibleListener mFragmentIsVisibleListener;
+    private FragmentSizeListener mFragmentSizeListener;
     private int mType;
     private MainViewModel mMainViewModel;
     private TextView mNumberOfPassengersTitle;
@@ -304,8 +304,8 @@ public class CreateDriveFragment extends Fragment {
                     Toast.LENGTH_SHORT).show();
         }
 
-        if (context instanceof FragmentIsVisibleListener) {
-            mFragmentIsVisibleListener = (FragmentIsVisibleListener) context;
+        if (context instanceof FragmentSizeListener) {
+            mFragmentSizeListener = (FragmentSizeListener) context;
         } else {
             Toast.makeText(context, R.string.must_implement_fragment_is_visible_listener,
                     Toast.LENGTH_SHORT).show();
@@ -374,8 +374,8 @@ public class CreateDriveFragment extends Fragment {
                 .setDuration(DIALOG_ANIMATION_DURATION);
         mShowAndHide.animate().rotation(DOWN_ARROW_ROTATION)
                 .setDuration(ARROW_ANIMATION_DURATION);
-        mFragmentIsVisibleListener
-                .onFragmentVisibleChanges(mCreateDriveDialog.getHeight() + MARGIN);
+        mFragmentSizeListener
+                .onHeightChanged(mCreateDriveDialog.getHeight() + MARGIN);
         mIsCreateDialogUp = true;
 
     }
@@ -388,7 +388,7 @@ public class CreateDriveFragment extends Fragment {
                 .translationY((mCreateDriveDialog.getHeight() + MARGIN) - mShowAndHide.getHeight())
                 .setDuration(DIALOG_ANIMATION_DURATION);
         mShowAndHide.animate().rotation(UP_ARROW_ANIMATION).setDuration(ARROW_ANIMATION_DURATION);
-        mFragmentIsVisibleListener.onFragmentVisibleChanges(mShowAndHide.getHeight());
+        mFragmentSizeListener.onHeightChanged(mShowAndHide.getHeight());
         mIsCreateDialogUp = false;
     }
 

@@ -27,7 +27,7 @@ import com.cybercom.passenger.flows.login.RegisterActivity;
 import com.cybercom.passenger.flows.nomatchfragment.NoMatchFragment;
 import com.cybercom.passenger.flows.passengernotification.PassengerNotificationDialog;
 import com.cybercom.passenger.flows.progressfindingcar.FindingCarProgressDialog;
-import com.cybercom.passenger.interfaces.FragmentIsVisibleListener;
+import com.cybercom.passenger.interfaces.FragmentSizeListener;
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Notification;
@@ -56,7 +56,7 @@ import java.util.HashMap;
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
-public class MainActivity extends AppCompatActivity implements CreateDriveFragment.CreateRideFragmentListener, AcceptRejectPassengerDialog.ConfirmationListener, PassengerNotificationDialog.PassengerNotificationListener, OnMapReadyCallback, GoogleMap.OnMarkerDragListener, GoogleMap.OnCameraMoveStartedListener, GoogleMap.OnMapLongClickListener, GoogleMap.OnMapClickListener, CreateDriveFragment.OnPlaceMarkerIconClickListener, ParserTask.OnRouteCompletion, CreateDriveFragment.OnFinishedCreatingDriveOrDriveRequest, FindingCarProgressDialog.FindingCarListener, GoogleMap.OnMyLocationButtonClickListener, NoMatchFragment.NoMatchButtonListener, FragmentIsVisibleListener {
+public class MainActivity extends AppCompatActivity implements CreateDriveFragment.CreateRideFragmentListener, AcceptRejectPassengerDialog.ConfirmationListener, PassengerNotificationDialog.PassengerNotificationListener, OnMapReadyCallback, GoogleMap.OnMarkerDragListener, GoogleMap.OnCameraMoveStartedListener, GoogleMap.OnMapLongClickListener, GoogleMap.OnMapClickListener, CreateDriveFragment.OnPlaceMarkerIconClickListener, ParserTask.OnRouteCompletion, CreateDriveFragment.OnFinishedCreatingDriveOrDriveRequest, FindingCarProgressDialog.FindingCarListener, GoogleMap.OnMyLocationButtonClickListener, NoMatchFragment.NoMatchButtonListener, FragmentSizeListener {
 
     private static final float ZOOM_LEVEL_WORLD = 1;
     private static final float ZOOM_LEVEL_LANDMASS_CONTINENT = 5;
@@ -792,7 +792,7 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
     }
 
     @Override
-    public void onFragmentVisibleChanges(int fragmentHeight) {
+    public void onHeightChanged(int fragmentHeight) {
         mGoogleMap.setPadding(0,0,0,fragmentHeight);
         if(mMarkerCount == 1){
             animateToLocation(mStartLocationMarker.getPosition(),ZOOM_LEVEL_STREETS);
