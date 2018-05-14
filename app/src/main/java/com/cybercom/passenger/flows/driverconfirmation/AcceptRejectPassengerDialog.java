@@ -37,7 +37,7 @@ public class AcceptRejectPassengerDialog extends DialogFragment implements View.
     private Notification mNotification;
 
     public interface ConfirmationListener {
-        void onDriverConfirmation(Boolean isAccepted, Notification notification);
+        void onDriverConfirmation(boolean isAccepted, Notification notification);
     }
 
     public static AcceptRejectPassengerDialog getInstance(Notification notification) {

@@ -49,21 +49,22 @@ import timber.log.Timber;
 
 public class CreateDriveFragment extends Fragment {
     private static final String FILTER_COUNTRY = "SE";
+    private static final int DEFAULT_PASSENGER_DRIVE = 4;
+    private static final float DEFAULT_SHOW_AND_HIDE_POSITION = 0;
 
     public static final int DELAY_CLOSE_TIME_DATE_PICKER = 2000;
     public static final int DEFAULT_PASSENGERS = 4;
     public static final String EMPTY_STRING = "";
     public static final int DEFAULT_PASSENGER_DRIVE_REQUEST = 1;
-    private static final int DEFAULT_PASSENGER_DRIVE = 4;
     public static final int DOWN_ARROW_ROTATION = 180;
     public static final int DIALOG_ANIMATION_DURATION = 150;
     public static final int ARROW_ANIMATION_DURATION = 300;
     public static final int UP_ARROW_ANIMATION = 0;
     public static final int MARGIN = 40;
+
     private CreateRideFragmentListener mCreateRideDialogListener;
     private boolean mIsCreateDialogUp = true;
     private boolean mIsOtherFragmentUp = false;
-    private static final float DEFAULT_SHOW_AND_HIDE_POSITION = 0;
 
     public interface OnPlaceMarkerIconClickListener {
         void onPlaceMarkerIconClicked();
@@ -75,7 +76,8 @@ public class CreateDriveFragment extends Fragment {
     }
 
     public interface CreateRideFragmentListener {
-        void onCreateRide(long time, int type, Position startLocation, Position endLocation, int seats);
+        void onCreateRide(long time, int type, Position startLocation, Position endLocation,
+                          int seats);
     }
 
     private OnPlaceMarkerIconClickListener mOnPlaceMarkerIconClickListener;
@@ -156,7 +158,8 @@ public class CreateDriveFragment extends Fragment {
                 .addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                     @Override
                     public void onGlobalLayout() {
-                        mFragmentSizeListener.onHeightChanged(mCreateDriveDialog.getHeight() + MARGIN);
+                        mFragmentSizeListener.onHeightChanged(mCreateDriveDialog.getHeight() +
+                                MARGIN);
                         mCreateDriveDialog.getViewTreeObserver().removeOnGlobalLayoutListener(this);
                     }
                 });

@@ -2,29 +2,22 @@ package com.cybercom.passenger.flows.signup;
 
 import android.Manifest;
 import android.app.Activity;
-import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.ComponentName;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -35,14 +28,9 @@ import android.widget.TextView;
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.accounts.AccountActivity;
 import com.cybercom.passenger.flows.car.CarDetailActivity;
-import com.cybercom.passenger.flows.car.CarsActivity;
-import com.cybercom.passenger.flows.main.MainActivity;
 import com.cybercom.passenger.model.User;
-import com.cybercom.passenger.utils.ToastHelper;
 import com.cybercom.passenger.utils.ValidateEmailHelper;
 import com.cybercom.passenger.utils.ValidatePersonalNumberHelper;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 
@@ -53,24 +41,39 @@ import timber.log.Timber;
 
 import static android.os.Build.VERSION_CODES.M;
 
-public class SignUpActivity extends AppCompatActivity implements View.OnClickListener, ActivityCompat.OnRequestPermissionsResultCallback {
-
-    SignUpViewModel mViewModel;
-    Button mNextButton;
-    public static EditText mEmail, mPassword;
-    EditText mFullName, mPersonalNumber, mPhone;
-    TextView mMaleTextSelect, mFemaleTextSelect;
-    String mSaveRadioButtonAnswer;
-    Boolean mFilledInTextFields = false, checkEmailValidation = false, checkPasswordValidation = false, checkPersonalNumberValidation = false;
+public class SignUpActivity extends AppCompatActivity implements View.OnClickListener,
+        ActivityCompat.OnRequestPermissionsResultCallback {
     private static final String GENDER_MALE = "Male";
     private static final String GENDER_FEMALE = "Female";
-    ImageView mImageViewProfile, mMaleIcon, mFemaleIcon;
+    private static final String LOGIN_ARRAY = "loginArray";
     private static final int REQUEST_CAMERA_PERMISSION = 1;
-    LinearLayout mMaleLayout, mFemaleLayout;
-    ProgressBar progressBar;
-    String mPassenger, mDriver, mLogin, mRegisterType;
+
+    private SignUpViewModel mViewModel;
+    private Button mNextButton;
+    private EditText mEmail, mPassword;
+    private EditText mFullName;
+    private EditText mPersonalNumber;
+    private EditText mPhone;
+    private TextView mMaleTextSelect;
+    private TextView mFemaleTextSelect;
+    private String mSaveRadioButtonAnswer;
+    private boolean mFilledInTextFields = false;
+    private boolean mCheckEmailValidation = false;
+    private boolean mCheckPasswordValidation = false;
+    private boolean mCheckPersonalNumberValidation = false;
+
+    private ImageView mImageViewProfile;
+    private ImageView mMaleIcon;
+    private ImageView mFemaleIcon;
+
+    private LinearLayout mMaleLayout;
+    private LinearLayout mFemaleLayout;
+    private ProgressBar progressBar;
+    private String mPassenger;
+    private String mDriver;
+    private String mRegisterType;
     int mType;
-    static final String LOGINARRAY = "loginArray";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,7 +112,6 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
 
         mPassenger = getResources().getString(R.string.signup_passenger);
         mDriver = getResources().getString(R.string.signup_driver);
-        mLogin = getResources().getString(R.string.signup_login);
         mRegisterType = getResources().getString(R.string.signup_type);
 
         Bundle extras = getIntent().getExtras();
@@ -135,31 +137,23 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         mFemaleIcon.setImageDrawable(getResources().getDrawable(R.drawable.ic_woman_blue));
         mSaveRadioButtonAnswer = GENDER_MALE;
 
-        mPersonalNumber.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if(!hasFocus && !mPersonalNumber.getText().toString().isEmpty()) {
-                    validatePersonalNumber(mPersonalNumber.getText().toString());
-                }
+        mPersonalNumber.setOnFocusChangeListener((v, hasFocus) -> {
+            if(!hasFocus && !mPersonalNumber.getText().toString().isEmpty()) {
+                validatePersonalNumber(mPersonalNumber.getText().toString());
             }
         });
 
-        mEmail.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (!hasFocus && !mEmail.getText().toString().isEmpty()) {
-                    validateEmail(mEmail.getText().toString());
-                    mEmail.setError(ValidateEmailHelper.isValidEmailAddress(mEmail.getText().toString()));
-                }
+        mEmail.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus && !mEmail.getText().toString().isEmpty()) {
+                validateEmail(mEmail.getText().toString());
+                mEmail.setError(ValidateEmailHelper.isValidEmailAddress(
+                        mEmail.getText().toString()));
             }
         });
 
-        mPassword.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if(!hasFocus && !mPassword.getText().toString().isEmpty()) {
-                    validatePassword(mPassword.getText().toString());
-                }
+        mPassword.setOnFocusChangeListener((v, hasFocus) -> {
+            if(!hasFocus && !mPassword.getText().toString().isEmpty()) {
+                validatePassword(mPassword.getText().toString());
             }
         });
     }
@@ -191,64 +185,61 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                 break;
 
             case R.id.button_signup_next:
-                final String email = mEmail.getText().toString();
-                final String password = mPassword.getText().toString();
-                final String fullName = mFullName.getText().toString();
-                final String personalNumber = mPersonalNumber.getText().toString();
-                final String phone = mPhone.getText().toString();
-
-                if (validateUserInput(email, password, fullName, personalNumber, phone)) {
-                    mNextButton.setText("");
-                    progressBar.setVisibility(View.VISIBLE);
-                    if (mRegisterType.equalsIgnoreCase(mPassenger))
-                    {
-                        mType = User.TYPE_PASSENGER;
-                    }
-                    if (mRegisterType.equalsIgnoreCase(mDriver))
-                    {
-                        mType = User.TYPE_DRIVER;
-                    }
-
-                    User userRegister = new User(null, null,
-                            mType,phone,personalNumber,fullName,null,
-                            mSaveRadioButtonAnswer, email, password);
-
-                    Gson gson = new Gson();
-                    String loginArray = gson.toJson(userRegister);
-
-                    if(mRegisterType.equalsIgnoreCase(mDriver))
-                    {
-                        //register as driver need to verify bank id
-                        Intent intent = new Intent(getApplicationContext(), CarDetailActivity.class);
-                        intent.putExtra(LOGINARRAY, loginArray);
-                        startActivity(intent);
-                    }
-
-                    if(mRegisterType.equalsIgnoreCase(mPassenger))
-                    {
-                        //register as passenger need to verify bank id
-                        Intent intent = new Intent(getApplicationContext(), AccountActivity.class);
-                        intent.putExtra(LOGINARRAY, loginArray);
-                        startActivity(intent);
-                    }
-
-                } else{
-                    progressBar.setVisibility(View.GONE);
-                }
+                handleNextClicked();
                 break;
 
             case R.id.imageview_signup_profile:
-                checkpermissions(SignUpActivity.this);
+                checkPermissions(SignUpActivity.this);
                 break;
         }
     }
 
-    public Boolean validateUserInput(String email, String password, String fullName, String personalNumber, String phone){
-        if(checkEmailValidation && checkPasswordValidation && !fullName.isEmpty() && checkPersonalNumberValidation && !phone.isEmpty()){
-            mFilledInTextFields = true;
-        } else{
-            mFilledInTextFields = false;
+    private void handleNextClicked() {
+        final String email = mEmail.getText().toString();
+        final String password = mPassword.getText().toString();
+        final String fullName = mFullName.getText().toString();
+        final String personalNumber = mPersonalNumber.getText().toString();
+        final String phone = mPhone.getText().toString();
+
+        if (validateUserInput(email, password, fullName, personalNumber, phone)) {
+            mNextButton.setText("");
+            progressBar.setVisibility(View.VISIBLE);
+            if (mRegisterType.equalsIgnoreCase(mPassenger)) {
+                mType = User.TYPE_PASSENGER;
+            }
+            if (mRegisterType.equalsIgnoreCase(mDriver)) {
+                mType = User.TYPE_DRIVER;
+            }
+
+            User userRegister = new User(null, null, mType, phone, personalNumber, fullName,
+                    null, mSaveRadioButtonAnswer, email, password);
+
+            Gson gson = new Gson();
+            String loginArray = gson.toJson(userRegister);
+
+            if (mRegisterType.equalsIgnoreCase(mDriver)) {
+                //register as driver need to verify bank id
+                Intent intent = new Intent(getApplicationContext(), CarDetailActivity.class);
+                intent.putExtra(LOGIN_ARRAY, loginArray);
+                startActivity(intent);
+            }
+
+            if (mRegisterType.equalsIgnoreCase(mPassenger)) {
+                //register as passenger need to verify bank id
+                Intent intent = new Intent(getApplicationContext(), AccountActivity.class);
+                intent.putExtra(LOGIN_ARRAY, loginArray);
+                startActivity(intent);
+            }
+
+        } else {
+            progressBar.setVisibility(View.GONE);
         }
+    }
+
+    private boolean validateUserInput(String email, String password, @NonNull String fullName,
+                                      String personalNumber, @NonNull String phone) {
+        mFilledInTextFields = mCheckEmailValidation && mCheckPasswordValidation
+                && !fullName.isEmpty() && mCheckPersonalNumberValidation && !phone.isEmpty();
         validateEmail(email);
         validatePassword(password);
         validateFullName(fullName);
@@ -264,17 +255,18 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     private void validatePersonalNumber(String personalNumber){
-        if(personalNumber.isEmpty()){
+        if (personalNumber.isEmpty()){
             mPersonalNumber.setError(getResources().getString(R.string.please_enter_your_personal_number));
-            checkPersonalNumberValidation = false;
-        }else if(!personalNumber.isEmpty() && personalNumber.length() == 10 && !ValidatePersonalNumberHelper.hasValidChecksum(personalNumber)){
+            mCheckPersonalNumberValidation = false;
+        } else if(personalNumber.length() == 10 && !ValidatePersonalNumberHelper.hasValidChecksum(
+                personalNumber)){
             mPersonalNumber.setError("The personal number doesn't exist");
-            checkPersonalNumberValidation = false;
-        }else if(!personalNumber.isEmpty() && personalNumber.length() < 10){
+            mCheckPersonalNumberValidation = false;
+        } else if(personalNumber.length() < 10) {
             mPersonalNumber.setError("You have to enter 10 characters for the personal number");
-            checkPersonalNumberValidation = false;
+            mCheckPersonalNumberValidation = false;
         } else{
-            checkPersonalNumberValidation = true;
+            mCheckPersonalNumberValidation = true;
         }
     }
 
@@ -287,42 +279,40 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
     private void validatePassword(String password){
         if(password.isEmpty()){
             mPassword.setError(getResources().getString(R.string.please_enter_a_password));
-            checkPasswordValidation = false;
+            mCheckPasswordValidation = false;
         } else if(!password.isEmpty() && password.length() < 6){
             mPassword.setError(getResources().getString(R.string.the_given_password_is_invalid));
-            checkPasswordValidation = false;
+            mCheckPasswordValidation = false;
         } else{
-            checkPasswordValidation = true;
+            mCheckPasswordValidation = true;
         }
     }
 
     private void validateEmail(String email) {
         if(email.isEmpty()){
             mEmail.setError(getResources().getString(R.string.please_enter_an_email));
-            checkEmailValidation = false;
+            mCheckEmailValidation = false;
         }
 
         if(!email.isEmpty()) {
-            mViewModel.validateEmail(email).observe(this, new Observer<Boolean>() {
-                @Override
-                public void onChanged(@Nullable Boolean bEmail) {
-                    if (bEmail) {
-                        mEmail.setError(getResources().getString(R.string.email_address_is_already_in_use_by_another_account));
-                        checkEmailValidation = false;
-                    } else{
-                        checkEmailValidation = true;
-                    }
+            mViewModel.validateEmail(email).observe(this, bEmail -> {
+                mCheckEmailValidation = !bEmail;
+                if (bEmail) {
+                    mEmail.setError(getResources().getString(
+                            R.string.email_address_is_already_in_use_by_another_account));
                 }
             });
         }
     }
 
-    public void checkpermissions(Activity activity) {
+    public void checkPermissions(Activity activity) {
         PackageManager mPackageManager = activity.getPackageManager();
-        int hasPermStorage = mPackageManager.checkPermission(Manifest.permission.CAMERA, activity.getPackageName());
+        int hasPermStorage = mPackageManager.checkPermission(Manifest.permission.CAMERA,
+                activity.getPackageName());
         if (hasPermStorage != PackageManager.PERMISSION_GRANTED) {
             if (Build.VERSION.SDK_INT >= M) {
-                requestPermissions(new String[]{Manifest.permission.CAMERA,Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CAMERA_PERMISSION);
+                requestPermissions(new String[]{Manifest.permission.CAMERA,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CAMERA_PERMISSION);
             }
         } else {
             openMediaSelector(SignUpActivity.this);
@@ -332,14 +322,13 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
-        if (requestCode == REQUEST_CAMERA_PERMISSION){
+        if (requestCode == REQUEST_CAMERA_PERMISSION) {
             if (grantResults.length != 2 ||
                     grantResults[0] != PackageManager.PERMISSION_GRANTED ||
                     grantResults[1] != PackageManager.PERMISSION_GRANTED) {
                 Timber.d("permission not granted");
             }
-            else
-            {
+            else {
                 Timber.d("permission granted");
                 openMediaSelector(SignUpActivity.this);
             }
@@ -349,50 +338,36 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     public void openMediaSelector(Activity context){
-        Intent camIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);//("android.media.action.IMAGE_CAPTURE");
+        Intent camIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         Intent gallIntent = new Intent(Intent.ACTION_PICK,
                 android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
 
-        List<ResolveInfo> info=new ArrayList<ResolveInfo>();
-        List<Intent> yourIntentsList = new ArrayList<Intent>();
+        List<ResolveInfo> info=new ArrayList<>();
+        List<Intent> yourIntentsList = new ArrayList<>();
         PackageManager packageManager = context.getPackageManager();
         List<ResolveInfo> listCam = packageManager.queryIntentActivities(camIntent, 0);
         for (ResolveInfo res : listCam) {
             final Intent finalIntent = new Intent(camIntent);
-            finalIntent.setComponent(new ComponentName(res.activityInfo.packageName, res.activityInfo.name));
+            finalIntent.setComponent(new ComponentName(res.activityInfo.packageName,
+                    res.activityInfo.name));
             yourIntentsList.add(finalIntent);
             info.add(res);
         }
         List<ResolveInfo> listGall = packageManager.queryIntentActivities(gallIntent, 0);
         for (ResolveInfo res : listGall) {
             final Intent finalIntent = new Intent(gallIntent);
-            finalIntent.setComponent(new ComponentName(res.activityInfo.packageName, res.activityInfo.name));
+            finalIntent.setComponent(new ComponentName(res.activityInfo.packageName,
+                    res.activityInfo.name));
             yourIntentsList.add(finalIntent);
             info.add(res);
         }
-        openDialog(context,yourIntentsList,info);
+        openDialog(context);
     }
 
-    private static void openDialog(final Activity context, final List<Intent> intents,
-                                   List<ResolveInfo> activitiesInfo) {
+    private static void openDialog(final Activity context) {
         AlertDialog.Builder dialog = new AlertDialog.Builder(context, R.style.AlertDialogTheme);
         dialog.setTitle(context.getResources().getString(R.string.select_image_source));
-        final AlertDialog.Builder builder = dialog.setAdapter(buildAdapter(context, activitiesInfo),
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
-                        Intent intent = intents.get(id);
-                        context.startActivityForResult(intent, 1);
-                    }
-                });
-
-        dialog.setNeutralButton(context.getResources().getString(R.string.cancel),
-                new android.content.DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
+        dialog.setNeutralButton(context.getResources().getString(R.string.cancel), (dialog1, which) -> dialog1.dismiss());
         dialog.show();
     }
 
@@ -400,49 +375,31 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
         switch(requestCode) {
             case 0:
-                if(resultCode == RESULT_OK){
+                if (resultCode == RESULT_OK) {
                     Uri selectedImage = imageReturnedIntent.getData();
                     Picasso.with(this)
                             .load(selectedImage).into(mImageViewProfile);
                 }
              break;
             case 1:
-                if(resultCode == RESULT_OK){
+                if (resultCode == RESULT_OK) {
                     Uri selectedImage = imageReturnedIntent.getData();
 
-                    boolean isCamera = (imageReturnedIntent == null || imageReturnedIntent.getData() == null);
-                    if(isCamera)
-                    {
+                    boolean isCamera = (imageReturnedIntent == null
+                            || imageReturnedIntent.getData() == null);
+                    if (isCamera) {
                         Bundle extras = imageReturnedIntent.getExtras();
                         assert extras != null;
                         Bitmap imageBitmap = (Bitmap) extras.get("data");
-                        Picasso.with(this)
-                                .load(MediaStore.Images.Media.insertImage(getApplicationContext().getContentResolver(),
-                                        imageBitmap, "Title", null)).into(mImageViewProfile);
+                        Picasso.with(this).load(MediaStore.Images.Media.insertImage(
+                                getApplicationContext().getContentResolver(),
+                                imageBitmap, "Title", null)).into(mImageViewProfile);
                     }
-                    else
-                    {
-                        Picasso.with(this)
-                                .load(selectedImage).into(mImageViewProfile);
+                    else {
+                        Picasso.with(this).load(selectedImage).into(mImageViewProfile);
                     }
                 }
-                 break;
+                break;
         }
-    }
-
-    private static ArrayAdapter<ResolveInfo> buildAdapter(final Context context, final List<ResolveInfo> activitiesInfo) {
-        return new ArrayAdapter<ResolveInfo>(context, R.layout.image_picker,R.id.textview_imagepicker_title,activitiesInfo){
-            @NonNull
-            @Override
-            public View getView(int position, View convertView, ViewGroup parent) {
-                View view = super.getView(position, convertView, parent);
-                ResolveInfo res=activitiesInfo.get(position);
-                ImageView image= view.findViewById(R.id.imageview_imagepicker_icon);
-                image.setImageDrawable(res.loadIcon(context.getPackageManager()));
-                TextView textview= view.findViewById(R.id.textview_imagepicker_title);
-                textview.setText(res.loadLabel(context.getPackageManager()).toString());
-                return view;
-            }
-        };
     }
 }
