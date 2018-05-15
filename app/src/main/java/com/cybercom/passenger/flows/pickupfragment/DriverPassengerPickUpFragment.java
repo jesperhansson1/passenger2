@@ -10,13 +10,15 @@ import android.view.ViewGroup;
 
 import com.cybercom.passenger.R;
 
-public class DriverPickUpFragment extends Fragment {
+public class DriverPassengerPickUpFragment extends Fragment {
 
-    public static DriverPickUpFragment newInstance() {
+    public static final String USER_KEY = "USER";
+
+    public static DriverPassengerPickUpFragment newInstance(int type) {
 
         Bundle args = new Bundle();
-
-        DriverPickUpFragment fragment = new DriverPickUpFragment();
+        args.putInt(USER_KEY, type);
+        DriverPassengerPickUpFragment fragment = new DriverPassengerPickUpFragment();
         fragment.setArguments(args);
         return fragment;
     }
@@ -25,6 +27,8 @@ public class DriverPickUpFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
-        return inflater.inflate(R.layout.fragment_driver_pick_up,container,false);
+        View view = inflater.inflate(R.layout.fragment_driver_passenger_pick_up, container, false);
+
+        return view;
     }
 }
