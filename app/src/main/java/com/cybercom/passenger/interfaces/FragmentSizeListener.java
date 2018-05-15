@@ -2,7 +2,7 @@ package com.cybercom.passenger.interfaces;
 
 
 /**
- *  Interface for knowing if a fragment is visible
+ *  Interface for knowing if the size of a fragment changes
  */
 public interface FragmentSizeListener {
 
