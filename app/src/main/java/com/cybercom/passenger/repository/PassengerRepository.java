@@ -63,7 +63,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private static final String LATITUDE = "latitude";
     private static final String LONGITUDE = "longitude";
 
-    public static final int DEFAULT_DRIVE_REQUEST_RADIUS = 700;
+    private static final int DEFAULT_DRIVE_REQUEST_RADIUS = 700;
 
     private static PassengerRepository sPassengerRepository;
     private DatabaseReference mUsersReference;
@@ -95,10 +95,6 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         mCarsReference = firebaseDatabase.getReference(REFERENCE_CARS);
         mDriveRequestsReference = firebaseDatabase.getReference(REFERENCE_DRIVE_REQUESTS);
         mNotificationsReference = firebaseDatabase.getReference(REFERENCE_NOTIFICATIONS);
-    }
-
-    public FirebaseAuth getAuthorization() {
-        return mAuth;
     }
 
     public LiveData<Boolean> validateEmail(String email) {
@@ -155,7 +151,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         }
     }
 
-    public String getTokenId() {
+    private String getTokenId() {
         return FirebaseInstanceId.getInstance().getToken();
     }
 /*
@@ -182,7 +178,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         mAuth.createUserWithEmailAndPassword(userLogin.getmEmail(), userLogin.getPassword())
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        FirebaseUser user = getAuthorization().getInstance().getCurrentUser();
+                        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
                         Timber.d("createUserWithEmail:success %s", user);
                         userMutableLiveData.setValue(user);
                         userLogin.setUserId(user.getUid());
@@ -219,18 +215,22 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         mAuth.createUserWithEmailAndPassword(userLogin.getmEmail(), userLogin.getPassword())
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        FirebaseUser user = getAuthorization().getInstance().getCurrentUser();
-                        Timber.d("createUserWithEmail:success %s", user);
-                        userMutableLiveData.setValue(user);
-                        userLogin.setUserId(user.getUid());
-                        userLogin.setNotificationTokenId(getTokenId());
-                        userLogin.setPassword(null);
-                        mUsersReference.child(user.getUid()).setValue(userLogin);
-                        createCar(newCar.getNumber(), user.getUid(), newCar);
-
+                        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                        if (user != null) {
+                            Timber.d("createUserWithEmail:success %s", user);
+                            userMutableLiveData.setValue(user);
+                            userLogin.setUserId(user.getUid());
+                            userLogin.setNotificationTokenId(getTokenId());
+                            userLogin.setPassword(null);
+                            mUsersReference.child(user.getUid()).setValue(userLogin);
+                            createCar(newCar.getNumber(), user.getUid(), newCar);
+                        }
                     } else {
-                        Timber.w("createUserWithEmail:failure %s",
-                                ((FirebaseAuthException) task.getException()).getErrorCode());
+                        Exception exception = task.getException();
+                        if (exception != null) {
+                            Timber.w("createUserWithEmail:failure %s",
+                                    ((FirebaseAuthException) task.getException()).getErrorCode());
+                        }
                        /* if(((FirebaseAuthException)task.getException()).getErrorCode() == ERROR_WEAK_PASSWORD){
                             SignUpActivity.mPassword.setError(task.getException().getMessage().toString());
 
@@ -354,10 +354,6 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         return mNotification;
     }
 
-    private void getDriver() {
-
-    }
-
     /**
      * Rebuild the notification (to the ModelView model) from payload coming from push-notification
      * and add it to the notification queue
@@ -396,9 +392,13 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         final User driver = dataSnapshot.getValue(User.class);
+                        if (driver == null) {
+                            return;
+                        }
                         // Fetch the DriverRequest
                         Timber.i("fetch driveRequest : %s", driveRequestId);
-                        final DatabaseReference driveReq = mDriveRequestsReference.child(driveRequestId);
+                        final DatabaseReference driveReq = mDriveRequestsReference.child(
+                                driveRequestId);
                         driveReq.addListenerForSingleValueEvent(
                                 getEventListnenerToFetchDriveRequestAndAddNotification(driveId,
                                         driver, dbDrive, driveReq, driveRequestId, payload));
@@ -605,7 +605,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     }
 
 
-    public DatabaseReference getCarsReference() {
+    private DatabaseReference getCarsReference() {
         mCarList = new MutableLiveData<>();
         return mCarsReference;
     }
@@ -652,22 +652,22 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         List<Car> allCar = new ArrayList<>();
         Map<String, Object> objectMap = (HashMap<String, Object>)
                 dataSnapshot.getValue();
-        if (objectMap.values() != null) {
-            for (Object obj : objectMap.values()) {
-                if (obj instanceof Map) {
-                    Map<String, Object> mapObj = (Map<String, Object>) obj;
-                    try {
-                        Car match = new Car(mapObj.get("number").toString(),
-                                mapObj.get("model").toString(),
-                                mapObj.get("year").toString(),
-                                mapObj.get("color").toString());
-                        allCar.add(match);
-                    } catch (Exception e) {
-                        Timber.e(e.getLocalizedMessage());
-                    }
+
+        for (Object obj : objectMap.values()) {
+            if (obj instanceof Map) {
+                Map<String, Object> mapObj = (Map<String, Object>) obj;
+                try {
+                    Car match = new Car(mapObj.get("number").toString(),
+                            mapObj.get("model").toString(),
+                            mapObj.get("year").toString(),
+                            mapObj.get("color").toString());
+                    allCar.add(match);
+                } catch (Exception e) {
+                    Timber.e(e.getLocalizedMessage());
                 }
             }
         }
+
         mCarList.setValue(allCar);
     }
 
@@ -687,11 +687,12 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     public LiveData<String> updatePassengerRideCurrentLocation(Location location) {
         MutableLiveData<String> getPassengerRideKey = new MutableLiveData<>();
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        String uId = firebaseUser.getUid();
 
         if (firebaseUser == null) {
             return getPassengerRideKey;
         }
+        String uId = firebaseUser.getUid();
+
         mPassengerRideReference.orderByChild(KEY_PASSENGER_ID).equalTo(uId)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -716,7 +717,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     }
 
     public LiveData<com.cybercom.passenger.model.PassengerRide> createPassengerRide(String driveId) {
-        final MutableLiveData<com.cybercom.passenger.model.PassengerRide> passengerRideMutableLiveData = new MutableLiveData<>();
+        final MutableLiveData<com.cybercom.passenger.model.PassengerRide>
+                passengerRideMutableLiveData = new MutableLiveData<>();
 
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
@@ -782,10 +784,11 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     PassengerRide passengerRide = snapshot.getValue(PassengerRide.class);
                     Timber.d("result: %s", passengerRide);
-
-                    passengerRidesLiveData.setValue(new com.cybercom.passenger.model.PassengerRide(
-                            snapshot.getKey(), passengerRide.getDriveId(),
-                            passengerRide.getPassengerId(), passengerRide.getPosition()));
+                    if (passengerRide != null) {
+                        passengerRidesLiveData.setValue(new com.cybercom.passenger.model.PassengerRide(
+                                snapshot.getKey(), passengerRide.getDriveId(),
+                                passengerRide.getPassengerId(), passengerRide.getPosition()));
+                    }
                 }
             }
 
@@ -804,12 +807,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Position position = dataSnapshot.getValue(Position.class);
-
-                if (position != null) {
-                    driverPositionLiveData.setValue(position);
-                } else {
-                    driverPositionLiveData.setValue(null);
-                }
+                driverPositionLiveData.setValue(position != null ? position : null);
             }
 
             @Override

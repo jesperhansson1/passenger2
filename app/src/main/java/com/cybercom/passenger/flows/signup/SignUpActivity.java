@@ -57,7 +57,6 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
     private TextView mMaleTextSelect;
     private TextView mFemaleTextSelect;
     private String mSaveRadioButtonAnswer;
-    private boolean mFilledInTextFields = false;
     private boolean mCheckEmailValidation = false;
     private boolean mCheckPasswordValidation = false;
     private boolean mCheckPersonalNumberValidation = false;
@@ -72,7 +71,7 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
     private String mPassenger;
     private String mDriver;
     private String mRegisterType;
-    int mType;
+    private int mType;
 
 
     @Override
@@ -129,7 +128,7 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         mNextButton.setText(R.string.next);
     }
 
-    void initUI(){
+    private void initUI(){
         mMaleLayout.setSelected(true);
         mMaleTextSelect.setTextColor(getResources().getColor(R.color.colorWhite));
         mFemaleTextSelect.setTextColor(getResources().getColor(R.color.colorBlue));
@@ -238,14 +237,14 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
 
     private boolean validateUserInput(String email, String password, @NonNull String fullName,
                                       String personalNumber, @NonNull String phone) {
-        mFilledInTextFields = mCheckEmailValidation && mCheckPasswordValidation
+        boolean filledInTextFields = mCheckEmailValidation && mCheckPasswordValidation
                 && !fullName.isEmpty() && mCheckPersonalNumberValidation && !phone.isEmpty();
         validateEmail(email);
         validatePassword(password);
         validateFullName(fullName);
         validatePersonalNumber(personalNumber);
         validatePhone(phone);
-        return mFilledInTextFields;
+        return filledInTextFields;
     }
 
     private void validatePhone(String phone){
@@ -277,10 +276,10 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     private void validatePassword(String password){
-        if(password.isEmpty()){
+        if (password.isEmpty()) {
             mPassword.setError(getResources().getString(R.string.please_enter_a_password));
             mCheckPasswordValidation = false;
-        } else if(!password.isEmpty() && password.length() < 6){
+        } else if(password.length() < 6){
             mPassword.setError(getResources().getString(R.string.the_given_password_is_invalid));
             mCheckPasswordValidation = false;
         } else{
@@ -289,7 +288,7 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     private void validateEmail(String email) {
-        if(email.isEmpty()){
+        if (email.isEmpty()) {
             mEmail.setError(getResources().getString(R.string.please_enter_an_email));
             mCheckEmailValidation = false;
         }
@@ -305,7 +304,7 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         }
     }
 
-    public void checkPermissions(Activity activity) {
+    private void checkPermissions(Activity activity) {
         PackageManager mPackageManager = activity.getPackageManager();
         int hasPermStorage = mPackageManager.checkPermission(Manifest.permission.CAMERA,
                 activity.getPackageName());
@@ -337,12 +336,12 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         }
     }
 
-    public void openMediaSelector(Activity context){
+    private void openMediaSelector(Activity context){
         Intent camIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         Intent gallIntent = new Intent(Intent.ACTION_PICK,
                 android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
 
-        List<ResolveInfo> info=new ArrayList<>();
+        List<ResolveInfo> info = new ArrayList<>();
         List<Intent> yourIntentsList = new ArrayList<>();
         PackageManager packageManager = context.getPackageManager();
         List<ResolveInfo> listCam = packageManager.queryIntentActivities(camIntent, 0);
@@ -385,8 +384,7 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                 if (resultCode == RESULT_OK) {
                     Uri selectedImage = imageReturnedIntent.getData();
 
-                    boolean isCamera = (imageReturnedIntent == null
-                            || imageReturnedIntent.getData() == null);
+                    boolean isCamera = (selectedImage == null);
                     if (isCamera) {
                         Bundle extras = imageReturnedIntent.getExtras();
                         assert extras != null;

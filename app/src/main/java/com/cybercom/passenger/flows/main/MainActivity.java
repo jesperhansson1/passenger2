@@ -69,16 +69,15 @@ public class MainActivity extends AppCompatActivity implements
 
     private static final float ZOOM_LEVEL_STREETS = 15;
 
-    public static final int DELAY_BEFORE_SHOWING_CREATE_DRIVE_AFTER_LOCATION_CHANGED = 1500;
-    public static final int PLACE_MARKER_INFO_FADE_DURATION = 1000;
-    public static final float PLACE_MARKER_INFO_FADE_OUT_TO = 0.0f;
-    public static final float PLACE_MARKER_INFO_FADE_IN_TO = 1.0f;
-    public static final int ZOOM_LEVEL_MY_LOCATION = 17;
+    private static final int DELAY_BEFORE_SHOWING_CREATE_DRIVE_AFTER_LOCATION_CHANGED = 1500;
+    private static final int PLACE_MARKER_INFO_FADE_DURATION = 1000;
+    private static final float PLACE_MARKER_INFO_FADE_OUT_TO = 0.0f;
+    private static final float PLACE_MARKER_INFO_FADE_IN_TO = 1.0f;
+    private static final int ZOOM_LEVEL_MY_LOCATION = 17;
 
     private FirebaseUser mUser;
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 0;
     private MainViewModel mMainViewModel;
-    private Menu mLoginMenu;
     private TextView mPlaceMarkerInformation;
 
     private FragmentManager mFragmentManager;
@@ -125,15 +124,7 @@ public class MainActivity extends AppCompatActivity implements
 
         if (mUser != null) {
             mMainViewModel.refreshToken(FirebaseInstanceId.getInstance().getToken());
-
-            mMainViewModel.getUser().observe(this, user -> {
-                Timber.i("User: %s logged in", user);
-                if (user != null) {
-                    if (user.getType() == User.TYPE_DRIVER) {
-                    } else {
-                    }
-                }
-            });
+            mMainViewModel.getUser().observe(this, user -> Timber.i("User: %s logged in", user));
         } else {
             if (getSupportActionBar() != null) {
                 getSupportActionBar().setTitle(R.string.mainactivity_title);
@@ -151,7 +142,7 @@ public class MainActivity extends AppCompatActivity implements
         initObservers();
     }
 
-    public void sendDriverPositionToDB(String driveId) {
+    private void sendDriverPositionToDB(String driveId) {
         mMainViewModel.startLocationUpdates();
         mMainViewModel.getUpdatedLocationLiveData().observe(this, location -> {
             mMainViewModel.setCurrentLocationToDrive(driveId, location);
@@ -159,7 +150,7 @@ public class MainActivity extends AppCompatActivity implements
         });
     }
 
-    public void sendPassengerRideToDB(String driveId) {
+    private void sendPassengerRideToDB(String driveId) {
         mMainViewModel.createPassengerRide(driveId).observe(this, passengerRide -> {
             mMainViewModel.startLocationUpdates();
             mMainViewModel.getUpdatedLocationLiveData().observe(this, location -> {
@@ -193,10 +184,10 @@ public class MainActivity extends AppCompatActivity implements
         });
     }
 
-    public void updatePassengersMarkerPosition(String driveId){
+    private void updatePassengersMarkerPosition(String driveId){
         mMainViewModel.getPassengerRides(driveId).observe(
             this, passengerRide -> {
-                if (passengerRide.getPassengerPos() == null) {
+                if (passengerRide == null || passengerRide.getPassengerPos() == null) {
                     return;
                 }
 
@@ -271,7 +262,7 @@ public class MainActivity extends AppCompatActivity implements
                                 .icon(BitmapDescriptorFactory.fromResource(
                                         R.drawable.map_marker_start))
                                 .draggable(true));
-                animateToLocation(startLatLng, ZOOM_LEVEL_STREETS);
+                animateToLocation(startLatLng);
 
                 mMarkerCount++;
             }
@@ -285,8 +276,7 @@ public class MainActivity extends AppCompatActivity implements
                         handler.postDelayed(() -> mCreateDriveFragment.showCreateDialog(),
                                 DELAY_BEFORE_SHOWING_CREATE_DRIVE_AFTER_LOCATION_CHANGED);
                     }
-                    animateToLocation(new LatLng(location.getLatitude(), location.getLongitude()),
-                            ZOOM_LEVEL_STREETS);
+                    animateToLocation(new LatLng(location.getLatitude(), location.getLongitude()));
                     updateRoute();
                 }
             };
@@ -305,10 +295,10 @@ public class MainActivity extends AppCompatActivity implements
      * Animates the camera to the given location
      *
      * @param locationToAnimateTo LatLng
-     * @param zoomLevel           float with desired zoom level
      */
-    private void animateToLocation(LatLng locationToAnimateTo, float zoomLevel) {
-        mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(locationToAnimateTo, zoomLevel));
+    private void animateToLocation(LatLng locationToAnimateTo) {
+        mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(locationToAnimateTo,
+                ZOOM_LEVEL_STREETS));
     }
 
     private void placeEndLocationMarker() {
@@ -336,8 +326,7 @@ public class MainActivity extends AppCompatActivity implements
                         handler.postDelayed(() -> mCreateDriveFragment.showCreateDialog(),
                                 DELAY_BEFORE_SHOWING_CREATE_DRIVE_AFTER_LOCATION_CHANGED);
                     }
-                    animateToLocation(new LatLng(location.getLatitude(), location.getLongitude()),
-                            ZOOM_LEVEL_STREETS);
+                    animateToLocation(new LatLng(location.getLatitude(), location.getLongitude()));
                     updateRoute();
                 }
             };
@@ -423,14 +412,13 @@ public class MainActivity extends AppCompatActivity implements
 
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(@NonNull Menu menu) {
         getMenuInflater().inflate(R.menu.menu_mainactivity_login, menu);
-        mLoginMenu = menu;
 
         if (mUser != null) {
-            mLoginMenu.findItem(R.id.menu_action_login).setVisible(false);
+            menu.findItem(R.id.menu_action_login).setVisible(false);
         } else {
-            mLoginMenu.findItem(R.id.menu_action_login).setVisible(true);
+            menu.findItem(R.id.menu_action_login).setVisible(true);
         }
         return true;
     }
@@ -447,7 +435,7 @@ public class MainActivity extends AppCompatActivity implements
         return super.onOptionsItemSelected(item);
     }
 
-    public void initUI() {
+    private void initUI() {
         mCreateDriveFragment = CreateDriveFragment.newInstance();
         mNoMatchFragment = NoMatchFragment.newInstance();
 
@@ -497,7 +485,7 @@ public class MainActivity extends AppCompatActivity implements
         if (!mMainViewModel.isInitialZoomDone()) {
             mMainViewModel.getLastKnownLocation(location -> {
                 LatLng initialZoom = new LatLng(location.getLatitude(), location.getLongitude());
-                animateToLocation(initialZoom, ZOOM_LEVEL_STREETS);
+                animateToLocation(initialZoom);
                 mMainViewModel.setInitialZoomDone(true);
             });
         }
@@ -508,14 +496,14 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
-    public void updateMarkerLocation(Marker marker, Location location) {
+    private void updateMarkerLocation(Marker marker, Location location) {
         if (mGoogleMap != null) {
             LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
             marker.setPosition(latLng);
         }
     }
 
-    public void updateRoute() {
+    private void updateRoute() {
         if (mMarkerCount == 2) {
             if (mMainViewModel.getStartMarkerLocation().getValue() != null
                     && mMainViewModel.getEndMarkerLocation().getValue() != null) {
@@ -537,7 +525,7 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    public void zoomToFitRoute() {
+    private void zoomToFitRoute() {
         final Handler handler = new Handler();
        //handler.postDelayed(() -> {
             LatLngBounds.Builder builder = new LatLngBounds.Builder();
@@ -565,7 +553,8 @@ public class MainActivity extends AppCompatActivity implements
             dialogFragment.dismiss();
         }
 
-        AcceptRejectPassengerDialog dFragment = AcceptRejectPassengerDialog.getInstance(notification);
+        AcceptRejectPassengerDialog dFragment = AcceptRejectPassengerDialog.getInstance(
+                notification);
         dFragment.show(getSupportFragmentManager(), AcceptRejectPassengerDialog.TAG);
     }
 
@@ -577,7 +566,8 @@ public class MainActivity extends AppCompatActivity implements
             dialogFragment.dismiss();
         }
 
-        PassengerNotificationDialog dFragment = PassengerNotificationDialog.getInstance(notification);
+        PassengerNotificationDialog dFragment = PassengerNotificationDialog.getInstance(
+                notification);
         dFragment.show(getSupportFragmentManager(), PassengerNotificationDialog.TAG);
     }
 
@@ -735,8 +725,7 @@ public class MainActivity extends AppCompatActivity implements
                         mMainViewModel.getLastKnownLocation(location -> {
                             LatLng initialZoom = new LatLng(location.getLatitude(),
                                     location.getLongitude());
-
-                            animateToLocation(initialZoom, ZOOM_LEVEL_STREETS);
+                            animateToLocation(initialZoom);
                             mMainViewModel.setInitialZoomDone(true);
                         });
                     }
@@ -760,10 +749,12 @@ public class MainActivity extends AppCompatActivity implements
             case User.TYPE_DRIVER:
                 mMainViewModel.createDrive(time, startLocation, endLocation, seats).observe(this,
                         drive -> {
-                    sendDriverPositionToDB(drive.getId());
-                    updatePassengersMarkerPosition(drive.getId());
-                    Timber.i("Drive created: %s", drive.getId());
-                    mCreateDriveFragment.setDefaultValuesToDialog();
+                    if (drive != null) {
+                        sendDriverPositionToDB(drive.getId());
+                        updatePassengersMarkerPosition(drive.getId());
+                        Timber.i("Drive created: %s", drive.getId());
+                        mCreateDriveFragment.setDefaultValuesToDialog();
+                    }
                 });
                 break;
             case User.TYPE_PASSENGER:
@@ -819,9 +810,9 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onHeightChanged(int fragmentHeight) {
         mGoogleMap.setPadding(0,0,0,fragmentHeight);
-        if(mMarkerCount == 1){
-            animateToLocation(mStartLocationMarker.getPosition(),ZOOM_LEVEL_STREETS);
-        }else{
+        if (mMarkerCount == 1) {
+            animateToLocation(mStartLocationMarker.getPosition());
+        } else {
             zoomToFitRoute();
         }
     }

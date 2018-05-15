@@ -1,8 +1,5 @@
 package com.cybercom.passenger.model;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
 public class User {
 
     public static final int TYPE_DRIVER = 0;
@@ -65,7 +62,8 @@ public class User {
 
     }
 
-    public User(String userId, String notificationTokenId, int type, String phone, String personalNumber, String fullName, String imageLink,
+    public User(String userId, String notificationTokenId, int type, String phone,
+                String personalNumber, String fullName, String imageLink,
                 String gender, String email, String password) {
         mUserId = userId;
         mNotificationTokenId = notificationTokenId;
@@ -78,8 +76,6 @@ public class User {
         mEmail = email;
         mPassword = password;
     }
-
-
 
     public String getmEmail() {
         return mEmail;

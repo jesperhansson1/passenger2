@@ -13,7 +13,7 @@ import com.cybercom.passenger.model.User;
 import java.util.List;
 import java.util.Map;
 
-public interface PassengerRepositoryInterface {
+interface PassengerRepositoryInterface {
     LiveData<User> getUser();
 
     void updateUserType(int type);

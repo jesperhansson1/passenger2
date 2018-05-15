@@ -39,7 +39,6 @@ public class CarDetailActivity extends AppCompatActivity {
     private EditText mEditTextCarYear;
     private EditText mEditTextCarColor;
     private Button mButtonSave;
-    private Button mButtonFind;
     private Drawable mErrorDraw;
     private Bundle mExtras;
 
@@ -72,7 +71,7 @@ public class CarDetailActivity extends AppCompatActivity {
         mButtonSave.setText(R.string.next);
     }
 
-    public void initializeUI(){
+    private void initializeUI(){
         mEditTextCarNumber = findViewById(R.id.editText_cardetails_number);
         mEditTextCarModel = findViewById(R.id.editText_cardetails_model);
         mEditTextCarYear = findViewById(R.id.editText_cardetails_year);
@@ -82,9 +81,9 @@ public class CarDetailActivity extends AppCompatActivity {
         mEditTextCarColor.setKeyListener(null);*/
 
         mButtonSave = findViewById(R.id.button_cardetails_save);
-        mButtonFind = findViewById(R.id.button_cardetails_find);
+        Button buttonFind = findViewById(R.id.button_cardetails_find);
 
-        mButtonFind.setOnClickListener(v -> {
+        buttonFind.setOnClickListener(v -> {
             mEditTextCarModel.setText("");
             mEditTextCarYear.setText("");
             mEditTextCarColor.setText("");
@@ -136,8 +135,7 @@ public class CarDetailActivity extends AppCompatActivity {
         return 0;
     }
 
-    public void addCar()
-    {
+    public void addCar() {
         Intent intent=new Intent();
         intent.putExtra(CAR_NUMBER, mEditTextCarNumber.getText().toString());
         intent.putExtra(CAR_MODEL, mEditTextCarModel.getText().toString());
@@ -147,12 +145,10 @@ public class CarDetailActivity extends AppCompatActivity {
         finish();
     }
 
-    public void addCarToList()
-    {
+    private void addCarToList() {
         if (mExtras == null) {
             Timber.e("No values found");
-        }
-        else {
+        } else {
             Car newCar = new Car(mEditTextCarNumber.getText().toString(),
                     mEditTextCarModel.getText().toString(),
                     mEditTextCarYear.getText().toString(),
@@ -161,7 +157,7 @@ public class CarDetailActivity extends AppCompatActivity {
             Gson gson = new Gson();
             String carArray = gson.toJson(newCar);
 
-            Intent intent=new Intent(getApplicationContext(), AccountActivity.class);
+            Intent intent = new Intent(getApplicationContext(), AccountActivity.class);
             intent.putExtra(CAR_ARRAY, carArray);
             intent.putExtra(LOGIN_ARRAY, mExtras.getString(LOGIN_ARRAY));
             startActivity(intent);
@@ -172,11 +168,11 @@ public class CarDetailActivity extends AppCompatActivity {
         mCarDetailViewModel.setUrl(url, regNumber);
 
         mCarDetailViewModel.getCarLiveData().observe(this, car -> {
-            mEditTextCarYear.setText(car.getYear());
-            mEditTextCarModel.setText(car.getModel());
-            mEditTextCarColor.setText(car.getColor());
+            if (car != null) {
+                mEditTextCarYear.setText(car.getYear());
+                mEditTextCarModel.setText(car.getModel());
+                mEditTextCarColor.setText(car.getColor());
+            }
         });
     }
-
-
 }

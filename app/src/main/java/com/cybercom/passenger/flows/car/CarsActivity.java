@@ -1,7 +1,6 @@
 package com.cybercom.passenger.flows.car;
 
 import android.arch.lifecycle.ViewModelProviders;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -23,8 +22,7 @@ public class CarsActivity extends AppCompatActivity {
 
     private List<Car> mCarList = new ArrayList<>();
     private RecyclerView recyclerView;
-    private CarsListAdapter mCarsListAdapter;
-    CarViewModel mCarViewModel;
+    private CarViewModel mCarViewModel;
 
     static final int CAR_DETAIL = 17;
     static final String CAR_NUMBER = "NUMBER";
@@ -40,12 +38,7 @@ public class CarsActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         FloatingActionButton fab = findViewById(R.id.FloatingActionButton_activitycars_add);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                openCarDetail();
-            }
-        });
+        fab.setOnClickListener(view -> openCarDetail());
 
         recyclerView = findViewById(R.id.RecyclerView_contentcars_carlist);
 
@@ -54,7 +47,8 @@ public class CarsActivity extends AppCompatActivity {
         recyclerView.setItemAnimator(new DefaultItemAnimator());
 
 
-        recyclerView.addOnItemTouchListener(new CarTouchListener(getApplicationContext(), recyclerView, new CarTouchListener.ClickListener() {
+        recyclerView.addOnItemTouchListener(new CarTouchListener(getApplicationContext(),
+                recyclerView, new CarTouchListener.ClickListener() {
             @Override
             public void onClick(View view, int position) {
                 Car car = mCarList.get(position);
@@ -72,7 +66,7 @@ public class CarsActivity extends AppCompatActivity {
         if (extras == null) {
             return;
         }
-        mCarViewModel.mUserId = extras.getString(getResources().getString(R.string.signup_userid));
+        mCarViewModel.setUserId(extras.getString(getResources().getString(R.string.signup_userid)));
 
         mCarViewModel.getCarList().observe(this, (List<Car> carList) -> {
             mCarList = carList;
@@ -83,35 +77,27 @@ public class CarsActivity extends AppCompatActivity {
 
     }
 
-    public void deleteConfirmDialog(String alertMsg){
-
+    private void deleteConfirmDialog(String alertMsg) {
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
         String msg = getApplicationContext().getResources().getString(R.string.deleteConfirmation)
                         + " \n " + alertMsg ;
         alertDialogBuilder.setMessage(msg);
                 alertDialogBuilder.setPositiveButton(getApplicationContext().getResources().getString(R.string.yes),
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface arg0, int arg1) {
-                                mCarViewModel.deleteCar(alertMsg);
-                                Timber.d("Deleting car details %s", alertMsg);
-                            }
+                        (arg0, arg1) -> {
+                            mCarViewModel.deleteCar(alertMsg);
+                            Timber.d("Deleting car details %s", alertMsg);
                         });
 
         alertDialogBuilder.setNegativeButton(getApplicationContext().getResources().getString(R.string.no),
-                new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-            }
-        });
+                (dialog, which) -> {
+                });
 
         AlertDialog alertDialog = alertDialogBuilder.create();
         alertDialog.show();
 
     }
 
-    public void openCarDetail()
-    {
+    private void openCarDetail() {
         Intent carDetailIntent = new Intent(this, CarDetailActivity.class);
         startActivityForResult(carDetailIntent, CAR_DETAIL);
     }
@@ -123,6 +109,7 @@ public class CarsActivity extends AppCompatActivity {
             Bundle extras = data.getExtras();
             if (extras == null) {
                 Timber.e("No car values added");
+                return;
             }
             mCarViewModel.addCar(extras.getString(CAR_NUMBER),
                     extras.getString(CAR_MODEL),

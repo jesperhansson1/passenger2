@@ -2,6 +2,8 @@ package com.cybercom.passenger.flows.createridefragment;
 
 import android.content.Context;
 import android.graphics.Typeface;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.style.CharacterStyle;
 import android.text.style.StyleSpan;
 import android.util.Log;
@@ -28,7 +30,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public class LocationAutoCompleteAdapter extends ArrayAdapter<AutocompletePrediction> implements Filterable {
+public class LocationAutoCompleteAdapter extends ArrayAdapter<AutocompletePrediction>
+        implements Filterable {
     private static final String TAG = "PlaceAutocompleteAdapter";
     private static final CharacterStyle STYLE_BOLD = new StyleSpan(Typeface.BOLD);
 
@@ -59,19 +62,21 @@ public class LocationAutoCompleteAdapter extends ArrayAdapter<AutocompletePredic
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
         View row = super.getView(position, convertView, parent);
 
         AutocompletePrediction item = getItem(position);
-
-        TextView textView1 = row.findViewById(android.R.id.text1);
-        TextView textView2 = row.findViewById(android.R.id.text2);
-        textView1.setText(item.getPrimaryText(STYLE_BOLD));
-        textView2.setText(item.getSecondaryText(STYLE_BOLD));
+        if (item != null) {
+            TextView textView1 = row.findViewById(android.R.id.text1);
+            TextView textView2 = row.findViewById(android.R.id.text2);
+            textView1.setText(item.getPrimaryText(STYLE_BOLD));
+            textView2.setText(item.getSecondaryText(STYLE_BOLD));
+        }
 
         return row;
     }
 
+    @NonNull
     @Override
     public Filter getFilter() {
         return new Filter() {
@@ -82,7 +87,6 @@ public class LocationAutoCompleteAdapter extends ArrayAdapter<AutocompletePredic
                 ArrayList<AutocompletePrediction> filterData = new ArrayList<>();
 
                 if (constraint != null) {
-
                     filterData = getAutocomplete(constraint);
                 }
 
@@ -92,7 +96,6 @@ public class LocationAutoCompleteAdapter extends ArrayAdapter<AutocompletePredic
                 } else {
                     results.count = 0;
                 }
-
                 return results;
             }
 
@@ -103,7 +106,6 @@ public class LocationAutoCompleteAdapter extends ArrayAdapter<AutocompletePredic
                     mResultList = (ArrayList<AutocompletePrediction>) results.values;
                     notifyDataSetChanged();
                 } else {
-
                     notifyDataSetInvalidated();
                 }
             }

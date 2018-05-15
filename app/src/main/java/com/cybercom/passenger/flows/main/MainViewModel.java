@@ -42,8 +42,8 @@ public class MainViewModel extends AndroidViewModel {
     public static final double LOWER_LEFT_LONGITUDE = 10.5798;
     public static final double UPPER_RIGHT_LATITUDE = 69.0599709;
     public static final double UPPER_RIGHT_LONGITUDE = 24.1773101;
-    public static final int INTERVAL = 1000;
-    public static final int FASTEST_INTERVAL = 1000;
+    private static final int INTERVAL = 1000;
+    private static final int FASTEST_INTERVAL = 1000;
 
     public static final int DRIVE_REQUEST_DEFAULT_MULTIPLIER = 1;
     public static final int DRIVE_REQUEST_INCREASE_MULTIPLIER_BY_ONE = 1;
@@ -55,7 +55,6 @@ public class MainViewModel extends AndroidViewModel {
     private LocationCallback mLocationCallback;
     private LocationRequest mLocationRequest;
     private LiveData<Notification> mIncomingNotification;
-    private LiveData<Drive> mFindBestDriveMatch;
     private DriveRequest mMostRecentDriveRequest;
 
     private int mDriveRequestRadiusMultiplier;
@@ -101,7 +100,8 @@ public class MainViewModel extends AndroidViewModel {
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 
-    public LiveData<Drive> createDrive(long time, Position startLocation, Position endLocation, int availableSeats) {
+    public LiveData<Drive> createDrive(long time, Position startLocation, Position endLocation,
+                                       int availableSeats) {
         return mPassengerRepository.createDrive(time, startLocation, endLocation, availableSeats);
     }
 
@@ -111,8 +111,7 @@ public class MainViewModel extends AndroidViewModel {
 
     public LiveData<Drive> findBestDriveMatch(DriveRequest driveRequest, int radiusMultiplier) {
         mMostRecentDriveRequest = driveRequest;
-        mFindBestDriveMatch = mPassengerRepository.findBestRideMatch(driveRequest, radiusMultiplier);
-        return mFindBestDriveMatch;
+        return mPassengerRepository.findBestRideMatch(driveRequest, radiusMultiplier);
     }
 
     public void addRequestDriveNotification(DriveRequest driveRequest, Drive drive) {
@@ -181,12 +180,9 @@ public class MainViewModel extends AndroidViewModel {
     public LiveData<Boolean> setFindMatchTimer() {
         final MutableLiveData<Boolean> findMatchTimerLiveData = new MutableLiveData<>();
 
-        new Handler(Looper.getMainLooper()).postDelayed((new Runnable() {
-            @Override
-            public void run() {
-                Timber.d("findMatch timed out");
-                findMatchTimerLiveData.setValue(true);
-            }
+        new Handler(Looper.getMainLooper()).postDelayed((() -> {
+            Timber.d("findMatch timed out");
+            findMatchTimerLiveData.setValue(true);
         }), FIND_MATCH_TIMEOUT_MS);
 
         return findMatchTimerLiveData;
