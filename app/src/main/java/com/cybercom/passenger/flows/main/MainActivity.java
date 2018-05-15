@@ -443,7 +443,6 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
             mFragmentManager.beginTransaction()
                     .add(R.id.main_activity_dialog_container, mCreateDriveFragment).commit();
             isFragmentAdded = true;
-
         });
 
         mPlaceMarkerInformation = findViewById(R.id.main_activity_place_marker_info);
@@ -475,7 +474,6 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
             return;
         } else {
             initUI();
-
         }
 
         mGoogleMap.setMyLocationEnabled(true);
