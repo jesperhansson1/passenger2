@@ -79,15 +79,18 @@ public class CarDetailActivity extends AppCompatActivity{
         mEditTextCarModel = findViewById(R.id.editText_cardetails_model);
         mEditTextCarYear = findViewById(R.id.editText_cardetails_year);
         mEditTextCarColor = findViewById(R.id.editText_cardetails_color);
-        mEditTextCarModel.setKeyListener(null);
+        /*mEditTextCarModel.setKeyListener(null);
         mEditTextCarYear.setKeyListener(null);
-        mEditTextCarColor.setKeyListener(null);
+        mEditTextCarColor.setKeyListener(null);*/
 
         mButtonSave = findViewById(R.id.button_cardetails_save);
         mButtonFind = findViewById(R.id.button_cardetails_find);
         mButtonFind.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mEditTextCarModel.setText("");
+                mEditTextCarYear.setText("");
+                mEditTextCarColor.setText("");
                 if(mEditTextCarNumber.getText().toString().isEmpty()){
                     mEditTextCarNumber.setError(getResources().getString(R.string.car_number_error));
                 }
