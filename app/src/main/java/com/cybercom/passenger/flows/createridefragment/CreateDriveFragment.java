@@ -27,6 +27,7 @@ import android.widget.Toast;
 
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.main.MainViewModel;
+import com.cybercom.passenger.interfaces.FragmentSizeListener;
 import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.utils.LocationHelper;
@@ -54,30 +55,31 @@ public class CreateDriveFragment extends Fragment {
     public static final int DEFAULT_PASSENGER_DRIVE_REQUEST = 1;
     private static final int DEFAULT_PASSENGER_DRIVE = 4;
     public static final int DOWN_ARROW_ROTATION = 180;
-    public static final int DIALOG_ANIMATION_DURATION = 300;
-    public static final int ARROW_ANIMATION_DURATION = 500;
+    public static final int DIALOG_ANIMATION_DURATION = 150;
+    public static final int ARROW_ANIMATION_DURATION = 300;
     public static final int UP_ARROW_ANIMATION = 0;
     public static final int MARGIN = 40;
     private CreateRideFragmentListener mCreateRideDialogListener;
     private boolean mIsCreateDialogUp = true;
     private boolean mIsOtherFragmentUp = false;
     private static final float DEFAULT_SHOW_AND_HIDE_POSITION = 0;
+
     public interface OnPlaceMarkerIconClickListener {
-
         void onPlaceMarkerIconClicked();
-
     }
-    public interface  OnFinishedCreatingDriveOrDriveRequest{
+
+    public interface OnFinishedCreatingDriveOrDriveRequest {
         void onFinish();
 
     }
-    public interface CreateRideFragmentListener {
 
+    public interface CreateRideFragmentListener {
         void onCreateRide(long time, int type, Position startLocation, Position endLocation, int seats);
     }
 
-    private OnPlaceMarkerIconClickListener onPlaceMarkerIconClickListener;
-    private OnFinishedCreatingDriveOrDriveRequest onFinishedCreatingDriveOrDriveRequest;
+    private OnPlaceMarkerIconClickListener mOnPlaceMarkerIconClickListener;
+    private OnFinishedCreatingDriveOrDriveRequest mOnFinishedCreatingDriveOrDriveRequest;
+    private FragmentSizeListener mFragmentSizeListener;
     private int mType;
     private MainViewModel mMainViewModel;
     private TextView mNumberOfPassengersTitle;
@@ -158,7 +160,8 @@ public class CreateDriveFragment extends Fragment {
         mEndLocation = view.findViewById(R.id.create_drive_end_location);
         mEndLocation.setOnItemClickListener(mEndLocationAutoCompleteClickListener);
 
-        mNumberOfPassengersTitle = view.findViewById(R.id.textview_createdrivefragment_nbrpassengerstitle);
+        mNumberOfPassengersTitle =
+                view.findViewById(R.id.textview_createdrivefragment_nbrpassengerstitle);
         mNumberOfPassengers = view.findViewById(R.id.create_drive_number_of_passengers);
         mAddPassengers = view.findViewById(R.id.create_drive_add_passenger);
         mRemovePassengers = view.findViewById(R.id.create_drive_remove_passenger);
@@ -202,12 +205,12 @@ public class CreateDriveFragment extends Fragment {
 
         mPlaceStartLocation.setOnClickListener(v -> {
             mMainViewModel.setWhichMarkerToAdd(MainViewModel.PLACE_START_MARKER);
-            onPlaceMarkerIconClickListener.onPlaceMarkerIconClicked();
+            mOnPlaceMarkerIconClickListener.onPlaceMarkerIconClicked();
         });
 
         mPlaceEndLocation.setOnClickListener(v -> {
             mMainViewModel.setWhichMarkerToAdd(MainViewModel.PLACE_END_MARKER);
-            onPlaceMarkerIconClickListener.onPlaceMarkerIconClicked();
+            mOnPlaceMarkerIconClickListener.onPlaceMarkerIconClicked();
         });
 
 
@@ -257,23 +260,24 @@ public class CreateDriveFragment extends Fragment {
 
                 disableDialog();
 
-                mCreateRideDialogListener.onCreateRide(mTimeSelected, mType, LocationHelper.convertLocationToPosition(
-                        mMainViewModel.getStartMarkerLocation().getValue()),
-                        LocationHelper.convertLocationToPosition(mMainViewModel.getEndMarkerLocation().getValue()), mMainViewModel.getNumberOfPassengers());
+                mCreateRideDialogListener.onCreateRide(
+                        mTimeSelected, mType, LocationHelper.convertLocationToPosition(
+                                mMainViewModel.getStartMarkerLocation().getValue()),
+                        LocationHelper.convertLocationToPosition(mMainViewModel
+                                .getEndMarkerLocation().getValue()),
+                        mMainViewModel.getNumberOfPassengers());
             }
 
         });
 
         mShowAndHide = view.findViewById(R.id.create_drive_show_and_hide);
         mShowAndHide.setOnClickListener(v -> {
-            if(!mIsOtherFragmentUp){
-                if(mIsCreateDialogUp){
+            if (!mIsOtherFragmentUp) {
+                if (mIsCreateDialogUp) {
                     hideCreateDialog();
-                }else{
+                } else {
                     showCreateDialog();
                 }
-
-                mIsCreateDialogUp = !mIsCreateDialogUp;
             }
         });
 
@@ -286,8 +290,8 @@ public class CreateDriveFragment extends Fragment {
 
         if (context instanceof OnPlaceMarkerIconClickListener
                 && context instanceof OnFinishedCreatingDriveOrDriveRequest) {
-            onPlaceMarkerIconClickListener = (OnPlaceMarkerIconClickListener) context;
-            onFinishedCreatingDriveOrDriveRequest = (OnFinishedCreatingDriveOrDriveRequest) context;
+            mOnPlaceMarkerIconClickListener = (OnPlaceMarkerIconClickListener) context;
+            mOnFinishedCreatingDriveOrDriveRequest = (OnFinishedCreatingDriveOrDriveRequest) context;
         } else {
             Toast.makeText(context, R.string.must_implement_on_place_icon_click_listener,
                     Toast.LENGTH_SHORT).show();
@@ -297,6 +301,13 @@ public class CreateDriveFragment extends Fragment {
             mCreateRideDialogListener = (CreateRideFragmentListener) context;
         } else {
             Toast.makeText(context, R.string.must_implement_passenger_notification_listener,
+                    Toast.LENGTH_SHORT).show();
+        }
+
+        if (context instanceof FragmentSizeListener) {
+            mFragmentSizeListener = (FragmentSizeListener) context;
+        } else {
+            Toast.makeText(context, R.string.must_implement_fragment_is_visible_listener,
                     Toast.LENGTH_SHORT).show();
         }
     }
@@ -323,7 +334,7 @@ public class CreateDriveFragment extends Fragment {
         mMainViewModel.setNumberOfPassengers(DEFAULT_PASSENGERS);
         mShowSelectedTime.setText(EMPTY_STRING);
         mShowSelectedTime.setVisibility(View.GONE);
-        onFinishedCreatingDriveOrDriveRequest.onFinish();
+        mOnFinishedCreatingDriveOrDriveRequest.onFinish();
     }
 
     private void setUpDialogForDrive() {
@@ -341,27 +352,44 @@ public class CreateDriveFragment extends Fragment {
     }
 
     private void displayEndLocation() {
-        mMainViewModel.getEndLocationAddress().observe(this, endAddress -> mEndLocation.setText(endAddress, false));
+        mMainViewModel.getEndLocationAddress()
+                .observe(this, endAddress -> mEndLocation.setText(endAddress, false));
     }
 
     private void displayStartLocation() {
-        mMainViewModel.getStartLocationAddress().observe(this, startAddress -> mStartLocation.setText(startAddress, false));
+        mMainViewModel.getStartLocationAddress()
+                .observe(this, startAddress -> mStartLocation.setText(startAddress, false));
     }
 
     private void displayNumberOfPassengers() {
         mNumberOfPassengers.setText(String.valueOf(mMainViewModel.getNumberOfPassengers()));
     }
 
-    public void showCreateDialog(){
-        mCreateDriveDialog.animate().translationY(DEFAULT_SHOW_AND_HIDE_POSITION).setDuration(DIALOG_ANIMATION_DURATION);
-        mShowAndHide.animate().rotation(DOWN_ARROW_ROTATION).setDuration(ARROW_ANIMATION_DURATION);
+    public void showCreateDialog() {
+        if (mIsCreateDialogUp) {
+            return;
+        }
+
+        mCreateDriveDialog.animate().translationY(DEFAULT_SHOW_AND_HIDE_POSITION)
+                .setDuration(DIALOG_ANIMATION_DURATION);
+        mShowAndHide.animate().rotation(DOWN_ARROW_ROTATION)
+                .setDuration(ARROW_ANIMATION_DURATION);
+        mFragmentSizeListener
+                .onHeightChanged(mCreateDriveDialog.getHeight() + MARGIN);
+        mIsCreateDialogUp = true;
+
     }
 
-    public void hideCreateDialog(){
+    public void hideCreateDialog() {
+        if (!mIsCreateDialogUp) {
+            return;
+        }
         mCreateDriveDialog.animate()
                 .translationY((mCreateDriveDialog.getHeight() + MARGIN) - mShowAndHide.getHeight())
                 .setDuration(DIALOG_ANIMATION_DURATION);
         mShowAndHide.animate().rotation(UP_ARROW_ANIMATION).setDuration(ARROW_ANIMATION_DURATION);
+        mFragmentSizeListener.onHeightChanged(mShowAndHide.getHeight());
+        mIsCreateDialogUp = false;
     }
 
     public void setIsOtherFragmentUp(boolean isOtherFragmentUp) {
@@ -420,8 +448,8 @@ public class CreateDriveFragment extends Fragment {
                             Place clickedLocation = locations.get(0);
 
                             if (getActivity() != null) {
-                                InputMethodManager imm = (InputMethodManager)
-                                        getActivity().getSystemService(Activity.INPUT_METHOD_SERVICE);
+                                InputMethodManager imm = (InputMethodManager) getActivity()
+                                        .getSystemService(Activity.INPUT_METHOD_SERVICE);
                                 if (imm != null) {
                                     imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
                                 }
