@@ -13,6 +13,7 @@ import android.support.v7.widget.CardView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
@@ -141,7 +142,6 @@ public class CreateDriveFragment extends Fragment {
             mMainViewModel = ViewModelProviders.of(getActivity()).get(MainViewModel.class);
 
         }
-
     }
 
     @Override
@@ -151,6 +151,16 @@ public class CreateDriveFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_create_drive, container, false);
 
         mCreateDriveDialog = view.findViewById(R.id.create_drive_dialog);
+
+        mCreateDriveDialog.getViewTreeObserver()
+                .addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                    @Override
+                    public void onGlobalLayout() {
+                        mFragmentSizeListener.onHeightChanged(mCreateDriveDialog.getHeight() + MARGIN);
+                        mCreateDriveDialog.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                    }
+                });
+
         mHandler = new Handler();
 
         mTimeSelected = System.currentTimeMillis();

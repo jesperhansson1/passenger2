@@ -26,7 +26,6 @@ import com.cybercom.passenger.flows.driverconfirmation.AcceptRejectPassengerDial
 import com.cybercom.passenger.flows.login.RegisterActivity;
 import com.cybercom.passenger.flows.nomatchfragment.NoMatchFragment;
 import com.cybercom.passenger.flows.passengernotification.PassengerNotificationDialog;
-import com.cybercom.passenger.flows.pickupfragment.DriverPassengerPickUpFragment;
 import com.cybercom.passenger.flows.progressfindingcar.FindingCarProgressDialog;
 import com.cybercom.passenger.interfaces.FragmentSizeListener;
 import com.cybercom.passenger.model.Drive;
@@ -115,10 +114,6 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
 
         mMainViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
         mFragmentManager = getSupportFragmentManager();
-
-        mFragmentManager.beginTransaction()
-                .add(R.id.main_activity_dialog_container,DriverPassengerPickUpFragment
-                        .newInstance(User.TYPE_PASSENGER)).commit();
 
         if (savedInstanceState == null) {
             if (getIntent().getExtras() != null) {
@@ -440,7 +435,6 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
 
     public void initUI() {
         mCreateDriveFragment = CreateDriveFragment.newInstance();
-        mCreateDriveFragment.setIsOtherFragmentUp(true);
         mNoMatchFragment = NoMatchFragment.newInstance();
 
         mMainViewModel.getLastKnownLocation(location -> {
@@ -449,7 +443,6 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
             mFragmentManager.beginTransaction()
                     .add(R.id.main_activity_dialog_container, mCreateDriveFragment).commit();
             isFragmentAdded = true;
-
         });
 
         mPlaceMarkerInformation = findViewById(R.id.main_activity_place_marker_info);
@@ -481,7 +474,6 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
             return;
         } else {
             initUI();
-
         }
 
         mGoogleMap.setMyLocationEnabled(true);
