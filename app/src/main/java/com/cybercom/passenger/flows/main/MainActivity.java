@@ -34,6 +34,8 @@ import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.route.FetchRouteUrl;
 import com.cybercom.passenger.route.ParserTask;
+import com.cybercom.passenger.service.Constants;
+import com.cybercom.passenger.service.ForegroundServices;
 import com.cybercom.passenger.utils.LocationHelper;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -148,6 +150,12 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
         mapFragment.getMapAsync(this);
 
         initObservers();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
     }
 
     public void sendDriverPositionToDB(String driveId) {
@@ -731,9 +739,14 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
                 mMainViewModel.createDrive(time, startLocation, endLocation, seats).observe(this, drive -> {
 //                    mDriveId = drive.getId();
 
-                    sendDriverPositionToDB(drive.getId());
+                    Intent UpdateDriveIntent = new Intent(MainActivity.this, ForegroundServices.class);
+                    UpdateDriveIntent.setAction(Constants.ACTION.STARTFOREGROUND_UPDATE_DRIVER_POSITION);
+                    UpdateDriveIntent.putExtra("driveId", drive.getId());
+                    startService(UpdateDriveIntent);
+                    /*sendDriverPositionToDB(drive.getId());
+
                     updatePassengersMarkerPosition(drive.getId());
-                    Timber.i("Drive created: %s", drive.getId());
+                    Timber.i("Drive created: %s", drive.getId());*/
                     mCreateDriveFragment.setDefaultValuesToDialog();
                 });
                 break;
