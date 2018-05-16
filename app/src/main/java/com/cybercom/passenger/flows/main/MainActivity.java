@@ -35,6 +35,8 @@ import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.route.FetchRouteUrl;
 import com.cybercom.passenger.route.ParserTask;
+import com.cybercom.passenger.service.Constants;
+import com.cybercom.passenger.service.ForegroundServices;
 import com.cybercom.passenger.utils.LocationHelper;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -74,6 +76,7 @@ public class MainActivity extends AppCompatActivity implements
     private static final float PLACE_MARKER_INFO_FADE_OUT_TO = 0.0f;
     private static final float PLACE_MARKER_INFO_FADE_IN_TO = 1.0f;
     private static final int ZOOM_LEVEL_MY_LOCATION = 17;
+    private static final String DRIVE_ID = "driveId";
 
     private FirebaseUser mUser;
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 0;
@@ -141,6 +144,8 @@ public class MainActivity extends AppCompatActivity implements
 
         initObservers();
     }
+
+
 
     private void sendDriverPositionToDB(String driveId) {
         mMainViewModel.startLocationUpdates();
@@ -750,9 +755,13 @@ public class MainActivity extends AppCompatActivity implements
                 mMainViewModel.createDrive(time, startLocation, endLocation, seats).observe(this,
                         drive -> {
                     if (drive != null) {
-                        sendDriverPositionToDB(drive.getId());
+                        Intent UpdateDriveIntent = new Intent(MainActivity.this, ForegroundServices.class);
+                        UpdateDriveIntent.setAction(Constants.ACTION.STARTFOREGROUND_UPDATE_DRIVER_POSITION);
+                        UpdateDriveIntent.putExtra(DRIVE_ID, drive.getId());
+                        startService(UpdateDriveIntent);
+                        /*sendDriverPositionToDB(drive.getId());
                         updatePassengersMarkerPosition(drive.getId());
-                        Timber.i("Drive created: %s", drive.getId());
+                        Timber.i("Drive created: %s", drive.getId());*/
                         mCreateDriveFragment.setDefaultValuesToDialog();
                     }
                 });

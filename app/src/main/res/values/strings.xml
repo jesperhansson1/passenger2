@@ -6,7 +6,7 @@
     <string name="main_activity_match_not_found_message">Could not find any ride. Try again later</string>
     <!-- end -->
 
-    <string name="app_name">passenger</string>
+    <string name="app_name">Passenger</string>
     <string name="create_ride">Create Ride</string>
     <string name="create_ride_request">Request Ride</string>
     <string name="driver">Driver</string>
@@ -206,6 +206,7 @@
     <string name="you_have_been_matched">You have been matched!</string>
     <string name="passenger_notification_country_sign">S</string>
     <string name="must_implement_fragment_is_visible_listener">You must implement fragment is visible listener</string>
+    <string name="notification_update_driver_position">Passenger is currently running in the background</string>
 
 
 </resources>
