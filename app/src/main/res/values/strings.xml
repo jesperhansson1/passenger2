@@ -6,7 +6,7 @@
     <string name="main_activity_match_not_found_message">Could not find any ride. Try again later</string>
     <!-- end -->
 
-    <string name="app_name">PCassenger</string>
+    <string name="app_name">Passenger</string>
     <string name="create_ride">Create Ride</string>
     <string name="create_ride_request">Request Ride</string>
     <string name="driver">Driver</string>
