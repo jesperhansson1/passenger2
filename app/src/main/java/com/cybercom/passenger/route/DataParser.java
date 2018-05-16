@@ -20,14 +20,29 @@ class DataParser {
         JSONArray jsonArrayRoutes;
         JSONArray jsonArrayLegs;
         JSONArray jsonArraySteps;
+        JSONObject jsonObjectBounds;
 
         try {
 
             jsonArrayRoutes = jsonObject.getJSONArray("routes");
             System.out.println(jsonArrayRoutes);
 
+
+
             // Traversing all routes
             for(int i=0;i<jsonArrayRoutes.length();i++){
+
+                //To get bounds - need to be changed to okhttp for speed tuning...
+
+                jsonObjectBounds = ( (JSONObject)jsonArrayRoutes.get(i)).getJSONObject("bounds");
+                JSONObject ne = jsonObjectBounds.getJSONObject("northeast");
+                System.out.println("northeast " + jsonObjectBounds.getJSONObject("northeast"));
+                System.out.println("northeast lat " + jsonObjectBounds.getJSONObject("northeast").get("lat"));
+                System.out.println("northeast lng " + jsonObjectBounds.getJSONObject("northeast").get("lng"));
+                System.out.println("southwest " + jsonObjectBounds.getJSONObject("southwest"));
+                System.out.println("southwest lat " + jsonObjectBounds.getJSONObject("southwest").get("lat"));
+                System.out.println("southwest lng " + jsonObjectBounds.getJSONObject("southwest").get("lng"));
+
                 jsonArrayLegs = ( (JSONObject)jsonArrayRoutes.get(i)).getJSONArray("legs");
                 List<HashMap<String, String>> listPath = new ArrayList<>();
 
