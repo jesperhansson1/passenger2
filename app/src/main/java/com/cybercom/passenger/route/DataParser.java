@@ -1,6 +1,9 @@
 package com.cybercom.passenger.route;
 
+import android.support.constraint.solver.widgets.Rectangle;
+
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Polygon;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -11,6 +14,8 @@ import java.util.List;
 
 import timber.log.Timber;
 
+import static com.cybercom.passenger.utils.GpsLocations.INTERVAL;
+
 class DataParser {
 
     /** Receives a JSONObject and returns a list of lists containing latitude and longitude */
@@ -19,15 +24,30 @@ class DataParser {
         List<List<HashMap<String, String>>> listRoutes = new ArrayList<>() ;
         JSONArray jsonArrayRoutes;
         JSONArray jsonArrayLegs;
+        JSONObject jsonObjectBounds;
         JSONArray jsonArraySteps;
 
         try {
 
             jsonArrayRoutes = jsonObject.getJSONArray("routes");
-            System.out.println(jsonArrayRoutes);
 
             // Traversing all routes
             for(int i=0;i<jsonArrayRoutes.length();i++){
+
+                //to get bounds
+                jsonObjectBounds = ( (JSONObject)jsonArrayRoutes.get(i)).getJSONObject("bounds");
+                System.out.println("bounds " + jsonObjectBounds);
+                JSONObject ne = jsonObjectBounds.getJSONObject("northeast");
+                System.out.println("northeast " + jsonObjectBounds.getJSONObject("northeast"));
+                System.out.println("northeast lat " + jsonObjectBounds.getJSONObject("northeast").get("lat"));
+                System.out.println("northeast lng " + jsonObjectBounds.getJSONObject("northeast").get("lng"));
+                System.out.println("southwest " + jsonObjectBounds.getJSONObject("southwest"));
+                System.out.println("southwest lat " + jsonObjectBounds.getJSONObject("southwest").get("lat"));
+                System.out.println("southwest lng " + jsonObjectBounds.getJSONObject("southwest").get("lng"));
+
+
+
+
                 jsonArrayLegs = ( (JSONObject)jsonArrayRoutes.get(i)).getJSONArray("legs");
                 List<HashMap<String, String>> listPath = new ArrayList<>();
 
@@ -37,6 +57,15 @@ class DataParser {
 
                     // Traversing all steps
                     for(int k=0;k<jsonArraySteps.length();k++){
+
+                      /*------
+
+                        String dist = (String)((JSONObject)((JSONObject)jsonArraySteps.get(k)).get("distance")).get("value");
+                        if(Integer.parseInt(dist) > INTERVAL)
+                        {
+
+                        }
+                      ------*/
                         String polyline;
                         polyline = (String)((JSONObject)((JSONObject)jsonArraySteps.get(k)).get("polyline")).get("points");
                         List<LatLng> latlngList = decodePoly(polyline);
@@ -48,6 +77,8 @@ class DataParser {
                             hashMap.put("lng", Double.toString((latlngList.get(l)).longitude) );
                             listPath.add(hashMap);
                         }
+
+
                     }
                     listRoutes.add(listPath);
                 }
@@ -57,6 +88,28 @@ class DataParser {
         }
         return listRoutes;
     }
+
+    /*/To get bounds
+    public static Rectangle getBoundingBox(Polygon polygon) {
+
+        double boundsMinX = Double.MAX_VALUE; // bottom south latitude of the bounding box.
+        double boundsMaxX = Double.MIN_VALUE; // top north latitude of bounding box.
+
+        double boundsMinY = Double.MAX_VALUE; // left longitude of bounding box (western bound).
+        double boundsMaxY = Double.MIN_VALUE; // right longitude of bounding box (eastern bound).
+
+        for (int i = 0; i < polygon.getPoints().size(); i++) {
+            double x = polygon.getPoints().get(i).latitude;
+            boundsMinX = Math.min(boundsMinX, x);
+            boundsMaxX = Math.max(boundsMaxX, x);
+
+            double y = polygon.getPoints().get(i).longitude;
+            boundsMinY = Math.min(boundsMinY, y);
+            boundsMaxY = Math.max(boundsMaxY, y);
+        }
+        //Rectangle(double left, double bottom, double right, double top)
+        return new Rectangle(boundsMinY, boundsMinX, boundsMaxY, boundsMaxX);
+    }*/
 
     private List<LatLng> decodePoly(String encoded) {
 

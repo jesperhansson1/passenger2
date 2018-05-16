@@ -5,7 +5,7 @@ import java.util.ArrayList;
 public class GpsLocations {
 
     private static final long RADIUS_OF_EARTH = 6371000; // radius of earth in m
-    private static final int INTERVAL = 350; //distance between two location points
+    public static final int INTERVAL = 350; //distance between two location points
 
     static class MockLocation {
         double mLat;
