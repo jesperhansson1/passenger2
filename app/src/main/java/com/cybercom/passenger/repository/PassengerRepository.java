@@ -684,26 +684,24 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         }
     }
 
-    public LiveData<String> updatePassengerRideCurrentLocation(Location location) {
-        MutableLiveData<String> getPassengerRideKey = new MutableLiveData<>();
-        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
-        if (firebaseUser == null) {
-            return getPassengerRideKey;
-        }
-        String uId = firebaseUser.getUid();
+    public void updatePassengerRideCurrentLocation(String passengerRideId, Location location) {
+        if(passengerRideId != null){
 
-        mPassengerRideReference.orderByChild(KEY_PASSENGER_ID).equalTo(uId)
+            mPassengerRideReference.child(passengerRideId).child("position")
+                    .setValue(LocationHelper.convertLocationToPosition(location));
+        /*mPassengerRideReference.orderByChild(KEY_PASSENGER_ID).equalTo(uId)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                            Timber.d("Inside Datasnapshot");
 
                             String passengerRideKey = snapshot.getKey();
                             mPassengerRideReference.child(passengerRideKey).child("position")
                                     .setValue(LocationHelper.convertLocationToPosition(location));
 
-                            getPassengerRideKey.setValue(passengerRideKey);
+//                            getPassengerRideKey.setValue(passengerRideKey);
                         }
                     }
 
@@ -711,9 +709,10 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                     public void onCancelled(DatabaseError databaseError) {
                         Timber.i("updatePassengerRideCurrentLocation Cancelled");
                     }
-                });
+                });*/
 
-        return getPassengerRideKey;
+//        return getPassengerRideKey;
+        }
     }
 
     public LiveData<com.cybercom.passenger.model.PassengerRide> createPassengerRide(String driveId) {

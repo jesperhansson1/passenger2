@@ -77,6 +77,7 @@ public class MainActivity extends AppCompatActivity implements
     private static final float PLACE_MARKER_INFO_FADE_IN_TO = 1.0f;
     private static final int ZOOM_LEVEL_MY_LOCATION = 17;
     private static final String DRIVE_ID = "driveId";
+    private static final String PASSENGER_RIDE_KEY = "passengerRideKey";
 
     private FirebaseUser mUser;
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 0;
@@ -145,24 +146,24 @@ public class MainActivity extends AppCompatActivity implements
         initObservers();
     }
 
-
-
-    private void sendDriverPositionToDB(String driveId) {
+    /*private void sendDriverPositionToDB(String driveId) {
         mMainViewModel.startLocationUpdates();
         mMainViewModel.getUpdatedLocationLiveData().observe(this, location -> {
             mMainViewModel.setCurrentLocationToDrive(driveId, location);
             mMainViewModel.setStartMarkerLocation(location);
         });
-    }
+    }*/
 
     private void sendPassengerRideToDB(String driveId) {
+        if (driveId != null) {
         mMainViewModel.createPassengerRide(driveId).observe(this, passengerRide -> {
-            mMainViewModel.startLocationUpdates();
-            mMainViewModel.getUpdatedLocationLiveData().observe(this, location -> {
-                mMainViewModel.updatePassengerRideCurrentLocation(location).observe(this, s -> {
-                });
-            });
+            Intent updatePassengerIntent = new Intent(MainActivity.this, ForegroundServices.class);
+            updatePassengerIntent.setAction(Constants.ACTION.STARTFOREGROUND_UPDATE_PASSENGER_POSITION);
+            updatePassengerIntent.putExtra(PASSENGER_RIDE_KEY, passengerRide.getId());
+            startService(updatePassengerIntent);
         });
+        }
+
     }
 
     private void updateDriversMarkerPosition(String driveId) {
