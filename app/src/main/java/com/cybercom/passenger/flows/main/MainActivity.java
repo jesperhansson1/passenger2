@@ -76,6 +76,7 @@ public class MainActivity extends AppCompatActivity implements
     private static final float PLACE_MARKER_INFO_FADE_OUT_TO = 0.0f;
     private static final float PLACE_MARKER_INFO_FADE_IN_TO = 1.0f;
     private static final int ZOOM_LEVEL_MY_LOCATION = 17;
+    private static final String DRIVE_ID = "driveId";
 
     private FirebaseUser mUser;
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 0;
@@ -756,7 +757,7 @@ public class MainActivity extends AppCompatActivity implements
                     if (drive != null) {
                         Intent UpdateDriveIntent = new Intent(MainActivity.this, ForegroundServices.class);
                         UpdateDriveIntent.setAction(Constants.ACTION.STARTFOREGROUND_UPDATE_DRIVER_POSITION);
-                        UpdateDriveIntent.putExtra("driveId", drive.getId());
+                        UpdateDriveIntent.putExtra(DRIVE_ID, drive.getId());
                         startService(UpdateDriveIntent);
                         /*sendDriverPositionToDB(drive.getId());
                         updatePassengersMarkerPosition(drive.getId());

@@ -203,6 +203,7 @@
     <string name="fragment_no_match_increase_radius">Öka radius med 700m</string>
     <string name="fragment_no_match_cancel">Avbryt</string>
     <string name="no_match_fragment_must_implement_listener">Must implement NoMatchButtonListener</string>
+    <string name="notification_update_driver_position">Passenger körs i bakgrunden</string>
     <string name="you_have_been_matched">Du har blivit matchad!</string>
 
 

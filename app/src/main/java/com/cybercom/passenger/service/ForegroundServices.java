@@ -5,8 +5,6 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -14,7 +12,6 @@ import android.location.Location;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Looper;
-import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.RemoteViews;
@@ -33,7 +30,6 @@ import timber.log.Timber;
 
 public class ForegroundServices extends Service {
 
-    private static final String LOG_TAG = "ForegroundService";
     private PassengerRepository mPassengerRepository = PassengerRepository.getInstance();
     private FusedLocationProviderClient mFusedLocationClient;
     private LocationCallback mLocationCallback;
@@ -42,6 +38,7 @@ public class ForegroundServices extends Service {
     Location loc = new Location("");
     private static final int INTERVAL = 1000;
     private static final int FASTEST_INTERVAL = 1000;
+    private static final String DRIVE_ID = "driveId";
 
     @Override
     public void onCreate() {
@@ -65,7 +62,7 @@ public class ForegroundServices extends Service {
                         mMyLocation.setValue(location);
 
                         Bundle extras = intent.getExtras();
-                        String driveId = extras.getString("driveId");
+                        String driveId = extras.getString(DRIVE_ID);
 
                         Timber.d("DriveId %s", driveId);
 
@@ -79,7 +76,7 @@ public class ForegroundServices extends Service {
             startLocationUpdates();
 
             Intent notificationIntent = new Intent(this, MainActivity.class);
-            notificationIntent.setAction(Constants.ACTION.MAIN_ACTION);
+            notificationIntent.setAction(Constants.ACTION.MAIN);
             notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                     | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
@@ -91,9 +88,9 @@ public class ForegroundServices extends Service {
                     R.mipmap.ic_launcher);
 
             Notification notification = new NotificationCompat.Builder(this)
-                    .setContentTitle("Passenger")
-                    .setTicker("Passenger")
-                    .setContentText("Passenger")
+                    .setContentTitle(getString(R.string.passenger))
+                    .setTicker(getString(R.string.passenger))
+                    .setContentText(getString(R.string.passenger))
                     .setSmallIcon(R.mipmap.ic_launcher)
                     .setLargeIcon(
                             Bitmap.createScaledBitmap(icon, 128, 128, false))
@@ -107,17 +104,13 @@ public class ForegroundServices extends Service {
         //Get Driver Position
         //Get Passenger Position
 
-        if (intent.getAction().equals(Constants.ACTION.STARTFOREGROUND_ACTION)) {
+        if (intent.getAction().equals(Constants.ACTION.STARTFOREGROUND)) {
             Toast.makeText(this,"Start Service",Toast.LENGTH_SHORT).show();
-            Log.i(LOG_TAG, "Received Start Foreground Intent ");
-
-            Log.d("TAG", "MyAsyncTask@doInBackground from another thread");
         }
 
-        else if (intent.getAction().equals(Constants.ACTION.STOPFOREGROUND_ACTION)) {
+        else if (intent.getAction().equals(Constants.ACTION.STOPFOREGROUND)) {
 
             Toast.makeText(this,"Stop Service",Toast.LENGTH_SHORT).show();
-            Log.i(LOG_TAG, "Received Stop Foreground Intent");
             stopForeground(true);
             stopSelf();
         }
@@ -146,7 +139,6 @@ public class ForegroundServices extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.i(LOG_TAG, "In onDestroy");
     }
 
     @Override
