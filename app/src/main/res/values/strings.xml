@@ -6,7 +6,7 @@
     <string name="main_activity_match_not_found_message">Could not find any ride. Try again later</string>
     <!-- end -->
 
-    <string name="app_name">passenger</string>
+    <string name="app_name">PCassenger</string>
     <string name="create_ride">Create Ride</string>
     <string name="create_ride_request">Request Ride</string>
     <string name="driver">Driver</string>
@@ -205,6 +205,7 @@
     <string name="driver_confirmation_total_leafs">1500</string>
     <string name="you_have_been_matched">You have been matched!</string>
     <string name="passenger_notification_country_sign">S</string>
+    <string name="notification_update_driver_position">Passenger is currently running in the background</string>
 
 
 </resources>

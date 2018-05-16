@@ -744,7 +744,6 @@ public class MainActivity extends AppCompatActivity implements CreateDriveFragme
                     UpdateDriveIntent.putExtra("driveId", drive.getId());
                     startService(UpdateDriveIntent);
                     /*sendDriverPositionToDB(drive.getId());
-
                     updatePassengersMarkerPosition(drive.getId());
                     Timber.i("Drive created: %s", drive.getId());*/
                     mCreateDriveFragment.setDefaultValuesToDialog();

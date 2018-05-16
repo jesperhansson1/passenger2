@@ -7,7 +7,7 @@
     <string name="main_activity_match_not_found_message">Could not find any ride. Try again later</string>
     <!-- end -->
 
-    <string name="app_name">passenger</string>
+    <string name="app_name">Passenger</string>
     <string name="create_ride">Skapa Resa</string>
     <string name="create_ride_request">Hitta Resa</string>
     <string name="driver">Förare</string>

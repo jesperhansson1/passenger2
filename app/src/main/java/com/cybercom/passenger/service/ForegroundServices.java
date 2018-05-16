@@ -34,7 +34,6 @@ import timber.log.Timber;
 import static com.cybercom.passenger.flows.main.MainViewModel.FASTEST_INTERVAL;
 import static com.cybercom.passenger.flows.main.MainViewModel.INTERVAL;
 
-
 public class ForegroundServices extends Service {
 
     private static final String LOG_TAG = "ForegroundService";
@@ -50,31 +49,30 @@ public class ForegroundServices extends Service {
         super.onCreate();
     }
 
-
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         //Uppdatera Drivers position
         if(intent.getAction().equals(Constants.ACTION.STARTFOREGROUND_UPDATE_DRIVER_POSITION)){
 
             mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getApplication().getApplicationContext());
-
             mLocationCallback = new LocationCallback() {
                 @Override
                 public void onLocationResult(LocationResult locationResult) {
                     if (locationResult == null) {
                         return;
                     }
+
                     for (Location location : locationResult.getLocations()) {
                         mMyLocation.setValue(location);
 
                         Bundle extras = intent.getExtras();
-
                         String driveId = extras.getString("driveId");
 
                         Timber.d("DriveId %s", driveId);
+
                         loc.setLatitude(mMyLocation.getValue().getLatitude());
                         loc.setLongitude(mMyLocation.getValue().getLongitude());
-                        mPassengerRepository.updateDriveCurrentLocation("123", loc);
+                        mPassengerRepository.updateDriveCurrentLocation(driveId, loc);
                     }
                 }
             };
@@ -94,9 +92,9 @@ public class ForegroundServices extends Service {
                     R.mipmap.ic_launcher);
 
             Notification notification = new NotificationCompat.Builder(this)
-                    .setContentTitle("nkDroid Music Player")
-                    .setTicker("nkDroid Music Player")
-                    .setContentText("nkDroid Music")
+                    .setContentTitle("Passenger")
+                    .setTicker("Passenger")
+                    .setContentText("Passenger")
                     .setSmallIcon(R.mipmap.ic_launcher)
                     .setLargeIcon(
                             Bitmap.createScaledBitmap(icon, 128, 128, false))
@@ -105,10 +103,7 @@ public class ForegroundServices extends Service {
 
             startForeground(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE,
                     notification);
-
         }
-
-
         //Uppdatera Passengers position
         //Get Driver Position
         //Get Passenger Position
@@ -118,31 +113,6 @@ public class ForegroundServices extends Service {
             Log.i(LOG_TAG, "Received Start Foreground Intent ");
 
             Log.d("TAG", "MyAsyncTask@doInBackground from another thread");
-
-            Intent notificationIntent = new Intent(this, MainActivity.class);
-            notificationIntent.setAction(Constants.ACTION.MAIN_ACTION);
-            notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                    | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
-                    notificationIntent, 0);
-
-            RemoteViews notificationView = new RemoteViews(this.getPackageName(),R.layout.foreground_notification);
-
-            Bitmap icon = BitmapFactory.decodeResource(getResources(),
-                    R.mipmap.ic_launcher);
-
-            Notification notification = new NotificationCompat.Builder(this)
-                    .setContentTitle("nkDroid Music Player")
-                    .setTicker("nkDroid Music Player")
-                    .setContentText("nkDroid Music")
-                    .setSmallIcon(R.mipmap.ic_launcher)
-                    .setLargeIcon(
-                            Bitmap.createScaledBitmap(icon, 128, 128, false))
-                    .setContent(notificationView)
-                    .setOngoing(true).build();
-
-            startForeground(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE,
-                    notification);
         }
 
         else if (intent.getAction().equals(Constants.ACTION.STOPFOREGROUND_ACTION)) {
