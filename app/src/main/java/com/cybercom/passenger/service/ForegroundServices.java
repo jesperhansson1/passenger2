@@ -31,9 +31,6 @@ import com.google.android.gms.location.LocationServices;
 
 import timber.log.Timber;
 
-import static com.cybercom.passenger.flows.main.MainViewModel.FASTEST_INTERVAL;
-import static com.cybercom.passenger.flows.main.MainViewModel.INTERVAL;
-
 public class ForegroundServices extends Service {
 
     private static final String LOG_TAG = "ForegroundService";
@@ -43,6 +40,8 @@ public class ForegroundServices extends Service {
     private LocationRequest mLocationRequest;
     private MutableLiveData<Location> mMyLocation = new MutableLiveData<>();
     Location loc = new Location("");
+    private static final int INTERVAL = 1000;
+    private static final int FASTEST_INTERVAL = 1000;
 
     @Override
     public void onCreate() {
