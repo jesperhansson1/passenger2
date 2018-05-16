@@ -5,8 +5,6 @@ import android.os.AsyncTask;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 
-import org.json.JSONException;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -59,7 +57,7 @@ public class FetchRouteUrl extends AsyncTask<String, Void, String> {
 
     }
 
-    private String downloadUrl(String urlString) throws IOException, JSONException {
+    private String downloadUrl(String urlString) throws IOException {
 
         HttpURLConnection httpURLConnection;
 

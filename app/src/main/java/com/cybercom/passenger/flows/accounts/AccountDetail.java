@@ -1,15 +1,8 @@
 package com.cybercom.passenger.flows.accounts;
 
-import android.content.Context;
-import android.graphics.Color;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.view.View;
 import android.widget.ToggleButton;
 
@@ -17,16 +10,16 @@ import com.cybercom.passenger.R;
 
 import timber.log.Timber;
 
-import static com.cybercom.passenger.flows.accounts.AccountActivity.Bank;
-import static com.cybercom.passenger.flows.accounts.AccountActivity.BankCard;
-import static com.cybercom.passenger.flows.accounts.AccountActivity.Card;
+import static com.cybercom.passenger.flows.accounts.AccountActivity.BANK;
+import static com.cybercom.passenger.flows.accounts.AccountActivity.BANKCARD;
+import static com.cybercom.passenger.flows.accounts.AccountActivity.CARD;
 
 public class AccountDetail extends AppCompatActivity {
         private ViewPager mPager;
 
-        private ScreenSlidePageAdapter mPagerAdapter;
-        ToggleButton mCardToggle,mBankToggle;
-        Bundle mExtras;
+        private ToggleButton mCardToggle;
+        private ToggleButton mBankToggle;
+        private Bundle mExtras;
 
         @Override
         protected void onCreate(Bundle savedInstanceState) {
@@ -34,20 +27,17 @@ public class AccountDetail extends AppCompatActivity {
             setContentView(R.layout.activity_account_detail);
             mCardToggle = findViewById(R.id.toggleButton_activityaccountdetail_card);
             mBankToggle = findViewById(R.id.toggleButton_activityaccountdetail_bank);
-            mPager = (ViewPager) findViewById(R.id.ViewPager_activityaccountdetail);
-            mPagerAdapter = new ScreenSlidePageAdapter(getSupportFragmentManager(),mExtras);
-            mPager.setAdapter(mPagerAdapter);
+            mPager = findViewById(R.id.ViewPager_activityaccountdetail);
+            mPager.setAdapter(new ScreenSlidePageAdapter(getSupportFragmentManager(),mExtras));
             mExtras = getIntent().getExtras();
 
             mPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
                 @Override
                 public void onPageSelected(int position) {
-                    if(position == 1){
+                    if(position == 1) {
                         mPager.setCurrentItem(1);
                         bankSelected();
-                    }
-                    if(position == 0)
-                    {
+                    } else if(position == 0) {
                         mPager.setCurrentItem(0);
                         cardSelected();
                     }
@@ -55,15 +45,15 @@ public class AccountDetail extends AppCompatActivity {
             });
 
             if (mExtras == null) {
-                Timber.d(" accoutn detail Error getting values");
+                Timber.d(" account detail error getting values");
             }
             else {
-                String value1 = mExtras.getString(BankCard);
-                if (value1.equalsIgnoreCase(Bank)) {
+                String bankCard = mExtras.getString(BANKCARD);
+                if (BANK.equalsIgnoreCase(bankCard)) {
                     mPager.setCurrentItem(1);
                     bankSelected();
                 }
-                if (value1.equalsIgnoreCase(Card)) {
+                if (CARD.equalsIgnoreCase(bankCard)) {
                     mPager.setCurrentItem(0);
                     cardSelected();
                 }
@@ -84,7 +74,7 @@ public class AccountDetail extends AppCompatActivity {
             bankSelected();
         }
 
-        public void bankSelected(){
+        private void bankSelected(){
             mCardToggle.setChecked(false);
             mCardToggle.setTextColor(getResources().getColor(R.color.colorBlue));
             mCardToggle.setBackgroundDrawable(getResources().getDrawable(R.drawable.left_corner_border_style));
@@ -93,13 +83,14 @@ public class AccountDetail extends AppCompatActivity {
             mBankToggle.setBackgroundDrawable(getResources().getDrawable(R.drawable.right_corner_fill));
         }
 
-        public void cardSelected()
-        {
+        private void cardSelected() {
             mBankToggle.setChecked(false);
             mBankToggle.setTextColor(getResources().getColor(R.color.colorBlue));
-            mBankToggle.setBackgroundDrawable(getResources().getDrawable(R.drawable.right_corner_border_style));
+            mBankToggle.setBackgroundDrawable(getResources().getDrawable(
+                    R.drawable.right_corner_border_style));
             mCardToggle.setChecked(true);
             mCardToggle.setTextColor(getResources().getColor(R.color.colorWhite));
-            mCardToggle.setBackgroundDrawable(getResources().getDrawable(R.drawable.left_corner_fill));
+            mCardToggle.setBackgroundDrawable(getResources().getDrawable(
+                    R.drawable.left_corner_fill));
         }
     }

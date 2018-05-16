@@ -8,12 +8,14 @@ import android.view.View;
 
 public class CarTouchListener implements RecyclerView.OnItemTouchListener {
 
-        private GestureDetector mGestureDetector;
-        private ClickListener mClickListener;
+        private final GestureDetector mGestureDetector;
+        private final ClickListener mClickListener;
 
-        public CarTouchListener(Context context, final RecyclerView recyclerView, final ClickListener clickListener) {
-            this.mClickListener = clickListener;
-            mGestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
+        public CarTouchListener(Context context, final RecyclerView recyclerView,
+                                final ClickListener clickListener) {
+            mClickListener = clickListener;
+            mGestureDetector = new GestureDetector(context,
+                    new GestureDetector.SimpleOnGestureListener() {
                 @Override
                 public boolean onSingleTapUp(MotionEvent e) {
                     return true;

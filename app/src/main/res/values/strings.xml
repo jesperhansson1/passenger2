@@ -184,7 +184,7 @@
     <string name="car_length">7</string>
     <string name="fragment_driver_pick_up_time_to_go">Time to go</string>
     <string name="fragment_driver_pick_up_count_down_text">00:15</string>
-    <string name="fragment_driver_pick_up_button_text_pick_up">Pick up</string>
+    <string name="fragment_driver_pick_up_button_text_pick_up">Confirm pick up</string>
     <string name="fragment_driver_pick_up_passenger_name">Alice Hicks</string>
     <string name="fragment_driver_pick_up_button_text_no_show">No show</string>
     <string name="fragment_driver_pick_up_passenger_image_content_description">Profile image</string>
@@ -205,6 +205,7 @@
     <string name="driver_confirmation_total_leafs">1500</string>
     <string name="you_have_been_matched">You have been matched!</string>
     <string name="passenger_notification_country_sign">S</string>
+    <string name="must_implement_fragment_is_visible_listener">You must implement fragment is visible listener</string>
     <string name="notification_update_driver_position">Passenger is currently running in the background</string>
 
 

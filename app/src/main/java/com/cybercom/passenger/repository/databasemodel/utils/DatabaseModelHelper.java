@@ -31,11 +31,16 @@ public class DatabaseModelHelper {
     public static com.cybercom.passenger.repository.databasemodel.DriveRequest convertDriveRequest(DriveRequest driveRequest) {
 
         return new com.cybercom.passenger.repository.databasemodel.DriveRequest(driveRequest.getPassenger().getUserId(),
-                driveRequest.getTime(), driveRequest.getStartLocation(), driveRequest.getEndLocation(), driveRequest.getExtraPassengers(), new ArrayList<Object>());
+                driveRequest.getTime(), driveRequest.getStartLocation(),
+                driveRequest.getEndLocation(), driveRequest.getExtraPassengers(),
+                new ArrayList<>());
     }
 
-    public static com.cybercom.passenger.repository.databasemodel.Notification convertNotification(Notification notification) {
-        return new com.cybercom.passenger.repository.databasemodel.Notification(notification.getType(), notification.getDriveRequest().getId(), notification.getDrive().getId());
+    public static com.cybercom.passenger.repository.databasemodel.Notification convertNotification(
+            Notification notification) {
+        return new com.cybercom.passenger.repository.databasemodel.Notification(
+                notification.getType(), notification.getDriveRequest().getId(),
+                notification.getDrive().getId());
     }
 
 }
