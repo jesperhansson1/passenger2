@@ -8,16 +8,20 @@ import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import com.cybercom.passenger.model.Car;
 import org.json.JSONObject;
+
+import java.io.IOException;
+
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 import timber.log.Timber;
 
 public class CarDetailViewModel extends AndroidViewModel {
 
-    static MutableLiveData<Car> mLiveDataCar = new MutableLiveData<Car>();
-    String mUrl;
-    String mCarNo;
+    private static final MutableLiveData<Car> mLiveDataCar = new MutableLiveData<>();
+    private String mUrl;
+    private String mCarNo;
 
     public CarDetailViewModel(@NonNull Application application) {
         super(application);
@@ -34,14 +38,14 @@ public class CarDetailViewModel extends AndroidViewModel {
         return mLiveDataCar;
     }
 
-    public void loadCarDetails(){
+    private void loadCarDetails(){
         OkHttpHandler okHttpHandler = new OkHttpHandler();
         okHttpHandler.execute(mUrl);
     }
 
     public class OkHttpHandler extends AsyncTask<String, Void, String> {
 
-        OkHttpClient client = new OkHttpClient();
+        private final OkHttpClient client = new OkHttpClient();
 
         @Override
         protected String doInBackground(String... params) {
@@ -51,17 +55,16 @@ public class CarDetailViewModel extends AndroidViewModel {
 
             try {
                 Response response = client.newCall(request).execute();
-                return response.body().string();
-            } catch (Exception e) {
+                ResponseBody body = response.body();
+                if (body != null) {
+                    return response.body().string();
+                } else {
+                    Timber.w("Bode was null");
+                }
+            } catch (IOException e) {
                 Timber.e(e.getLocalizedMessage());
             }
             return null;
-        }
-
-        public void getDetails(String url)
-        {
-            OkHttpHandler okHttpHandler = new OkHttpHandler();
-            okHttpHandler.execute(url);
         }
 
         @Override

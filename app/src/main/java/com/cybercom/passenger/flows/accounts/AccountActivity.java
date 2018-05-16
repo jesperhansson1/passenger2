@@ -11,13 +11,14 @@ import timber.log.Timber;
 
 public class AccountActivity extends AppCompatActivity implements View.OnClickListener{
 
-    static final String BankCard = "CARDBANK";
-    static final String Bank = "BANK";
-    static final String Card = "CARD";
+    static final String BANKCARD = "CARDBANK";
+    static final String BANK = "BANK";
+    static final String CARD = "CARD";
     static final String LOGINARRAY = "loginArray";
     static final String CARARRAY = "carArray";
 
-    Bundle mExtras;
+    private Bundle mExtras;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,31 +35,27 @@ public class AccountActivity extends AppCompatActivity implements View.OnClickLi
         switch (v.getId()) {
             case R.id.credit_card_section:
                 Intent cardIntent = new Intent(this, AccountDetail.class);
-                cardIntent.putExtra(BankCard,Card);
-                addIntentValues(cardIntent,Card);
+                cardIntent.putExtra(BANKCARD, CARD);
+                addIntentValues(cardIntent, CARD);
                 startActivity(cardIntent);
                 break;
             case R.id.bank_account_section:
                 Intent bankIntent =new Intent(this, AccountDetail.class);
-                bankIntent.putExtra(BankCard,Bank);
-                addIntentValues(bankIntent,Bank);
+                bankIntent.putExtra(BANKCARD, BANK);
+                addIntentValues(bankIntent, BANK);
                 startActivity(bankIntent);
                 break;
         }
     }
 
-    public void addIntentValues(Intent intent, String type)
-    {
+    private void addIntentValues(Intent intent, String type) {
         if (mExtras != null) {
-            intent.putExtra(BankCard,type);
+            intent.putExtra(BANKCARD, type);
             intent.putExtra(LOGINARRAY, mExtras.getString(LOGINARRAY));
-            if(mExtras.getString(CARARRAY) != null)
-            {
+            if (mExtras.getString(CARARRAY) != null) {
                 intent.putExtra(CARARRAY, mExtras.getString(CARARRAY));
             }
-        }
-        else
-        {
+        } else {
             Timber.e("Error getting values");
         }
     }

@@ -49,21 +49,22 @@ import timber.log.Timber;
 
 public class CreateDriveFragment extends Fragment {
     private static final String FILTER_COUNTRY = "SE";
+    private static final int DEFAULT_PASSENGER_DRIVE = 4;
+    private static final float DEFAULT_SHOW_AND_HIDE_POSITION = 0;
 
     public static final int DELAY_CLOSE_TIME_DATE_PICKER = 2000;
     public static final int DEFAULT_PASSENGERS = 4;
     public static final String EMPTY_STRING = "";
     public static final int DEFAULT_PASSENGER_DRIVE_REQUEST = 1;
-    private static final int DEFAULT_PASSENGER_DRIVE = 4;
     public static final int DOWN_ARROW_ROTATION = 180;
     public static final int DIALOG_ANIMATION_DURATION = 150;
     public static final int ARROW_ANIMATION_DURATION = 300;
     public static final int UP_ARROW_ANIMATION = 0;
     public static final int MARGIN = 40;
+
     private CreateRideFragmentListener mCreateRideDialogListener;
     private boolean mIsCreateDialogUp = true;
     private boolean mIsOtherFragmentUp = false;
-    private static final float DEFAULT_SHOW_AND_HIDE_POSITION = 0;
 
     public interface OnPlaceMarkerIconClickListener {
         void onPlaceMarkerIconClicked();
@@ -71,11 +72,11 @@ public class CreateDriveFragment extends Fragment {
 
     public interface OnFinishedCreatingDriveOrDriveRequest {
         void onFinish();
-
     }
 
     public interface CreateRideFragmentListener {
-        void onCreateRide(long time, int type, Position startLocation, Position endLocation, int seats);
+        void onCreateRide(long time, int type, Position startLocation, Position endLocation,
+                          int seats);
     }
 
     private OnPlaceMarkerIconClickListener mOnPlaceMarkerIconClickListener;
@@ -88,9 +89,6 @@ public class CreateDriveFragment extends Fragment {
     private AutoCompleteTextView mStartLocation, mEndLocation;
     private Button mCreateRide;
     private ProgressBar mCreatingDrive;
-    private ImageView mAddPassengers;
-    private ImageView mRemovePassengers;
-    private RadioGroup mTimeSelection;
     private EditText mShowSelectedTime;
     private long mTimeSelected;
     private FrameLayout mShowAndHide;
@@ -98,7 +96,7 @@ public class CreateDriveFragment extends Fragment {
 
     private SingleDateAndTimePicker mDateTimePicker;
 
-    protected GeoDataClient mGeoDataClient;
+    private GeoDataClient mGeoDataClient;
 
     private LocationAutoCompleteAdapter mAdapter;
 
@@ -156,7 +154,8 @@ public class CreateDriveFragment extends Fragment {
                 .addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                     @Override
                     public void onGlobalLayout() {
-                        mFragmentSizeListener.onHeightChanged(mCreateDriveDialog.getHeight() + MARGIN);
+                        mFragmentSizeListener.onHeightChanged(mCreateDriveDialog.getHeight() +
+                                MARGIN);
                         mCreateDriveDialog.getViewTreeObserver().removeOnGlobalLayoutListener(this);
                     }
                 });
@@ -173,13 +172,14 @@ public class CreateDriveFragment extends Fragment {
         mNumberOfPassengersTitle =
                 view.findViewById(R.id.textview_createdrivefragment_nbrpassengerstitle);
         mNumberOfPassengers = view.findViewById(R.id.create_drive_number_of_passengers);
-        mAddPassengers = view.findViewById(R.id.create_drive_add_passenger);
-        mRemovePassengers = view.findViewById(R.id.create_drive_remove_passenger);
+        ImageView addPassengers = view.findViewById(R.id.create_drive_add_passenger);
+
+        ImageView removePassengers = view.findViewById(R.id.create_drive_remove_passenger);
         mCreateRide = view.findViewById(R.id.create_drive_button);
         mCreatingDrive = view.findViewById(R.id.create_drive_progressbar);
 
-        mTimeSelection = view.findViewById(R.id.create_drive_radio_group_when_selection);
-        mTimeSelection.setOnCheckedChangeListener((group, checkedId) -> {
+        RadioGroup timeSelection = view.findViewById(R.id.create_drive_radio_group_when_selection);
+        timeSelection.setOnCheckedChangeListener((group, checkedId) -> {
             switch (checkedId) {
                 case R.id.create_drive_button_right_now: {
                     mDateTimePicker.setVisibility(View.GONE);
@@ -253,12 +253,12 @@ public class CreateDriveFragment extends Fragment {
         mStartLocation.setAdapter(mAdapter);
         mEndLocation.setAdapter(mAdapter);
 
-        mAddPassengers.setOnClickListener(v -> {
+        addPassengers.setOnClickListener(v -> {
             mMainViewModel.setNumberOfPassengers(mMainViewModel.getNumberOfPassengers() + 1);
             displayNumberOfPassengers();
         });
 
-        mRemovePassengers.setOnClickListener(v -> {
+        removePassengers.setOnClickListener(v -> {
             mMainViewModel.setNumberOfPassengers(mMainViewModel.getNumberOfPassengers() - 1);
             displayNumberOfPassengers();
         });
@@ -322,7 +322,7 @@ public class CreateDriveFragment extends Fragment {
         }
     }
 
-    public void disableDialog() {
+    private void disableDialog() {
         mCreateRide.setText(null);
         mCreateRide.setEnabled(false);
         mCreatingDrive.setVisibility(View.VISIBLE);

@@ -1,25 +1,11 @@
 package com.cybercom.passenger.flows.signup;
 
-import android.app.Activity;
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.MutableLiveData;
 import android.support.annotation.NonNull;
 
-import com.cybercom.passenger.R;
-import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.repository.PassengerRepository;
-import com.cybercom.passenger.utils.ToastHelper;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthException;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.SignInMethodQueryResult;
-
-import timber.log.Timber;
 
 public class SignUpViewModel extends AndroidViewModel {
    // private FirebaseAuth mAuth;

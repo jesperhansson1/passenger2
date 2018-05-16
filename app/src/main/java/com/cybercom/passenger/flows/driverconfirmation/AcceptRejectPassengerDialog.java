@@ -32,12 +32,12 @@ import timber.log.Timber;
 
 public class AcceptRejectPassengerDialog extends DialogFragment implements View.OnClickListener {
 
-    public static final String NOTIFICATION_KEY = "NOTIFICATION";
+    private static final String NOTIFICATION_KEY = "NOTIFICATION";
     public static final String TAG = "ACCEPT_REJECT_PASSENGER_DIALOG";
     private Notification mNotification;
 
     public interface ConfirmationListener {
-        void onDriverConfirmation(Boolean isAccepted, Notification notification);
+        void onDriverConfirmation(boolean isAccepted, Notification notification);
     }
 
     public static AcceptRejectPassengerDialog getInstance(Notification notification) {
@@ -49,11 +49,6 @@ public class AcceptRejectPassengerDialog extends DialogFragment implements View.
     }
 
     private ConfirmationListener mConfirmationListener;
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
 
     @Nullable
     @Override
