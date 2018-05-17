@@ -23,6 +23,7 @@ import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.main.MainActivity;
 import com.cybercom.passenger.model.PassengerRide;
 import com.cybercom.passenger.repository.PassengerRepository;
+import com.cybercom.passenger.utils.LocationHelper;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -35,6 +36,7 @@ import java.util.List;
 import timber.log.Timber;
 
 public class ForegroundServices extends LifecycleService {
+
 
     private PassengerRepository mPassengerRepository = PassengerRepository.getInstance();
     private FusedLocationProviderClient mFusedLocationClient;
@@ -143,7 +145,9 @@ public class ForegroundServices extends LifecycleService {
                 if(mPassengerRides != null){
                     for (PassengerRide pr : mPassengerRides) {
                         if (driverLocation != null) {
-                            if (driverLocation.distanceTo(loc) < 10) {
+                            if (driverLocation.distanceTo(LocationHelper
+                                    .convertPositionToLocation(pr.getPickUpPosition())) < 10
+                                    && !pr.isPickUpConfirmed()) {
                                 if (!isAppInBackground(this)) {
                                     showPickUpDialogInUi(pr);
                                 } else {
@@ -151,14 +155,15 @@ public class ForegroundServices extends LifecycleService {
                                 }
                             }
 
-                            // This is what happens when dropofflocation is near
-                          /* if(driverLocation.distanceTo(dropofflocation)){
+                           if(driverLocation.distanceTo(LocationHelper
+                                   .convertPositionToLocation(pr.getDropOffPosition())) < 10
+                                   && !pr.isDropOffConfirmed()){
                                 if (!isAppInBackground(this)) {
-                                    showPickUpDialogInUi(pr);
+                                    showDropOfDialogInUi(pr);
                                 } else {
                                     createNotification();
                                 }
-                            }*/
+                            }
                         }
                     }
                 }
@@ -232,14 +237,21 @@ public class ForegroundServices extends LifecycleService {
     }
 
     private void showPickUpDialogInUi(PassengerRide passengerRide) {
-        Intent showPickUpDialogInUi = new Intent("DIALOG_LOCAL_BROADCAST");
-        showPickUpDialogInUi.putExtra("PASSENGER_RIDE", passengerRide);
+        Intent showPickUpDialogInUi = new Intent(MainActivity.INTENT_FILTER_DIALOG_LOCAL_BROADCAST);
+        showPickUpDialogInUi.putExtra(MainActivity.DIALOG_TYPE, MainActivity.PASSENGER_PICK_UP);
+        showPickUpDialogInUi.putExtra(MainActivity.BROADCAST_PASSENGER_RIDE, passengerRide);
         LocalBroadcastManager.getInstance(this).sendBroadcast(showPickUpDialogInUi);
+    }
+
+    private void showDropOfDialogInUi(PassengerRide passengerRide) {
+        Intent showDropOffDialogInUi = new Intent(MainActivity.INTENT_FILTER_DIALOG_LOCAL_BROADCAST);
+        showDropOffDialogInUi.putExtra(MainActivity.DIALOG_TYPE, MainActivity.PASSENGER_DROP_OFF);
+        showDropOffDialogInUi.putExtra(MainActivity.BROADCAST_PASSENGER_RIDE, passengerRide);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(showDropOffDialogInUi);
     }
 
     private void createNotification() {
         Timber.i("Create notification");
-
     }
 
     private void createLocationRequest() {

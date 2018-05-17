@@ -27,6 +27,7 @@ import com.crashlytics.android.Crashlytics;
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.createridefragment.CreateDriveFragment;
 import com.cybercom.passenger.flows.driverconfirmation.AcceptRejectPassengerDialog;
+import com.cybercom.passenger.flows.dropofffragment.DriverDropOffFragment;
 import com.cybercom.passenger.flows.login.RegisterActivity;
 import com.cybercom.passenger.flows.nomatchfragment.NoMatchFragment;
 import com.cybercom.passenger.flows.passengernotification.PassengerNotificationDialog;
@@ -84,6 +85,11 @@ public class MainActivity extends AppCompatActivity implements
     private static final int ZOOM_LEVEL_MY_LOCATION = 17;
     private static final String DRIVE_ID = "driveId";
     private static final String PASSENGER_RIDE_KEY = "passengerRideKey";
+    public static final String INTENT_FILTER_DIALOG_LOCAL_BROADCAST = "DIALOG_LOCAL_BROADCAST";
+    public static final String BROADCAST_PASSENGER_RIDE = "PASSENGER_RIDE";
+    public static final int PASSENGER_PICK_UP = 1;
+    public static final String DIALOG_TYPE = "DIALOG_TYPE";
+    public static final int PASSENGER_DROP_OFF = 2;
 
     private FirebaseUser mUser;
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 0;
@@ -853,18 +859,29 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onResume() {
         super.onResume();
-        IntentFilter filter = new IntentFilter("DIALOG_LOCAL_BROADCAST");
+        IntentFilter filter = new IntentFilter(INTENT_FILTER_DIALOG_LOCAL_BROADCAST);
         LocalBroadcastManager.getInstance(this).registerReceiver(serviceReceiver,filter);
     }
 
     private class LocalReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Timber.i("Show dialog");
-            mFragmentManager.beginTransaction().add(R.id.main_activity_dialog_container,
-                    DriverPassengerPickUpFragment.newInstance((PassengerRide)
-                            intent.getSerializableExtra("PASSENGER_RIDE"))).commit();
-        }
 
+            if(getIntent().getExtras() != null){
+                switch(getIntent().getExtras().getInt(DIALOG_TYPE)){
+                    case PASSENGER_PICK_UP:{
+                        mFragmentManager.beginTransaction().add(R.id.main_activity_dialog_container,
+                                DriverPassengerPickUpFragment.newInstance((PassengerRide)
+                                        intent.getSerializableExtra(BROADCAST_PASSENGER_RIDE))).commit();
+                        break;
+                    }
+                    case PASSENGER_DROP_OFF:{
+                        mFragmentManager.beginTransaction().add(R.id.main_activity_dialog_container,
+                                DriverDropOffFragment.newInstance()).commit();
+                        break;
+                    }
+                }
+            }
+        }
     }
 }
