@@ -37,7 +37,6 @@ import com.cybercom.passenger.route.FetchRouteUrl;
 import com.cybercom.passenger.route.ParserTask;
 import com.cybercom.passenger.service.Constants;
 import com.cybercom.passenger.service.ForegroundServices;
-import com.cybercom.passenger.utils.Box;
 import com.cybercom.passenger.utils.LocationHelper;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -144,8 +143,6 @@ public class MainActivity extends AppCompatActivity implements
         mapFragment.getMapAsync(this);
 
         initObservers();
-
-
     }
 
 

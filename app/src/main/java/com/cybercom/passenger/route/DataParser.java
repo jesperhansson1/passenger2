@@ -1,11 +1,9 @@
 package com.cybercom.passenger.route;
 
-import android.support.constraint.solver.widgets.Rectangle;
-
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Polygon;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -14,79 +12,93 @@ import java.util.List;
 
 import timber.log.Timber;
 
-import static com.cybercom.passenger.utils.GpsLocations.INTERVAL;
-
 class DataParser {
 
-    /** Receives a JSONObject and returns a list of lists containing latitude and longitude */
-    List<List<HashMap<String,String>>> parse(JSONObject jsonObject){
+    private static final String TAG = DataParser.class.getSimpleName();
 
-        List<List<HashMap<String, String>>> listRoutes = new ArrayList<>() ;
+    private List<Route> getRouteListFromRootObject(JSONObject rootJsonObject) throws JSONException {
+        List<Route> routeList = new ArrayList<>();
         JSONArray jsonArrayRoutes;
-        JSONArray jsonArrayLegs;
-        JSONObject jsonObjectBounds;
-        JSONArray jsonArraySteps;
+        jsonArrayRoutes = rootJsonObject.getJSONArray("routes");
 
-        try {
+        // Traversing all routes
+        for (int i = 0; i < jsonArrayRoutes.length(); i++) {
+            Route route = new Route();
+            JSONObject jsonObjectRoute = ((JSONObject)jsonArrayRoutes.get(i));
 
-            jsonArrayRoutes = jsonObject.getJSONArray("routes");
-
-            // Traversing all routes
-            for(int i=0;i<jsonArrayRoutes.length();i++){
-
-                //to get bounds
-                jsonObjectBounds = ( (JSONObject)jsonArrayRoutes.get(i)).getJSONObject("bounds");
-                System.out.println("bounds " + jsonObjectBounds);
-                JSONObject ne = jsonObjectBounds.getJSONObject("northeast");
-                System.out.println("northeast " + jsonObjectBounds.getJSONObject("northeast"));
-                System.out.println("northeast lat " + jsonObjectBounds.getJSONObject("northeast").get("lat"));
-                System.out.println("northeast lng " + jsonObjectBounds.getJSONObject("northeast").get("lng"));
-                System.out.println("southwest " + jsonObjectBounds.getJSONObject("southwest"));
-                System.out.println("southwest lat " + jsonObjectBounds.getJSONObject("southwest").get("lat"));
-                System.out.println("southwest lng " + jsonObjectBounds.getJSONObject("southwest").get("lng"));
-
-
-
-
-                jsonArrayLegs = ( (JSONObject)jsonArrayRoutes.get(i)).getJSONArray("legs");
-                List<HashMap<String, String>> listPath = new ArrayList<>();
-
-                // Traversing all legs
-                for(int j=0;j<jsonArrayLegs.length();j++){
-                    jsonArraySteps = ( (JSONObject)jsonArrayLegs.get(j)).getJSONArray("steps");
-
-                    // Traversing all steps
-                    for(int k=0;k<jsonArraySteps.length();k++){
-
-                      /*------
-
-                        String dist = (String)((JSONObject)((JSONObject)jsonArraySteps.get(k)).get("distance")).get("value");
-                        if(Integer.parseInt(dist) > INTERVAL)
-                        {
-
-                        }
-                      ------*/
-                        String polyline;
-                        polyline = (String)((JSONObject)((JSONObject)jsonArraySteps.get(k)).get("polyline")).get("points");
-                        List<LatLng> latlngList = decodePoly(polyline);
-
-                        // Traversing all points
-                        for(int l=0;l<latlngList.size();l++){
-                            HashMap<String, String> hashMap = new HashMap<>();
-                            hashMap.put("lat", Double.toString((latlngList.get(l)).latitude) );
-                            hashMap.put("lng", Double.toString((latlngList.get(l)).longitude) );
-                            listPath.add(hashMap);
-                        }
-
-
-                    }
-                    listRoutes.add(listPath);
-                }
-            }
-        } catch (Exception exception){
-            Timber.e(exception.getLocalizedMessage());
+            route.setBounds(getBoundsFromRouteObject(jsonObjectRoute));
+            route.setLegs(getLegsFromRouteObject(jsonObjectRoute));
+            routeList.add(route);
         }
-        return listRoutes;
+        return routeList;
+    }
+
+    private Bounds getBoundsFromRouteObject(JSONObject jsonObjectRoute) throws JSONException {
+        JSONObject jsonObjectBounds = jsonObjectRoute.getJSONObject("bounds");
+        JSONObject northeast = jsonObjectBounds.getJSONObject("northeast");
+        JSONObject southwest = jsonObjectBounds.getJSONObject("southwest");
+        double maxLatitude = northeast.getDouble("lat");
+        double maxLongitude = northeast.getDouble("lng");
+        double minLatitude = southwest.getDouble("lat");
+        double minLongitude = southwest.getDouble("lng");
+        return new Bounds(maxLongitude, minLongitude, maxLatitude, minLatitude);
+    }
+
+    private Legs getLegsFromRouteObject(JSONObject jsonObjectRoute) throws JSONException {
+        JSONArray jsonArrayLegs = jsonObjectRoute.getJSONArray("legs");
+        Legs legs = new Legs();
+        List<Steps> stepsList = new ArrayList<>();
+        for(int j = 0; j < jsonArrayLegs.length(); j++) {
+            JSONObject legObject = (JSONObject)jsonArrayLegs.get(j);
+            Steps steps = getStepsFromLegObject(legObject);
+            stepsList.add(steps);
+        }
+        legs.setStepsList(stepsList);
+        return legs;
+    }
+
+    private Steps getStepsFromLegObject(JSONObject jsonObjectLeg) throws JSONException {
+        Steps steps = new Steps();
+        JSONArray jsonArraySteps = jsonObjectLeg.getJSONArray("steps");
+        List<HashMap<String, String>> listPath = new ArrayList<>();
+        for (int k = 0; k<jsonArraySteps.length(); k++) {
+            // Traversing all steps
+
+            /*------
+
+            String dist = (String)((JSONObject)((JSONObject)jsonArraySteps.get(k)).get("distance"))
+            .get("value");
+            if(Integer.parseInt(dist) > INTERVAL)
+            {
+
+            }
+            ------*/
+            String polyline;
+            polyline = (String)((JSONObject)((JSONObject)jsonArraySteps.get(k)).get(
+                    "polyline")).get("points");
+            List<LatLng> latlngList = decodePoly(polyline);
+
+            // Traversing all points
+            for(int l=0;l<latlngList.size();l++){
+                HashMap<String, String> hashMap = new HashMap<>();
+                hashMap.put("lat", Double.toString((latlngList.get(l)).latitude) );
+                hashMap.put("lng", Double.toString((latlngList.get(l)).longitude) );
+                listPath.add(hashMap);
+            }
+        }
+        steps.setPointsList(listPath);
+        return steps;
+    }
+
+
+    /** Receives a JSONObject and returns a list of lists containing latitude and longitude */
+    public List<Route> parse(JSONObject jsonObject){
+        try {
+            return getRouteListFromRootObject(jsonObject);
+        } catch (JSONException e) {
+            Timber.e("Could not parse routes: ", e);
+        }
+        return null;
     }
 
     /*/To get bounds
