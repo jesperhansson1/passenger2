@@ -764,9 +764,7 @@ public class MainActivity extends AppCompatActivity implements
                         UpdateDriveIntent.setAction(Constants.ACTION.STARTFOREGROUND_UPDATE_DRIVER_POSITION);
                         UpdateDriveIntent.putExtra(DRIVE_ID, drive.getId());
                         startService(UpdateDriveIntent);
-                        /*sendDriverPositionToDB(drive.getId());
                         updatePassengersMarkerPosition(drive.getId());
-                        Timber.i("Drive created: %s", drive.getId());*/
                         mCreateDriveFragment.setDefaultValuesToDialog();
                     }
                 });
