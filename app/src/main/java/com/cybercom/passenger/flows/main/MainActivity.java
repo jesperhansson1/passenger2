@@ -154,17 +154,14 @@ public class MainActivity extends AppCompatActivity implements
         });
     }*/
 
-    private void sendPassengerRideToDB(String driveId) {
-        if (driveId != null) {
-        mMainViewModel.createPassengerRide(driveId).observe(this, passengerRide -> {
+    private void createPassengerRide(String driveId, Position startPosition, Position endPosition) {
+        mMainViewModel.createPassengerRide(driveId, startPosition, endPosition).observe(this, passengerRide -> {
             Intent updatePassengerIntent = new Intent(MainActivity.this, ForegroundServices.class);
             updatePassengerIntent.setAction(Constants.ACTION.STARTFOREGROUND_UPDATE_PASSENGER_POSITION);
             updatePassengerIntent.putExtra(PASSENGER_RIDE_KEY, passengerRide.getId());
             startService(updatePassengerIntent);
-        });
+            });
         }
-
-    }
 
     private void updateDriversMarkerPosition(String driveId) {
         mMainViewModel.getDriverPosition(driveId).observe(this, position -> {
@@ -193,29 +190,35 @@ public class MainActivity extends AppCompatActivity implements
     private void updatePassengersMarkerPosition(String driveId){
         mMainViewModel.getPassengerRides(driveId).observe(
             this, passengerRide -> {
-                if (passengerRide == null || passengerRide.getPassengerPos() == null) {
+                if (passengerRide == null) {
                     return;
                 }
-
-                String passengerRideId = passengerRide.getId();
-                if (mPassengerMarkerMap.containsKey(passengerRideId)) {
-                    Marker passengerMarker = mPassengerMarkerMap.get(passengerRideId);
-                    updateMarkerLocation(passengerMarker,
-                            LocationHelper.convertPositionToLocation(
-                                    passengerRide.getPassengerPos()));
-                } else {
-                    LatLng startLatLng = new LatLng(passengerRide.getPassengerPos().getLatitude(),
-                            passengerRide.getPassengerPos().getLongitude());
-
-                    Marker marker = mGoogleMap.addMarker(new MarkerOptions()
-                            .position(startLatLng)
-                            .title(getString(R.string.marker_title_passenger))
-                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.passenger_loc))
-                            .anchor(0.5f, 0.5f)
-                            .draggable(false));
-                    mPassengerMarkerMap.put(passengerRideId, marker);
-                }
+                observePassengersPosition(passengerRide.getPassegnerId());
             });
+    }
+
+    private void observePassengersPosition(final String passengerId) {
+        mMainViewModel.getPassengerPosition(passengerId).observe(this, position -> {
+            Timber.d("position update");
+
+            if (mPassengerMarkerMap.containsKey(passengerId)) {
+                Marker passengerMarker = mPassengerMarkerMap.get(passengerId);
+                updateMarkerLocation(passengerMarker,
+                        LocationHelper.convertPositionToLocation(
+                                position));
+            } else {
+                LatLng startLatLng = new LatLng(position.getLatitude(),
+                        position.getLongitude());
+
+                Marker marker = mGoogleMap.addMarker(new MarkerOptions()
+                        .position(startLatLng)
+                        .title(getString(R.string.marker_title_passenger))
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.passenger_loc))
+                        .anchor(0.5f, 0.5f)
+                        .draggable(false));
+                mPassengerMarkerMap.put(passengerId, marker);
+            }
+        });
     }
 
     private void initObservers() {
@@ -231,7 +234,9 @@ public class MainActivity extends AppCompatActivity implements
                     break;
                 case Notification.ACCEPT_PASSENGER:
                     showPassengerNotificationDialog(notification);
-                    sendPassengerRideToDB(notification.getDrive().getId());
+                    createPassengerRide(notification.getDrive().getId(),
+                            notification.getDriveRequest().getStartLocation(),
+                            notification.getDriveRequest().getEndLocation());
                     updateDriversMarkerPosition(notification.getDrive().getId());
                     dismissMatchingInProgressDialog();
                     break;
