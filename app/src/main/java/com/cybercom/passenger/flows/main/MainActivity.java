@@ -695,14 +695,13 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onFinish() {
-        mGoogleMap.clear();
+        /*mGoogleMap.clear();
         isStartLocationMarkerAdded = false;
         isEndLocationMarkerAdded = false;
         mMainViewModel.getStartMarkerLocation().removeObserver(mStartLocationObserver);
         mMainViewModel.getEndMarkerLocation().removeObserver(mEndLocationObserver);
 
-        mMarkerCount = 0;
-
+        mMarkerCount = 0;*/
     }
 
     @Override
