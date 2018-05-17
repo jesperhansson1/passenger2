@@ -13,7 +13,6 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Looper;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
@@ -69,6 +68,7 @@ public class ForegroundServices extends Service {
                         loc.setLatitude(mMyLocation.getValue().getLatitude());
                         loc.setLongitude(mMyLocation.getValue().getLongitude());
                         mPassengerRepository.updateDriveCurrentLocation(driveId, loc);
+                        mPassengerRepository.updateDriveCurrentVelocity(driveId, loc.getSpeed());
                     }
                 }
             };

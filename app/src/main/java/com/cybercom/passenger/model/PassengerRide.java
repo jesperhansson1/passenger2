@@ -51,7 +51,11 @@ public class PassengerRide {
                 "mId='" + mId + '\'' +
                 ", mDriveId='" + mDriveId + '\'' +
                 ", mPassegnerId='" + mPassegnerId + '\'' +
-                ", mPassengerPosId=" + mPassengerPosId +
+                ", mPassengerPosId=" + mPassengerPosId + '\'' +
+                ", mPickUpPosition=" + mPickUpPosition + '\'' +
+                ", mDropOffPosition=" + mDropOffPosition + '\'' +
+                ", mPickUpConfirmed=" + mPassengerPosId + '\'' +
+                ", mDropOffConfirmed=" + mDropOffConfirmed +
                 '}';
     }
 
@@ -61,5 +65,37 @@ public class PassengerRide {
 
     public void setId(String mId) {
         this.mId = mId;
+    }
+
+    public Position getPickUpPosition() {
+        return mPickUpPosition;
+    }
+
+    public void setPickUpPosition(Position mPickUpPosition) {
+        this.mPickUpPosition = mPickUpPosition;
+    }
+
+    public Position getDropOffPosition() {
+        return mDropOffPosition;
+    }
+
+    public void setDropOffPosition(Position mDropOffPosition) {
+        this.mDropOffPosition = mDropOffPosition;
+    }
+
+    public boolean isPickUpConfirmed() {
+        return mPickUpConfirmed;
+    }
+
+    public void setPickUpConfirmed(boolean mPickUpConfirmed) {
+        this.mPickUpConfirmed = mPickUpConfirmed;
+    }
+
+    public boolean isDropOffConfirmed() {
+        return mDropOffConfirmed;
+    }
+
+    public void setDropOffConfirmed(boolean mDropOffConfirmed) {
+        this.mDropOffConfirmed = mDropOffConfirmed;
     }
 }

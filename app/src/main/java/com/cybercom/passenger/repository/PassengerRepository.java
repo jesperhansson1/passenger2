@@ -61,6 +61,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private static final String KEY_PAYLOAD_DRIVE_ID = "driveId";
     private static final String KEY_PASSENGER_ID = "passengerId";
     private static final String CURRENT_POSITION = "currentPosition";
+    private static final String CURRENT_VELOCITY = "currentVelocity";
     private static final String LATITUDE = "latitude";
     private static final String LONGITUDE = "longitude";
 
@@ -305,7 +306,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                             User driver = dataSnapshot.getValue(User.class);
                             bestDriveMatch.setValue(new Drive(finalBestMatchDriveId, driver, finalBestMatch.getTime(),
                                     finalBestMatch.getStartLocation(), finalBestMatch.getEndLocation(),
-                                    finalBestMatch.getAvailableSeats()));
+                                    finalBestMatch.getAvailableSeats(), finalBestMatch.getCurrentPosition(), finalBestMatch.getCurrentVelocity()));
                         }
 
                         @Override
@@ -469,7 +470,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
                 Drive drive = new Drive(driveId, driver,
                         dbDrive.getTime(), dbDrive.getStartLocation(),
-                        dbDrive.getEndLocation(), dbDrive.getAvailableSeats());
+                        dbDrive.getEndLocation(), dbDrive.getAvailableSeats(),
+                        dbDrive.getCurrentPosition(), dbDrive.getCurrentVelocity());
                 DriveRequest driveRequest = new DriveRequest(driveRequestId,
                         passenger, dbDriveRequest.getTime(), dbDriveRequest.getStartLocation(),
                         dbDriveRequest.getEndLocation(), dbDriveRequest.getExtraPassengers(),
@@ -514,7 +516,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
             final com.cybercom.passenger.repository.databasemodel.Drive dbDrive =
                     new com.cybercom.passenger.repository.databasemodel.Drive(uId, time, startLocation,
-                            endLocation, availableSeats, null);
+                            endLocation, availableSeats, null, 0f);
             final DatabaseReference ref = mDrivesReference.push();
             final String driveId = ref.getKey();
             ref.setValue(dbDrive);
@@ -526,7 +528,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                             User user = dataSnapshot.getValue(User.class);
                             Drive drive = new Drive(driveId, user, dbDrive.getTime(),
                                     dbDrive.getStartLocation(), dbDrive.getEndLocation(),
-                                    dbDrive.getAvailableSeats());
+                                    dbDrive.getAvailableSeats(), dbDrive.getCurrentPosition(),
+                                    dbDrive.getCurrentVelocity());
                             driveMutableLiveData.setValue(drive);
                         }
 
@@ -663,6 +666,12 @@ public class PassengerRepository implements PassengerRepositoryInterface {
             locationMap.put(LATITUDE, location.getLatitude());
             locationMap.put(LONGITUDE, location.getLongitude());
             mDrivesReference.child(driveId).child(CURRENT_POSITION).setValue(locationMap);
+        }
+    }
+
+    public void updateDriveCurrentVelocity(String driveId, float velocity) {
+        if (driveId != null) {
+            mDrivesReference.child(driveId).child(CURRENT_VELOCITY).setValue(velocity);
         }
     }
 
