@@ -32,7 +32,7 @@ class DataParser {
             // Traversing all routes
             for(int i=0;i<jsonArrayRoutes.length();i++){
 
-                //To get bounds - need to be changed to okhttp for speed tuning...
+                //To get bounds - need to be changed to okhttp for speed/performance tuning...
 
                 jsonObjectBounds = ( (JSONObject)jsonArrayRoutes.get(i)).getJSONObject("bounds");
                 JSONObject ne = jsonObjectBounds.getJSONObject("northeast");
