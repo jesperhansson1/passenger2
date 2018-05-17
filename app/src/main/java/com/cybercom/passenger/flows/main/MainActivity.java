@@ -28,6 +28,7 @@ import com.cybercom.passenger.flows.nomatchfragment.NoMatchFragment;
 import com.cybercom.passenger.flows.passengernotification.PassengerNotificationDialog;
 import com.cybercom.passenger.flows.progressfindingcar.FindingCarProgressDialog;
 import com.cybercom.passenger.interfaces.FragmentSizeListener;
+import com.cybercom.passenger.model.Bounds;
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Notification;
@@ -105,6 +106,8 @@ public class MainActivity extends AppCompatActivity implements
     private boolean mIsFragmentAdded = false;
     private NoMatchFragment mNoMatchFragment;
     private boolean mCountMarker = true;
+
+    public Bounds mBounds;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -526,6 +529,8 @@ public class MainActivity extends AppCompatActivity implements
                         mMainViewModel.getEndMarkerLocation().getValue().getLongitude());
 
                 new FetchRouteUrl(mGoogleMap, origin, destination, this);
+
+
             }
         }
     }
@@ -659,6 +664,18 @@ public class MainActivity extends AppCompatActivity implements
         zoomToFitRoute();
     }
 
+    public void onBoundsParse(Bounds bounds)
+    {
+        if(bounds!=null) {
+            mBounds = bounds;
+        }
+        else
+        {
+            mBounds = new Bounds(0.0,0.0,0.0,0.0);
+        }
+        //System.out.println("here "+ mBounds.getNorthEastLatitude());
+    }
+
     @Override
     public void onPlaceMarkerIconClicked() {
 
@@ -752,7 +769,10 @@ public class MainActivity extends AppCompatActivity implements
         mCreateDriveFragment.hideCreateDialog();
         switch (type) {
             case User.TYPE_DRIVER:
-                mMainViewModel.createDrive(time, startLocation, endLocation, seats).observe(this,
+                if(mBounds==null) {
+                    mBounds = new Bounds(0.0,0.0,0.0,0.0);
+                }
+                mMainViewModel.createDrive(time, startLocation, endLocation, seats, mBounds).observe(this,
                         drive -> {
                     if (drive != null) {
                         Intent UpdateDriveIntent = new Intent(MainActivity.this, ForegroundServices.class);

@@ -13,6 +13,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 
+import com.cybercom.passenger.model.Bounds;
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Notification;
@@ -101,8 +102,10 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     public LiveData<Drive> createDrive(long time, Position startLocation, Position endLocation,
-                                       int availableSeats) {
-        return mPassengerRepository.createDrive(time, startLocation, endLocation, availableSeats);
+                                       int availableSeats, Bounds bounds) {
+
+
+        return mPassengerRepository.createDrive(time, startLocation, endLocation, availableSeats, bounds);
     }
 
     public LiveData<DriveRequest> createDriveRequest(long time, Position startLocation, Position endLocation, int seats) {

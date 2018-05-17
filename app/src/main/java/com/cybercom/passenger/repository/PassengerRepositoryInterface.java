@@ -3,6 +3,7 @@ package com.cybercom.passenger.repository;
 import android.arch.lifecycle.LiveData;
 import android.location.Location;
 
+import com.cybercom.passenger.model.Bounds;
 import com.cybercom.passenger.model.Car;
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
@@ -26,7 +27,7 @@ interface PassengerRepositoryInterface {
 
     void setIncomingNotification(final Map<String, String> payload);
 
-    LiveData<Drive> createDrive(long time, Position startLocation, Position endLocation, int availableSeats);
+    LiveData<Drive> createDrive(long time, Position startLocation, Position endLocation, int availableSeats, Bounds bounds);
 
     LiveData<DriveRequest> createDriveRequest(long time, Position startLocation, Position endLocation, int availableSeats);
 

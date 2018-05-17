@@ -6,6 +6,7 @@ import android.arch.lifecycle.MutableLiveData;
 import android.location.Location;
 import android.support.annotation.NonNull;
 
+import com.cybercom.passenger.model.Bounds;
 import com.cybercom.passenger.model.Car;
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
@@ -60,6 +61,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private static final String KEY_PAYLOAD_DRIVE_ID = "driveId";
     private static final String KEY_PASSENGER_ID = "passengerId";
     private static final String CURRENT_POSITION = "currentPosition";
+
     private static final String LATITUDE = "latitude";
     private static final String LONGITUDE = "longitude";
 
@@ -79,6 +81,16 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
     private MutableLiveData<Notification> mNotification = new MutableLiveData<>();
     private User mCurrentlyLoggedInUser;
+
+    private String mCurrentDriveId;
+    private static final String BOUNDS = "bounds";
+    private static final String NORTHEAST = "northeast";
+    private static final String SOUTHWEST = "southwest";
+    double mNorthEastLatitude;
+    double mNorthEastLongitude;
+    double mSouthWestLatitude;
+    double mSouthWestLongitude;
+    Bounds mBounds;
 
     public static PassengerRepository getInstance() {
         if (sPassengerRepository == null) {
@@ -522,7 +534,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     }
 
     public LiveData<Drive> createDrive(long time, Position startLocation, Position endLocation,
-                                       int availableSeats) {
+                                       int availableSeats, Bounds bounds) {
         final MutableLiveData<Drive> driveMutableLiveData = new MutableLiveData<>();
 
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -534,9 +546,21 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                     new com.cybercom.passenger.repository.databasemodel.Drive(uId, time, startLocation,
                             endLocation, availableSeats, null);
             final DatabaseReference ref = mDrivesReference.push();
-            final String driveId = ref.getKey();
-            ref.setValue(dbDrive);
 
+            final String driveId = ref.getKey();
+           // setCurrentDriveId(driveId);
+            ref.setValue(dbDrive);
+//adding bounds for drive
+
+            Map<String, Object> neBounds = new HashMap<>();
+            neBounds.put(LATITUDE, bounds.getNorthEastLatitude());
+            neBounds.put(LONGITUDE, bounds.getNorthEastLongitude());
+            Map<String, Object> swBounds = new HashMap<>();
+            swBounds.put(LATITUDE, bounds.getSouthWestLatitude());
+            swBounds.put(LONGITUDE, bounds.getSouthWestLongitude());
+            mDrivesReference.child(driveId).child(BOUNDS).child(SOUTHWEST).setValue(swBounds);
+            mDrivesReference.child(driveId).child(BOUNDS).child(NORTHEAST).setValue(neBounds);
+//--------
             mUsersReference.child(firebaseUser.getUid()).addValueEventListener(
                     new ValueEventListener() {
                         @Override
@@ -546,6 +570,9 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                                     dbDrive.getStartLocation(), dbDrive.getEndLocation(),
                                     dbDrive.getAvailableSeats());
                             driveMutableLiveData.setValue(drive);
+
+
+
                         }
 
                         @Override
@@ -817,4 +844,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         });
         return driverPositionLiveData;
     }
+
+
+
 }
