@@ -79,6 +79,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
     private MutableLiveData<Notification> mNotification = new MutableLiveData<>();
     private User mCurrentlyLoggedInUser;
+    private MutableLiveData<Location> mDriverCurrentLocation = new MutableLiveData<>();
 
     public static PassengerRepository getInstance() {
         if (sPassengerRepository == null) {
@@ -677,6 +678,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
     public void updateDriveCurrentLocation(String driveId, Location location) {
         if (driveId != null) {
+            mDriverCurrentLocation.setValue(location);
             Map<String, Object> locationMap = new HashMap<>();
             locationMap.put(LATITUDE, location.getLatitude());
             locationMap.put(LONGITUDE, location.getLongitude());
@@ -816,5 +818,9 @@ public class PassengerRepository implements PassengerRepositoryInterface {
             }
         });
         return driverPositionLiveData;
+    }
+
+    public MutableLiveData<Location> getDriverCurrentLocation() {
+        return mDriverCurrentLocation;
     }
 }
