@@ -319,9 +319,9 @@ public class MainViewModel extends AndroidViewModel {
         return mPassengerRepository.createPassengerRide(driveId, startPosition, endPosition);
     }
 
-   /* public void updatePassengerRideCurrentLocation(Location location) {
+    public void updatePassengerRideCurrentLocation(Location location) {
         mPassengerRepository.updatePassengerRideCurrentLocation(location);
-    }*/
+    }
 
     public LiveData<Position> getPassengerPositionOnMap() {
         return mPassengerRepository.getPassengerPositionOnMap();
