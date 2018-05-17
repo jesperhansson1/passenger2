@@ -8,15 +8,21 @@ public class PassengerRide implements Serializable {
 
     private String mDriveId;
     private String mPassengerId;
-    private Position mPosition;
+    private String  mPassengerPositionId;
+    private Position mPickUpPosition;
+    private Position mDropOffPosition;
+    private boolean mPickUpConfirmed;
+    private boolean mDropOffConfirmed;
 
     public PassengerRide() {
     }
-
-    public PassengerRide(String driveId, String passengerId, Position position) {
+    
+    public PassengerRide(String driveId, String passengerId, String passengerPositionId, Position pickUpPosition, Position dropOffPosition) {
         mDriveId = driveId;
         mPassengerId = passengerId;
-        mPosition = position;
+        mPassengerPositionId = passengerPositionId;
+        mPickUpPosition = pickUpPosition;
+        mDropOffPosition = dropOffPosition;
     }
 
     public String getDriveId() {
@@ -35,12 +41,12 @@ public class PassengerRide implements Serializable {
         mPassengerId = passegnerId;
     }
 
-    public Position getPosition() {
-        return mPosition;
+    public String getPassengerPositionId() {
+        return mPassengerPositionId;
     }
 
-    public void setPosition(Position passengerPos) {
-        mPosition = passengerPos;
+    public void setPassengerPositionId(String passengerPositionId) {
+        mPassengerPositionId = passengerPositionId;
     }
 
     @Override
@@ -48,8 +54,43 @@ public class PassengerRide implements Serializable {
         return "PassengerRide{" +
                 "mDriveId='" + mDriveId + '\'' +
                 ", mPassegnerId='" + mPassengerId + '\'' +
-                ", mPosition=" + mPosition +
+                ", mPassengerPositionId=" + mPassengerPositionId + '\'' +
+                ", mPickUpPosition=" + mPickUpPosition + '\'' +
+                ", mDropOffPosition=" + mDropOffPosition + '\'' +
+                ", mPickUpConfirmed=" + mPickUpConfirmed + '\'' +
+                ", mDropOffConfirmed=" + mDropOffConfirmed + '\'' +
                 '}';
     }
 
+    public Position getPickUpPosition() {
+        return mPickUpPosition;
+    }
+
+    public void setPickUpPosition(Position pickUpPosition) {
+        this.mPickUpPosition = pickUpPosition;
+    }
+
+    public Position getDropOffPosition() {
+        return mDropOffPosition;
+    }
+
+    public void setDropOffPosition(Position dropOffPosition) {
+        this.mDropOffPosition = dropOffPosition;
+    }
+
+    public boolean isPickUpConfirmed() {
+        return mPickUpConfirmed;
+    }
+
+    public void setPickUpConfirmed(boolean pickUpConfirmed) {
+        this.mPickUpConfirmed = pickUpConfirmed;
+    }
+
+    public boolean isDropOffConfirmed() {
+        return mDropOffConfirmed;
+    }
+
+    public void setDropOffConfirmed(boolean dropOffConfirmed) {
+        this.mDropOffConfirmed = dropOffConfirmed;
+    }
 }

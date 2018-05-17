@@ -5,16 +5,20 @@ public class PassengerRide {
     private String mId;
     private String mDriveId;
     private String mPassegnerId;
-    private Position mPassengerPos;
+    private String mPassengerPosId;
+    private Position mPickUpPosition;
+    private Position mDropOffPosition;
+    private boolean mPickUpConfirmed;
+    private boolean mDropOffConfirmed;
 
     public PassengerRide() {
     }
 
-    public PassengerRide(String id, String driveId, String passengerId, Position passengerPos) {
+    public PassengerRide(String id, String driveId, String passengerId, String passengerPosId) {
         mId = id;
         mDriveId = driveId;
         mPassegnerId = passengerId;
-        mPassengerPos = passengerPos;
+        mPassengerPosId = passengerPosId;
     }
 
     public String getDriveId() {
@@ -33,12 +37,12 @@ public class PassengerRide {
         mPassegnerId = passegnerId;
     }
 
-    public Position getPassengerPos() {
-        return mPassengerPos;
+    public String getPassengerPosId() {
+        return mPassengerPosId;
     }
 
-    public void setPassengerPos(Position passengerPos) {
-        mPassengerPos = passengerPos;
+    public void setPassengerPosId(String passengerPosId) {
+        mPassengerPosId = passengerPosId;
     }
 
     @Override
@@ -47,7 +51,7 @@ public class PassengerRide {
                 "mId='" + mId + '\'' +
                 ", mDriveId='" + mDriveId + '\'' +
                 ", mPassegnerId='" + mPassegnerId + '\'' +
-                ", mPassengerPos=" + mPassengerPos +
+                ", mPassengerPosId=" + mPassengerPosId +
                 '}';
     }
 
