@@ -20,14 +20,8 @@ import timber.log.Timber;
 class DataParser {
 
 
-    //private static final MutableLiveData<Bounds> mLiveDataBound = new MutableLiveData<>();
-
     JSONObject mJsonObject;
     private ParserTask.OnRouteCompletion mDelegate;
-   /* public interface OnRouteCompletion{
-        void onBoundsParse(Bounds bounds);
-    }*/
-
     DataParser(ParserTask.OnRouteCompletion delegate)
     {
         mDelegate = delegate;
@@ -44,7 +38,7 @@ class DataParser {
         try {
 
             jsonArrayRoutes = jsonObject.getJSONArray("routes");
-            System.out.println(jsonArrayRoutes);
+            Timber.d(jsonArrayRoutes.toString());
 
 
 
@@ -55,12 +49,6 @@ class DataParser {
 
                 jsonObjectBounds = ( (JSONObject)jsonArrayRoutes.get(i)).getJSONObject("bounds");
                 JSONObject ne = jsonObjectBounds.getJSONObject("northeast");
-               /* System.out.println("northeast " + jsonObjectBounds.getJSONObject("northeast"));
-                System.out.println("northeast lat " + jsonObjectBounds.getJSONObject("northeast").get("lat"));
-                System.out.println("northeast lng " + jsonObjectBounds.getJSONObject("northeast").get("lng"));
-                System.out.println("southwest " + jsonObjectBounds.getJSONObject("southwest"));
-                System.out.println("southwest lat " + jsonObjectBounds.getJSONObject("southwest").get("lat"));
-                System.out.println("southwest lng " + jsonObjectBounds.getJSONObject("southwest").get("lng"));*/
 
                 Bounds bounds = new Bounds(Double.parseDouble(jsonObjectBounds.getJSONObject("northeast").get("lat").toString()),
                         Double.parseDouble(jsonObjectBounds.getJSONObject("northeast").get("lng").toString()),
@@ -68,11 +56,6 @@ class DataParser {
                         Double.parseDouble(jsonObjectBounds.getJSONObject("southwest").get("lng").toString()));
 
                 mDelegate.onBoundsParse(bounds);
-                //mLiveDataBound.setValue(bounds);
-
-                //PassengerRepository.getInstance().updateDriveBound(bounds);
-
-                //System.out.println("current drive id " + PassengerRepository.getInstance().getCurrentDriveId());
 
                 jsonArrayLegs = ( (JSONObject)jsonArrayRoutes.get(i)).getJSONArray("legs");
                 List<HashMap<String, String>> listPath = new ArrayList<>();
@@ -138,49 +121,5 @@ class DataParser {
 
         return latlngList;
     }
-
-   /* public LiveData<Bounds> getCarLiveData() {
-
-            List<List<HashMap<String, String>>> listRoutes = new ArrayList<>() ;
-            JSONArray jsonArrayRoutes;
-            JSONArray jsonArrayLegs;
-            JSONArray jsonArraySteps;
-            JSONObject jsonObjectBounds;
-
-            try {
-
-                jsonArrayRoutes = mJsonObject.getJSONArray("routes");
-                System.out.println(jsonArrayRoutes);
-
-
-                // Traversing all routes
-                for (int i = 0; i < jsonArrayRoutes.length(); i++) {
-
-                    //To get bounds - need to be changed to okhttp for speed/performance tuning...
-
-                    jsonObjectBounds = ((JSONObject) jsonArrayRoutes.get(i)).getJSONObject("bounds");
-                    JSONObject ne = jsonObjectBounds.getJSONObject("northeast");
-                    System.out.println("northeast " + jsonObjectBounds.getJSONObject("northeast"));
-                    System.out.println("northeast lat " + jsonObjectBounds.getJSONObject("northeast").get("lat"));
-                    System.out.println("northeast lng " + jsonObjectBounds.getJSONObject("northeast").get("lng"));
-                    System.out.println("southwest " + jsonObjectBounds.getJSONObject("southwest"));
-                    System.out.println("southwest lat " + jsonObjectBounds.getJSONObject("southwest").get("lat"));
-                    System.out.println("southwest lng " + jsonObjectBounds.getJSONObject("southwest").get("lng"));
-
-                    Bounds bounds = new Bounds(Double.parseDouble(jsonObjectBounds.getJSONObject("northeast").get("lat").toString()),
-                            Double.parseDouble(jsonObjectBounds.getJSONObject("northeast").get("lng").toString()),
-                            Double.parseDouble(jsonObjectBounds.getJSONObject("southwest").get("lat").toString()),
-                            Double.parseDouble(jsonObjectBounds.getJSONObject("southwest").get("lng").toString()));
-                    mLiveDataBound.setValue(bounds);
-                }
-            }
-            catch(Exception e)
-            {
-                System.out.println(e.getLocalizedMessage());
-            }
-
-                    return mLiveDataBound;
-    }*/
-
 
 }

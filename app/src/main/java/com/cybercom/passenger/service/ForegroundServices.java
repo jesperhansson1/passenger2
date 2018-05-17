@@ -92,8 +92,8 @@ public class ForegroundServices extends Service {
                     .setTicker(getString(R.string.passenger))
                     .setContentText(getString(R.string.passenger))
                     .setSmallIcon(R.mipmap.ic_launcher)
-                    .setLargeIcon(
-                            Bitmap.createScaledBitmap(icon, 128, 128, false))
+                /*    .setLargeIcon(
+                            Bitmap.createScaledBitmap(icon, 128, 128, false))*/
                     .setContent(notificationView)
                     .setOngoing(true).build();
 

@@ -82,15 +82,18 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private MutableLiveData<Notification> mNotification = new MutableLiveData<>();
     private User mCurrentlyLoggedInUser;
 
-    private String mCurrentDriveId;
+    //private String mCurrentDriveId;
     private static final String BOUNDS = "bounds";
     private static final String NORTHEAST = "northeast";
     private static final String SOUTHWEST = "southwest";
-    double mNorthEastLatitude;
+    /*double mNorthEastLatitude;
     double mNorthEastLongitude;
     double mSouthWestLatitude;
     double mSouthWestLongitude;
     Bounds mBounds;
+    private static final String DRIVE_STATUS = "status";
+    private static final String ACTIVE_STATUS = "active";
+    private static final String HISTORY_STATUS = "history";*/
 
     public static PassengerRepository getInstance() {
         if (sPassengerRepository == null) {
@@ -281,6 +284,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         return drivesList;
     }
 
+
+
     public LiveData<Drive> findBestRideMatch(final DriveRequest driveRequest, int radiusMultiplier) {
 
         final MutableLiveData<Drive> bestDriveMatch = new MutableLiveData<>();
@@ -295,6 +300,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     com.cybercom.passenger.repository.databasemodel.Drive drive = snapshot.getValue(com.cybercom.passenger.repository.databasemodel.Drive.class);
+
+
 
                     if (drive != null && Math.abs(driveRequest.getTime() - drive.getTime()) < DRIVE_REQUEST_MATCH_TIME_THRESHOLD) {
                         Location.distanceBetween(driveRequest.getStartLocation().getLatitude(), driveRequest.getStartLocation().getLongitude(),

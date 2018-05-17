@@ -673,7 +673,6 @@ public class MainActivity extends AppCompatActivity implements
         {
             mBounds = new Bounds(0.0,0.0,0.0,0.0);
         }
-        //System.out.println("here "+ mBounds.getNorthEastLatitude());
     }
 
     @Override
