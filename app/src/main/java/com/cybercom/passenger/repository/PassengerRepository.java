@@ -659,10 +659,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
     public void updateDriveCurrentLocation(String driveId, Location location) {
         if (driveId != null) {
-            Map<String, Object> locationMap = new HashMap<>();
-            locationMap.put(LATITUDE, location.getLatitude());
-            locationMap.put(LONGITUDE, location.getLongitude());
-            mDrivesReference.child(driveId).child(CURRENT_POSITION).setValue(locationMap);
+            mDrivesReference.child(driveId).child(CURRENT_POSITION).setValue(LocationHelper.convertLocationToPosition(location));
         }
     }
 
