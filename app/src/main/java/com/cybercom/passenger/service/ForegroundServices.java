@@ -1,10 +1,12 @@
 package com.cybercom.passenger.service;
 
+import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.arch.lifecycle.LifecycleService;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -13,6 +15,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Looper;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
@@ -98,8 +101,6 @@ public class ForegroundServices extends LifecycleService {
                     .setTicker(getString(R.string.passenger))
                     .setContentText(getString(R.string.passenger))
                     .setSmallIcon(R.mipmap.ic_launcher)
-                    .setLargeIcon(
-                            Bitmap.createScaledBitmap(icon, 128, 128, false))
                     .setContent(notificationView)
                     .setOngoing(true).build();
 
@@ -107,7 +108,7 @@ public class ForegroundServices extends LifecycleService {
                     notification);
 
             mPassengerRepository.getPassengerRides(driveId).observe(this, passengerRide -> {
-                if(mPassengerRides == null){
+                if (mPassengerRides == null) {
                     mPassengerRides = new ArrayList<>();
                 }
 
@@ -118,29 +119,45 @@ public class ForegroundServices extends LifecycleService {
 
                     if (passengerRide != null &&
                             pr.getDriveId().equals(passengerRide.getDriveId())) {
-                            passengerRideToReplace = i;
+                        passengerRideToReplace = i;
                     }
                 }
-                if(passengerRideToReplace != -1){
+
+                if (passengerRideToReplace != -1) {
                     mPassengerRides.remove(passengerRideToReplace);
                 }
 
                 // Put every accepted passenger ride in a list
+
                 mPassengerRides.add(passengerRide);
+
             });
 
+            Location loc = new Location("");
+            loc.setLatitude(55.614256);
+            loc.setLongitude(12.989117);
             mPassengerRepository.getDriverCurrentLocation().observe(this, driverLocation -> {
+                if(mPassengerRides != null){
+                    for (PassengerRide pr : mPassengerRides) {
+                        if (driverLocation != null) {
+                            if (driverLocation.distanceTo(loc) < 10) {
+                                if (!isAppInBackground(this)) {
+                                    showPickUpDialogInUi(pr);
+                                } else {
+                                    createNotification();
+                                }
+                            }
 
-                float[] distanceResult = new float[1];
-                for(PassengerRide pr: mPassengerRides){
-
-                    if (driverLocation != null) {
-                        Location.distanceBetween(driverLocation.getLatitude(),driverLocation.getLongitude(),pr.getPassengerPos().getLatitude(),pr.getPassengerPos().getLongitude(),distanceResult);
-                        if(distanceResult[0] < 10){
-                            // Show pick uyp dialog
+                            // This is what happens when dropofflocation is near
+                          /* if(driverLocation.distanceTo(dropofflocation)){
+                                if (!isAppInBackground(this)) {
+                                    showPickUpDialogInUi(pr);
+                                } else {
+                                    createNotification();
+                                }
+                            }*/
                         }
                     }
-
                 }
             });
         }
@@ -157,6 +174,17 @@ public class ForegroundServices extends LifecycleService {
             stopSelf();
         }
         return START_STICKY;
+    }
+
+    private void showPickUpDialogInUi(PassengerRide passengerRide) {
+        Intent showPickUpDialogInUi = new Intent("DIALOG_LOCAL_BROADCAST");
+        showPickUpDialogInUi.putExtra("PASSENGER_RIDE", passengerRide);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(showPickUpDialogInUi);
+    }
+
+    private void createNotification() {
+        Timber.i("Create notification");
+
     }
 
     private void createLocationRequest() {
@@ -188,6 +216,28 @@ public class ForegroundServices extends LifecycleService {
         // Used only in case of bound services.
         super.onBind(intent);
         return null;
+    }
+
+    public boolean isAppInBackground(Context context) {
+        boolean isInBackground = true;
+        ActivityManager activityManager
+                = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        if (activityManager != null) {
+            List<ActivityManager.RunningAppProcessInfo> runningProcesses
+                    = activityManager.getRunningAppProcesses();
+            for (ActivityManager.RunningAppProcessInfo processInfo : runningProcesses) {
+                if (processInfo.importance
+                        == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
+                    for (String activeProcess : processInfo.pkgList) {
+                        if (activeProcess.equals(context.getPackageName())) {
+                            isInBackground = false;
+                        }
+                    }
+                }
+            }
+        }
+
+        return isInBackground;
     }
 
 }

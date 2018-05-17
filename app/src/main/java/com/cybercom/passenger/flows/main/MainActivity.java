@@ -5,7 +5,10 @@ import android.arch.lifecycle.LifecycleOwner;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -14,6 +17,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -26,11 +30,13 @@ import com.cybercom.passenger.flows.driverconfirmation.AcceptRejectPassengerDial
 import com.cybercom.passenger.flows.login.RegisterActivity;
 import com.cybercom.passenger.flows.nomatchfragment.NoMatchFragment;
 import com.cybercom.passenger.flows.passengernotification.PassengerNotificationDialog;
+import com.cybercom.passenger.flows.pickupfragment.DriverPassengerPickUpFragment;
 import com.cybercom.passenger.flows.progressfindingcar.FindingCarProgressDialog;
 import com.cybercom.passenger.interfaces.FragmentSizeListener;
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Notification;
+import com.cybercom.passenger.model.PassengerRide;
 import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.route.FetchRouteUrl;
@@ -106,6 +112,9 @@ public class MainActivity extends AppCompatActivity implements
     private NoMatchFragment mNoMatchFragment;
     private boolean mCountMarker = true;
 
+    private LocalReceiver serviceReceiver;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -115,6 +124,8 @@ public class MainActivity extends AppCompatActivity implements
 
         mMainViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
         mFragmentManager = getSupportFragmentManager();
+
+        serviceReceiver = new LocalReceiver();
 
         if (savedInstanceState == null) {
             if (getIntent().getExtras() != null) {
@@ -696,13 +707,14 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onFinish() {
-        mGoogleMap.clear();
+     /*  mGoogleMap.clear();
         isStartLocationMarkerAdded = false;
         isEndLocationMarkerAdded = false;
         mMainViewModel.getStartMarkerLocation().removeObserver(mStartLocationObserver);
         mMainViewModel.getEndMarkerLocation().removeObserver(mEndLocationObserver);
 
         mMarkerCount = 0;
+        mCountMarker = true;*/
 
     }
 
@@ -831,5 +843,29 @@ public class MainActivity extends AppCompatActivity implements
         } else {
             zoomToFitRoute();
         }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(serviceReceiver);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        IntentFilter filter = new IntentFilter("DIALOG_LOCAL_BROADCAST");
+        LocalBroadcastManager.getInstance(this).registerReceiver(serviceReceiver,filter);
+    }
+
+    private class LocalReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Timber.i("Show dialog");
+            mFragmentManager.beginTransaction().add(R.id.main_activity_dialog_container,
+                    DriverPassengerPickUpFragment.newInstance((PassengerRide)
+                            intent.getSerializableExtra("PASSENGER_RIDE"))).commit();
+        }
+
     }
 }

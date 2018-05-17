@@ -9,19 +9,20 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.TextView;
 
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.interfaces.FragmentSizeListener;
+import com.cybercom.passenger.model.PassengerRide;
 
 public class DriverPassengerPickUpFragment extends Fragment {
 
-    public static final String USER_KEY = "USER";
+    public static final String PASSENGER_RIDE_KEY = "PASSENGER";
     private FragmentSizeListener mFragmentSizeListener;
 
-    public static DriverPassengerPickUpFragment newInstance(int type) {
-
+    public static DriverPassengerPickUpFragment newInstance(PassengerRide passengerRide) {
         Bundle args = new Bundle();
-        args.putInt(USER_KEY, type);
+        args.putSerializable(PASSENGER_RIDE_KEY, passengerRide);
         DriverPassengerPickUpFragment fragment = new DriverPassengerPickUpFragment();
         fragment.setArguments(args);
         return fragment;
@@ -33,6 +34,10 @@ public class DriverPassengerPickUpFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_driver_passenger_pick_up, container, false);
 
+        TextView name = view.findViewById(R.id.fragment_driver_passenger_pick_up_name);
+        PassengerRide pr = (PassengerRide) getArguments().getSerializable(PASSENGER_RIDE_KEY);
+
+        name.setText(pr.getPassegnerId());
         view.getViewTreeObserver()
                 .addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                     @Override
