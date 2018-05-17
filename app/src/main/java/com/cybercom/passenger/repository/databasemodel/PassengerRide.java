@@ -16,7 +16,7 @@ public class PassengerRide implements Serializable {
 
     public PassengerRide() {
     }
-    
+
     public PassengerRide(String driveId, String passengerId, String passengerPositionId, Position pickUpPosition, Position dropOffPosition) {
         mDriveId = driveId;
         mPassengerId = passengerId;

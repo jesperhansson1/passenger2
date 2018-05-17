@@ -45,6 +45,8 @@ public class ForegroundServices extends LifecycleService {
     private static final int INTERVAL = 1000;
     private static final int FASTEST_INTERVAL = 1000;
     private static final String DRIVE_ID = "driveId";
+    private static final String PASSENGER_RIDE_KEY = "passengerRideKey";
+
 
     private List<PassengerRide> mPassengerRides;
 
@@ -78,6 +80,7 @@ public class ForegroundServices extends LifecycleService {
                         loc.setLatitude(mMyLocation.getValue().getLatitude());
                         loc.setLongitude(mMyLocation.getValue().getLongitude());
                         mPassengerRepository.updateDriveCurrentLocation(driveId, loc);
+                        mPassengerRepository.updateDriveCurrentVelocity(driveId, loc.getSpeed());
                     }
                 }
             };
@@ -161,7 +164,59 @@ public class ForegroundServices extends LifecycleService {
                 }
             });
         }
+
         //Uppdatera Passengers position
+        if(intent.getAction().equals(Constants.ACTION.STARTFOREGROUND_UPDATE_PASSENGER_POSITION)){
+
+            mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getApplication().getApplicationContext());
+            mLocationCallback = new LocationCallback() {
+                @Override
+                public void onLocationResult(LocationResult locationResult) {
+                    if (locationResult == null) {
+                        return;
+                    }
+
+                    for (Location location : locationResult.getLocations()) {
+                        mMyLocation.setValue(location);
+
+                        Bundle extras = intent.getExtras();
+                        String passengerRideId = extras.getString(PASSENGER_RIDE_KEY);
+
+                        loc.setLatitude(mMyLocation.getValue().getLatitude());
+                        loc.setLongitude(mMyLocation.getValue().getLongitude());
+                        mPassengerRepository.updatePassengerRideCurrentLocation(loc);
+                    }
+                }
+            };
+            createLocationRequest();
+            startLocationUpdates();
+
+            Intent notificationIntent = new Intent(this, MainActivity.class);
+            notificationIntent.setAction(Constants.ACTION.MAIN);
+            notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                    | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
+                    notificationIntent, 0);
+
+            RemoteViews notificationView = new RemoteViews(this.getPackageName(),R.layout.foreground_notification);
+
+            Bitmap icon = BitmapFactory.decodeResource(getResources(),
+                    R.mipmap.ic_launcher);
+
+            Notification notification = new NotificationCompat.Builder(this)
+                    .setContentTitle(getString(R.string.passenger))
+                    .setTicker(getString(R.string.passenger))
+                    .setContentText(getString(R.string.passenger))
+                    .setSmallIcon(R.mipmap.ic_launcher)
+                    .setLargeIcon(
+                            Bitmap.createScaledBitmap(icon, 128, 128, false))
+                    .setContent(notificationView)
+                    .setOngoing(true).build();
+
+            startForeground(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE,
+                    notification);
+        }
+
         //Get Driver Position
         //Get Passenger Position
 

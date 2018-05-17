@@ -6,6 +6,7 @@ public class Constants {
         public static String STARTFOREGROUND = "com.nkdroid.alertdialog.action.startforeground";
         public static String STOPFOREGROUND = "com.nkdroid.alertdialog.action.stopforeground";
         public static String STARTFOREGROUND_UPDATE_DRIVER_POSITION = "UPDATE_DRIVER_POSITION";
+        public static String STARTFOREGROUND_UPDATE_PASSENGER_POSITION = "UPDATE_PASSENGER_POSITION";
 
     }
 
