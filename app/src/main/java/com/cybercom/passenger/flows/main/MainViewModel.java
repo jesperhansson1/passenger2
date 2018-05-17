@@ -322,7 +322,7 @@ public class MainViewModel extends AndroidViewModel {
    /* public void updatePassengerRideCurrentLocation(Location location) {
         mPassengerRepository.updatePassengerRideCurrentLocation(location);
     }*/
-*/
+
     public LiveData<Position> getPassengerPositionOnMap() {
         return mPassengerRepository.getPassengerPositionOnMap();
     }

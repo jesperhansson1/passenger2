@@ -659,27 +659,18 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
     public void updateDriveCurrentLocation(String driveId, Location location) {
         if (driveId != null) {
-            Map<String, Object> locationMap = new HashMap<>();
-            locationMap.put(LATITUDE, location.getLatitude());
-            locationMap.put(LONGITUDE, location.getLongitude());
-            mDrivesReference.child(driveId).child(CURRENT_POSITION).setValue(locationMap);
+            mDrivesReference.child(driveId).child(CURRENT_POSITION).setValue(LocationHelper.convertLocationToPosition(location));
         }
     }
 
-    public void updatePassengerRideCurrentLocation(String passengerRideId, Location location) {
-
-        if(passengerRideId != null){
-
-            mPassengerRideReference.child(passengerRideId).child("position")
-                    .setValue(LocationHelper.convertLocationToPosition(location));
-        }
-       /* FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+    public void updatePassengerRideCurrentLocation(Location location) {
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
         if (firebaseUser == null) {
             return;
         }
         String uId = firebaseUser.getUid();
-        mPassengerPositionReference.child(uId).setValue(LocationHelper.convertLocationToPosition(location));*/
+        mPassengerPositionReference.child(uId).setValue(LocationHelper.convertLocationToPosition(location));
     }
 
     public LiveData<com.cybercom.passenger.model.PassengerRide> createPassengerRide(String driveId,

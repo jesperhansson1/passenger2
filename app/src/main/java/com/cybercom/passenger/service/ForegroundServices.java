@@ -122,7 +122,7 @@ public class ForegroundServices extends Service {
 
                         loc.setLatitude(mMyLocation.getValue().getLatitude());
                         loc.setLongitude(mMyLocation.getValue().getLongitude());
-                        mPassengerRepository.updatePassengerRideCurrentLocation(passengerRideId, loc);
+                        mPassengerRepository.updatePassengerRideCurrentLocation(loc);
                     }
                 }
             };
