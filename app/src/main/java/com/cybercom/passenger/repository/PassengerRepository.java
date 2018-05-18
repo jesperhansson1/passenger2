@@ -270,7 +270,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         mDrivesReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                System.out.println("drives " + dataSnapshot);
+
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
 
                     tempDrivesList.add(snapshot.getValue(Drive.class));
