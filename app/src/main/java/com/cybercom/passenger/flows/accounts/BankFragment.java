@@ -84,8 +84,9 @@ public class BankFragment extends Fragment {
                 repository.createUserAddCar(mExtras.getString(LOGINARRAY),
                         mExtras.getString(CARARRAY)).observe(this, firebaseUser -> {
                     if (firebaseUser!=null) {
-                        startActivity(new Intent(getActivity().getApplicationContext(),
-                                MainActivity.class));
+                        Intent intent = new Intent(getActivity().getApplicationContext(), MainActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
                     } else {
                         progressBar.setVisibility(View.GONE);
                         mNext.setText(R.string.next);
@@ -96,8 +97,9 @@ public class BankFragment extends Fragment {
                 repository.createUserWithEmailAndPassword(
                         mExtras.getString(LOGINARRAY)).observe(this, firebaseUser -> {
                     if (firebaseUser != null) {
-                        startActivity(new Intent(getActivity().getApplicationContext(),
-                                MainActivity.class));
+                        Intent intent = new Intent(getActivity().getApplicationContext(), MainActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
                     } else {
                         progressBar.setVisibility(View.GONE);
                         mNext.setText(R.string.next);
@@ -109,4 +111,6 @@ public class BankFragment extends Fragment {
             Timber.e("Nothing to add");
         }
     }
+
+
 }
