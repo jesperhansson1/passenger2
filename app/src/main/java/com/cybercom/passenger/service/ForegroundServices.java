@@ -33,8 +33,8 @@ public class ForegroundServices extends Service {
     private FusedLocationProviderClient mFusedLocationClient;
     private LocationCallback mLocationCallback;
     private LocationRequest mLocationRequest;
-    private MutableLiveData<Location> mMyLocation = new MutableLiveData<>();
-    Location loc = new Location("");
+    private MutableLiveData<Location> mMyLocationMutableLiveData = new MutableLiveData<>();
+    private Location mCurrentLocation = new Location("");
     private static final int INTERVAL = 1000;
     private static final int FASTEST_INTERVAL = 1000;
     private static final String DRIVE_ID = "driveId";
@@ -50,30 +50,49 @@ public class ForegroundServices extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         //Uppdatera Drivers position
         if(intent.getAction().equals(Constants.ACTION.STARTFOREGROUND_UPDATE_DRIVER_POSITION)){
+            Bundle extras = intent.getExtras();
+            String driveId = extras.getString(DRIVE_ID);
 
             mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getApplication().getApplicationContext());
             mLocationCallback = new LocationCallback() {
                 @Override
                 public void onLocationResult(LocationResult locationResult) {
+
                     if (locationResult == null) {
                         return;
                     }
 
+                    Location prevLocation;
+
+                    int locationResultSize = locationResult.getLocations().size();
+                    if (locationResultSize == 1) {
+                        prevLocation = mCurrentLocation;
+                    } else {
+                        prevLocation = locationResult.getLocations().get(locationResultSize - 2);
+                    }
+
                     for (Location location : locationResult.getLocations()) {
-                        mMyLocation.setValue(location);
-
-                        Bundle extras = intent.getExtras();
-                        String driveId = extras.getString(DRIVE_ID);
-
+                        mMyLocationMutableLiveData.setValue(location);
                         Timber.d("DriveId %s", driveId);
 
-                        loc.setLatitude(mMyLocation.getValue().getLatitude());
-                        loc.setLongitude(mMyLocation.getValue().getLongitude());
-                        mPassengerRepository.updateDriveCurrentLocation(driveId, loc);
-                        mPassengerRepository.updateDriveCurrentVelocity(driveId, loc.getSpeed());
+                        mCurrentLocation = location;
                     }
+
+                    float distanceDelta = mCurrentLocation.distanceTo(prevLocation);
+                    float timeDelta = Math.abs(mCurrentLocation.getTime() - prevLocation.getTime()) / 1000f;
+                    float speed = 1;
+
+                    if (timeDelta != 0.0f) {
+                        speed = distanceDelta / timeDelta;
+                    }
+
+                    Timber.d("currentSpeed: %f", speed);
+
+                    mPassengerRepository.updateDriveCurrentLocation(driveId, mCurrentLocation);
+                    mPassengerRepository.updateDriveCurrentVelocity(driveId, speed);
                 }
             };
+
             createLocationRequest();
             startLocationUpdates();
 
@@ -180,7 +199,7 @@ public class ForegroundServices extends Service {
 
 
     public LiveData<Location> getUpdatedLocationLiveData() {
-        return mMyLocation;
+        return mMyLocationMutableLiveData;
     }
 
     @SuppressWarnings("MissingPermission")
