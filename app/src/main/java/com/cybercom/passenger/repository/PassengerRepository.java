@@ -303,43 +303,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
 
-                    if(snapshot.hasChild(BOUNDS))
-                    {
-                        Bounds bounds = new Bounds(Double.parseDouble(snapshot.child(BOUNDS).child(NORTHEAST).child(LATITUDE).getValue().toString()),
-                                Double.parseDouble(snapshot.child(BOUNDS).child(NORTHEAST).child(LONGITUDE).getValue().toString()),
-                                Double.parseDouble(snapshot.child(BOUNDS).child(SOUTHWEST).child(LATITUDE).getValue().toString()),
-                                Double.parseDouble(snapshot.child(BOUNDS).child(SOUTHWEST).child(LONGITUDE).getValue().toString()));
-
-                        System.out.println(bounds);
-                        //Check for start position and end position
-                        if(contains(bounds,driveRequest.getStartLocation().getLatitude(),driveRequest.getStartLocation().getLongitude())){
-                            if(contains(bounds,driveRequest.getEndLocation().getLatitude(),driveRequest.getEndLocation().getLongitude()))
-                            {
-                                System.out.println("Match found");
-                            }
-                        }
-
-                        /*sdfs
-
-                        Map<String, Object> neBounds = new HashMap<>();
-                        neBounds.put(LATITUDE, bounds.getNorthEastLatitude());
-                        neBounds.put(LONGITUDE, bounds.getNorthEastLongitude());
-                        Map<String, Object> swBounds = new HashMap<>();
-                        swBounds.put(LATITUDE, bounds.getSouthWestLatitude());
-                        swBounds.put(LONGITUDE, bounds.getSouthWestLongitude());
-                        mDrivesReference.child(driveId).child(BOUNDS).child(SOUTHWEST).setValue(swBounds);
-                        mDrivesReference.child(driveId).child(BOUNDS).child(NORTHEAST).setValue(neBounds);*/
-                    }
-
-
-
-
-
-
                     com.cybercom.passenger.repository.databasemodel.Drive drive = snapshot.getValue(com.cybercom.passenger.repository.databasemodel.Drive.class);
-
-
-
                     if (drive != null && Math.abs(driveRequest.getTime() - drive.getTime()) < DRIVE_REQUEST_MATCH_TIME_THRESHOLD) {
                         Location.distanceBetween(driveRequest.getStartLocation().getLatitude(), driveRequest.getStartLocation().getLongitude(),
                                 drive.getStartLocation().getLatitude(), drive.getStartLocation().getLongitude(), distance);
@@ -351,7 +315,28 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                         if (driveRequest.getDriverIdBlackList().contains(drive.getDriverId()))
                             Timber.i("No match, driver blacklisted: %s", drive.getDriverId());
 
-                        if (distance[0] < DEFAULT_DRIVE_REQUEST_RADIUS * radiusMultiplier && !driveRequest.getDriverIdBlackList().contains(drive.getDriverId())) {
+                        if(snapshot.hasChild(BOUNDS))
+                        {
+                            Bounds bounds = new Bounds(Double.parseDouble(snapshot.child(BOUNDS).child(NORTHEAST).child(LATITUDE).getValue().toString()),
+                                    Double.parseDouble(snapshot.child(BOUNDS).child(NORTHEAST).child(LONGITUDE).getValue().toString()),
+                                    Double.parseDouble(snapshot.child(BOUNDS).child(SOUTHWEST).child(LATITUDE).getValue().toString()),
+                                    Double.parseDouble(snapshot.child(BOUNDS).child(SOUTHWEST).child(LONGITUDE).getValue().toString()));
+
+                            Timber.d(bounds.toString());
+                            //Check for start position and end position
+                            if(contains(bounds,driveRequest.getStartLocation().getLatitude(),driveRequest.getStartLocation().getLongitude())){
+                                if(contains(bounds,driveRequest.getEndLocation().getLatitude(),driveRequest.getEndLocation().getLongitude()))
+                                {
+                                    Timber.d("Match found");
+
+                                    bestMatch = drive;
+                                    bestMatchDriveId = snapshot.getKey();
+                                   // shortestDistance = distance[0];
+                                }
+                            }
+                        }
+
+                        /*if (distance[0] < DEFAULT_DRIVE_REQUEST_RADIUS * radiusMultiplier && !driveRequest.getDriverIdBlackList().contains(drive.getDriverId())) {
                             if (bestMatch == null) {
                                 bestMatch = drive;
                                 bestMatchDriveId = snapshot.getKey();
@@ -361,7 +346,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                                 bestMatchDriveId = snapshot.getKey();
                                 shortestDistance = distance[0];
                             }
-                        }
+                        }*/
                     } else {
                         Timber.d("Drives: Out of time frame!");
                     }
