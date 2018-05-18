@@ -32,6 +32,8 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         toolbar.setTitleTextColor(getResources().getColor(R.color.colorWhite));
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle(R.string.forgot_password_title);
+        toolbar.setTitleTextColor(getResources().getColor(R.color.colorBlue));
+
         mProgressBar = findViewById(R.id.progress_bar);
         mProgressBar.setVisibility(View.GONE);
 
