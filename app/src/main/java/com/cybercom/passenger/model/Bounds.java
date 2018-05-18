@@ -7,6 +7,11 @@ public class Bounds {
     double mSouthWestLatitude;
     double mSouthWestLongitude;
 
+    Bounds()
+    {
+
+    }
+
     public Bounds(double northEastLatitude, double northEastLongitude, double southWestLatitude, double southWestLongitude) {
         mNorthEastLatitude = northEastLatitude;
         mNorthEastLongitude = northEastLongitude;

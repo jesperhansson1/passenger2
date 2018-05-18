@@ -87,18 +87,18 @@ public class ForegroundServices extends Service {
             Bitmap icon = BitmapFactory.decodeResource(getResources(),
                     R.mipmap.ic_launcher);
 
-            Notification notification = new NotificationCompat.Builder(this)
+          /*  Notification notification = new NotificationCompat.Builder(this)
                     .setContentTitle(getString(R.string.passenger))
                     .setTicker(getString(R.string.passenger))
                     .setContentText(getString(R.string.passenger))
                     .setSmallIcon(R.mipmap.ic_launcher)
-                /*    .setLargeIcon(
-                            Bitmap.createScaledBitmap(icon, 128, 128, false))*/
+                    .setLargeIcon(
+                            Bitmap.createScaledBitmap(icon, 128, 128, false))
                     .setContent(notificationView)
                     .setOngoing(true).build();
 
             startForeground(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE,
-                    notification);
+                    notification);*/
         }
         //Uppdatera Passengers position
         //Get Driver Position

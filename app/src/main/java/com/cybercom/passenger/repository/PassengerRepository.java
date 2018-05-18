@@ -270,7 +270,9 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         mDrivesReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                System.out.println("drives " + dataSnapshot);
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+
                     tempDrivesList.add(snapshot.getValue(Drive.class));
                 }
                 drivesList.setValue(tempDrivesList);
@@ -288,6 +290,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
     public LiveData<Drive> findBestRideMatch(final DriveRequest driveRequest, int radiusMultiplier) {
 
+
         final MutableLiveData<Drive> bestDriveMatch = new MutableLiveData<>();
 
         mDrivesReference.addValueEventListener(new ValueEventListener() {
@@ -299,6 +302,40 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                 float[] distance = new float[2];
 
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+
+                    if(snapshot.hasChild(BOUNDS))
+                    {
+                        Bounds bounds = new Bounds(Double.parseDouble(snapshot.child(BOUNDS).child(NORTHEAST).child(LATITUDE).getValue().toString()),
+                                Double.parseDouble(snapshot.child(BOUNDS).child(NORTHEAST).child(LONGITUDE).getValue().toString()),
+                                Double.parseDouble(snapshot.child(BOUNDS).child(SOUTHWEST).child(LATITUDE).getValue().toString()),
+                                Double.parseDouble(snapshot.child(BOUNDS).child(SOUTHWEST).child(LONGITUDE).getValue().toString()));
+
+                        System.out.println(bounds);
+                        //Check for start position and end position
+                        if(contains(bounds,driveRequest.getStartLocation().getLatitude(),driveRequest.getStartLocation().getLongitude())){
+                            if(contains(bounds,driveRequest.getEndLocation().getLatitude(),driveRequest.getEndLocation().getLongitude()))
+                            {
+                                System.out.println("Match found");
+                            }
+                        }
+
+                        /*sdfs
+
+                        Map<String, Object> neBounds = new HashMap<>();
+                        neBounds.put(LATITUDE, bounds.getNorthEastLatitude());
+                        neBounds.put(LONGITUDE, bounds.getNorthEastLongitude());
+                        Map<String, Object> swBounds = new HashMap<>();
+                        swBounds.put(LATITUDE, bounds.getSouthWestLatitude());
+                        swBounds.put(LONGITUDE, bounds.getSouthWestLongitude());
+                        mDrivesReference.child(driveId).child(BOUNDS).child(SOUTHWEST).setValue(swBounds);
+                        mDrivesReference.child(driveId).child(BOUNDS).child(NORTHEAST).setValue(neBounds);*/
+                    }
+
+
+
+
+
+
                     com.cybercom.passenger.repository.databasemodel.Drive drive = snapshot.getValue(com.cybercom.passenger.repository.databasemodel.Drive.class);
 
 
@@ -853,5 +890,42 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     }
 
 
+
+    public boolean contains(Bounds bounds, double latitude, double longitude) {
+        boolean longitudeContained = false;
+        boolean latitudeContained = false;
+
+        double swLongitude = 0.0;
+        double swLatitude = 0.0;
+        double neLongitude = 0.0;
+        double neLatitude = 0.0;
+
+        try {
+            swLongitude = bounds.getSouthWestLongitude();
+            swLatitude = bounds.getSouthWestLatitude();
+            neLongitude = bounds.getNorthEastLongitude();
+            neLatitude = bounds.getNorthEastLatitude();
+        }catch (Exception e)
+        {
+            Timber.e(e.getLocalizedMessage());
+        }
+
+        // Check if the bbox contains the prime meridian (longitude 0.0).
+        if (swLongitude < neLongitude) {
+            if (swLongitude <= longitude && longitude <= neLongitude) {
+                longitudeContained = true;
+            }
+
+        } else if ((0 < longitude && longitude <= neLongitude) ||
+                (swLongitude <= longitude && longitude < 0)) {
+            // Contains prime meridian.
+            longitudeContained = true;
+        }
+
+        if (swLatitude < neLatitude && (swLatitude <= latitude && latitude <= neLatitude)) {
+            latitudeContained = true;
+        }
+        return (longitudeContained && latitudeContained);
+    }
 
 }
