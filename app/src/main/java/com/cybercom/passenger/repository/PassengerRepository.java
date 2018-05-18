@@ -797,16 +797,14 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         MutableLiveData<Position> passengerRidesLiveData =
                 new MutableLiveData<>();
 
-        mPassengerPositionReference.equalTo(userId).addValueEventListener(new ValueEventListener() {
+        mPassengerPositionReference.child(userId).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    Position position = snapshot.getValue(Position.class);
+                    Position position = dataSnapshot.getValue(Position.class);
                     Timber.d("result: %s", position);
                     if (position != null) {
                         passengerRidesLiveData.setValue(position);
                     }
-                }
             }
 
             @Override
