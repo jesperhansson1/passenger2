@@ -315,16 +315,12 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     @SuppressLint("MissingPermission")
-    public LiveData<PassengerRide> createPassengerRide(String driveId, Position startPosition, Position endPosition) {
-        return mPassengerRepository.createPassengerRide(driveId, startPosition, endPosition);
+    public LiveData<PassengerRide> createPassengerRide(Drive drive, Position startPosition, Position endPosition) {
+        return mPassengerRepository.createPassengerRide(drive, startPosition, endPosition);
     }
 
     public void updatePassengerRideCurrentLocation(Location location) {
         mPassengerRepository.updatePassengerRideCurrentLocation(location);
-    }
-
-    public LiveData<Position> getPassengerPositionOnMap() {
-        return mPassengerRepository.getPassengerPositionOnMap();
     }
 
     public LiveData<PassengerRide> getPassengerRides(String driveId) {
