@@ -535,6 +535,16 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+    private void reRoute(LatLng origin, LatLng destination, LatLng viaStart, LatLng viaEnd)
+    {
+        if (mRoute != null) {
+            mRoute.remove();
+        }
+
+        new FetchRouteUrl(mGoogleMap, origin, destination, viaStart, viaEnd, this);
+
+    }
+
     private void zoomToFitRoute() {
         final Handler handler = new Handler();
        //handler.postDelayed(() -> {
