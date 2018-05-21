@@ -12,7 +12,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
@@ -59,7 +58,6 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
@@ -89,7 +87,7 @@ public class MainActivity extends AppCompatActivity implements
         FindingCarProgressDialog.FindingCarListener, GoogleMap.OnMyLocationButtonClickListener,
         NoMatchFragment.NoMatchButtonListener, FragmentSizeListener, OnCompleteListener<Void>,
         DriverPassengerPickUpFragment.DriverPassengerPickUpButtonClickListener,
-        DriverDropOffFragment.DriverDropOffConfirmationListener{
+        DriverDropOffFragment.DriverDropOffConfirmationListener {
 
     private static final float ZOOM_LEVEL_STREETS = 15;
 
@@ -142,11 +140,7 @@ public class MainActivity extends AppCompatActivity implements
     // private LocalReceiver mServiceReceiver;
     private GeofenceBroadcastReceiver mGeofenceEventsReceiver;
 
-    LatLng mDock = new LatLng(55.614256, 12.989117);
-    LatLng mSomethingElse = new LatLng(52.43425, 12.00000);
     private User mCurrentLoggedInUser;
-
-
 
 
     @Override
@@ -241,13 +235,13 @@ public class MainActivity extends AppCompatActivity implements
 
     private void updatePassengersMarkerPosition(String driveId) {
         mMainViewModel.getPassengerRides(driveId).observe(
-            this, passengerRide -> {
-                if (passengerRide == null) {
-                    return;
-                }
+                this, passengerRide -> {
+                    if (passengerRide == null) {
+                        return;
+                    }
 
-                observePassengersPosition(passengerRide.getPassenger().getUserId());
-            });
+                    observePassengersPosition(passengerRide.getPassenger().getUserId());
+                });
     }
 
     private void observePassengersPosition(final String passengerId) {
@@ -533,17 +527,16 @@ public class MainActivity extends AppCompatActivity implements
         boolean coarseLocationNotGranted = ActivityCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED;
 
-
         if (fineLocationNotGranted && coarseLocationNotGranted) {
             ActivityCompat.requestPermissions(this,
                     new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                     MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
             return;
         }
-        initUI();
-        mGoogleMap.setMyLocationEnabled(true);
 
-        mGoogleMap.addCircle(new CircleOptions().center(mDock).radius(GEOFENCE_RADIUS).fillColor(Color.RED));
+        initUI();
+
+        mGoogleMap.setMyLocationEnabled(true);
 
         placeEndLocationMarker();
 
@@ -1025,6 +1018,8 @@ public class MainActivity extends AppCompatActivity implements
                         geoFenceType.equals(GEOFENCE_TYPE_DROP_OFF)) {
                     showDriverDropOffFragment(getPassengerRideFromLocalList(passengerRideId));
                 }
+
+                removeGeofence(geofenceRequestId);
             }
         }
     }

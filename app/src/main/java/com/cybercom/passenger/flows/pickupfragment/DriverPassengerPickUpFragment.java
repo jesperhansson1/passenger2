@@ -126,11 +126,11 @@ public class DriverPassengerPickUpFragment extends Fragment implements View.OnCl
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
-            case R.id.fragment_driver_drop_off_button_confirm: {
+            case R.id.fragment_driver_passenger_pick_up_confirmation_button: {
                 mDriverPassengerPickUpButtonClickListener.onPickUpConfirmed(mPassengerRide);
                 break;
             }
-            case R.id.fragment_driver_drop_of_button_no_show: {
+            case R.id.fragment_driver_passenger_pick_up_no_show_button: {
                 mDriverPassengerPickUpButtonClickListener.onPickUpNoShow(mPassengerRide);
                 break;
             }
