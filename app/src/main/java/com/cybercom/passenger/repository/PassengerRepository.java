@@ -844,6 +844,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                         passengerRidesLiveData.setValue(new com.cybercom.passenger.model.PassengerRide(
                                 snapshot.getKey(), passengerRide.getDriveId(),
                                 passengerRide.getPassengerId(), passengerRide.getPosition()));
+
+                        //add here for rerouting
                     }
                 }
             }
