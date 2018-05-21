@@ -49,7 +49,7 @@ public class CarDetailActivity extends AppCompatActivity {
     private String mApiToken;
     private String mApiUrl;
     private CarDetailViewModel mCarDetailViewModel;
-    LifecycleOwner myLife;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,7 +66,7 @@ public class CarDetailActivity extends AppCompatActivity {
         mApiToken = getResources().getString(R.string.car_api_token);
         mApiUrl = getResources().getString(R.string.car_base_url);
         mCarDetailViewModel = ViewModelProviders.of(this).get(CarDetailViewModel.class);
-        myLife = this;
+
     }
 
     @Override
@@ -168,7 +168,7 @@ public class CarDetailActivity extends AppCompatActivity {
         }
     }
 
-    /*private void getDetails(String url, String regNumber) {
+    private void getDetails(String url, String regNumber) {
         mCarDetailViewModel.setUrl(url, regNumber);
 
         mCarDetailViewModel.getCarLiveData().observe(this, car -> {
@@ -178,9 +178,9 @@ public class CarDetailActivity extends AppCompatActivity {
                 mEditTextCarColor.setText(car.getColor());
             }
         });
-    }*/
+    }
 
-    public void getDetails(String url, String regno)
+   /* public void getDetails(String url, String regno)
     {
         mCarDetailViewModel.setUrl(url, regno);
 
@@ -193,6 +193,6 @@ public class CarDetailActivity extends AppCompatActivity {
                 mEditTextCarColor.setText(car.getColor());
             }
         });
-    }
+    }*/
 
 }
