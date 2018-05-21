@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
@@ -58,6 +59,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
@@ -96,17 +98,12 @@ public class MainActivity extends AppCompatActivity implements
     private static final int ZOOM_LEVEL_MY_LOCATION = 17;
     private static final String DRIVE_ID = "driveId";
     private static final String PASSENGER_RIDE_KEY = "passengerRideKey";
-    public static final String INTENT_FILTER_DIALOG_LOCAL_BROADCAST = "DIALOG_LOCAL_BROADCAST";
-    public static final String BROADCAST_PASSENGER_RIDE = "PASSENGER_RIDE";
-    public static final int PASSENGER_PICK_UP = 1;
-    public static final String DIALOG_TYPE = "DIALOG_TYPE";
-    public static final int PASSENGER_DROP_OFF = 2;
     public static final int GEOFENCE_RADIUS = 50;
     public static final int GEOFENCE_TIME_OUT = 1000 * 60 * 60 * 24;
     public static final String GEOFENCE_EVENTS_INTENT_FILTER = "GEOFENCE_EVENTS";
     public static final String GEOFENCE_EVENTS_REQUEST_ID = "GEOFENCE_EVENTS_REQUEST_ID";
-    public static final String GEOFENCE_TYPE_PICK_UP = "1";
-    public static final String GEOFENCE_TYPE_DROP_OFF = "2";
+    private static final String GEOFENCE_TYPE_PICK_UP = "1";
+    private static final String GEOFENCE_TYPE_DROP_OFF = "2";
 
     private FirebaseUser mUser;
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 0;
@@ -143,8 +140,11 @@ public class MainActivity extends AppCompatActivity implements
     // private LocalReceiver mServiceReceiver;
     private GeofenceBroadcastReceiver mGeofenceEventsReceiver;
 
-    LatLng mDock = new LatLng(55.614651, 12.989797);
+    LatLng mDock = new LatLng(55.614256, 12.989117);
+    LatLng mSomethingElse = new LatLng(52.43425, 12.00000);
     private User mCurrentLoggedInUser;
+
+
 
 
     @Override
@@ -200,7 +200,7 @@ public class MainActivity extends AppCompatActivity implements
         mGeofencePendingIntent = null;
     }
 
-    private void initiateGeofences(PassengerRide passengerRide) {
+    private void createGeofence(PassengerRide passengerRide) {
         addGeofenceToList(passengerRide);
         addGeofences();
     }
@@ -552,6 +552,8 @@ public class MainActivity extends AppCompatActivity implements
         initUI();
         mGoogleMap.setMyLocationEnabled(true);
 
+        mGoogleMap.addCircle(new CircleOptions().center(mDock).radius(GEOFENCE_RADIUS).fillColor(Color.RED));
+
         placeEndLocationMarker();
 
         if (!mMainViewModel.isInitialZoomDone()) {
@@ -719,7 +721,9 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onMapClick(LatLng latLng) {
+
         mCreateDriveFragment.hideCreateDialog();
+
     }
 
     @Override
@@ -929,7 +933,7 @@ public class MainActivity extends AppCompatActivity implements
     private void addGeofenceToList(PassengerRide passengerRide) {
         // Add pick up geoFence
         mGeofenceList.add(new Geofence.Builder()
-                .setRequestId(passengerRide.getId() + GEOFENCE_TYPE_PICK_UP)
+                .setRequestId(passengerRide.getId() + GEOFENCE_TYPE_DROP_OFF)
                 .setCircularRegion(
                         passengerRide.getPickUpPosition().getLatitude(),
                         passengerRide.getPickUpPosition().getLongitude(),
@@ -941,7 +945,7 @@ public class MainActivity extends AppCompatActivity implements
 
         // Add drop off geoFence
         mGeofenceList.add(new Geofence.Builder()
-                .setRequestId(passengerRide.getId() + GEOFENCE_TYPE_DROP_OFF)
+                .setRequestId(passengerRide.getId() + GEOFENCE_TYPE_PICK_UP)
                 .setCircularRegion(
                         passengerRide.getDropOffPosition().getLatitude(),
                         passengerRide.getDropOffPosition().getLongitude(),
@@ -1070,21 +1074,21 @@ public class MainActivity extends AppCompatActivity implements
 
     private void showDriverPickUpFragment(PassengerRide passengerRide) {
         mFragmentManager.beginTransaction().add(R.id.main_activity_dialog_container,
-                DriverPassengerPickUpFragment.newInstance()).commit();
+                DriverPassengerPickUpFragment.newInstance(passengerRide)).commit();
     }
 
     private void showPassengerPickUpFragment(PassengerRide passengerRide) {
         mFragmentManager.beginTransaction().add(R.id.main_activity_dialog_container,
-                DriverPassengerPickUpFragment.newInstance()).commit();
+                DriverPassengerPickUpFragment.newInstance(passengerRide)).commit();
     }
 
     private void showDriverDropOffFragment(PassengerRide passengerRide) {
         mFragmentManager.beginTransaction().add(R.id.main_activity_dialog_container,
-                DriverDropOffFragment.newInstance()).commit();
+                DriverDropOffFragment.newInstance(passengerRide)).commit();
     }
 
     private PassengerRide getPassengerRideFromLocalList(String passengerRideId) {
-        // TODO: Loop through passengerRideList and find passenger ride
+        // TODO: Loop through local passengerRide list to find passengerRide that fired the geofence
         return null;
     }
 }
