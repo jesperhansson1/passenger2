@@ -49,7 +49,6 @@ public class CarDetailActivity extends AppCompatActivity {
     private String mApiToken;
     private String mApiUrl;
     private CarDetailViewModel mCarDetailViewModel;
-    LifecycleOwner myLife;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,7 +67,6 @@ public class CarDetailActivity extends AppCompatActivity {
         mApiToken = getResources().getString(R.string.car_api_token);
         mApiUrl = getResources().getString(R.string.car_base_url);
         mCarDetailViewModel = ViewModelProviders.of(this).get(CarDetailViewModel.class);
-        myLife = this;
     }
 
     @Override
@@ -174,7 +172,7 @@ public class CarDetailActivity extends AppCompatActivity {
     {
         mCarDetailViewModel.setUrl(url, regno);
 
-        mCarDetailViewModel.getCarLiveData().observe(myLife, new Observer<Car>() {
+        mCarDetailViewModel.getCarLiveData().observe(this, new Observer<Car>() {
 
             @Override
             public void onChanged(@Nullable Car car) {
