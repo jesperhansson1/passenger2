@@ -54,6 +54,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private static final String REFERENCE_PASSENGER_POSITION = "passengerPosition";
 
     private static final String DRIVE_ID = "driveId";
+    public static final String DRIVER_ID = "driverId";
 
     private static final int DRIVE_REQUEST_MATCH_TIME_THRESHOLD = 15 * 60 * 60 * 1000;
     private static final String NOTIFICATION_TYPE_KEY = "type";
@@ -874,4 +875,42 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         return passengerRidesLiveData;
     }
 
+    public LiveData<String> getActiveDriveId() {
+        MutableLiveData<String> driveIdMutableLiveData = new MutableLiveData<>();
+
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (firebaseUser == null) {
+            // TODO: Not logged in...
+            return null;
+        }
+
+        mUsersReference.child(firebaseUser.getUid()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                mCurrentlyLoggedInUser = dataSnapshot.getValue(User.class);
+                if (mCurrentlyLoggedInUser != null) {
+                    mDrivesReference.orderByChild(DRIVER_ID).equalTo(mCurrentlyLoggedInUser.getUserId()).
+                        addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                    driveIdMutableLiveData.setValue(snapshot.getKey());
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+                            }
+                        });
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        return driveIdMutableLiveData;
+    }
 }

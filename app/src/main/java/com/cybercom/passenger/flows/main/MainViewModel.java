@@ -319,10 +319,6 @@ public class MainViewModel extends AndroidViewModel {
         return mPassengerRepository.createPassengerRide(drive, startPosition, endPosition);
     }
 
-    public void updatePassengerRideCurrentLocation(Location location) {
-        mPassengerRepository.updatePassengerRideCurrentLocation(location);
-    }
-
     public LiveData<PassengerRide> getPassengerRides(String driveId) {
         return mPassengerRepository.getPassengerRides(driveId);
     }
@@ -345,5 +341,9 @@ public class MainViewModel extends AndroidViewModel {
 
     public LiveData<Position> getPassengerPosition(String driveId) {
         return mPassengerRepository.getPassengerPosition(driveId);
+    }
+
+    public LiveData<String> getActiveDriveId() {
+        return mPassengerRepository.getActiveDriveId();
     }
 }
