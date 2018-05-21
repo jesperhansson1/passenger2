@@ -108,7 +108,7 @@ public class ForegroundServices extends Service {
             Bitmap icon = BitmapFactory.decodeResource(getResources(),
                     R.mipmap.ic_launcher);
 
-          /*  Notification notification = new NotificationCompat.Builder(this)
+            Notification notification = new NotificationCompat.Builder(this)
                     .setContentTitle(getString(R.string.passenger))
                     .setTicker(getString(R.string.passenger))
                     .setContentText(getString(R.string.passenger))
@@ -119,7 +119,7 @@ public class ForegroundServices extends Service {
                     .setOngoing(true).build();
 
             startForeground(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE,
-                    notification);*/
+                    notification);
         }
 
         //Uppdatera Passengers position
