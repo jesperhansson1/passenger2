@@ -1,6 +1,8 @@
 package com.cybercom.passenger.flows.main;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.PendingIntent;
 import android.arch.lifecycle.LifecycleOwner;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
@@ -44,7 +46,12 @@ import com.cybercom.passenger.route.FetchRouteUrl;
 import com.cybercom.passenger.route.ParserTask;
 import com.cybercom.passenger.service.Constants;
 import com.cybercom.passenger.service.ForegroundServices;
+import com.cybercom.passenger.service.GeofenceTransitionsIntentService;
 import com.cybercom.passenger.utils.LocationHelper;
+import com.google.android.gms.location.Geofence;
+import com.google.android.gms.location.GeofencingClient;
+import com.google.android.gms.location.GeofencingRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -56,11 +63,15 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.iid.FirebaseInstanceId;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
@@ -74,7 +85,7 @@ public class MainActivity extends AppCompatActivity implements
         CreateDriveFragment.OnPlaceMarkerIconClickListener, ParserTask.OnRouteCompletion,
         CreateDriveFragment.OnFinishedCreatingDriveOrDriveRequest,
         FindingCarProgressDialog.FindingCarListener, GoogleMap.OnMyLocationButtonClickListener,
-        NoMatchFragment.NoMatchButtonListener, FragmentSizeListener {
+        NoMatchFragment.NoMatchButtonListener, FragmentSizeListener, OnCompleteListener<Void> {
 
     private static final float ZOOM_LEVEL_STREETS = 15;
 
@@ -90,6 +101,12 @@ public class MainActivity extends AppCompatActivity implements
     public static final int PASSENGER_PICK_UP = 1;
     public static final String DIALOG_TYPE = "DIALOG_TYPE";
     public static final int PASSENGER_DROP_OFF = 2;
+    public static final int GEOFENCE_RADIUS = 50;
+    public static final int GEOFENCE_TIME_OUT = 1000 * 60 * 60 * 24;
+    public static final String GEOFENCE_EVENTS_INTENT_FILTER = "GEOFENCE_EVENTS";
+    public static final String GEOFENCE_EVENTS_REQUEST_ID = "GEOFENCE_EVENTS_REQUEST_ID";
+    public static final String GEOFENCE_TYPE_PICK_UP = "1";
+    public static final String GEOFENCE_TYPE_DROP_OFF = "2";
 
     private FirebaseUser mUser;
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 0;
@@ -119,7 +136,15 @@ public class MainActivity extends AppCompatActivity implements
     private NoMatchFragment mNoMatchFragment;
     private boolean mCountMarker = true;
 
-    private LocalReceiver serviceReceiver;
+    private GeofencingClient mGeofencingClient;
+    private List<Geofence> mGeofenceList;
+    private PendingIntent mGeofencePendingIntent;
+
+    // private LocalReceiver mServiceReceiver;
+    private GeofenceBroadcastReceiver mGeofenceEventsReceiver;
+
+    LatLng mDock = new LatLng(55.614651, 12.989797);
+    private User mCurrentLoggedInUser;
 
 
     @Override
@@ -132,7 +157,9 @@ public class MainActivity extends AppCompatActivity implements
         mMainViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
         mFragmentManager = getSupportFragmentManager();
 
-        serviceReceiver = new LocalReceiver();
+        //  mServiceReceiver = new LocalReceiver();
+        mGeofenceEventsReceiver = new GeofenceBroadcastReceiver();
+        mGeofenceEventsReceiver = new GeofenceBroadcastReceiver();
 
         if (savedInstanceState == null) {
             if (getIntent().getExtras() != null) {
@@ -141,11 +168,15 @@ public class MainActivity extends AppCompatActivity implements
                 }
             }
         }
+
         mUser = FirebaseAuth.getInstance().getCurrentUser();
 
         if (mUser != null) {
             mMainViewModel.refreshToken(FirebaseInstanceId.getInstance().getToken());
-            mMainViewModel.getUser().observe(this, user -> Timber.i("User: %s logged in", user));
+            mMainViewModel.getUser().observe(this, user -> {
+                Timber.i("User: %s logged in", user);
+                mCurrentLoggedInUser = user;
+            });
         } else {
             if (getSupportActionBar() != null) {
                 getSupportActionBar().setTitle(R.string.mainactivity_title);
@@ -163,6 +194,17 @@ public class MainActivity extends AppCompatActivity implements
         initObservers();
     }
 
+    private void setUpGeofencing() {
+        mGeofencingClient = LocationServices.getGeofencingClient(this);
+        mGeofenceList = new ArrayList<>();
+        mGeofencePendingIntent = null;
+    }
+
+    private void initiateGeofences(PassengerRide passengerRide) {
+        addGeofenceToList(passengerRide);
+        addGeofences();
+    }
+
     /*private void sendDriverPositionToDB(String driveId) {
         mMainViewModel.startLocationUpdates();
         mMainViewModel.getUpdatedLocationLiveData().observe(this, location -> {
@@ -175,10 +217,12 @@ public class MainActivity extends AppCompatActivity implements
         mMainViewModel.createPassengerRide(driveId, startPosition, endPosition).observe(this, passengerRide -> {
             Intent updatePassengerIntent = new Intent(MainActivity.this, ForegroundServices.class);
             updatePassengerIntent.setAction(Constants.ACTION.STARTFOREGROUND_UPDATE_PASSENGER_POSITION);
-            updatePassengerIntent.putExtra(PASSENGER_RIDE_KEY, passengerRide.getId());
+            if (passengerRide != null) {
+                updatePassengerIntent.putExtra(PASSENGER_RIDE_KEY, passengerRide.getId());
+            }
             startService(updatePassengerIntent);
-            });
-        }
+        });
+    }
 
     private void updateDriversMarkerPosition(String driveId) {
         mMainViewModel.getDriverPosition(driveId).observe(this, position -> {
@@ -204,14 +248,14 @@ public class MainActivity extends AppCompatActivity implements
         });
     }
 
-    private void updatePassengersMarkerPosition(String driveId){
+    private void updatePassengersMarkerPosition(String driveId) {
         mMainViewModel.getPassengerRides(driveId).observe(
-            this, passengerRide -> {
-                if (passengerRide == null) {
-                    return;
-                }
-                observePassengersPosition(passengerRide.getPassegnerId());
-            });
+                this, passengerRide -> {
+                    if (passengerRide == null) {
+                        return;
+                    }
+                    observePassengersPosition(passengerRide.getPassegnerId());
+                });
     }
 
     private void observePassengersPosition(final String passengerId) {
@@ -268,7 +312,6 @@ public class MainActivity extends AppCompatActivity implements
 
     // TODO Only start this when drive is started
 
-
         /*
         if (mLocation == null) {
             // Permission not granted to access user location
@@ -285,11 +328,11 @@ public class MainActivity extends AppCompatActivity implements
                         mMainViewModel.getStartMarkerLocation().getValue().getLongitude());
 
                 mStartLocationMarker = mGoogleMap.addMarker(new MarkerOptions()
-                                .position(startLatLng)
-                                .title(getString(R.string.marker_title_start_location))
-                                .icon(BitmapDescriptorFactory.fromResource(
-                                        R.drawable.map_marker_start))
-                                .draggable(true));
+                        .position(startLatLng)
+                        .title(getString(R.string.marker_title_start_location))
+                        .icon(BitmapDescriptorFactory.fromResource(
+                                R.drawable.map_marker_start))
+                        .draggable(true));
                 animateToLocation(startLatLng);
 
                 mMarkerCount++;
@@ -555,21 +598,21 @@ public class MainActivity extends AppCompatActivity implements
 
     private void zoomToFitRoute() {
         final Handler handler = new Handler();
-       //handler.postDelayed(() -> {
-            LatLngBounds.Builder builder = new LatLngBounds.Builder();
-            builder.include(mStartLocationMarker.getPosition());
-            builder.include(mEndLocationMarker.getPosition());
-            LatLngBounds bounds = builder.build();
+        //handler.postDelayed(() -> {
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        builder.include(mStartLocationMarker.getPosition());
+        builder.include(mEndLocationMarker.getPosition());
+        LatLngBounds bounds = builder.build();
 
-            int width = getResources().getDisplayMetrics().widthPixels;
-            int height = getResources().getDisplayMetrics().heightPixels;
-            int padding = (int) (height * 0.15);
+        int width = getResources().getDisplayMetrics().widthPixels;
+        int height = getResources().getDisplayMetrics().heightPixels;
+        int padding = (int) (height * 0.15);
 
-            CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds, width, height,
-                    padding);
+        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds, width, height,
+                padding);
 
-            mGoogleMap.animateCamera(cameraUpdate);
-       // }, DELAY_BEFORE_ZOOM_TO_FIT_ROUTE);
+        mGoogleMap.animateCamera(cameraUpdate);
+        // }, DELAY_BEFORE_ZOOM_TO_FIT_ROUTE);
 
     }
 
@@ -628,6 +671,8 @@ public class MainActivity extends AppCompatActivity implements
         if (isAccepted) {
             mMainViewModel.sendAcceptPassengerNotification(notification.getDrive(),
                     notification.getDriveRequest());
+            setUpGeofencing();
+
         } else {
             mMainViewModel.sendRejectPassengerNotification(notification.getDrive(),
                     notification.getDriveRequest());
@@ -724,7 +769,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode,@NonNull String permissions[],
+    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[],
                                            @NonNull int[] grantResults) {
         switch (requestCode) {
             case MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION: {
@@ -778,28 +823,28 @@ public class MainActivity extends AppCompatActivity implements
             case User.TYPE_DRIVER:
                 mMainViewModel.createDrive(time, startLocation, endLocation, seats).observe(this,
                         drive -> {
-                    if (drive != null) {
-                        Intent UpdateDriveIntent = new Intent(MainActivity.this, ForegroundServices.class);
-                        UpdateDriveIntent.setAction(Constants.ACTION.STARTFOREGROUND_UPDATE_DRIVER_POSITION);
-                        UpdateDriveIntent.putExtra(DRIVE_ID, drive.getId());
-                        startService(UpdateDriveIntent);
+                            if (drive != null) {
+                                Intent UpdateDriveIntent = new Intent(MainActivity.this, ForegroundServices.class);
+                                UpdateDriveIntent.setAction(Constants.ACTION.STARTFOREGROUND_UPDATE_DRIVER_POSITION);
+                                UpdateDriveIntent.putExtra(DRIVE_ID, drive.getId());
+                                startService(UpdateDriveIntent);
                         /*sendDriverPositionToDB(drive.getId());
                         updatePassengersMarkerPosition(drive.getId());
                         Timber.i("Drive created: %s", drive.getId());*/
-                        mCreateDriveFragment.setDefaultValuesToDialog();
-                    }
-                });
+                                mCreateDriveFragment.setDefaultValuesToDialog();
+                            }
+                        });
                 break;
             case User.TYPE_PASSENGER:
                 mMainViewModel.createDriveRequest(time, startLocation, endLocation, seats).observe(
                         this, driveRequest -> {
-                    mMainViewModel.setDriveRequestRadiusMultiplier(
-                            MainViewModel.DRIVE_REQUEST_DEFAULT_MULTIPLIER);
-                    Timber.i("DriveRequest : %s", driveRequest);
-                    matchDriveRequest(driveRequest,
-                            mMainViewModel.getDriveRequestRadiusMultiplier());
-                    mCreateDriveFragment.setDefaultValuesToDialog();
-                });
+                            mMainViewModel.setDriveRequestRadiusMultiplier(
+                                    MainViewModel.DRIVE_REQUEST_DEFAULT_MULTIPLIER);
+                            Timber.i("DriveRequest : %s", driveRequest);
+                            matchDriveRequest(driveRequest,
+                                    mMainViewModel.getDriveRequestRadiusMultiplier());
+                            mCreateDriveFragment.setDefaultValuesToDialog();
+                        });
                 break;
         }
     }
@@ -842,7 +887,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onHeightChanged(int fragmentHeight) {
-        mGoogleMap.setPadding(0,0,0,fragmentHeight);
+        mGoogleMap.setPadding(0, 0, 0, fragmentHeight);
         if (mMarkerCount == 1) {
             animateToLocation(mStartLocationMarker.getPosition());
         } else {
@@ -853,17 +898,121 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onPause() {
         super.onPause();
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(serviceReceiver);
+        //LocalBroadcastManager.getInstance(this).unregisterReceiver(mServiceReceiver);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mGeofenceEventsReceiver);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        IntentFilter filter = new IntentFilter(INTENT_FILTER_DIALOG_LOCAL_BROADCAST);
-        LocalBroadcastManager.getInstance(this).registerReceiver(serviceReceiver,filter);
+        //  IntentFilter filter = new IntentFilter(INTENT_FILTER_DIALOG_LOCAL_BROADCAST);
+        // LocalBroadcastManager.getInstance(this).registerReceiver(mServiceReceiver,filter);
+        IntentFilter filter = new IntentFilter(GEOFENCE_EVENTS_INTENT_FILTER);
+        LocalBroadcastManager.getInstance(this).registerReceiver(mGeofenceEventsReceiver, filter);
     }
 
-    private class LocalReceiver extends BroadcastReceiver {
+    private void addGeofenceToList() {
+
+        mGeofenceList.add(new Geofence.Builder()
+                .setRequestId("123456")
+                .setCircularRegion(
+                        mDock.latitude,
+                        mDock.longitude,
+                        GEOFENCE_RADIUS
+                )
+                .setExpirationDuration(GEOFENCE_TIME_OUT)
+                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
+                .build());
+
+
+    }
+
+    private void addGeofenceToList(PassengerRide passengerRide) {
+        // Add pick up geoFence
+        mGeofenceList.add(new Geofence.Builder()
+                .setRequestId(passengerRide.getId() + GEOFENCE_TYPE_PICK_UP)
+                .setCircularRegion(
+                        passengerRide.getPickUpPosition().getLatitude(),
+                        passengerRide.getPickUpPosition().getLongitude(),
+                        GEOFENCE_RADIUS
+                )
+                .setExpirationDuration(GEOFENCE_TIME_OUT)
+                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
+                .build());
+
+        // Add drop off geoFence
+        mGeofenceList.add(new Geofence.Builder()
+                .setRequestId(passengerRide.getId() + GEOFENCE_TYPE_DROP_OFF)
+                .setCircularRegion(
+                        passengerRide.getDropOffPosition().getLatitude(),
+                        passengerRide.getDropOffPosition().getLongitude(),
+                        GEOFENCE_RADIUS
+                )
+                .setExpirationDuration(GEOFENCE_TIME_OUT)
+                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
+                .build());
+    }
+
+    private GeofencingRequest getGeofencingRequest() {
+        GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
+        builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
+        builder.addGeofences(mGeofenceList);
+        return builder.build();
+    }
+
+    private PendingIntent getGeofencePendingIntent() {
+        if (mGeofencePendingIntent != null) {
+            return mGeofencePendingIntent;
+        }
+        Intent intent = new Intent(this, GeofenceTransitionsIntentService.class);
+
+        return PendingIntent.getService(this, 0, intent, PendingIntent.
+                FLAG_UPDATE_CURRENT);
+    }
+
+
+    @SuppressLint("MissingPermission")
+    private void addGeofences() {
+        mGeofencingClient.addGeofences(getGeofencingRequest(), getGeofencePendingIntent())
+                .addOnCompleteListener(this);
+    }
+
+    private void removeGeofence(String requestId) {
+        int geoFenceIdToRemove = 0;
+        String geoFenceRequestIdToRemove = null;
+        for (int i = 0; i < mGeofenceList.size(); i++) {
+            if (mGeofenceList.get(i).getRequestId().equals(requestId)) {
+                geoFenceIdToRemove = i;
+                geoFenceRequestIdToRemove = mGeofenceList.get(i).getRequestId();
+            }
+        }
+        mGeofenceList.remove(geoFenceIdToRemove);
+
+        // Remove pending intent
+        if (mGeofencingClient != null) {
+            List<String> geoFencePendingIntentToRemove = new ArrayList<>();
+            geoFencePendingIntentToRemove.add(geoFenceRequestIdToRemove);
+            mGeofencingClient.removeGeofences(geoFencePendingIntentToRemove)
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            Timber.i("Geofence is removed");
+                        } else {
+                            Timber.e("Couldn't remove geofence: %s", task.getException());
+                        }
+                    });
+        }
+    }
+
+    @Override
+    public void onComplete(@NonNull Task<Void> task) {
+        if (task.isSuccessful()) {
+            Timber.i("Geofences is added");
+        } else {
+            Timber.e("Couldn't add geofences: %s", task.getException());
+        }
+    }
+
+   /* private class LocalReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
 
@@ -883,5 +1032,60 @@ public class MainActivity extends AppCompatActivity implements
                 }
             }
         }
+    }*/
+
+    private class GeofenceBroadcastReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getExtras() != null) {
+                Timber.i("onReceive RequestId: %s ", intent.getExtras()
+                        .get(GEOFENCE_EVENTS_REQUEST_ID));
+
+                String geofenceRequestId = intent.getExtras()
+                        .getString(GEOFENCE_EVENTS_REQUEST_ID);
+                String passengerRideId = null;
+                String geoFenceType = null;
+
+                if (geofenceRequestId != null) {
+                    passengerRideId
+                            = geofenceRequestId.substring(0, geofenceRequestId.length() - 1);
+                    geoFenceType
+                            = geofenceRequestId.substring(geofenceRequestId.length() - 1);
+                }
+
+                if (geofenceRequestId != null
+                        && geoFenceType.equals(GEOFENCE_TYPE_PICK_UP)) {
+                    if (mCurrentLoggedInUser.getType() == User.TYPE_DRIVER) {
+                        showDriverPickUpFragment(getPassengerRideFromLocalList(passengerRideId));
+                    } else if (mCurrentLoggedInUser.getType() == User.TYPE_PASSENGER) {
+                        showPassengerPickUpFragment(getPassengerRideFromLocalList(passengerRideId));
+                    }
+                } else if (geofenceRequestId != null &&
+                        geoFenceType.equals(GEOFENCE_TYPE_DROP_OFF)) {
+                    showDriverDropOffFragment(getPassengerRideFromLocalList(passengerRideId));
+                }
+            }
+        }
+    }
+
+    private void showDriverPickUpFragment(PassengerRide passengerRide) {
+        mFragmentManager.beginTransaction().add(R.id.main_activity_dialog_container,
+                DriverPassengerPickUpFragment.newInstance()).commit();
+    }
+
+    private void showPassengerPickUpFragment(PassengerRide passengerRide) {
+        mFragmentManager.beginTransaction().add(R.id.main_activity_dialog_container,
+                DriverPassengerPickUpFragment.newInstance()).commit();
+    }
+
+    private void showDriverDropOffFragment(PassengerRide passengerRide) {
+        mFragmentManager.beginTransaction().add(R.id.main_activity_dialog_container,
+                DriverDropOffFragment.newInstance()).commit();
+    }
+
+    private PassengerRide getPassengerRideFromLocalList(String passengerRideId) {
+        // TODO: Loop through passengerRideList and find passenger ride
+        return null;
     }
 }
