@@ -85,7 +85,7 @@
     </android.support.v7.widget.CardView>
 
     <Button
-        android:id="@+id/fragment_driver_drop_of_button_no_show"
+        android:id="@+id/fragment_driver_drop_off_button_cancel"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/activity_margin"

@@ -87,7 +87,9 @@ public class MainActivity extends AppCompatActivity implements
         CreateDriveFragment.OnPlaceMarkerIconClickListener, ParserTask.OnRouteCompletion,
         CreateDriveFragment.OnFinishedCreatingDriveOrDriveRequest,
         FindingCarProgressDialog.FindingCarListener, GoogleMap.OnMyLocationButtonClickListener,
-        NoMatchFragment.NoMatchButtonListener, FragmentSizeListener, OnCompleteListener<Void> {
+        NoMatchFragment.NoMatchButtonListener, FragmentSizeListener, OnCompleteListener<Void>,
+        DriverPassengerPickUpFragment.DriverPassengerPickUpButtonClickListener,
+        DriverDropOffFragment.DriverDropOffConfirmationListener{
 
     private static final float ZOOM_LEVEL_STREETS = 15;
 
@@ -708,9 +710,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onMapClick(LatLng latLng) {
-
         mCreateDriveFragment.hideCreateDialog();
-
     }
 
     @Override
@@ -994,28 +994,6 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-   /* private class LocalReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-
-            if(getIntent().getExtras() != null){
-                switch(getIntent().getExtras().getInt(DIALOG_TYPE)){
-                    case PASSENGER_PICK_UP:{
-                        mFragmentManager.beginTransaction().add(R.id.main_activity_dialog_container,
-                                DriverPassengerPickUpFragment.newInstance((PassengerRide)
-                                        intent.getSerializableExtra(BROADCAST_PASSENGER_RIDE))).commit();
-                        break;
-                    }
-                    case PASSENGER_DROP_OFF:{
-                        mFragmentManager.beginTransaction().add(R.id.main_activity_dialog_container,
-                                DriverDropOffFragment.newInstance()).commit();
-                        break;
-                    }
-                }
-            }
-        }
-    }*/
-
     private class GeofenceBroadcastReceiver extends BroadcastReceiver {
 
         @Override
@@ -1069,5 +1047,25 @@ public class MainActivity extends AppCompatActivity implements
     private PassengerRide getPassengerRideFromLocalList(String passengerRideId) {
         // TODO: Loop through local passengerRide list to find passengerRide that fired the geofence
         return null;
+    }
+
+    @Override
+    public void onPickUpConfirmed(PassengerRide passengerRide) {
+
+    }
+
+    @Override
+    public void onPickUpNoShow(PassengerRide passengerRide) {
+
+    }
+
+    @Override
+    public void onDropOffConfirmation(PassengerRide passengerRide) {
+
+    }
+
+    @Override
+    public void onDropOffCanceled(PassengerRide passengerRide) {
+
     }
 }

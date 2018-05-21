@@ -17,14 +17,23 @@ import com.cybercom.passenger.R;
 import com.cybercom.passenger.interfaces.FragmentSizeListener;
 import com.cybercom.passenger.model.PassengerRide;
 
-public class DriverPassengerPickUpFragment extends Fragment {
+public class DriverPassengerPickUpFragment extends Fragment implements View.OnClickListener {
 
     public static final String PASSENGER_RIDE_KEY = "PASSENGER";
     public static final int TIME_BEFORE_PASSENGER_NEEDS_TO_COME_TO_THE_CAR_IN_MILLISECONDS = 120000;
     public static final int COUNT_DOWN_INTERVAL = 1000;
+
     private FragmentSizeListener mFragmentSizeListener;
+    private DriverPassengerPickUpButtonClickListener mDriverPassengerPickUpButtonClickListener;
 
     private Button mNoShowButton;
+
+    private PassengerRide mPassengerRide;
+
+    public interface DriverPassengerPickUpButtonClickListener {
+        void onPickUpConfirmed(PassengerRide passengerRide);
+        void onPickUpNoShow(PassengerRide passengerRide);
+    }
 
     public static DriverPassengerPickUpFragment newInstance() {
         Bundle args = new Bundle();
@@ -43,21 +52,26 @@ public class DriverPassengerPickUpFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_driver_passenger_pick_up, container, false);
 
         TextView name = view.findViewById(R.id.fragment_driver_passenger_pick_up_name);
         if (getArguments() != null) {
-            PassengerRide passengerRide =
+            mPassengerRide =
                     (PassengerRide) getArguments().getSerializable(PASSENGER_RIDE_KEY);
-            if (passengerRide != null) {
-                name.setText(passengerRide.getPassenger().getFullName());
+            if (mPassengerRide != null) {
+                name.setText(mPassengerRide.getPassenger().getFullName());
             }
         }
 
+        Button mConfirmPickUp = view.findViewById(R.id.fragment_driver_drop_off_button_confirm);
+        mConfirmPickUp.setOnClickListener(this);
+
         mNoShowButton = view.findViewById(R.id.fragment_driver_passenger_pick_up_no_show_button);
         mNoShowButton.setEnabled(false);
+        mNoShowButton.setOnClickListener(this);
 
         view.getViewTreeObserver()
                 .addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -101,6 +115,25 @@ public class DriverPassengerPickUpFragment extends Fragment {
 
         if (context instanceof FragmentSizeListener) {
             mFragmentSizeListener = (FragmentSizeListener) context;
+        }
+        if (context instanceof DriverPassengerPickUpButtonClickListener) {
+            mDriverPassengerPickUpButtonClickListener =
+                    (DriverPassengerPickUpButtonClickListener) context;
+        }
+    }
+
+
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.fragment_driver_drop_off_button_confirm: {
+                mDriverPassengerPickUpButtonClickListener.onPickUpConfirmed(mPassengerRide);
+                break;
+            }
+            case R.id.fragment_driver_drop_of_button_no_show: {
+                mDriverPassengerPickUpButtonClickListener.onPickUpNoShow(mPassengerRide);
+                break;
+            }
         }
     }
 }
