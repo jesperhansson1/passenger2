@@ -8,7 +8,6 @@ public class PassengerRide implements Serializable {
 
     private String mDriveId;
     private String mPassengerId;
-    private String  mPassengerPositionId;
     private Position mPickUpPosition;
     private Position mDropOffPosition;
     private boolean mPickUpConfirmed;
@@ -17,12 +16,14 @@ public class PassengerRide implements Serializable {
     public PassengerRide() {
     }
 
-    public PassengerRide(String driveId, String passengerId, String passengerPositionId, Position pickUpPosition, Position dropOffPosition) {
+    public PassengerRide(String driveId, String passengerId, Position pickUpPosition,
+                         Position dropOffPosition,  boolean pickUpConfirmed, boolean dropOffConfirmed) {
         mDriveId = driveId;
         mPassengerId = passengerId;
-        mPassengerPositionId = passengerPositionId;
         mPickUpPosition = pickUpPosition;
         mDropOffPosition = dropOffPosition;
+        mPickUpConfirmed = pickUpConfirmed;
+        mDropOffConfirmed = dropOffConfirmed;
     }
 
     public String getDriveId() {
@@ -39,27 +40,6 @@ public class PassengerRide implements Serializable {
 
     public void setPassengerId(String passegnerId) {
         mPassengerId = passegnerId;
-    }
-
-    public String getPassengerPositionId() {
-        return mPassengerPositionId;
-    }
-
-    public void setPassengerPositionId(String passengerPositionId) {
-        mPassengerPositionId = passengerPositionId;
-    }
-
-    @Override
-    public String toString() {
-        return "PassengerRide{" +
-                "mDriveId='" + mDriveId + '\'' +
-                ", mPassegnerId='" + mPassengerId + '\'' +
-                ", mPassengerPositionId=" + mPassengerPositionId + '\'' +
-                ", mPickUpPosition=" + mPickUpPosition + '\'' +
-                ", mDropOffPosition=" + mDropOffPosition + '\'' +
-                ", mPickUpConfirmed=" + mPickUpConfirmed + '\'' +
-                ", mDropOffConfirmed=" + mDropOffConfirmed + '\'' +
-                '}';
     }
 
     public Position getPickUpPosition() {
@@ -92,5 +72,17 @@ public class PassengerRide implements Serializable {
 
     public void setDropOffConfirmed(boolean dropOffConfirmed) {
         this.mDropOffConfirmed = dropOffConfirmed;
+    }
+
+    @Override
+    public String toString() {
+        return "PassengerRide{" +
+                "mDriveId='" + mDriveId + '\'' +
+                ", mPassegnerId='" + mPassengerId + '\'' +
+                ", mPickUpPosition=" + mPickUpPosition + '\'' +
+                ", mDropOffPosition=" + mDropOffPosition + '\'' +
+                ", mPickUpConfirmed=" + mPickUpConfirmed + '\'' +
+                ", mDropOffConfirmed=" + mDropOffConfirmed + '\'' +
+                '}';
     }
 }

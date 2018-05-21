@@ -154,8 +154,8 @@ public class MainActivity extends AppCompatActivity implements
         });
     }*/
 
-    private void createPassengerRide(String driveId, Position startPosition, Position endPosition) {
-        mMainViewModel.createPassengerRide(driveId, startPosition, endPosition).observe(this, passengerRide -> {
+    private void createPassengerRide(Drive drive, Position startPosition, Position endPosition) {
+        mMainViewModel.createPassengerRide(drive, startPosition, endPosition).observe(this, passengerRide -> {
             Intent updatePassengerIntent = new Intent(MainActivity.this, ForegroundServices.class);
             updatePassengerIntent.setAction(Constants.ACTION.STARTFOREGROUND_UPDATE_PASSENGER_POSITION);
             updatePassengerIntent.putExtra(PASSENGER_RIDE_KEY, passengerRide.getId());
@@ -193,7 +193,8 @@ public class MainActivity extends AppCompatActivity implements
                 if (passengerRide == null) {
                     return;
                 }
-                observePassengersPosition(passengerRide.getPassegnerId());
+
+                observePassengersPosition(passengerRide.getPassenger().getUserId());
             });
     }
 
@@ -234,7 +235,7 @@ public class MainActivity extends AppCompatActivity implements
                     break;
                 case Notification.ACCEPT_PASSENGER:
                     showPassengerNotificationDialog(notification);
-                    createPassengerRide(notification.getDrive().getId(),
+                    createPassengerRide(notification.getDrive(),
                             notification.getDriveRequest().getStartLocation(),
                             notification.getDriveRequest().getEndLocation());
                     updateDriversMarkerPosition(notification.getDrive().getId());

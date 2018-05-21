@@ -3,9 +3,8 @@ package com.cybercom.passenger.model;
 public class PassengerRide {
 
     private String mId;
-    private String mDriveId;
-    private String mPassegnerId;
-    private String mPassengerPosId;
+    private Drive mDrive;
+    private User mPassenger;
     private Position mPickUpPosition;
     private Position mDropOffPosition;
     private boolean mPickUpConfirmed;
@@ -14,49 +13,33 @@ public class PassengerRide {
     public PassengerRide() {
     }
 
-    public PassengerRide(String id, String driveId, String passengerId, String passengerPosId) {
+    public PassengerRide(String id, Drive drive, User passenger,
+                         Position pickUpPosition, Position dropOffPosition,
+                         boolean pickUpConfirmed, boolean dropOffConfirmed) {
         mId = id;
-        mDriveId = driveId;
-        mPassegnerId = passengerId;
-        mPassengerPosId = passengerPosId;
+        mDrive = drive;
+        mPassenger = passenger;
+        mPickUpPosition = pickUpPosition;
+        mDropOffPosition = dropOffPosition;
+        mPickUpConfirmed = pickUpConfirmed;
+        mDropOffPosition = dropOffPosition;
+        mDropOffConfirmed = dropOffConfirmed;
     }
 
-    public String getDriveId() {
-        return mDriveId;
+    public Drive getDrive() {
+        return mDrive;
     }
 
-    public void setDriveId(String driveId) {
-        mDriveId = driveId;
+    public void setDrive(Drive drive) {
+        mDrive = drive;
     }
 
-    public String getPassegnerId() {
-        return mPassegnerId;
+    public User getPassenger() {
+        return mPassenger;
     }
 
-    public void setPassegnerId(String passegnerId) {
-        mPassegnerId = passegnerId;
-    }
-
-    public String getPassengerPosId() {
-        return mPassengerPosId;
-    }
-
-    public void setPassengerPosId(String passengerPosId) {
-        mPassengerPosId = passengerPosId;
-    }
-
-    @Override
-    public String toString() {
-        return "PassengerRide{" +
-                "mId='" + mId + '\'' +
-                ", mDriveId='" + mDriveId + '\'' +
-                ", mPassegnerId='" + mPassegnerId + '\'' +
-                ", mPassengerPosId=" + mPassengerPosId + '\'' +
-                ", mPickUpPosition=" + mPickUpPosition + '\'' +
-                ", mDropOffPosition=" + mDropOffPosition + '\'' +
-                ", mPickUpConfirmed=" + mPassengerPosId + '\'' +
-                ", mDropOffConfirmed=" + mDropOffConfirmed +
-                '}';
+    public void setPassengerId(User passenger) {
+        mPassenger = passenger;
     }
 
     public String getId() {
@@ -97,5 +80,17 @@ public class PassengerRide {
 
     public void setDropOffConfirmed(boolean mDropOffConfirmed) {
         this.mDropOffConfirmed = mDropOffConfirmed;
+    }
+
+    @Override
+    public String toString() {
+        return "PassengerRide{" +
+                "mId='" + mId + '\'' +
+                ", mDrive='" + mDrive + '\'' +
+                ", mPassenger='" + mPassenger + '\'' +
+                ", mPickUpPosition=" + mPickUpPosition + '\'' +
+                ", mDropOffPosition=" + mDropOffPosition + '\'' +
+                ", mDropOffConfirmed=" + mDropOffConfirmed +
+                '}';
     }
 }
