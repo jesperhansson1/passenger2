@@ -194,17 +194,6 @@ public class MainActivity extends AppCompatActivity implements
         initObservers();
     }
 
-    private void setUpGeofencing() {
-        mGeofencingClient = LocationServices.getGeofencingClient(this);
-        mGeofenceList = new ArrayList<>();
-        mGeofencePendingIntent = null;
-    }
-
-    private void createGeofence(PassengerRide passengerRide) {
-        addGeofenceToList(passengerRide);
-        addGeofences();
-    }
-
     /*private void sendDriverPositionToDB(String driveId) {
         mMainViewModel.startLocationUpdates();
         mMainViewModel.getUpdatedLocationLiveData().observe(this, location -> {
@@ -674,8 +663,6 @@ public class MainActivity extends AppCompatActivity implements
         if (isAccepted) {
             mMainViewModel.sendAcceptPassengerNotification(notification.getDrive(),
                     notification.getDriveRequest());
-            setUpGeofencing();
-
         } else {
             mMainViewModel.sendRejectPassengerNotification(notification.getDrive(),
                     notification.getDriveRequest());
@@ -901,33 +888,25 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onPause() {
         super.onPause();
-        //LocalBroadcastManager.getInstance(this).unregisterReceiver(mServiceReceiver);
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mGeofenceEventsReceiver);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        //  IntentFilter filter = new IntentFilter(INTENT_FILTER_DIALOG_LOCAL_BROADCAST);
-        // LocalBroadcastManager.getInstance(this).registerReceiver(mServiceReceiver,filter);
         IntentFilter filter = new IntentFilter(GEOFENCE_EVENTS_INTENT_FILTER);
         LocalBroadcastManager.getInstance(this).registerReceiver(mGeofenceEventsReceiver, filter);
     }
 
-    private void addGeofenceToList() {
+    private void setUpGeofencing() {
+        mGeofencingClient = LocationServices.getGeofencingClient(this);
+        mGeofenceList = new ArrayList<>();
+        mGeofencePendingIntent = null;
+    }
 
-        mGeofenceList.add(new Geofence.Builder()
-                .setRequestId("123456")
-                .setCircularRegion(
-                        mDock.latitude,
-                        mDock.longitude,
-                        GEOFENCE_RADIUS
-                )
-                .setExpirationDuration(GEOFENCE_TIME_OUT)
-                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
-                .build());
-
-
+    private void createGeofence(PassengerRide passengerRide) {
+        addGeofenceToList(passengerRide);
+        addGeofences();
     }
 
     private void addGeofenceToList(PassengerRide passengerRide) {
