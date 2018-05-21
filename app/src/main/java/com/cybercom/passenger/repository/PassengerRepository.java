@@ -29,7 +29,6 @@ import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.gson.Gson;
-import com.javadocmd.simplelatlng.LatLng;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,8 +53,10 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private static final String REFERENCE_USERS_CHILD_TYPE = "type";
     private static final String REFERENCE_DRIVER_ID_BLACK_LIST = "driverIdBlackList";
     private static final String REFERENCE_PASSENGER_RIDE = "passengerRide";
+    private static final String REFERENCE_PASSENGER_POSITION = "passengerPosition";
 
     private static final String DRIVE_ID = "driveId";
+    public static final String DRIVER_ID = "driverId";
 
     private static final int DRIVE_REQUEST_MATCH_TIME_THRESHOLD = 15 * 60 * 60 * 1000;
     private static final String NOTIFICATION_TYPE_KEY = "type";
@@ -63,7 +64,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private static final String KEY_PAYLOAD_DRIVE_ID = "driveId";
     private static final String KEY_PASSENGER_ID = "passengerId";
     private static final String CURRENT_POSITION = "currentPosition";
-
+    private static final String CURRENT_VELOCITY = "currentVelocity";
     private static final String LATITUDE = "latitude";
     private static final String LONGITUDE = "longitude";
 
@@ -73,6 +74,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private DatabaseReference mUsersReference;
     private DatabaseReference mDrivesReference;
     private DatabaseReference mPassengerRideReference;
+    private DatabaseReference mPassengerPositionReference;
     private DatabaseReference mDriveRequestsReference;
     private DatabaseReference mNotificationsReference;
     private FirebaseAuth mAuth = FirebaseAuth.getInstance();
@@ -109,6 +111,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         mUsersReference = firebaseDatabase.getReference(REFERENCE_USERS);
         mDrivesReference = firebaseDatabase.getReference(REFERENCE_DRIVES);
         mPassengerRideReference = firebaseDatabase.getReference(REFERENCE_PASSENGER_RIDE);
+        mPassengerPositionReference = firebaseDatabase.getReference(REFERENCE_PASSENGER_POSITION);
         mCarsReference = firebaseDatabase.getReference(REFERENCE_CARS);
         mDriveRequestsReference = firebaseDatabase.getReference(REFERENCE_DRIVE_REQUESTS);
         mNotificationsReference = firebaseDatabase.getReference(REFERENCE_NOTIFICATIONS);
@@ -264,34 +267,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         return userMutableLiveData;
     }
 
-    @Override
-    public LiveData<List<Drive>> getDrives() {
-        final MutableLiveData<List<Drive>> drivesList = new MutableLiveData<>();
-        final List<Drive> tempDrivesList = new ArrayList<>();
-
-        mDrivesReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-
-                    tempDrivesList.add(snapshot.getValue(Drive.class));
-                }
-                drivesList.setValue(tempDrivesList);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-        return drivesList;
-    }
-
-
 
     public LiveData<Drive> findBestRideMatch(final DriveRequest driveRequest, int radiusMultiplier) {
-
 
         final MutableLiveData<Drive> bestDriveMatch = new MutableLiveData<>();
 
@@ -304,8 +281,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                 float[] distance = new float[2];
 
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-
                     com.cybercom.passenger.repository.databasemodel.Drive drive = snapshot.getValue(com.cybercom.passenger.repository.databasemodel.Drive.class);
+
                     if (drive != null && Math.abs(driveRequest.getTime() - drive.getTime()) < DRIVE_REQUEST_MATCH_TIME_THRESHOLD) {
                         Location.distanceBetween(driveRequest.getStartLocation().getLatitude(), driveRequest.getStartLocation().getLongitude(),
                                 drive.getStartLocation().getLatitude(), drive.getStartLocation().getLongitude(), distance);
@@ -377,9 +354,11 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             User driver = dataSnapshot.getValue(User.class);
-                            bestDriveMatch.setValue(new Drive(finalBestMatchDriveId, driver, finalBestMatch.getTime(),
+                            bestDriveMatch.setValue(new Drive(finalBestMatchDriveId, driver,
+                                    finalBestMatch.getTime(),
                                     finalBestMatch.getStartLocation(), finalBestMatch.getEndLocation(),
-                                    finalBestMatch.getAvailableSeats()));
+                                    finalBestMatch.getAvailableSeats(), finalBestMatch.getCurrentPosition(),
+                                    finalBestMatch.getCurrentVelocity()));
                         }
 
                         @Override
@@ -543,7 +522,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
                 Drive drive = new Drive(driveId, driver,
                         dbDrive.getTime(), dbDrive.getStartLocation(),
-                        dbDrive.getEndLocation(), dbDrive.getAvailableSeats());
+                        dbDrive.getEndLocation(), dbDrive.getAvailableSeats(),
+                        dbDrive.getCurrentPosition(), dbDrive.getCurrentVelocity());
                 DriveRequest driveRequest = new DriveRequest(driveRequestId,
                         passenger, dbDriveRequest.getTime(), dbDriveRequest.getStartLocation(),
                         dbDriveRequest.getEndLocation(), dbDriveRequest.getExtraPassengers(),
@@ -588,13 +568,11 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
             final com.cybercom.passenger.repository.databasemodel.Drive dbDrive =
                     new com.cybercom.passenger.repository.databasemodel.Drive(uId, time, startLocation,
-                            endLocation, availableSeats, null);
+                            endLocation, availableSeats, null, 0f);
             final DatabaseReference ref = mDrivesReference.push();
-
             final String driveId = ref.getKey();
-           // setCurrentDriveId(driveId);
             ref.setValue(dbDrive);
-//adding bounds for drive
+            //adding bounds for drive
 
             Map<String, Object> neBounds = new HashMap<>();
             neBounds.put(LATITUDE, bounds.getNorthEastLatitude());
@@ -604,7 +582,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
             swBounds.put(LONGITUDE, bounds.getSouthWestLongitude());
             mDrivesReference.child(driveId).child(BOUNDS).child(SOUTHWEST).setValue(swBounds);
             mDrivesReference.child(driveId).child(BOUNDS).child(NORTHEAST).setValue(neBounds);
-//--------
+            //--------
             mUsersReference.child(firebaseUser.getUid()).addValueEventListener(
                     new ValueEventListener() {
                         @Override
@@ -612,11 +590,9 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                             User user = dataSnapshot.getValue(User.class);
                             Drive drive = new Drive(driveId, user, dbDrive.getTime(),
                                     dbDrive.getStartLocation(), dbDrive.getEndLocation(),
-                                    dbDrive.getAvailableSeats());
+                                    dbDrive.getAvailableSeats(), dbDrive.getCurrentPosition(),
+                                    dbDrive.getCurrentVelocity());
                             driveMutableLiveData.setValue(drive);
-
-
-
                         }
 
                         @Override
@@ -748,46 +724,29 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
     public void updateDriveCurrentLocation(String driveId, Location location) {
         if (driveId != null) {
-            Map<String, Object> locationMap = new HashMap<>();
-            locationMap.put(LATITUDE, location.getLatitude());
-            locationMap.put(LONGITUDE, location.getLongitude());
-            mDrivesReference.child(driveId).child(CURRENT_POSITION).setValue(locationMap);
+            mDrivesReference.child(driveId).child(CURRENT_POSITION).setValue(LocationHelper.convertLocationToPosition(location));
         }
     }
 
-    public LiveData<String> updatePassengerRideCurrentLocation(Location location) {
-        MutableLiveData<String> getPassengerRideKey = new MutableLiveData<>();
+    public void updateDriveCurrentVelocity(String driveId, float velocity) {
+        if (driveId != null) {
+            mDrivesReference.child(driveId).child(CURRENT_VELOCITY).setValue(velocity);
+        }
+    }
+
+    public void updatePassengerRideCurrentLocation(Location location) {
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
         if (firebaseUser == null) {
-            return getPassengerRideKey;
+            return;
         }
         String uId = firebaseUser.getUid();
-
-        mPassengerRideReference.orderByChild(KEY_PASSENGER_ID).equalTo(uId)
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-
-                            String passengerRideKey = snapshot.getKey();
-                            mPassengerRideReference.child(passengerRideKey).child("position")
-                                    .setValue(LocationHelper.convertLocationToPosition(location));
-
-                            getPassengerRideKey.setValue(passengerRideKey);
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        Timber.i("updatePassengerRideCurrentLocation Cancelled");
-                    }
-                });
-
-        return getPassengerRideKey;
+        mPassengerPositionReference.child(uId).setValue(LocationHelper.convertLocationToPosition(location));
     }
 
-    public LiveData<com.cybercom.passenger.model.PassengerRide> createPassengerRide(String driveId) {
+    public LiveData<com.cybercom.passenger.model.PassengerRide> createPassengerRide(Drive drive,
+                                                                                    Position pickUpLocation,
+                                                                                    Position dropOffLocation) {
         final MutableLiveData<com.cybercom.passenger.model.PassengerRide>
                 passengerRideMutableLiveData = new MutableLiveData<>();
 
@@ -796,52 +755,47 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         if (firebaseUser != null) {
             String uId = firebaseUser.getUid();
 
+            final DatabaseReference passengerPositionRef = mPassengerPositionReference.push();
+
+            // Let the initial position be null
+            passengerPositionRef.setValue(null);
+
             final com.cybercom.passenger.repository.databasemodel.PassengerRide dbPassengerRide =
-                    new com.cybercom.passenger.repository.databasemodel.PassengerRide(driveId, uId, null);
-            final DatabaseReference ref = mPassengerRideReference.push();
-            final String passengerRideId = ref.getKey();
-            ref.setValue(dbPassengerRide);
+                    new com.cybercom.passenger.repository.databasemodel.PassengerRide(drive.getId(),
+                            uId, pickUpLocation, dropOffLocation, false, false);
+            final DatabaseReference passengerRideRef = mPassengerRideReference.push();
+            final String passengerRideId = passengerRideRef.getKey();
 
-            mUsersReference.child(firebaseUser.getUid()).addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    com.cybercom.passenger.model.PassengerRide passengerRide = new com.cybercom.passenger.model.PassengerRide(passengerRideId, driveId, uId, null);
-                    passengerRideMutableLiveData.setValue(passengerRide);
-                }
+            passengerRideRef.setValue(dbPassengerRide);
 
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-                }
-            });
-        } else {
-            // Not logged in
-            passengerRideMutableLiveData.setValue(null);
+            mUsersReference.child(firebaseUser.getUid()).addListenerForSingleValueEvent(
+                    getEventListenerToBuildPassengerRide(passengerRideId, pickUpLocation,
+                            dropOffLocation, drive, passengerRideMutableLiveData));
         }
         return passengerRideMutableLiveData;
     }
 
-    public LiveData<Position> getPassengerPositionOnMap() {
-        return null;
-        //mPassengerRideReference.orderByChild()
-        /*
-        *
-        *  mUsersReference.child(firebaseUser.getUid()).addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    User user = dataSnapshot.getValue(User.class);
-                    DriveRequest driveRequest = new DriveRequest(driveRequestId, user, dbDriveRequest.getTime(),
-                            dbDriveRequest.getStartLocation(), dbDriveRequest.getEndLocation(),
-                            dbDriveRequest.getExtraPassengers(), dbDriveRequest.getDriverIdBlackList());
+    private ValueEventListener getEventListenerToBuildPassengerRide(String passengerRideId,
+                                                                    Position pickUpLocation,
+                                                                    Position dropOffLocation,
+                                                                    Drive drive,
+                                                                    MutableLiveData<com.cybercom.passenger.model.PassengerRide> passengerRideMutableLiveData) {
+        return new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                User passenger = dataSnapshot.getValue(User.class);
+                com.cybercom.passenger.model.PassengerRide passengerRide =
+                        new com.cybercom.passenger.model.PassengerRide(
+                            passengerRideId, drive, passenger, pickUpLocation, dropOffLocation,
+                            false, false);
+                passengerRideMutableLiveData.setValue(passengerRide);
+            }
 
-                    driveRequestMutableLiveData.setValue(driveRequest);
-                }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
 
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            });
-        * */
+            }
+        };
     }
 
     public LiveData<com.cybercom.passenger.model.PassengerRide> getPassengerRides(String driveId) {
@@ -849,26 +803,97 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                 new MutableLiveData<>();
 
         Timber.i("getPassengerRides %s", driveId);
-        mPassengerRideReference.orderByChild(DRIVE_ID).equalTo(driveId).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    PassengerRide passengerRide = snapshot.getValue(PassengerRide.class);
-                    Timber.d("result: %s", passengerRide);
-                    if (passengerRide != null) {
-                        passengerRidesLiveData.setValue(new com.cybercom.passenger.model.PassengerRide(
-                                snapshot.getKey(), passengerRide.getDriveId(),
-                                passengerRide.getPassengerId(), passengerRide.getPosition()));
+        mPassengerRideReference.orderByChild(DRIVE_ID).equalTo(driveId).addValueEventListener(
+                new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                            PassengerRide passengerRide = snapshot.getValue(PassengerRide.class);
+                            Timber.d("result: %s", passengerRide);
+                            if (passengerRide != null) {
+                                final String passengerRideId = snapshot.getKey();
+
+                                // Fetch the Passenger
+                                DatabaseReference dbRefPassengerId = mUsersReference.child(
+                                        passengerRide.getPassengerId());
+                                dbRefPassengerId.addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(DataSnapshot dataSnapshot) {
+                                        final User passenger = dataSnapshot.getValue(User.class);
+                                        if (passenger == null) {
+                                            return;
+                                        }
+                                        // Fetch the Drive
+                                        final DatabaseReference driveRef = mDrivesReference.child(
+                                                driveId);
+                                        driveRef.addListenerForSingleValueEvent(
+                                                getEventListenerToFetchDriveAndBuildPassengerRide(
+                                                        passengerRideId, passengerRide, passenger,
+                                                        passengerRidesLiveData));
+                                    }
+
+                                    @Override
+                                    public void onCancelled(DatabaseError databaseError) {
+                                        Timber.i("Failed to fetch user: driver: %s"
+                                                , databaseError.toString());
+                                    }
+                                });
+                            }
+                        }
                     }
-                }
-            }
 
             @Override
             public void onCancelled(DatabaseError error) {
             }
         });
         return passengerRidesLiveData;
+    }
 
+    private ValueEventListener getEventListenerToFetchDriveAndBuildPassengerRide(
+            String passengerRideId, PassengerRide passengerRide, User passenger,
+            MutableLiveData<com.cybercom.passenger.model.PassengerRide> passengerRideMutableLiveData) {
+        return new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                com.cybercom.passenger.repository.databasemodel.Drive drive =
+                        dataSnapshot.getValue(com.cybercom.passenger.repository.databasemodel.Drive.class);
+
+                final String driveId = dataSnapshot.getKey();
+
+                if (drive != null) {
+                    mUsersReference.child(drive.getDriverId()).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            User driver = dataSnapshot.getValue(User.class);
+                            Drive convertedDrive = new Drive(driveId, driver,
+                                    drive.getTime(),
+                                    drive.getStartLocation(), drive.getEndLocation(),
+                                    drive.getAvailableSeats(), drive.getCurrentPosition(),
+                                    drive.getCurrentVelocity());
+
+                            com.cybercom.passenger.model.PassengerRide convertedPassengerRide =
+                                    new com.cybercom.passenger.model.PassengerRide(
+                                            passengerRideId, convertedDrive, passenger,
+                                            passengerRide.getPickUpPosition(),
+                                            passengerRide.getDropOffPosition(),
+                                            passengerRide.isPickUpConfirmed(),
+                                            passengerRide.isDropOffConfirmed());
+                            passengerRideMutableLiveData.setValue(convertedPassengerRide);
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Timber.e("database error: %s", databaseError);
+            }
+        };
     }
 
     public LiveData<Position> getDriverPosition(String driveId) {
@@ -878,7 +903,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Position position = dataSnapshot.getValue(Position.class);
-                driverPositionLiveData.setValue(position != null ? position : null);
+                driverPositionLiveData.setValue(position);
             }
 
             @Override
@@ -888,8 +913,65 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         });
         return driverPositionLiveData;
     }
+    public LiveData<Position> getPassengerPosition(String userId) {
+        MutableLiveData<Position> passengerRidesLiveData =
+                new MutableLiveData<>();
 
+        mPassengerPositionReference.child(userId).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                    Position position = dataSnapshot.getValue(Position.class);
+                    Timber.d("result: %s", position);
+                    if (position != null) {
+                        passengerRidesLiveData.setValue(position);
+                    }
+            }
 
+            @Override
+            public void onCancelled(DatabaseError error) {
+            }
+        });
+        return passengerRidesLiveData;
+    }
+
+    public LiveData<String> getActiveDriveId() {
+        MutableLiveData<String> driveIdMutableLiveData = new MutableLiveData<>();
+
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (firebaseUser == null) {
+            // TODO: Not logged in...
+            return null;
+        }
+
+        mUsersReference.child(firebaseUser.getUid()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                mCurrentlyLoggedInUser = dataSnapshot.getValue(User.class);
+                if (mCurrentlyLoggedInUser != null) {
+                    mDrivesReference.orderByChild(DRIVER_ID).equalTo(mCurrentlyLoggedInUser.getUserId()).
+                        addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                    driveIdMutableLiveData.setValue(snapshot.getKey());
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+                            }
+                        });
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        return driveIdMutableLiveData;
+    }
 
     public boolean contains(Bounds bounds, double latitude, double longitude) {
         boolean longitudeContained = false;

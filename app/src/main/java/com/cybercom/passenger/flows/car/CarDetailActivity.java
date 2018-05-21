@@ -1,10 +1,13 @@
 package com.cybercom.passenger.flows.car;
 
+import android.arch.lifecycle.LifecycleOwner;
+import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -55,6 +58,8 @@ public class CarDetailActivity extends AppCompatActivity {
         toolbar.setTitleTextColor(getResources().getColor(R.color.colorWhite));
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle(R.string.add_car);
+        toolbar.setTitleTextColor(getResources().getColor(R.color.colorBlue));
+
         initializeUI();
         mExtras = getIntent().getExtras();
         progressBar = findViewById(R.id.progress_bar);
@@ -91,9 +96,8 @@ public class CarDetailActivity extends AppCompatActivity {
                 mEditTextCarNumber.setError(getResources().getString(R.string.car_number_error));
             }
             else {
-                Timber.d("car number did not match");
-                mEditTextCarNumber.setError(getResources().getString(
-                        R.string.car_number_invalid), mErrorDraw);
+                String url = mApiUrl + mEditTextCarNumber.getText().toString() + "?api_token=" + mApiToken;
+                getDetails(url,mEditTextCarNumber.getText().toString());
             }
         });
         mButtonSave.setOnClickListener(v -> {
@@ -166,13 +170,25 @@ public class CarDetailActivity extends AppCompatActivity {
 
     private void getDetails(String url, String regNumber) {
         mCarDetailViewModel.setUrl(url, regNumber);
-
         mCarDetailViewModel.getCarLiveData().observe(this, car -> {
-            if (car != null) {
+                    if (car != null) {
+
+                            mEditTextCarYear.setText(car.getYear());
+                            mEditTextCarModel.setText(car.getModel());
+                            mEditTextCarColor.setText(car.getColor());
+
+
+                    }
+                });
+
+          /*      mCarDetailViewModel.getCarLiveData().observe(this, new Observer<Car>() {
+
+            @Override
+            public void onChanged(@Nullable Car car) {
                 mEditTextCarYear.setText(car.getYear());
                 mEditTextCarModel.setText(car.getModel());
                 mEditTextCarColor.setText(car.getColor());
             }
-        });
+        });*/
     }
 }

@@ -11,6 +11,7 @@ import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
@@ -32,6 +33,7 @@ import com.cybercom.passenger.model.Bounds;
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Notification;
+import com.cybercom.passenger.model.PassengerRide;
 import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.route.FetchRouteUrl;
@@ -78,6 +80,7 @@ public class MainActivity extends AppCompatActivity implements
     private static final float PLACE_MARKER_INFO_FADE_IN_TO = 1.0f;
     private static final int ZOOM_LEVEL_MY_LOCATION = 17;
     private static final String DRIVE_ID = "driveId";
+    private static final String PASSENGER_RIDE_KEY = "passengerRideKey";
 
     private FirebaseUser mUser;
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 0;
@@ -148,25 +151,14 @@ public class MainActivity extends AppCompatActivity implements
         initObservers();
     }
 
-
-
-    private void sendDriverPositionToDB(String driveId) {
-        mMainViewModel.startLocationUpdates();
-        mMainViewModel.getUpdatedLocationLiveData().observe(this, location -> {
-            mMainViewModel.setCurrentLocationToDrive(driveId, location);
-            mMainViewModel.setStartMarkerLocation(location);
-        });
-    }
-
-    private void sendPassengerRideToDB(String driveId) {
-        mMainViewModel.createPassengerRide(driveId).observe(this, passengerRide -> {
-            mMainViewModel.startLocationUpdates();
-            mMainViewModel.getUpdatedLocationLiveData().observe(this, location -> {
-                mMainViewModel.updatePassengerRideCurrentLocation(location).observe(this, s -> {
-                });
+    private void createPassengerRide(Drive drive, Position startPosition, Position endPosition) {
+        mMainViewModel.createPassengerRide(drive, startPosition, endPosition).observe(this, passengerRide -> {
+            Intent updatePassengerIntent = new Intent(MainActivity.this, ForegroundServices.class);
+            updatePassengerIntent.setAction(Constants.ACTION.STARTFOREGROUND_UPDATE_PASSENGER_POSITION);
+            updatePassengerIntent.putExtra(PASSENGER_RIDE_KEY, passengerRide.getId());
+            startService(updatePassengerIntent);
             });
-        });
-    }
+        }
 
     private void updateDriversMarkerPosition(String driveId) {
         mMainViewModel.getDriverPosition(driveId).observe(this, position -> {
@@ -195,29 +187,36 @@ public class MainActivity extends AppCompatActivity implements
     private void updatePassengersMarkerPosition(String driveId){
         mMainViewModel.getPassengerRides(driveId).observe(
             this, passengerRide -> {
-                if (passengerRide == null || passengerRide.getPassengerPos() == null) {
+                if (passengerRide == null) {
                     return;
                 }
 
-                String passengerRideId = passengerRide.getId();
-                if (mPassengerMarkerMap.containsKey(passengerRideId)) {
-                    Marker passengerMarker = mPassengerMarkerMap.get(passengerRideId);
-                    updateMarkerLocation(passengerMarker,
-                            LocationHelper.convertPositionToLocation(
-                                    passengerRide.getPassengerPos()));
-                } else {
-                    LatLng startLatLng = new LatLng(passengerRide.getPassengerPos().getLatitude(),
-                            passengerRide.getPassengerPos().getLongitude());
-
-                    Marker marker = mGoogleMap.addMarker(new MarkerOptions()
-                            .position(startLatLng)
-                            .title(getString(R.string.marker_title_passenger))
-                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.passenger_loc))
-                            .anchor(0.5f, 0.5f)
-                            .draggable(false));
-                    mPassengerMarkerMap.put(passengerRideId, marker);
-                }
+                observePassengersPosition(passengerRide.getPassenger().getUserId());
             });
+    }
+
+    private void observePassengersPosition(final String passengerId) {
+        mMainViewModel.getPassengerPosition(passengerId).observe(this, position -> {
+            Timber.d("position update");
+
+            if (mPassengerMarkerMap.containsKey(passengerId)) {
+                Marker passengerMarker = mPassengerMarkerMap.get(passengerId);
+                updateMarkerLocation(passengerMarker,
+                        LocationHelper.convertPositionToLocation(
+                                position));
+            } else {
+                LatLng startLatLng = new LatLng(position.getLatitude(),
+                        position.getLongitude());
+
+                Marker marker = mGoogleMap.addMarker(new MarkerOptions()
+                        .position(startLatLng)
+                        .title(getString(R.string.marker_title_passenger))
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.passenger_loc))
+                        .anchor(0.5f, 0.5f)
+                        .draggable(false));
+                mPassengerMarkerMap.put(passengerId, marker);
+            }
+        });
     }
 
     private void initObservers() {
@@ -233,7 +232,9 @@ public class MainActivity extends AppCompatActivity implements
                     break;
                 case Notification.ACCEPT_PASSENGER:
                     showPassengerNotificationDialog(notification);
-                    sendPassengerRideToDB(notification.getDrive().getId());
+                    createPassengerRide(notification.getDrive(),
+                            notification.getDriveRequest().getStartLocation(),
+                            notification.getDriveRequest().getEndLocation());
                     updateDriversMarkerPosition(notification.getDrive().getId());
                     dismissMatchingInProgressDialog();
                     break;
@@ -244,10 +245,21 @@ public class MainActivity extends AppCompatActivity implements
                     break;
             }
         });
+
+
+        final LifecycleOwner lifecycleOwner = this;
+
+        mMainViewModel.getActiveDriveId().observe(this, driveId -> {
+            if (driveId == null) {
+                // TODO: No drive is active or drive has been cancelled. Update UI accordingly.
+            } else {
+                mMainViewModel.getPassengerRides(driveId).observe(lifecycleOwner, passengerRide -> {
+                    // TODO: Add floating buttons for PassengerRides
+                    // TODO: add geofences pickup and dropoff location
+                });
+            }
+        });
     }
-
-    // TODO Only start this when drive is started
-
 
         /*
         if (mLocation == null) {
@@ -705,14 +717,13 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onFinish() {
-        mGoogleMap.clear();
+        /*mGoogleMap.clear();
         isStartLocationMarkerAdded = false;
         isEndLocationMarkerAdded = false;
         mMainViewModel.getStartMarkerLocation().removeObserver(mStartLocationObserver);
         mMainViewModel.getEndMarkerLocation().removeObserver(mEndLocationObserver);
 
-        mMarkerCount = 0;
-
+        mMarkerCount = 0;*/
     }
 
     @Override
@@ -778,9 +789,7 @@ public class MainActivity extends AppCompatActivity implements
                         UpdateDriveIntent.setAction(Constants.ACTION.STARTFOREGROUND_UPDATE_DRIVER_POSITION);
                         UpdateDriveIntent.putExtra(DRIVE_ID, drive.getId());
                         startService(UpdateDriveIntent);
-                        /*sendDriverPositionToDB(drive.getId());
                         updatePassengersMarkerPosition(drive.getId());
-                        Timber.i("Drive created: %s", drive.getId());*/
                         mCreateDriveFragment.setDefaultValuesToDialog();
                     }
                 });

@@ -33,8 +33,6 @@ interface PassengerRepositoryInterface {
 
     LiveData<Drive> findBestRideMatch(final DriveRequest driveRequest, int radiusMultiplier);
 
-    LiveData<List<Drive>> getDrives();
-
     void createCar(String carId, String userId, Car car);
 
     void removeCar(String carId, String userId);

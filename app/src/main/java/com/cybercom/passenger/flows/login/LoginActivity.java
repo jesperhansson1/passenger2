@@ -36,6 +36,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         toolbar.setTitleTextColor(getResources().getColor(R.color.colorWhite));
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle(R.string.login_title);
+        toolbar.setTitleTextColor(getResources().getColor(R.color.colorBlue));
+
 
         mProgressBar = findViewById(R.id.progress_bar);
         mProgressBar.setVisibility(View.GONE);
