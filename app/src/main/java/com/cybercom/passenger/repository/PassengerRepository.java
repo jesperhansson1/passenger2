@@ -29,6 +29,7 @@ import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.gson.Gson;
+import com.javadocmd.simplelatlng.LatLng;
 
 import java.util.ArrayList;
 import java.util.HashMap;
