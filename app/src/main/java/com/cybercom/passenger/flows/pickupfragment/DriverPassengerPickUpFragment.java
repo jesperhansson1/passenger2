@@ -48,13 +48,14 @@ public class DriverPassengerPickUpFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_driver_passenger_pick_up, container, false);
 
         TextView name = view.findViewById(R.id.fragment_driver_passenger_pick_up_name);
-       /* if(getArguments() != null){
-            PassengerRide pr = (PassengerRide) getArguments().getSerializable(PASSENGER_RIDE_KEY);
-            name.setText(pr.getPassegnerId());
+       /* if (getArguments() != null) {
+            PassengerRide passengerRide =
+                    (PassengerRide) getArguments().getSerializable(PASSENGER_RIDE_KEY);
+            name.setText(passengerRide.getPassenger().getFullName());
         }*/
 
-       mNoShowButton = view.findViewById(R.id.fragment_driver_passenger_pick_up_no_show_button);
-       mNoShowButton.setEnabled(false);
+        mNoShowButton = view.findViewById(R.id.fragment_driver_passenger_pick_up_no_show_button);
+        mNoShowButton.setEnabled(false);
 
         view.getViewTreeObserver()
                 .addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -75,9 +76,9 @@ public class DriverPassengerPickUpFragment extends Fragment {
                 int minutesLeft = (int) (millisUntilFinished / 1000) / 60;
                 int secondsLeft = (int) (millisUntilFinished / 1000) % 60;
 
-                if(secondsLeft > 10){
+                if (secondsLeft > 10) {
                     countDown.setText("0" + minutesLeft + ":" + secondsLeft);
-                }else{
+                } else {
                     countDown.setText("0" + minutesLeft + ":0" + secondsLeft);
                 }
 
