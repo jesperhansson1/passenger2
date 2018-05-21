@@ -11,6 +11,7 @@ import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
@@ -31,6 +32,7 @@ import com.cybercom.passenger.interfaces.FragmentSizeListener;
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Notification;
+import com.cybercom.passenger.model.PassengerRide;
 import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.route.FetchRouteUrl;
@@ -146,14 +148,6 @@ public class MainActivity extends AppCompatActivity implements
         initObservers();
     }
 
-    /*private void sendDriverPositionToDB(String driveId) {
-        mMainViewModel.startLocationUpdates();
-        mMainViewModel.getUpdatedLocationLiveData().observe(this, location -> {
-            mMainViewModel.setCurrentLocationToDrive(driveId, location);
-            mMainViewModel.setStartMarkerLocation(location);
-        });
-    }*/
-
     private void createPassengerRide(Drive drive, Position startPosition, Position endPosition) {
         mMainViewModel.createPassengerRide(drive, startPosition, endPosition).observe(this, passengerRide -> {
             Intent updatePassengerIntent = new Intent(MainActivity.this, ForegroundServices.class);
@@ -248,10 +242,21 @@ public class MainActivity extends AppCompatActivity implements
                     break;
             }
         });
+
+
+        final LifecycleOwner lifecycleOwner = this;
+
+        mMainViewModel.getActiveDriveId().observe(this, driveId -> {
+            if (driveId == null) {
+                // TODO: No drive is active or drive has been cancelled. Update UI accordingly.
+            } else {
+                mMainViewModel.getPassengerRides(driveId).observe(lifecycleOwner, passengerRide -> {
+                    // TODO: Add floating buttons for PassengerRides
+                    // TODO: add geofences pickup and dropoff location
+                });
+            }
+        });
     }
-
-    // TODO Only start this when drive is started
-
 
         /*
         if (mLocation == null) {
