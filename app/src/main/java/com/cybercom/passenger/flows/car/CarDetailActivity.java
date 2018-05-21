@@ -55,6 +55,8 @@ public class CarDetailActivity extends AppCompatActivity {
         toolbar.setTitleTextColor(getResources().getColor(R.color.colorWhite));
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle(R.string.add_car);
+        toolbar.setTitleTextColor(getResources().getColor(R.color.colorBlue));
+
         initializeUI();
         mExtras = getIntent().getExtras();
         progressBar = findViewById(R.id.progress_bar);

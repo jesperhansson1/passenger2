@@ -2,7 +2,7 @@ package com.cybercom.passenger.service;
 
 import android.app.Notification;
 import android.app.PendingIntent;
-import android.arch.lifecycle.LifecycleService;
+import android.app.Service;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.content.Intent;
@@ -18,7 +18,6 @@ import android.widget.Toast;
 
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.main.MainActivity;
-import com.cybercom.passenger.model.PassengerRide;
 import com.cybercom.passenger.repository.PassengerRepository;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -26,26 +25,21 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 
-import java.util.List;
-
 import timber.log.Timber;
 
-public class ForegroundServices extends LifecycleService {
-
+public class ForegroundServices extends Service {
 
     private PassengerRepository mPassengerRepository = PassengerRepository.getInstance();
     private FusedLocationProviderClient mFusedLocationClient;
     private LocationCallback mLocationCallback;
     private LocationRequest mLocationRequest;
-    private MutableLiveData<Location> mMyLocation = new MutableLiveData<>();
-    Location loc = new Location("");
+    private MutableLiveData<Location> mMyLocationMutableLiveData = new MutableLiveData<>();
+    private Location mCurrentLocation = new Location("");
     private static final int INTERVAL = 1000;
     private static final int FASTEST_INTERVAL = 1000;
     private static final String DRIVE_ID = "driveId";
     private static final String PASSENGER_RIDE_KEY = "passengerRideKey";
 
-
-    private List<PassengerRide> mPassengerRides;
 
     @Override
     public void onCreate() {
@@ -55,9 +49,7 @@ public class ForegroundServices extends LifecycleService {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         //Uppdatera Drivers position
-        super.onStartCommand(intent, flags, startId);
-        if (intent.getAction().equals(Constants.ACTION.STARTFOREGROUND_UPDATE_DRIVER_POSITION)) {
-
+        if(intent.getAction().equals(Constants.ACTION.STARTFOREGROUND_UPDATE_DRIVER_POSITION)){
             Bundle extras = intent.getExtras();
             String driveId = extras.getString(DRIVE_ID);
 
@@ -65,22 +57,42 @@ public class ForegroundServices extends LifecycleService {
             mLocationCallback = new LocationCallback() {
                 @Override
                 public void onLocationResult(LocationResult locationResult) {
+
                     if (locationResult == null) {
                         return;
                     }
 
-                    for (Location location : locationResult.getLocations()) {
-                        mMyLocation.setValue(location);
+                    Location prevLocation;
 
+                    int locationResultSize = locationResult.getLocations().size();
+                    if (locationResultSize == 1) {
+                        prevLocation = mCurrentLocation;
+                    } else {
+                        prevLocation = locationResult.getLocations().get(locationResultSize - 2);
+                    }
+
+                    for (Location location : locationResult.getLocations()) {
+                        mMyLocationMutableLiveData.setValue(location);
                         Timber.d("DriveId %s", driveId);
 
-                        loc.setLatitude(mMyLocation.getValue().getLatitude());
-                        loc.setLongitude(mMyLocation.getValue().getLongitude());
-                        mPassengerRepository.updateDriveCurrentLocation(driveId, loc);
-                        mPassengerRepository.updateDriveCurrentVelocity(driveId, loc.getSpeed());
+                        mCurrentLocation = location;
                     }
+
+                    float distanceDelta = mCurrentLocation.distanceTo(prevLocation);
+                    float timeDelta = Math.abs(mCurrentLocation.getTime() - prevLocation.getTime()) / 1000f;
+                    float speed = 1;
+
+                    if (timeDelta != 0.0f) {
+                        speed = distanceDelta / timeDelta;
+                    }
+
+                    Timber.d("currentSpeed: %f", speed);
+
+                    mPassengerRepository.updateDriveCurrentLocation(driveId, mCurrentLocation);
+                    mPassengerRepository.updateDriveCurrentVelocity(driveId, speed);
                 }
             };
+
             createLocationRequest();
             startLocationUpdates();
 
@@ -183,7 +195,7 @@ public class ForegroundServices extends LifecycleService {
 
 
     public LiveData<Location> getUpdatedLocationLiveData() {
-        return mMyLocation;
+        return mMyLocationMutableLiveData;
     }
 
     @SuppressWarnings("MissingPermission")
@@ -201,7 +213,7 @@ public class ForegroundServices extends LifecycleService {
     @Override
     public IBinder onBind(Intent intent) {
         // Used only in case of bound services.
-        super.onBind(intent);
         return null;
     }
+
 }

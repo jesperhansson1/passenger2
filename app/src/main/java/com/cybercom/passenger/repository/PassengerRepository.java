@@ -296,7 +296,6 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                 }
                 Timber.d("Drives: Best match:  distance: %s, Drive: %s", distance[0], bestMatch);
 
-
                 if (bestMatch != null) {
                     final com.cybercom.passenger.repository.databasemodel.Drive finalBestMatch = bestMatch;
                     final String finalBestMatchDriveId = bestMatchDriveId;
@@ -305,9 +304,11 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             User driver = dataSnapshot.getValue(User.class);
-                            bestDriveMatch.setValue(new Drive(finalBestMatchDriveId, driver, finalBestMatch.getTime(),
+                            bestDriveMatch.setValue(new Drive(finalBestMatchDriveId, driver,
+                                    finalBestMatch.getTime(),
                                     finalBestMatch.getStartLocation(), finalBestMatch.getEndLocation(),
-                                    finalBestMatch.getAvailableSeats(), finalBestMatch.getCurrentPosition(), finalBestMatch.getCurrentVelocity()));
+                                    finalBestMatch.getAvailableSeats(), finalBestMatch.getCurrentPosition(),
+                                    finalBestMatch.getCurrentVelocity()));
                         }
 
                         @Override
@@ -684,9 +685,9 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         mPassengerPositionReference.child(uId).setValue(LocationHelper.convertLocationToPosition(location));
     }
 
-    public LiveData<com.cybercom.passenger.model.PassengerRide> createPassengerRide(String driveId,
-            Position pickUpLocation,
-            Position dropOffLocation) {
+    public LiveData<com.cybercom.passenger.model.PassengerRide> createPassengerRide(Drive drive,
+                                                                                    Position pickUpLocation,
+                                                                                    Position dropOffLocation) {
         final MutableLiveData<com.cybercom.passenger.model.PassengerRide>
                 passengerRideMutableLiveData = new MutableLiveData<>();
 
@@ -696,59 +697,46 @@ public class PassengerRepository implements PassengerRepositoryInterface {
             String uId = firebaseUser.getUid();
 
             final DatabaseReference passengerPositionRef = mPassengerPositionReference.push();
-            final String passengerPositionId = mPassengerPositionReference.getKey();
 
             // Let the initial position be null
             passengerPositionRef.setValue(null);
 
             final com.cybercom.passenger.repository.databasemodel.PassengerRide dbPassengerRide =
-                    new com.cybercom.passenger.repository.databasemodel.PassengerRide(driveId, uId,
-                            passengerPositionId, pickUpLocation, dropOffLocation);
+                    new com.cybercom.passenger.repository.databasemodel.PassengerRide(drive.getId(),
+                            uId, pickUpLocation, dropOffLocation, false, false);
             final DatabaseReference passengerRideRef = mPassengerRideReference.push();
             final String passengerRideId = passengerRideRef.getKey();
 
             passengerRideRef.setValue(dbPassengerRide);
 
-            mUsersReference.child(firebaseUser.getUid()).addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    com.cybercom.passenger.model.PassengerRide passengerRide = new com.cybercom.passenger.model.PassengerRide(passengerRideId, driveId, uId, null);
-                    passengerRideMutableLiveData.setValue(passengerRide);
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-                }
-            });
-        } else {
-            // Not logged in
-            passengerRideMutableLiveData.setValue(null);
+            mUsersReference.child(firebaseUser.getUid()).addListenerForSingleValueEvent(
+                    getEventListenerToBuildPassengerRide(passengerRideId, pickUpLocation,
+                            dropOffLocation, drive, passengerRideMutableLiveData));
         }
         return passengerRideMutableLiveData;
     }
 
-    public LiveData<Position> getPassengerPositionOnMap() {
-        return null;
-        //mPassengerRideReference.orderByChild()
-        /*
-        *
-        *  mUsersReference.child(firebaseUser.getUid()).addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    User user = dataSnapshot.getValue(User.class);
-                    DriveRequest driveRequest = new DriveRequest(driveRequestId, user, dbDriveRequest.getTime(),
-                            dbDriveRequest.getStartLocation(), dbDriveRequest.getEndLocation(),
-                            dbDriveRequest.getExtraPassengers(), dbDriveRequest.getDriverIdBlackList());
+    private ValueEventListener getEventListenerToBuildPassengerRide(String passengerRideId,
+                                                                    Position pickUpLocation,
+                                                                    Position dropOffLocation,
+                                                                    Drive drive,
+                                                                    MutableLiveData<com.cybercom.passenger.model.PassengerRide> passengerRideMutableLiveData) {
+        return new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                User passenger = dataSnapshot.getValue(User.class);
+                com.cybercom.passenger.model.PassengerRide passengerRide =
+                        new com.cybercom.passenger.model.PassengerRide(
+                                passengerRideId, drive, passenger, pickUpLocation, dropOffLocation,
+                                false, false);
+                passengerRideMutableLiveData.setValue(passengerRide);
+            }
 
-                    driveRequestMutableLiveData.setValue(driveRequest);
-                }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
 
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            });
-        * */
+            }
+        };
     }
 
     public LiveData<com.cybercom.passenger.model.PassengerRide> getPassengerRides(String driveId) {
@@ -756,25 +744,98 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                 new MutableLiveData<>();
 
         Timber.i("getPassengerRides %s", driveId);
-        mPassengerRideReference.orderByChild(DRIVE_ID).equalTo(driveId).addValueEventListener(new ValueEventListener() {
+        mPassengerRideReference.orderByChild(DRIVE_ID).equalTo(driveId).addValueEventListener(
+                new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                            PassengerRide passengerRide = snapshot.getValue(PassengerRide.class);
+                            Timber.d("result: %s", passengerRide);
+                            if (passengerRide != null) {
+                                final String passengerRideId = snapshot.getKey();
+
+                                // Fetch the Passenger
+                                DatabaseReference dbRefPassengerId = mUsersReference.child(
+                                        passengerRide.getPassengerId());
+                                dbRefPassengerId.addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(DataSnapshot dataSnapshot) {
+                                        final User passenger = dataSnapshot.getValue(User.class);
+                                        if (passenger == null) {
+                                            return;
+                                        }
+                                        // Fetch the Drive
+                                        final DatabaseReference driveRef = mDrivesReference.child(
+                                                driveId);
+                                        driveRef.addListenerForSingleValueEvent(
+                                                getEventListenerToFetchDriveAndBuildPassengerRide(
+                                                        passengerRideId, passengerRide, passenger,
+                                                        passengerRidesLiveData));
+                                    }
+
+                                    @Override
+                                    public void onCancelled(DatabaseError databaseError) {
+                                        Timber.i("Failed to fetch user: driver: %s"
+                                                , databaseError.toString());
+                                    }
+                                });
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError error) {
+                    }
+                });
+
+        return passengerRidesLiveData;
+    }
+
+    private ValueEventListener getEventListenerToFetchDriveAndBuildPassengerRide(
+            String passengerRideId, PassengerRide passengerRide, User passenger,
+            MutableLiveData<com.cybercom.passenger.model.PassengerRide> passengerRideMutableLiveData) {
+        return new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    PassengerRide passengerRide = snapshot.getValue(PassengerRide.class);
-                    Timber.d("result: %s", passengerRide);
-                    if (passengerRide != null) {
-                        passengerRidesLiveData.setValue(new com.cybercom.passenger.model.PassengerRide(
-                                snapshot.getKey(), passengerRide.getDriveId(),
-                                passengerRide.getPassengerId(), passengerRide.getPassengerPositionId()));
-                    }
+                com.cybercom.passenger.repository.databasemodel.Drive drive =
+                        dataSnapshot.getValue(com.cybercom.passenger.repository.databasemodel.Drive.class);
+
+                final String driveId = dataSnapshot.getKey();
+
+                if (drive != null) {
+                    mUsersReference.child(drive.getDriverId()).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            User driver = dataSnapshot.getValue(User.class);
+                            Drive convertedDrive = new Drive(driveId, driver,
+                                    drive.getTime(),
+                                    drive.getStartLocation(), drive.getEndLocation(),
+                                    drive.getAvailableSeats(), drive.getCurrentPosition(),
+                                    drive.getCurrentVelocity());
+
+                            com.cybercom.passenger.model.PassengerRide convertedPassengerRide =
+                                    new com.cybercom.passenger.model.PassengerRide(
+                                            passengerRideId, convertedDrive, passenger,
+                                            passengerRide.getPickUpPosition(),
+                                            passengerRide.getDropOffPosition(),
+                                            passengerRide.isPickUpConfirmed(),
+                                            passengerRide.isDropOffConfirmed());
+                            passengerRideMutableLiveData.setValue(convertedPassengerRide);
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
                 }
             }
 
             @Override
-            public void onCancelled(DatabaseError error) {
+            public void onCancelled(DatabaseError databaseError) {
+                Timber.e("database error: %s", databaseError);
             }
-        });
-        return passengerRidesLiveData;
+        };
     }
 
     public LiveData<Position> getDriverPosition(String driveId) {
@@ -803,15 +864,13 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         MutableLiveData<Position> passengerRidesLiveData =
                 new MutableLiveData<>();
 
-        mPassengerPositionReference.equalTo(userId).addValueEventListener(new ValueEventListener() {
+        mPassengerPositionReference.child(userId).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    Position position = snapshot.getValue(Position.class);
-                    Timber.d("result: %s", position);
-                    if (position != null) {
-                        passengerRidesLiveData.setValue(position);
-                    }
+                Position position = dataSnapshot.getValue(Position.class);
+                Timber.d("result: %s", position);
+                if (position != null) {
+                    passengerRidesLiveData.setValue(position);
                 }
             }
 
@@ -821,4 +880,5 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         });
         return passengerRidesLiveData;
     }
+
 }

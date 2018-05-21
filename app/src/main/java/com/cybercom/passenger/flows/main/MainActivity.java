@@ -213,8 +213,8 @@ public class MainActivity extends AppCompatActivity implements
         });
     }*/
 
-    private void createPassengerRide(String driveId, Position startPosition, Position endPosition) {
-        mMainViewModel.createPassengerRide(driveId, startPosition, endPosition).observe(this, passengerRide -> {
+    private void createPassengerRide(Drive drive, Position startPosition, Position endPosition) {
+        mMainViewModel.createPassengerRide(drive, startPosition, endPosition).observe(this, passengerRide -> {
             Intent updatePassengerIntent = new Intent(MainActivity.this, ForegroundServices.class);
             updatePassengerIntent.setAction(Constants.ACTION.STARTFOREGROUND_UPDATE_PASSENGER_POSITION);
             if (passengerRide != null) {
@@ -250,12 +250,13 @@ public class MainActivity extends AppCompatActivity implements
 
     private void updatePassengersMarkerPosition(String driveId) {
         mMainViewModel.getPassengerRides(driveId).observe(
-                this, passengerRide -> {
-                    if (passengerRide == null) {
-                        return;
-                    }
-                    observePassengersPosition(passengerRide.getPassegnerId());
-                });
+            this, passengerRide -> {
+                if (passengerRide == null) {
+                    return;
+                }
+
+                observePassengersPosition(passengerRide.getPassenger().getUserId());
+            });
     }
 
     private void observePassengersPosition(final String passengerId) {
@@ -295,7 +296,7 @@ public class MainActivity extends AppCompatActivity implements
                     break;
                 case Notification.ACCEPT_PASSENGER:
                     showPassengerNotificationDialog(notification);
-                    createPassengerRide(notification.getDrive().getId(),
+                    createPassengerRide(notification.getDrive(),
                             notification.getDriveRequest().getStartLocation(),
                             notification.getDriveRequest().getEndLocation());
                     updateDriversMarkerPosition(notification.getDrive().getId());
@@ -828,9 +829,7 @@ public class MainActivity extends AppCompatActivity implements
                                 UpdateDriveIntent.setAction(Constants.ACTION.STARTFOREGROUND_UPDATE_DRIVER_POSITION);
                                 UpdateDriveIntent.putExtra(DRIVE_ID, drive.getId());
                                 startService(UpdateDriveIntent);
-                        /*sendDriverPositionToDB(drive.getId());
-                        updatePassengersMarkerPosition(drive.getId());
-                        Timber.i("Drive created: %s", drive.getId());*/
+                                updatePassengersMarkerPosition(drive.getId());
                                 mCreateDriveFragment.setDefaultValuesToDialog();
                             }
                         });
