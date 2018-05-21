@@ -84,8 +84,11 @@ public class GpsLocations {
     public LatLng getLocations(int interval, LatLng start, LatLng end) {
         double azimuth = calculateBearing(start, end);
         double d = getPathLength(start, end);
-        int dist = (int) d / interval;
+        int dist = (int) (d+interval+1) / interval;
         int coveredDist = interval;
+        for(int distance = 0; distance < dist; distance ++) {
+            coveredDist += interval;
+        }
         return getDestinationLatLng(start.getLatitude(), start.getLongitude(), azimuth, coveredDist);
     }
 

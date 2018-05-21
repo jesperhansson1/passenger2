@@ -328,17 +328,19 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
                             GpsLocations gpsLocations = new GpsLocations();
                             LatLng start = gpsLocations.getLocations(radiusMultiplier,
-                                    new LatLng(driveRequest.getStartLocation().getLatitude(),driveRequest.getStartLocation().getLongitude()),
-                                    new LatLng(driveRequest.getEndLocation().getLatitude(),driveRequest.getEndLocation().getLongitude()));
+                                    new LatLng(bounds.getNorthEastLatitude(),bounds.getNorthEastLongitude()),
+                                    new LatLng(bounds.getSouthWestLatitude(),bounds.getSouthWestLongitude()));
 
                             LatLng end = gpsLocations.getLocations(radiusMultiplier,
-                                    new LatLng(driveRequest.getEndLocation().getLatitude(),driveRequest.getEndLocation().getLongitude()),
-                                    new LatLng(driveRequest.getStartLocation().getLatitude(),driveRequest.getStartLocation().getLongitude()));
+                                    new LatLng(bounds.getSouthWestLatitude(),bounds.getSouthWestLongitude()),
+                                    new LatLng(bounds.getNorthEastLatitude(),bounds.getNorthEastLongitude()));
+                            Bounds bounds1 = new Bounds(start.getLatitude(),start.getLongitude(),end.getLatitude(),end.getLongitude());
+
                             Timber.d("start " + start.getLatitude() + " : " + start.getLongitude());
                             Timber.d("end " + end.getLatitude() + " : " + end.getLongitude());
                             //Check for start position and end position
-                            if(contains(bounds,start.getLatitude(),start.getLongitude())){
-                                if(contains(bounds,end.getLatitude(),end.getLongitude()))
+                            if(contains(bounds1,driveRequest.getStartLocation().getLatitude(),driveRequest.getStartLocation().getLongitude())){
+                                if(contains(bounds1,driveRequest.getEndLocation().getLatitude(),driveRequest.getEndLocation().getLongitude()))
                                 {
                                     Timber.d("Match found");
 
