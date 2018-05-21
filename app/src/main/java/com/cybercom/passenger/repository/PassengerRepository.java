@@ -15,6 +15,7 @@ import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.repository.databasemodel.PassengerRide;
 import com.cybercom.passenger.repository.databasemodel.utils.DatabaseModelHelper;
+import com.cybercom.passenger.utils.GpsLocations;
 import com.cybercom.passenger.utils.LocationHelper;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
@@ -28,6 +29,7 @@ import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.gson.Gson;
+import com.javadocmd.simplelatlng.LatLng;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -323,9 +325,20 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                                     Double.parseDouble(snapshot.child(BOUNDS).child(SOUTHWEST).child(LONGITUDE).getValue().toString()));
 
                             Timber.d(bounds.toString());
+
+                            GpsLocations gpsLocations = new GpsLocations();
+                            LatLng start = gpsLocations.getLocations(radiusMultiplier,
+                                    new LatLng(driveRequest.getStartLocation().getLatitude(),driveRequest.getStartLocation().getLongitude()),
+                                    new LatLng(driveRequest.getEndLocation().getLatitude(),driveRequest.getEndLocation().getLongitude()));
+
+                            LatLng end = gpsLocations.getLocations(radiusMultiplier,
+                                    new LatLng(driveRequest.getEndLocation().getLatitude(),driveRequest.getEndLocation().getLongitude()),
+                                    new LatLng(driveRequest.getStartLocation().getLatitude(),driveRequest.getStartLocation().getLongitude()));
+                            System.out.println("start " + start.getLatitude() + " : " + start.getLongitude());
+                            System.out.println("end " + end.getLatitude() + " : " + end.getLongitude());
                             //Check for start position and end position
-                            if(contains(bounds,driveRequest.getStartLocation().getLatitude(),driveRequest.getStartLocation().getLongitude())){
-                                if(contains(bounds,driveRequest.getEndLocation().getLatitude(),driveRequest.getEndLocation().getLongitude()))
+                            if(contains(bounds,start.getLatitude(),start.getLongitude())){
+                                if(contains(bounds,end.getLatitude(),end.getLongitude()))
                                 {
                                     Timber.d("Match found");
 
