@@ -334,8 +334,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                             LatLng end = gpsLocations.getLocations(radiusMultiplier,
                                     new LatLng(driveRequest.getEndLocation().getLatitude(),driveRequest.getEndLocation().getLongitude()),
                                     new LatLng(driveRequest.getStartLocation().getLatitude(),driveRequest.getStartLocation().getLongitude()));
-                            System.out.println("start " + start.getLatitude() + " : " + start.getLongitude());
-                            System.out.println("end " + end.getLatitude() + " : " + end.getLongitude());
+                            Timber.d("start " + start.getLatitude() + " : " + start.getLongitude());
+                            Timber.d("end " + end.getLatitude() + " : " + end.getLongitude());
                             //Check for start position and end position
                             if(contains(bounds,start.getLatitude(),start.getLongitude())){
                                 if(contains(bounds,end.getLatitude(),end.getLongitude()))
