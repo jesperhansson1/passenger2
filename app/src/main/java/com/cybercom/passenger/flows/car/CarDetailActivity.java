@@ -168,11 +168,20 @@ public class CarDetailActivity extends AppCompatActivity {
         }
     }
 
-    public void getDetails(String url, String regno)
-    {
-        mCarDetailViewModel.setUrl(url, regno);
+    private void getDetails(String url, String regNumber) {
+        mCarDetailViewModel.setUrl(url, regNumber);
+        mCarDetailViewModel.getCarLiveData().observe(this, car -> {
+                    if (car != null) {
 
-        mCarDetailViewModel.getCarLiveData().observe(this, new Observer<Car>() {
+                            mEditTextCarYear.setText(car.getYear());
+                            mEditTextCarModel.setText(car.getModel());
+                            mEditTextCarColor.setText(car.getColor());
+
+
+                    }
+                });
+
+          /*      mCarDetailViewModel.getCarLiveData().observe(this, new Observer<Car>() {
 
             @Override
             public void onChanged(@Nullable Car car) {
@@ -180,6 +189,6 @@ public class CarDetailActivity extends AppCompatActivity {
                 mEditTextCarModel.setText(car.getModel());
                 mEditTextCarColor.setText(car.getColor());
             }
-        });
+        });*/
     }
 }
