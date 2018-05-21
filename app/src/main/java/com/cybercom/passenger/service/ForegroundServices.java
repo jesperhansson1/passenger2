@@ -134,15 +134,11 @@ public class ForegroundServices extends Service {
                     }
 
                     for (Location location : locationResult.getLocations()) {
-                        mMyLocation.setValue(location);
+                        mMyLocationMutableLiveData.setValue(location);
 
-                        Bundle extras = intent.getExtras();
-                        String passengerRideId = extras.getString(PASSENGER_RIDE_KEY);
-
-                        loc.setLatitude(mMyLocation.getValue().getLatitude());
-                        loc.setLongitude(mMyLocation.getValue().getLongitude());
-                        mPassengerRepository.updatePassengerRideCurrentLocation(loc);
+                        mCurrentLocation = location;
                     }
+                    mPassengerRepository.updatePassengerRideCurrentLocation(mCurrentLocation);
                 }
             };
             createLocationRequest();
