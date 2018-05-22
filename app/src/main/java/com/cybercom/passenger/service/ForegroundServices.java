@@ -19,6 +19,7 @@ import android.widget.Toast;
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.main.MainActivity;
 import com.cybercom.passenger.repository.PassengerRepository;
+import com.cybercom.passenger.utils.NotificationHelper;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -38,8 +39,6 @@ public class ForegroundServices extends Service {
     private static final int INTERVAL = 1000;
     private static final int FASTEST_INTERVAL = 1000;
     private static final String DRIVE_ID = "driveId";
-    private static final String PASSENGER_RIDE_KEY = "passengerRideKey";
-
 
     @Override
     public void onCreate() {
@@ -108,7 +107,8 @@ public class ForegroundServices extends Service {
             Bitmap icon = BitmapFactory.decodeResource(getResources(),
                     R.mipmap.ic_launcher);
 
-            Notification notification = new NotificationCompat.Builder(this)
+            Notification notification = new NotificationCompat.Builder(this,
+                    NotificationHelper.TRACKING_CHANNEL)
                     .setContentTitle(getString(R.string.passenger))
                     .setTicker(getString(R.string.passenger))
                     .setContentText(getString(R.string.passenger))
@@ -151,7 +151,8 @@ public class ForegroundServices extends Service {
 
             RemoteViews notificationView = new RemoteViews(this.getPackageName(),R.layout.foreground_notification);
 
-            Notification notification = new NotificationCompat.Builder(this)
+            Notification notification = new NotificationCompat.Builder(this,
+                    NotificationHelper.TRACKING_CHANNEL)
                     .setContentTitle(getString(R.string.passenger))
                     .setTicker(getString(R.string.passenger))
                     .setContentText(getString(R.string.passenger))

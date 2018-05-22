@@ -50,6 +50,7 @@ import com.cybercom.passenger.service.Constants;
 import com.cybercom.passenger.service.ForegroundServices;
 import com.cybercom.passenger.service.GeofenceTransitionsIntentService;
 import com.cybercom.passenger.utils.LocationHelper;
+import com.cybercom.passenger.utils.NotificationHelper;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingClient;
 import com.google.android.gms.location.GeofencingRequest;
@@ -156,6 +157,7 @@ public class MainActivity extends AppCompatActivity implements
 
         mMainViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
         mFragmentManager = getSupportFragmentManager();
+        createNotificationChannels();
 
         mGeofenceEventsReceiver = new GeofenceBroadcastReceiver();
 
@@ -190,6 +192,10 @@ public class MainActivity extends AppCompatActivity implements
         mapFragment.getMapAsync(this);
         setUpGeofencing();
         initObservers();
+    }
+
+    private void createNotificationChannels() {
+        new NotificationHelper(this);
     }
 
     private void createPassengerRide(Drive drive, Position startPosition, Position endPosition) {
