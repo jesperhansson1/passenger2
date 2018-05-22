@@ -1,6 +1,8 @@
 package com.cybercom.passenger.model;
 
-public class PassengerRide {
+import java.io.Serializable;
+
+public class PassengerRide implements Serializable {
 
     private String mId;
     private Drive mDrive;

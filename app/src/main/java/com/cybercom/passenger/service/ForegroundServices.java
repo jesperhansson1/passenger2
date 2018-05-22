@@ -103,7 +103,7 @@ public class ForegroundServices extends Service {
             PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
                     notificationIntent, 0);
 
-            RemoteViews notificationView = new RemoteViews(this.getPackageName(),R.layout.foreground_notification);
+            RemoteViews notificationView = new RemoteViews(this.getPackageName(), R.layout.foreground_notification);
 
             Bitmap icon = BitmapFactory.decodeResource(getResources(),
                     R.mipmap.ic_launcher);
@@ -113,8 +113,6 @@ public class ForegroundServices extends Service {
                     .setTicker(getString(R.string.passenger))
                     .setContentText(getString(R.string.passenger))
                     .setSmallIcon(R.mipmap.ic_launcher)
-                    .setLargeIcon(
-                            Bitmap.createScaledBitmap(icon, 128, 128, false))
                     .setContent(notificationView)
                     .setOngoing(true).build();
 
@@ -153,16 +151,11 @@ public class ForegroundServices extends Service {
 
             RemoteViews notificationView = new RemoteViews(this.getPackageName(),R.layout.foreground_notification);
 
-            Bitmap icon = BitmapFactory.decodeResource(getResources(),
-                    R.mipmap.ic_launcher);
-
             Notification notification = new NotificationCompat.Builder(this)
                     .setContentTitle(getString(R.string.passenger))
                     .setTicker(getString(R.string.passenger))
                     .setContentText(getString(R.string.passenger))
                     .setSmallIcon(R.mipmap.ic_launcher)
-                    .setLargeIcon(
-                            Bitmap.createScaledBitmap(icon, 128, 128, false))
                     .setContent(notificationView)
                     .setOngoing(true).build();
 
@@ -174,12 +167,10 @@ public class ForegroundServices extends Service {
         //Get Passenger Position
 
         if (intent.getAction().equals(Constants.ACTION.STARTFOREGROUND)) {
-            Toast.makeText(this,"Start Service",Toast.LENGTH_SHORT).show();
-        }
+            Toast.makeText(this, "Start Service", Toast.LENGTH_SHORT).show();
+        } else if (intent.getAction().equals(Constants.ACTION.STOPFOREGROUND)) {
 
-        else if (intent.getAction().equals(Constants.ACTION.STOPFOREGROUND)) {
-
-            Toast.makeText(this,"Stop Service",Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Stop Service", Toast.LENGTH_SHORT).show();
             stopForeground(true);
             stopSelf();
         }

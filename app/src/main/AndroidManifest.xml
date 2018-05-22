@@ -74,6 +74,7 @@
             android:value="@string/google_maps_key" />
 
         <service android:name=".service.ForegroundServices" />
+        <service android:name=".service.GeofenceTransitionsIntentService"/>
 
     </application>
 
