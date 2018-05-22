@@ -15,7 +15,6 @@ import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.repository.databasemodel.PassengerRide;
 import com.cybercom.passenger.repository.databasemodel.utils.DatabaseModelHelper;
-import com.cybercom.passenger.utils.GpsLocations;
 import com.cybercom.passenger.utils.LocationHelper;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
@@ -29,7 +28,6 @@ import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.gson.Gson;
-import com.javadocmd.simplelatlng.LatLng;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -295,7 +293,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                         if (driveRequest.getDriverIdBlackList().contains(drive.getDriverId()))
                             Timber.i("No match, driver blacklisted: %s", drive.getDriverId());
 
-                        if(snapshot.hasChild(BOUNDS))
+                       /* if(snapshot.hasChild(BOUNDS))
                         {
                             Bounds bounds = new Bounds(Double.parseDouble(snapshot.child(BOUNDS).child(NORTHEAST).child(LATITUDE).getValue().toString()),
                                     Double.parseDouble(snapshot.child(BOUNDS).child(NORTHEAST).child(LONGITUDE).getValue().toString()),
@@ -327,9 +325,9 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                                    // shortestDistance = distance[0];
                                 }
                             }
-                        }
+                        }*/
 
-                        /*if (distance[0] < DEFAULT_DRIVE_REQUEST_RADIUS * radiusMultiplier && !driveRequest.getDriverIdBlackList().contains(drive.getDriverId())) {
+                        if (distance[0] < DEFAULT_DRIVE_REQUEST_RADIUS * radiusMultiplier && !driveRequest.getDriverIdBlackList().contains(drive.getDriverId())) {
                             if (bestMatch == null) {
                                 bestMatch = drive;
                                 bestMatchDriveId = snapshot.getKey();
@@ -339,7 +337,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                                 bestMatchDriveId = snapshot.getKey();
                                 shortestDistance = distance[0];
                             }
-                        }*/
+                        }
                     } else {
                         Timber.d("Drives: Out of time frame!");
                     }

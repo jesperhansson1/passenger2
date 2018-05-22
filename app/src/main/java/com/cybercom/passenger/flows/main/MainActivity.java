@@ -11,7 +11,6 @@ import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
@@ -33,7 +32,6 @@ import com.cybercom.passenger.model.Bounds;
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Notification;
-import com.cybercom.passenger.model.PassengerRide;
 import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.route.FetchRouteUrl;
@@ -41,6 +39,7 @@ import com.cybercom.passenger.route.ParserTask;
 import com.cybercom.passenger.service.Constants;
 import com.cybercom.passenger.service.ForegroundServices;
 import com.cybercom.passenger.utils.LocationHelper;
+import com.cybercom.passenger.utils.NotificationHelper;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -121,6 +120,7 @@ public class MainActivity extends AppCompatActivity implements
 
         mMainViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
         mFragmentManager = getSupportFragmentManager();
+        createNotificationChannels();
 
         if (savedInstanceState == null) {
             if (getIntent().getExtras() != null) {
@@ -149,6 +149,10 @@ public class MainActivity extends AppCompatActivity implements
         mapFragment.getMapAsync(this);
 
         initObservers();
+    }
+
+    private void createNotificationChannels() {
+        new NotificationHelper(this);
     }
 
     private void createPassengerRide(Drive drive, Position startPosition, Position endPosition) {

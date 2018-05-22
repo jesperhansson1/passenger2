@@ -19,6 +19,7 @@ import android.widget.Toast;
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.main.MainActivity;
 import com.cybercom.passenger.repository.PassengerRepository;
+import com.cybercom.passenger.utils.NotificationHelper;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -108,13 +109,12 @@ public class ForegroundServices extends Service {
             Bitmap icon = BitmapFactory.decodeResource(getResources(),
                     R.mipmap.ic_launcher);
 
-            Notification notification = new NotificationCompat.Builder(this)
+            Notification notification = new NotificationCompat.Builder(this,
+                    NotificationHelper.TRACKING_CHANNEL)
                     .setContentTitle(getString(R.string.passenger))
                     .setTicker(getString(R.string.passenger))
                     .setContentText(getString(R.string.passenger))
                     .setSmallIcon(R.mipmap.ic_launcher)
-                    .setLargeIcon(
-                            Bitmap.createScaledBitmap(icon, 128, 128, false))
                     .setContent(notificationView)
                     .setOngoing(true).build();
 
@@ -153,16 +153,12 @@ public class ForegroundServices extends Service {
 
             RemoteViews notificationView = new RemoteViews(this.getPackageName(),R.layout.foreground_notification);
 
-            Bitmap icon = BitmapFactory.decodeResource(getResources(),
-                    R.mipmap.ic_launcher);
-
-            Notification notification = new NotificationCompat.Builder(this)
+            Notification notification = new NotificationCompat.Builder(this,
+                    NotificationHelper.TRACKING_CHANNEL)
                     .setContentTitle(getString(R.string.passenger))
                     .setTicker(getString(R.string.passenger))
                     .setContentText(getString(R.string.passenger))
                     .setSmallIcon(R.mipmap.ic_launcher)
-                    .setLargeIcon(
-                            Bitmap.createScaledBitmap(icon, 128, 128, false))
                     .setContent(notificationView)
                     .setOngoing(true).build();
 
