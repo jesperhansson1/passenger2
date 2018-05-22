@@ -3,6 +3,7 @@ package com.cybercom.passenger.route;
 import android.graphics.Color;
 import android.os.AsyncTask;
 
+import com.cybercom.passenger.model.Bounds;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Polyline;
@@ -23,6 +24,7 @@ public class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<Str
 
     public interface OnRouteCompletion{
         void onRouteDrawn(Polyline route);
+        void onBoundsParse(Bounds bounds);
     }
 
     private OnRouteCompletion mDelegate;
@@ -44,7 +46,7 @@ public class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<Str
         try {
             jsonObject = new JSONObject(jsonData[0]);
             Timber.d(jsonData[0]);
-            DataParser parser = new DataParser();
+            DataParser parser = new DataParser(mDelegate);
             Timber.d(parser.toString());
 
             // Starts parsing data

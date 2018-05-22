@@ -37,6 +37,7 @@ import com.cybercom.passenger.flows.passengernotification.PassengerNotificationD
 import com.cybercom.passenger.flows.pickupfragment.DriverPassengerPickUpFragment;
 import com.cybercom.passenger.flows.progressfindingcar.FindingCarProgressDialog;
 import com.cybercom.passenger.interfaces.FragmentSizeListener;
+import com.cybercom.passenger.model.Bounds;
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Notification;
@@ -144,6 +145,8 @@ public class MainActivity extends AppCompatActivity implements
     private User mCurrentLoggedInUser;
 
 
+    public Bounds mBounds;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -185,7 +188,6 @@ public class MainActivity extends AppCompatActivity implements
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map_activitymap_googlemap);
         mapFragment.getMapAsync(this);
-        setUpGeofencing();
         setUpGeofencing();
         initObservers();
     }
@@ -752,6 +754,17 @@ public class MainActivity extends AppCompatActivity implements
         zoomToFitRoute();
     }
 
+    public void onBoundsParse(Bounds bounds)
+    {
+        if(bounds!=null) {
+            mBounds = bounds;
+        }
+        else
+        {
+            mBounds = new Bounds(0.0,0.0,0.0,0.0);
+        }
+    }
+
     @Override
     public void onPlaceMarkerIconClicked() {
 
@@ -846,7 +859,10 @@ public class MainActivity extends AppCompatActivity implements
         mCreateDriveFragment.hideCreateDialog();
         switch (type) {
             case User.TYPE_DRIVER:
-                mMainViewModel.createDrive(time, startLocation, endLocation, seats).observe(this,
+                if(mBounds==null) {
+                    mBounds = new Bounds(0.0,0.0,0.0,0.0);
+                }
+                mMainViewModel.createDrive(time, startLocation, endLocation, seats, mBounds).observe(this,
                         drive -> {
                             if (drive != null) {
                                 Intent UpdateDriveIntent = new Intent(MainActivity.this, ForegroundServices.class);

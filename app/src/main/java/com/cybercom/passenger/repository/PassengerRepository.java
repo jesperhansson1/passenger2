@@ -6,6 +6,7 @@ import android.arch.lifecycle.MutableLiveData;
 import android.location.Location;
 import android.support.annotation.NonNull;
 
+import com.cybercom.passenger.model.Bounds;
 import com.cybercom.passenger.model.Car;
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
@@ -14,6 +15,7 @@ import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.repository.databasemodel.PassengerRide;
 import com.cybercom.passenger.repository.databasemodel.utils.DatabaseModelHelper;
+import com.cybercom.passenger.utils.GpsLocations;
 import com.cybercom.passenger.utils.LocationHelper;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
@@ -27,6 +29,7 @@ import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.gson.Gson;
+import com.javadocmd.simplelatlng.LatLng;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -84,6 +87,19 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private MutableLiveData<Notification> mNotification = new MutableLiveData<>();
     private User mCurrentlyLoggedInUser;
     private MutableLiveData<Location> mDriverCurrentLocation = new MutableLiveData<>();
+
+    //private String mCurrentDriveId;
+    private static final String BOUNDS = "bounds";
+    private static final String NORTHEAST = "northeast";
+    private static final String SOUTHWEST = "southwest";
+    /*double mNorthEastLatitude;
+    double mNorthEastLongitude;
+    double mSouthWestLatitude;
+    double mSouthWestLongitude;
+    Bounds mBounds;
+    private static final String DRIVE_STATUS = "status";
+    private static final String ACTIVE_STATUS = "active";
+    private static final String HISTORY_STATUS = "history";*/
 
     public static PassengerRepository getInstance() {
         if (sPassengerRepository == null) {
@@ -280,7 +296,41 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                         if (driveRequest.getDriverIdBlackList().contains(drive.getDriverId()))
                             Timber.i("No match, driver blacklisted: %s", drive.getDriverId());
 
-                        if (distance[0] < DEFAULT_DRIVE_REQUEST_RADIUS * radiusMultiplier && !driveRequest.getDriverIdBlackList().contains(drive.getDriverId())) {
+                        if(snapshot.hasChild(BOUNDS))
+                        {
+                            Bounds bounds = new Bounds(Double.parseDouble(snapshot.child(BOUNDS).child(NORTHEAST).child(LATITUDE).getValue().toString()),
+                                    Double.parseDouble(snapshot.child(BOUNDS).child(NORTHEAST).child(LONGITUDE).getValue().toString()),
+                                    Double.parseDouble(snapshot.child(BOUNDS).child(SOUTHWEST).child(LATITUDE).getValue().toString()),
+                                    Double.parseDouble(snapshot.child(BOUNDS).child(SOUTHWEST).child(LONGITUDE).getValue().toString()));
+
+                            Timber.d(bounds.toString());
+
+                            GpsLocations gpsLocations = new GpsLocations();
+                            LatLng start = gpsLocations.getLocations(radiusMultiplier,
+                                    new LatLng(bounds.getNorthEastLatitude(),bounds.getNorthEastLongitude()),
+                                    new LatLng(bounds.getSouthWestLatitude(),bounds.getSouthWestLongitude()));
+
+                            LatLng end = gpsLocations.getLocations(radiusMultiplier,
+                                    new LatLng(bounds.getSouthWestLatitude(),bounds.getSouthWestLongitude()),
+                                    new LatLng(bounds.getNorthEastLatitude(),bounds.getNorthEastLongitude()));
+                            Bounds bounds1 = new Bounds(start.getLatitude(),start.getLongitude(),end.getLatitude(),end.getLongitude());
+
+                            Timber.d("start " + start.getLatitude() + " : " + start.getLongitude());
+                            Timber.d("end " + end.getLatitude() + " : " + end.getLongitude());
+                            //Check for start position and end position
+                            if(contains(bounds1,driveRequest.getStartLocation().getLatitude(),driveRequest.getStartLocation().getLongitude())){
+                                if(contains(bounds1,driveRequest.getEndLocation().getLatitude(),driveRequest.getEndLocation().getLongitude()))
+                                {
+                                    Timber.d("Match found");
+
+                                    bestMatch = drive;
+                                    bestMatchDriveId = snapshot.getKey();
+                                   // shortestDistance = distance[0];
+                                }
+                            }
+                        }
+
+                        /*if (distance[0] < DEFAULT_DRIVE_REQUEST_RADIUS * radiusMultiplier && !driveRequest.getDriverIdBlackList().contains(drive.getDriverId())) {
                             if (bestMatch == null) {
                                 bestMatch = drive;
                                 bestMatchDriveId = snapshot.getKey();
@@ -290,12 +340,13 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                                 bestMatchDriveId = snapshot.getKey();
                                 shortestDistance = distance[0];
                             }
-                        }
+                        }*/
                     } else {
                         Timber.d("Drives: Out of time frame!");
                     }
                 }
                 Timber.d("Drives: Best match:  distance: %s, Drive: %s", distance[0], bestMatch);
+
 
                 if (bestMatch != null) {
                     final com.cybercom.passenger.repository.databasemodel.Drive finalBestMatch = bestMatch;
@@ -509,7 +560,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     }
 
     public LiveData<Drive> createDrive(long time, Position startLocation, Position endLocation,
-                                       int availableSeats) {
+                                       int availableSeats, Bounds bounds) {
         final MutableLiveData<Drive> driveMutableLiveData = new MutableLiveData<>();
 
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -523,7 +574,17 @@ public class PassengerRepository implements PassengerRepositoryInterface {
             final DatabaseReference ref = mDrivesReference.push();
             final String driveId = ref.getKey();
             ref.setValue(dbDrive);
+            //adding bounds for drive
 
+            Map<String, Object> neBounds = new HashMap<>();
+            neBounds.put(LATITUDE, bounds.getNorthEastLatitude());
+            neBounds.put(LONGITUDE, bounds.getNorthEastLongitude());
+            Map<String, Object> swBounds = new HashMap<>();
+            swBounds.put(LATITUDE, bounds.getSouthWestLatitude());
+            swBounds.put(LONGITUDE, bounds.getSouthWestLongitude());
+            mDrivesReference.child(driveId).child(BOUNDS).child(SOUTHWEST).setValue(swBounds);
+            mDrivesReference.child(driveId).child(BOUNDS).child(NORTHEAST).setValue(neBounds);
+            //--------
             mUsersReference.child(firebaseUser.getUid()).addValueEventListener(
                     new ValueEventListener() {
                         @Override
@@ -784,11 +845,10 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                         }
                     }
 
-                    @Override
-                    public void onCancelled(DatabaseError error) {
-                    }
-                });
-
+            @Override
+            public void onCancelled(DatabaseError error) {
+            }
+        });
         return passengerRidesLiveData;
     }
 
@@ -920,4 +980,42 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
         return driveIdMutableLiveData;
     }
+
+    public boolean contains(Bounds bounds, double latitude, double longitude) {
+        boolean longitudeContained = false;
+        boolean latitudeContained = false;
+
+        double swLongitude = 0.0;
+        double swLatitude = 0.0;
+        double neLongitude = 0.0;
+        double neLatitude = 0.0;
+
+        try {
+            swLongitude = bounds.getSouthWestLongitude();
+            swLatitude = bounds.getSouthWestLatitude();
+            neLongitude = bounds.getNorthEastLongitude();
+            neLatitude = bounds.getNorthEastLatitude();
+        }catch (Exception e)
+        {
+            Timber.e(e.getLocalizedMessage());
+        }
+
+        // Check if the bbox contains the prime meridian (longitude 0.0).
+        if (swLongitude < neLongitude) {
+            if (swLongitude <= longitude && longitude <= neLongitude) {
+                longitudeContained = true;
+            }
+
+        } else if ((0 < longitude && longitude <= neLongitude) ||
+                (swLongitude <= longitude && longitude < 0)) {
+            // Contains prime meridian.
+            longitudeContained = true;
+        }
+
+        if (swLatitude < neLatitude && (swLatitude <= latitude && latitude <= neLatitude)) {
+            latitudeContained = true;
+        }
+        return (longitudeContained && latitudeContained);
+    }
+
 }

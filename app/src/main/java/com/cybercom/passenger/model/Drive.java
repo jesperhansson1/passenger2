@@ -14,6 +14,7 @@ public class Drive implements Serializable {
     private float mCurrentVelocity;
     private int mAvailableSeats;
 
+
     public Drive(){}
 
     public Drive(String id, User driver, long time, Position startLocation, Position endLocation,

@@ -1,6 +1,12 @@
 package com.cybercom.passenger.route;
 
+import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.MutableLiveData;
+
+import com.cybercom.passenger.model.Bounds;
+import com.cybercom.passenger.repository.PassengerRepository;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Polyline;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -13,21 +19,44 @@ import timber.log.Timber;
 
 class DataParser {
 
+
+    JSONObject mJsonObject;
+    private ParserTask.OnRouteCompletion mDelegate;
+    DataParser(ParserTask.OnRouteCompletion delegate)
+    {
+        mDelegate = delegate;
+    }
     /** Receives a JSONObject and returns a list of lists containing latitude and longitude */
     List<List<HashMap<String,String>>> parse(JSONObject jsonObject){
-
+        mJsonObject = jsonObject;
         List<List<HashMap<String, String>>> listRoutes = new ArrayList<>() ;
         JSONArray jsonArrayRoutes;
         JSONArray jsonArrayLegs;
         JSONArray jsonArraySteps;
+        JSONObject jsonObjectBounds;
 
         try {
 
             jsonArrayRoutes = jsonObject.getJSONArray("routes");
-            System.out.println(jsonArrayRoutes);
+            Timber.d(jsonArrayRoutes.toString());
+
+
 
             // Traversing all routes
             for(int i=0;i<jsonArrayRoutes.length();i++){
+
+                //To get bounds - need to be changed to okhttp for speed/performance tuning...
+
+                jsonObjectBounds = ( (JSONObject)jsonArrayRoutes.get(i)).getJSONObject("bounds");
+                JSONObject ne = jsonObjectBounds.getJSONObject("northeast");
+
+                Bounds bounds = new Bounds(Double.parseDouble(jsonObjectBounds.getJSONObject("northeast").get("lat").toString()),
+                        Double.parseDouble(jsonObjectBounds.getJSONObject("northeast").get("lng").toString()),
+                        Double.parseDouble(jsonObjectBounds.getJSONObject("southwest").get("lat").toString()),
+                        Double.parseDouble(jsonObjectBounds.getJSONObject("southwest").get("lng").toString()));
+
+                mDelegate.onBoundsParse(bounds);
+
                 jsonArrayLegs = ( (JSONObject)jsonArrayRoutes.get(i)).getJSONArray("legs");
                 List<HashMap<String, String>> listPath = new ArrayList<>();
 
@@ -60,6 +89,7 @@ class DataParser {
 
     private List<LatLng> decodePoly(String encoded) {
 
+
         List<LatLng> latlngList = new ArrayList<>();
         int index = 0, len = encoded.length();
         int lat = 0, lng = 0;
@@ -91,4 +121,5 @@ class DataParser {
 
         return latlngList;
     }
+
 }
