@@ -293,22 +293,15 @@ public class MainActivity extends AppCompatActivity implements
         mPassengerRides = new ArrayList<>();
 
         mMainViewModel.getActiveDriveId().observe(this, driveId -> {
-            Timber.i("Observe on active drive: %s", driveId);
             if (driveId == null) {
                 // TODO: No drive is active or drive has been cancelled. Update UI accordingly.
             } else {
-                Timber.i("Observe on active drive2: %s", driveId);
-
                 mMainViewModel.getPassengerRides(driveId).observe(lifecycleOwner, passengerRide -> {
-                    Timber.i("Observe on active passenger ridese: %s", driveId);
-
                     if (passengerRide != null) {
-                        Timber.i("New passengerRide");
                         // TODO: Add floating buttons for PassengerRides
                         if (isPassengerRideAlreadyAddedToLocalList(passengerRide)) {
                             replacePassengerRide(passengerRide);
                         } else {
-                            Timber.i("Add geofence and passengeride");
                             mPassengerRides.add(passengerRide);
                             createGeofence(passengerRide);
                         }
@@ -332,8 +325,8 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private boolean isPassengerRideAlreadyAddedToLocalList(PassengerRide passengerRide) {
-        for (int i = 0; i < mPassengerRides.size(); i++) {
-            if (passengerRide.getId().equals(mPassengerRides.get(i).getId())) {
+        for (PassengerRide passengerRideFromList: mPassengerRides) {
+            if (passengerRide.getId().equals(passengerRideFromList.getId())) {
                 return true;
             }
         }
