@@ -737,8 +737,11 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onMapClick(LatLng latLng) {
-        mCreateDriveFragment.hideCreateDialog();
+    public void onMapClick(LatLng latLng)
+    {
+        if(mIsFragmentAdded){
+            mCreateDriveFragment.hideCreateDialog();
+        }
     }
 
     @Override
@@ -788,6 +791,8 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onFinish() {
+        removeFragment(mCreateDriveFragment);
+
      /*  mGoogleMap.clear();
         isStartLocationMarkerAdded = false;
         isEndLocationMarkerAdded = false;
@@ -797,6 +802,13 @@ public class MainActivity extends AppCompatActivity implements
         mMarkerCount = 0;
         mCountMarker = true;*/
 
+
+
+    }
+
+    private void removeFragment(CreateDriveFragment mCreateDriveFragment) {
+        mIsFragmentAdded = false;
+        mFragmentManager.beginTransaction().remove(mCreateDriveFragment).commit();
     }
 
     @Override
@@ -849,7 +861,7 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onCreateRide(long time, int type, Position startLocation, Position endLocation,
                              int seats) {
-        mCreateDriveFragment.hideCreateDialog();
+        mCreateDriveFragment.hideCreateDialogCompletely();
         switch (type) {
             case User.TYPE_DRIVER:
                 if(mBounds==null) {
