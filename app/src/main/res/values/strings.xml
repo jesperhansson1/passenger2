@@ -207,6 +207,7 @@
     <string name="passenger_notification_country_sign">S</string>
     <string name="must_implement_fragment_is_visible_listener">You must implement fragment is visible listener</string>
     <string name="notification_update_driver_position">Passenger is currently running in the background</string>
+    <string name="tracking_notification_channel">Tracking Channel</string>
 
 
 </resources>
