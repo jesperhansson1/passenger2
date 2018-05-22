@@ -888,7 +888,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         if (firebaseUser == null) {
             // TODO: Not logged in...
-            return null;
+            return driveIdMutableLiveData;
         }
 
         mUsersReference.child(firebaseUser.getUid()).addValueEventListener(new ValueEventListener() {
@@ -897,7 +897,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                 mCurrentlyLoggedInUser = dataSnapshot.getValue(User.class);
                 if (mCurrentlyLoggedInUser != null) {
                     mDrivesReference.orderByChild(DRIVER_ID).equalTo(mCurrentlyLoggedInUser.getUserId()).
-                        addListenerForSingleValueEvent(new ValueEventListener() {
+                        addValueEventListener(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {

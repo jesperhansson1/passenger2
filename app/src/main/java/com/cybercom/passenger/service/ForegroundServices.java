@@ -151,16 +151,11 @@ public class ForegroundServices extends Service {
 
             RemoteViews notificationView = new RemoteViews(this.getPackageName(),R.layout.foreground_notification);
 
-            Bitmap icon = BitmapFactory.decodeResource(getResources(),
-                    R.mipmap.ic_launcher);
-
             Notification notification = new NotificationCompat.Builder(this)
                     .setContentTitle(getString(R.string.passenger))
                     .setTicker(getString(R.string.passenger))
                     .setContentText(getString(R.string.passenger))
                     .setSmallIcon(R.mipmap.ic_launcher)
-                    .setLargeIcon(
-                            Bitmap.createScaledBitmap(icon, 128, 128, false))
                     .setContent(notificationView)
                     .setOngoing(true).build();
 

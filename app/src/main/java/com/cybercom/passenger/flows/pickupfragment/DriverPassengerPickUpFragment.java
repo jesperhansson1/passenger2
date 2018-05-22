@@ -66,7 +66,8 @@ public class DriverPassengerPickUpFragment extends Fragment implements View.OnCl
             }
         }
 
-        Button mConfirmPickUp = view.findViewById(R.id.fragment_driver_drop_off_button_confirm);
+        Button mConfirmPickUp
+                = view.findViewById(R.id.fragment_driver_passenger_pick_up_confirmation_button);
         mConfirmPickUp.setOnClickListener(this);
 
         mNoShowButton = view.findViewById(R.id.fragment_driver_passenger_pick_up_no_show_button);

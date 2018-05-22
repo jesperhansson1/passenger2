@@ -137,8 +137,8 @@ public class MainActivity extends AppCompatActivity implements
     private GeofencingClient mGeofencingClient;
     private List<Geofence> mGeofenceList;
     private PendingIntent mGeofencePendingIntent;
+    private List<PassengerRide> mPassengerRides;
 
-    // private LocalReceiver mServiceReceiver;
     private GeofenceBroadcastReceiver mGeofenceEventsReceiver;
 
     private User mCurrentLoggedInUser;
@@ -154,8 +154,6 @@ public class MainActivity extends AppCompatActivity implements
         mMainViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
         mFragmentManager = getSupportFragmentManager();
 
-        //  mServiceReceiver = new LocalReceiver();
-        mGeofenceEventsReceiver = new GeofenceBroadcastReceiver();
         mGeofenceEventsReceiver = new GeofenceBroadcastReceiver();
 
         if (savedInstanceState == null) {
@@ -187,7 +185,8 @@ public class MainActivity extends AppCompatActivity implements
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map_activitymap_googlemap);
         mapFragment.getMapAsync(this);
-
+        setUpGeofencing();
+        setUpGeofencing();
         initObservers();
     }
 
@@ -288,19 +287,55 @@ public class MainActivity extends AppCompatActivity implements
             }
         });
 
-
         final LifecycleOwner lifecycleOwner = this;
+        mPassengerRides = new ArrayList<>();
 
         mMainViewModel.getActiveDriveId().observe(this, driveId -> {
+            Timber.i("Observe on active drive: %s", driveId);
             if (driveId == null) {
                 // TODO: No drive is active or drive has been cancelled. Update UI accordingly.
             } else {
+                Timber.i("Observe on active drive2: %s", driveId);
+
                 mMainViewModel.getPassengerRides(driveId).observe(lifecycleOwner, passengerRide -> {
-                    // TODO: Add floating buttons for PassengerRides
-                    // TODO: add geofences pickup and dropoff location
+                    Timber.i("Observe on active passenger ridese: %s", driveId);
+
+                    if (passengerRide != null) {
+                        Timber.i("New passengerRide");
+                        // TODO: Add floating buttons for PassengerRides
+                        if (isPassengerRideAlreadyAddedToLocalList(passengerRide)) {
+                            replacePassengerRide(passengerRide);
+                        } else {
+                            Timber.i("Add geofence and passengeride");
+                            mPassengerRides.add(passengerRide);
+                            createGeofence(passengerRide);
+                        }
+                    }
                 });
             }
         });
+    }
+
+    private void replacePassengerRide(PassengerRide passengerRide) {
+        int passengerRideToReplace = -1;
+        for (int i = 0; i < mPassengerRides.size(); i++) {
+            if (passengerRide.getId().equals(mPassengerRides.get(i).getId())) {
+                passengerRideToReplace = i;
+            }
+        }
+        if (passengerRideToReplace != -1) {
+            mPassengerRides.remove(passengerRideToReplace);
+        }
+        mPassengerRides.add(passengerRide);
+    }
+
+    private boolean isPassengerRideAlreadyAddedToLocalList(PassengerRide passengerRide) {
+        for (int i = 0; i < mPassengerRides.size(); i++) {
+            if (passengerRide.getId().equals(mPassengerRides.get(i).getId())) {
+                return true;
+            }
+        }
+        return false;
     }
 
         /*
@@ -910,7 +945,7 @@ public class MainActivity extends AppCompatActivity implements
     private void addGeofenceToList(PassengerRide passengerRide) {
         // Add pick up geoFence
         mGeofenceList.add(new Geofence.Builder()
-                .setRequestId(passengerRide.getId() + GEOFENCE_TYPE_DROP_OFF)
+                .setRequestId(passengerRide.getId() + GEOFENCE_TYPE_PICK_UP)
                 .setCircularRegion(
                         passengerRide.getPickUpPosition().getLatitude(),
                         passengerRide.getPickUpPosition().getLongitude(),
@@ -922,7 +957,7 @@ public class MainActivity extends AppCompatActivity implements
 
         // Add drop off geoFence
         mGeofenceList.add(new Geofence.Builder()
-                .setRequestId(passengerRide.getId() + GEOFENCE_TYPE_PICK_UP)
+                .setRequestId(passengerRide.getId() + GEOFENCE_TYPE_DROP_OFF)
                 .setCircularRegion(
                         passengerRide.getDropOffPosition().getLatitude(),
                         passengerRide.getDropOffPosition().getLongitude(),
@@ -1044,8 +1079,13 @@ public class MainActivity extends AppCompatActivity implements
                 DriverDropOffFragment.newInstance(passengerRide)).commit();
     }
 
+    @Nullable
     private PassengerRide getPassengerRideFromLocalList(String passengerRideId) {
-        // TODO: Loop through local passengerRide list to find passengerRide that fired the geofence
+        for (int i = 0; i < mPassengerRides.size(); i++) {
+            if (passengerRideId.equals(mPassengerRides.get(i).getId())) {
+                return mPassengerRides.get(i);
+            }
+        }
         return null;
     }
 
