@@ -1,5 +1,7 @@
 package com.cybercom.passenger.flows.passengernotification;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -16,6 +18,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cybercom.passenger.R;
+import com.cybercom.passenger.flows.main.MainViewModel;
 import com.cybercom.passenger.model.Notification;
 
 import timber.log.Timber;
@@ -25,6 +28,7 @@ public class PassengerNotificationDialog extends DialogFragment implements View.
     private static final String NOTIFICATION_KEY = "NOTIFICATION";
     public static final String TAG = "PASSENGER_NOTIFICATION_DIALOG";
     private Notification mNotification;
+    private MainViewModel mMainViewModel;
 
     public interface PassengerNotificationListener {
         void onCancelDrive(Notification notification);
@@ -40,6 +44,15 @@ public class PassengerNotificationDialog extends DialogFragment implements View.
 
     private PassengerNotificationListener mPassengerNotificationListener;
 
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getActivity() != null) {
+            mMainViewModel = ViewModelProviders.of(getActivity()).get(MainViewModel.class);
+        }
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -51,6 +64,14 @@ public class PassengerNotificationDialog extends DialogFragment implements View.
         Button cancelButton = rootView.findViewById(R.id.passenger_notification_cancel_button);
         cancelButton.setOnClickListener(this);
 
+        if (getActivity() != null) {
+            mMainViewModel.getETA().observe(getActivity(), integer -> {
+                if (integer != null) {
+                    ((TextView) rootView.findViewById(R.id.passenger_notification_eta)).setText(
+                            getString(R.string.eta_minutes, integer));
+                }
+            });
+        }
 
         if(getArguments() != null){
             mNotification = (Notification) getArguments().getSerializable(NOTIFICATION_KEY);

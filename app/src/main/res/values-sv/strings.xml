@@ -205,6 +205,7 @@
     <string name="no_match_fragment_must_implement_listener">Must implement NoMatchButtonListener</string>
     <string name="notification_update_driver_position">Passenger körs i bakgrunden</string>
     <string name="you_have_been_matched">Du har blivit matchad!</string>
+    <string name="eta_minutes">%1$dm</string>
 
 
 </resources>
