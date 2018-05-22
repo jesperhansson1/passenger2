@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.location.Location;
 import android.os.Bundle;
@@ -37,7 +38,9 @@ import android.view.animation.AnimationUtils;
 import android.view.animation.TranslateAnimation;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.RatingBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
 import com.cybercom.passenger.R;
@@ -150,7 +153,6 @@ public class MainActivity extends AppCompatActivity implements
     private boolean mCountMarker = true;
     private LinearLayout mPassengerContainer;
     private FrameLayout mPassengerDetailedInformation;
-    private static int sPassengerId = 0;
 
     private GeofencingClient mGeofencingClient;
     private List<Geofence> mGeofenceList;
@@ -161,6 +163,7 @@ public class MainActivity extends AppCompatActivity implements
 
     private User mCurrentLoggedInUser;
 
+    private HashMap<String, PassengerRide> mPassengers = new HashMap<>();
 
     public Bounds mBounds;
 
@@ -214,8 +217,10 @@ public class MainActivity extends AppCompatActivity implements
         new NotificationHelper(this);
     }
 
-    private void createPassengerRide(Drive drive, Position startPosition, Position endPosition) {
-        mMainViewModel.createPassengerRide(drive, startPosition, endPosition).observe(this, passengerRide -> {
+    private void createPassengerRide(Drive drive, Position startPosition, Position endPosition,
+                                     String startAddress, String endAddress) {
+        mMainViewModel.createPassengerRide(drive, startPosition, endPosition, startAddress,
+                endAddress).observe(this, passengerRide -> {
             Intent updatePassengerIntent = new Intent(MainActivity.this, ForegroundServices.class);
             updatePassengerIntent.setAction(Constants.ACTION.STARTFOREGROUND_UPDATE_PASSENGER_POSITION);
             updatePassengerIntent.putExtra(ForegroundServices.INTENT_EXTRA_PASSENGER_RIDE_ID, passengerRide.getId());
@@ -300,9 +305,16 @@ public class MainActivity extends AppCompatActivity implements
                     break;
                 case Notification.ACCEPT_PASSENGER:
                     showPassengerNotificationDialog(notification);
+                    String startAddress = mMainViewModel.getAddressFromLocation(
+                            LocationHelper.convertPositionToLocation(notification.getDriveRequest()
+                                    .getStartLocation()));
+                    String endAddress = mMainViewModel.getAddressFromLocation(
+                            LocationHelper.convertPositionToLocation(
+                                    notification.getDriveRequest().getEndLocation()));
                     createPassengerRide(notification.getDrive(),
                             notification.getDriveRequest().getStartLocation(),
-                            notification.getDriveRequest().getEndLocation());
+                            notification.getDriveRequest().getEndLocation(), startAddress,
+                            endAddress);
                     updateDriversMarkerPosition(notification.getDrive().getId());
                     dismissMatchingInProgressDialog();
                     break;
@@ -331,6 +343,8 @@ public class MainActivity extends AppCompatActivity implements
                             createGeofence(passengerRide);
                         }
                     }
+                    handlePassengerChanged(passengerRide);
+                    // TODO: add geofences pickup and dropoff location
                 });
             }
         });
@@ -452,7 +466,8 @@ public class MainActivity extends AppCompatActivity implements
             isEndLocationMarkerAdded = true;
         } else {
             mEndLocationMarker.setVisible(true);
-            updateMarkerLocation(mEndLocationMarker, mMainViewModel.getEndMarkerLocation().getValue());
+            updateMarkerLocation(mEndLocationMarker, mMainViewModel.getEndMarkerLocation()
+                    .getValue());
         }
     }
 
@@ -562,14 +577,27 @@ public class MainActivity extends AppCompatActivity implements
         mPlaceMarkerInformation = findViewById(R.id.main_activity_place_marker_info);
         mPassengerContainer = findViewById(R.id.passenger_container);
         mPassengerDetailedInformation = findViewById(R.id.passenger_detailed_information);
-        FloatingActionButton fabAdd = findViewById(R.id.fab_add);
-        fabAdd.setOnClickListener(this);
-        FloatingActionButton fabRemove = findViewById(R.id.fab_remove);
-        fabRemove.setOnClickListener(this);
+        mPassengerDetailedInformation.findViewById(R.id.abort_passenger_button)
+                .setOnClickListener(this);
     }
 
-    private void addPassengerFab(@NonNull String passengerId) {
-        if (true || findPassengerView(passengerId) == null) {
+    private void handlePassengerChanged(PassengerRide passengerRide) {
+        if (passengerRide == null) {
+            return;
+        }
+        if (passengerRide.isDropOffConfirmed()) {
+            mPassengers.remove(passengerRide.getId());
+            removePassengerFab(passengerRide.getId());
+        } else {
+            mPassengers.put(passengerRide.getId(), passengerRide);
+            addPassengerFab(passengerRide.getId());
+        }
+    }
+
+
+    private void addPassengerFab(@NonNull String rideId) {
+
+        if (findPassengerView(rideId) == null) {
             LayoutInflater layoutInflater = LayoutInflater.from(this);
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -584,28 +612,27 @@ public class MainActivity extends AppCompatActivity implements
             FloatingActionButton fab = fabContainer.findViewById(R.id.passenger_fab);
             fab.setOnClickListener(this);
             //fab.setLayoutParams(lp);
-            fab.setTag(passengerId);
+            fab.setTag(rideId);
             mPassengerContainer.addView(fabContainer);
         }
     }
 
-    private void removePassengerFab(@NonNull String passengerId) {
-        View child = findPassengerView(passengerId);
+    private void removePassengerFab(@NonNull String rideId) {
+        View child = findPassengerView(rideId);
         if (child != null) {
             mPassengerContainer.removeView(child);
         }
     }
 
-    private View findPassengerView(@NonNull String passengerId) {
-        View child;
-
+    private View findPassengerView(@NonNull String rideId) {
+        View child = null;
         for (int i = 0; i < mPassengerContainer.getChildCount(); i++) {
             child = mPassengerContainer.getChildAt(i);
-            if (passengerId.equals(child.getTag())) {
+            if (rideId.equals(child.getTag())) {
                 return child;
             }
         }
-        return null;
+        return child;
     }
 
     @Override
@@ -1194,24 +1221,6 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
-    private void setAllOtherFabToMiniSize(View excludedView) {
-        for (int i = 0; i < mPassengerContainer.getChildCount(); i++) {
-            FloatingActionButton fab = mPassengerContainer.getChildAt(i)
-                    .findViewById(R.id.passenger_fab);
-            if (fab != excludedView) {
-                fab.setSize(FloatingActionButton.SIZE_NORMAL);
-            }
-        }
-    }
-
-    private void setAllFabToNormalSize() {
-        for (int i = 0; i < mPassengerContainer.getChildCount(); i++) {
-            FloatingActionButton fab =(mPassengerContainer.getChildAt(i)
-                    .findViewById(R.id.passenger_fab));
-            fab.setSize(FloatingActionButton.SIZE_NORMAL);
-        }
-    }
-
     private Animation getCloseDetailedInfoIfNeeded(View clickedFab) {
         String passengerId = (String)clickedFab.getTag();
         if (!passengerId.equals(mPassengerDetailedInformation.getTag())) {
@@ -1219,28 +1228,46 @@ public class MainActivity extends AppCompatActivity implements
                 FloatingActionButton fab =(mPassengerContainer.getChildAt(i)
                         .findViewById(R.id.passenger_fab));
                 if (fab.getTag().equals(mPassengerDetailedInformation.getTag())) {
-                    Animation animation = getCloseAnimation(fab, mPassengerDetailedInformation,
-                            200);
-                    return animation;
+                    return getCloseAnimation(fab, mPassengerDetailedInformation, 200);
                 }
             }
         }
         return null;
     }
 
+
+    private void updatePassengerDetailedInformation(FloatingActionButton fab) {
+        String tag = (String)fab.getTag();
+        if (tag == null) {
+            return;
+        }
+        PassengerRide passengerRide = mPassengers.get(tag);
+        if (passengerRide == null) {
+            return;
+        }
+        ((TextView)mPassengerDetailedInformation.findViewById(R.id.passenger_name)).setText(
+                passengerRide.getPassenger().getFullName());
+        //TODO add rating to PassengerRide
+        //TODO add image..
+        ((TextView)mPassengerDetailedInformation.findViewById(R.id.passenger_start_location))
+                .setText(passengerRide.getStartAddress());
+        ((TextView)mPassengerDetailedInformation.findViewById(R.id.passenger_end_location))
+                .setText(passengerRide.getEndAddress());
+        //leaf value TODO add leaf value to passengerRide
+        //price TODO add price to passengerRide
+    }
+
+    private void handleRideAborted(String rideId) {
+        Toast.makeText(this, "Implement handling of this", Toast.LENGTH_LONG).show();
+        //TODO Ride aborted from the driver, implement this
+    }
+
     @Override
     public void onClick(final View view) {
-        if (R.id.fab_add == view.getId()) {
-            // TODO Remove. Just for test..
-            sPassengerId++;
-            String passengerId = Integer.toString(sPassengerId);
-            addPassengerFab(passengerId);
-        } else if (R.id.fab_remove == view.getId()) {
-            // TODO Remove. Just for test..
-            String passengerId = Integer.toString(sPassengerId);
-            removePassengerFab(passengerId);
-            sPassengerId--;
+        if (view.getId() == R.id.abort_passenger_button) {
+            handleRideAborted((String)mPassengerDetailedInformation.getTag());
         } else if (view instanceof FloatingActionButton) {
+            updatePassengerDetailedInformation((FloatingActionButton)view);
             AnimationSet as = new AnimationSet(false);
             Animation closeOtherAnimation = getCloseDetailedInfoIfNeeded(view);
             if (closeOtherAnimation != null) {
@@ -1265,8 +1292,6 @@ public class MainActivity extends AppCompatActivity implements
                 closeAnimation.setAnimationListener(new DetailedInfoAnimationListener(false));
                 mPassengerDetailedInformation.startAnimation(closeAnimation);
             }
-
-            // TODO populate mPassaengerDetailedInfomration with the corresponding information
         }
     }
 
@@ -1278,14 +1303,14 @@ public class MainActivity extends AppCompatActivity implements
         @Override
         public void onAnimationStart(Animation animation) {
             if (mIsOpenAnimation) {
-                mPassengerDetailedInformation.setAlpha(1f);
+                mPassengerDetailedInformation.setVisibility(View.VISIBLE);
             }
         }
 
         @Override
         public void onAnimationEnd(Animation animation) {
             if (!mIsOpenAnimation) {
-                mPassengerDetailedInformation.setAlpha(0f);
+                mPassengerDetailedInformation.setVisibility(View.INVISIBLE);
             }
         }
 

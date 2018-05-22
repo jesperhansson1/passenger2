@@ -22,8 +22,6 @@
     <dimen name="space_normal">10dp</dimen>
     <dimen name="space_double">20dp</dimen>
 
-
-
     <dimen name="activity_margin_none">0dp</dimen>
     <dimen name="activity_margin_half_half">4dp</dimen>
     <dimen name="activity_margin_half">8dp</dimen>

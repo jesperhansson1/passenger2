@@ -11,13 +11,15 @@ public class PassengerRide implements Serializable {
     private Position mDropOffPosition;
     private boolean mPickUpConfirmed;
     private boolean mDropOffConfirmed;
+    private String mStartAddress;
+    private String mEndAddress;
 
     public PassengerRide() {
     }
 
-    public PassengerRide(String id, Drive drive, User passenger,
-                         Position pickUpPosition, Position dropOffPosition,
-                         boolean pickUpConfirmed, boolean dropOffConfirmed) {
+    public PassengerRide(String id, Drive drive, User passenger, Position pickUpPosition,
+                         Position dropOffPosition, boolean pickUpConfirmed,
+                         boolean dropOffConfirmed, String startAddress, String endAddress) {
         mId = id;
         mDrive = drive;
         mPassenger = passenger;
@@ -26,6 +28,8 @@ public class PassengerRide implements Serializable {
         mPickUpConfirmed = pickUpConfirmed;
         mDropOffPosition = dropOffPosition;
         mDropOffConfirmed = dropOffConfirmed;
+        mStartAddress = startAddress;
+        mEndAddress = endAddress;
     }
 
     public Drive getDrive() {
@@ -84,6 +88,23 @@ public class PassengerRide implements Serializable {
         this.mDropOffConfirmed = mDropOffConfirmed;
     }
 
+    public String getStartAddress() {
+        return mStartAddress;
+    }
+
+    public void setStartAddress(String startAddress) {
+        mStartAddress = startAddress;
+    }
+
+    public String getEndAddress() {
+        return mEndAddress;
+    }
+
+    public void setEndAddress(String endAddress) {
+        mEndAddress = endAddress;
+    }
+
+
     @Override
     public String toString() {
         return "PassengerRide{" +
@@ -92,7 +113,9 @@ public class PassengerRide implements Serializable {
                 ", mPassenger='" + mPassenger + '\'' +
                 ", mPickUpPosition=" + mPickUpPosition + '\'' +
                 ", mDropOffPosition=" + mDropOffPosition + '\'' +
-                ", mDropOffConfirmed=" + mDropOffConfirmed +
+                ", mDropOffConfirmed=" + mDropOffConfirmed + '\'' +
+                ", mStartAddress=" + mStartAddress + '\'' +
+                ", mEndAddress=" + mEndAddress +
                 '}';
     }
 }
