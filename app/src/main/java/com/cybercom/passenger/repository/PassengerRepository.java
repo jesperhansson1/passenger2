@@ -29,7 +29,7 @@ import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.gson.Gson;
-import com.javadocmd.simplelatlng.LatLng;
+import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -304,7 +304,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
                             Timber.d(bounds.toString());
 
-                            GpsLocations gpsLocations = new GpsLocations();
+                            /*GpsLocations gpsLocations = new GpsLocations();
                             LatLng start = gpsLocations.getLocations(radiusMultiplier,
                                     new LatLng(bounds.getNorthEastLatitude(),bounds.getNorthEastLongitude()),
                                     new LatLng(bounds.getSouthWestLatitude(),bounds.getSouthWestLongitude()));
@@ -312,13 +312,15 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                             LatLng end = gpsLocations.getLocations(radiusMultiplier,
                                     new LatLng(bounds.getSouthWestLatitude(),bounds.getSouthWestLongitude()),
                                     new LatLng(bounds.getNorthEastLatitude(),bounds.getNorthEastLongitude()));
-                            Bounds bounds1 = new Bounds(start.getLatitude(),start.getLongitude(),end.getLatitude(),end.getLongitude());
+                            Bounds bounds1 = new Bounds(start.latitude,start.longitude,end.latitude,end.longitude);
 
-                            Timber.d("start " + start.getLatitude() + " : " + start.getLongitude());
-                            Timber.d("end " + end.getLatitude() + " : " + end.getLongitude());
+                            Timber.d("start " + start.latitude + " : " + start.longitude);
+                            Timber.d("end " + end.latitude + " : " + end.longitude);*/
+
+                            bounds.setNewBounds();
                             //Check for start position and end position
-                            if(contains(bounds1,driveRequest.getStartLocation().getLatitude(),driveRequest.getStartLocation().getLongitude())){
-                                if(contains(bounds1,driveRequest.getEndLocation().getLatitude(),driveRequest.getEndLocation().getLongitude()))
+                            if(contains(bounds,driveRequest.getStartLocation().getLatitude(),driveRequest.getStartLocation().getLongitude())){
+                                if(contains(bounds,driveRequest.getEndLocation().getLatitude(),driveRequest.getEndLocation().getLongitude()))
                                 {
                                     Timber.d("Match found");
 
@@ -975,6 +977,9 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     }
 
     public boolean contains(Bounds bounds, double latitude, double longitude) {
+
+        System.out.println("checking " + bounds.getNorthEastLatitude() + " : " + bounds.getNorthEastLongitude() + " : " + bounds.getSouthWestLatitude()
+        + " : " + bounds.getSouthWestLongitude() + " -- > " + latitude + " : " + longitude);
         boolean longitudeContained = false;
         boolean latitudeContained = false;
 
@@ -995,17 +1000,17 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
         // Check if the bbox contains the prime meridian (longitude 0.0).
         if (swLongitude < neLongitude) {
-            if (swLongitude <= longitude && longitude <= neLongitude) {
+            if (swLongitude < longitude && longitude < neLongitude) {
                 longitudeContained = true;
             }
 
-        } else if ((0 < longitude && longitude <= neLongitude) ||
-                (swLongitude <= longitude && longitude < 0)) {
+        } else if ((0 < longitude && longitude < neLongitude) ||
+                (swLongitude < longitude && longitude < 0)) {
             // Contains prime meridian.
             longitudeContained = true;
         }
 
-        if (swLatitude < neLatitude && (swLatitude <= latitude && latitude <= neLatitude)) {
+        if (swLatitude < neLatitude && (swLatitude < latitude && latitude < neLatitude)) {
             latitudeContained = true;
         }
         return (longitudeContained && latitudeContained);
