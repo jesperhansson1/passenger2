@@ -14,6 +14,11 @@ public class Bounds {
     double mSouthWestLatitude;
     double mSouthWestLongitude;
 
+    public static final double NORTH_EAST_BEARING = 45.0;
+    public static final double SOUTH_WEST_BEARING = 225.0;
+    private static final long RADIUS_OF_EARTH = 6371000; // radius of earth in m
+
+
     Bounds()
     {
 
@@ -30,11 +35,9 @@ public class Bounds {
     {
         double dist = getDistance(multiplier);
         Timber.d(mNorthEastLatitude+" : " + mNorthEastLongitude + " : " + mSouthWestLatitude + " : " + mSouthWestLongitude);
-        LatLng sw = movePoint(mSouthWestLatitude,mSouthWestLongitude,
-                calculateBearing(new LatLng(mNorthEastLatitude,mNorthEastLongitude), new LatLng(mSouthWestLatitude, mSouthWestLongitude)), dist);
+        LatLng sw = movePoint(mSouthWestLatitude,mSouthWestLongitude, SOUTH_WEST_BEARING, dist);
         Timber.d( mSouthWestLatitude + " : " + mSouthWestLongitude + " : " + mNorthEastLatitude+" : " + mNorthEastLongitude);
-        LatLng ne = movePoint(mNorthEastLatitude,mNorthEastLongitude,calculateBearing(new LatLng(mSouthWestLatitude,mSouthWestLongitude),
-                new LatLng(mNorthEastLatitude, mNorthEastLongitude)), dist);
+        LatLng ne = movePoint(mNorthEastLatitude,mNorthEastLongitude,NORTH_EAST_BEARING, dist);
         mNorthEastLatitude = ne.latitude;
         mNorthEastLongitude = ne.longitude;
         mSouthWestLatitude = sw.latitude;
@@ -95,8 +98,7 @@ public class Bounds {
         double brngRad = toRadians(bearing);
         double latRad = toRadians(latitude);
         double lonRad = toRadians(longitude);
-        int earthRadiusInMetres = 6371000;
-        double distFrac = distanceInMetres / earthRadiusInMetres;
+        double distFrac = distanceInMetres / RADIUS_OF_EARTH;
 
         double latitudeResult = asin(sin(latRad) * cos(distFrac) + cos(latRad) * sin(distFrac) * cos(brngRad));
         double a = atan2(sin(brngRad) * sin(distFrac) * cos(latRad), cos(distFrac) - sin(latRad) * sin(latitudeResult));
@@ -107,21 +109,4 @@ public class Bounds {
         return new LatLng(toDegrees(latitudeResult),toDegrees(longitudeResult));
     }
 
-    private static double calculateBearing(LatLng start, LatLng end) {
-        double startLat = Math.toRadians(start.latitude);
-        double startLong = Math.toRadians(start.longitude);
-        double endLat = Math.toRadians(end.latitude);
-        double endLong = Math.toRadians(end.longitude);
-        double dLong = endLong - startLong;
-        double dPhi = Math.log(Math.tan((endLat / 2.0) + (Math.PI / 4.0)) / Math.tan((startLat / 2.0) + (Math.PI / 4.0)));
-        if (Math.abs(dLong) > Math.PI) {
-            if (dLong > 0.0) {
-                dLong = -(2.0 * Math.PI - dLong);
-            } else {
-                dLong = (2.0 * Math.PI + dLong);
-            }
-        }
-        double bearing = (Math.toDegrees(Math.atan2(dLong, dPhi)) + 360.0) % 360.0;
-        return bearing;
-    }
 }
