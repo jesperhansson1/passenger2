@@ -108,17 +108,31 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 
-        <TextView
-            android:id="@+id/passenger_notification_eta"
+        <FrameLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="0dp"
-            android:layout_marginTop="0dp"
-            tools:text="@string/passenger_notification_eta"
-            android:textAppearance="@style/TextAppearance.AppCompat.Large"
-            android:textColor="@color/colorBlue"
+            android:id="@+id/passenger_notification_eta"
             app:layout_constraintStart_toStartOf="@+id/passenger_notification_eta_title"
-            app:layout_constraintTop_toBottomOf="@+id/passenger_notification_eta_title" />
+            app:layout_constraintTop_toBottomOf="@+id/passenger_notification_eta_title">
+
+            <ProgressBar
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/passenger_notification_eta_progressbar"
+                android:indeterminateTint="@color/colorBlue"
+                android:indeterminateTintMode="src_in"
+                android:visibility="visible" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/passenger_notification_eta_text"
+                android:layout_marginStart="0dp"
+                android:layout_marginTop="0dp"
+                tools:text="@string/passenger_notification_eta"
+                android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                android:textColor="@color/colorBlue" />
+        </FrameLayout>
 
         <TextView
             android:id="@+id/passenger_notification_price_title"
