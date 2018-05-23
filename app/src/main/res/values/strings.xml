@@ -188,7 +188,7 @@
     <string name="fragment_driver_pick_up_passenger_name">Alice Hicks</string>
     <string name="fragment_driver_pick_up_button_text_no_show">No show</string>
     <string name="fragment_driver_pick_up_passenger_image_content_description">Profile image</string>
-    <string name="fragment_driver_drop_off_title">Did you drop off Alice?</string>
+    <string name="fragment_driver_drop_off_title">Did you drop off %1$s?</string>
     <string name="fragment_driver_drop_off_passenger_image_content_description">Passenger image</string>
     <string name="fragment_driver_drop_off_passenger_name">Alice Hicks</string>
     <string name="fragment_driver_drop_off_button_text_confirm">Confirm drop off</string>
@@ -207,6 +207,8 @@
     <string name="passenger_notification_country_sign">S</string>
     <string name="must_implement_fragment_is_visible_listener">You must implement fragment is visible listener</string>
     <string name="notification_update_driver_position">Passenger is currently running in the background</string>
+    <string name="tracking_notification_channel">Tracking Channel</string>
+    <string name="eta_minutes">%1$dm</string>
 
 
 </resources>

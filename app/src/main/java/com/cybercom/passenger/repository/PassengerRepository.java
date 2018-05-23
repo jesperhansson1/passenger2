@@ -15,7 +15,6 @@ import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.repository.databasemodel.PassengerRide;
 import com.cybercom.passenger.repository.databasemodel.utils.DatabaseModelHelper;
-import com.cybercom.passenger.utils.GpsLocations;
 import com.cybercom.passenger.utils.LocationHelper;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
@@ -85,7 +84,11 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private BlockingQueue<Notification> mNotificationQueue = new LinkedBlockingQueue<>();
 
     private MutableLiveData<Notification> mNotification = new MutableLiveData<>();
+
+    MutableLiveData<Integer> mEtaLiveData = new MutableLiveData<>();
+
     private User mCurrentlyLoggedInUser;
+    private MutableLiveData<Location> mDriverCurrentLocation = new MutableLiveData<>();
 
     //private String mCurrentDriveId;
     private static final String BOUNDS = "bounds";
@@ -727,6 +730,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
     public void updateDriveCurrentLocation(String driveId, Location location) {
         if (driveId != null) {
+            mDriverCurrentLocation.setValue(location);
             mDrivesReference.child(driveId).child(CURRENT_POSITION).setValue(LocationHelper.convertLocationToPosition(location));
         }
     }
@@ -747,9 +751,9 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         mPassengerPositionReference.child(uId).setValue(LocationHelper.convertLocationToPosition(location));
     }
 
-    public LiveData<com.cybercom.passenger.model.PassengerRide> createPassengerRide(Drive drive,
-                                                                                    Position pickUpLocation,
-                                                                                    Position dropOffLocation) {
+    public LiveData<com.cybercom.passenger.model.PassengerRide> createPassengerRide(
+            Drive drive, Position pickUpLocation, Position dropOffLocation, String startAddress,
+            String endAddress) {
         final MutableLiveData<com.cybercom.passenger.model.PassengerRide>
                 passengerRideMutableLiveData = new MutableLiveData<>();
 
@@ -765,7 +769,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
             final com.cybercom.passenger.repository.databasemodel.PassengerRide dbPassengerRide =
                     new com.cybercom.passenger.repository.databasemodel.PassengerRide(drive.getId(),
-                            uId, pickUpLocation, dropOffLocation, false, false);
+                            uId, pickUpLocation, dropOffLocation, false, false, startAddress,
+                            endAddress);
             final DatabaseReference passengerRideRef = mPassengerRideReference.push();
             final String passengerRideId = passengerRideRef.getKey();
 
@@ -773,24 +778,24 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
             mUsersReference.child(firebaseUser.getUid()).addListenerForSingleValueEvent(
                     getEventListenerToBuildPassengerRide(passengerRideId, pickUpLocation,
-                            dropOffLocation, drive, passengerRideMutableLiveData));
+                            dropOffLocation, drive, passengerRideMutableLiveData, startAddress,
+                            endAddress));
         }
         return passengerRideMutableLiveData;
     }
 
-    private ValueEventListener getEventListenerToBuildPassengerRide(String passengerRideId,
-                                                                    Position pickUpLocation,
-                                                                    Position dropOffLocation,
-                                                                    Drive drive,
-                                                                    MutableLiveData<com.cybercom.passenger.model.PassengerRide> passengerRideMutableLiveData) {
+    private ValueEventListener getEventListenerToBuildPassengerRide(
+            String passengerRideId, Position pickUpLocation, Position dropOffLocation, Drive drive,
+            MutableLiveData<com.cybercom.passenger.model.PassengerRide>
+                    passengerRideMutableLiveData, String startAddress, String endAddress) {
         return new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 User passenger = dataSnapshot.getValue(User.class);
                 com.cybercom.passenger.model.PassengerRide passengerRide =
                         new com.cybercom.passenger.model.PassengerRide(
-                            passengerRideId, drive, passenger, pickUpLocation, dropOffLocation,
-                            false, false);
+                                passengerRideId, drive, passenger, pickUpLocation, dropOffLocation,
+                                false, false, startAddress, endAddress);
                 passengerRideMutableLiveData.setValue(passengerRide);
             }
 
@@ -819,7 +824,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                                 // Fetch the Passenger
                                 DatabaseReference dbRefPassengerId = mUsersReference.child(
                                         passengerRide.getPassengerId());
-                                dbRefPassengerId.addListenerForSingleValueEvent(new ValueEventListener() {
+                                dbRefPassengerId.addListenerForSingleValueEvent(
+                                        new ValueEventListener() {
                                     @Override
                                     public void onDataChange(DataSnapshot dataSnapshot) {
                                         final User passenger = dataSnapshot.getValue(User.class);
@@ -880,7 +886,9 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                                             passengerRide.getPickUpPosition(),
                                             passengerRide.getDropOffPosition(),
                                             passengerRide.isPickUpConfirmed(),
-                                            passengerRide.isDropOffConfirmed());
+                                            passengerRide.isDropOffConfirmed(),
+                                            passengerRide.getStartAddress(),
+                                            passengerRide.getEndAddress());
                             passengerRideMutableLiveData.setValue(convertedPassengerRide);
                         }
 
@@ -916,6 +924,11 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         });
         return driverPositionLiveData;
     }
+
+    public MutableLiveData<Location> getDriverCurrentLocation() {
+        return mDriverCurrentLocation;
+    }
+
     public LiveData<Position> getPassengerPosition(String userId) {
         MutableLiveData<Position> passengerRidesLiveData =
                 new MutableLiveData<>();
@@ -923,11 +936,11 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         mPassengerPositionReference.child(userId).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                    Position position = dataSnapshot.getValue(Position.class);
-                    Timber.d("result: %s", position);
-                    if (position != null) {
-                        passengerRidesLiveData.setValue(position);
-                    }
+                Position position = dataSnapshot.getValue(Position.class);
+                Timber.d("result: %s", position);
+                if (position != null) {
+                    passengerRidesLiveData.setValue(position);
+                }
             }
 
             @Override
@@ -943,7 +956,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         if (firebaseUser == null) {
             // TODO: Not logged in...
-            return null;
+            return driveIdMutableLiveData;
         }
 
         mUsersReference.child(firebaseUser.getUid()).addValueEventListener(new ValueEventListener() {
@@ -952,7 +965,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                 mCurrentlyLoggedInUser = dataSnapshot.getValue(User.class);
                 if (mCurrentlyLoggedInUser != null) {
                     mDrivesReference.orderByChild(DRIVER_ID).equalTo(mCurrentlyLoggedInUser.getUserId()).
-                        addListenerForSingleValueEvent(new ValueEventListener() {
+                        addValueEventListener(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
@@ -974,6 +987,35 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         });
 
         return driveIdMutableLiveData;
+    }
+
+    public LiveData<PassengerRide> getPassengerRideById(String passengerRideId) {
+        MutableLiveData<PassengerRide> passengerRideLiveData = new MutableLiveData<>();
+
+        mPassengerRideReference.child(passengerRideId).addValueEventListener(
+                new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Timber.i("getPassengerRideById %s", dataSnapshot);
+                PassengerRide passengerRide = dataSnapshot.getValue(PassengerRide.class);
+                passengerRideLiveData.setValue(passengerRide);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        return passengerRideLiveData;
+    }
+
+    public void updateETA(long etaSeconds) {
+        mEtaLiveData.setValue((int) (etaSeconds / 60));
+    }
+
+    public LiveData<Integer> getETAInMin() {
+        return mEtaLiveData;
     }
 
     public boolean contains(Bounds bounds, double latitude, double longitude) {
@@ -1015,5 +1057,4 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         }
         return (longitudeContained && latitudeContained);
     }
-
 }
