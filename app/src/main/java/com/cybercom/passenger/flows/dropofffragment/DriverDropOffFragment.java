@@ -16,6 +16,7 @@ import com.cybercom.passenger.model.PassengerRide;
 
 public class DriverDropOffFragment extends Fragment implements View.OnClickListener {
 
+    public static final String DRIVER_DROP_OFF_FRAGMENT_TAG = "DRIVER_DROP_OFF_FRAGMENT";
     public static final String PASSENGER_RIDE_KEY = "PASSENGER";
     private DriverDropOffConfirmationListener mDriverDropOffConfirmationListener;
     private PassengerRide mPassengerRide;

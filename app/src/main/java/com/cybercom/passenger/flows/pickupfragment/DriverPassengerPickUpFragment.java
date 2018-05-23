@@ -19,6 +19,8 @@ import com.cybercom.passenger.model.PassengerRide;
 
 public class DriverPassengerPickUpFragment extends Fragment implements View.OnClickListener {
 
+    public static final String DRIVER_PASSENGER_PICK_UP_FRAGMENT_TAG
+            = "DRIVER_PASSENGER_PICK_UP_FRAGMENT";
     public static final String PASSENGER_RIDE_KEY = "PASSENGER";
     public static final int TIME_BEFORE_PASSENGER_NEEDS_TO_COME_TO_THE_CAR_IN_MILLISECONDS = 120000;
     public static final int COUNT_DOWN_INTERVAL = 1000;

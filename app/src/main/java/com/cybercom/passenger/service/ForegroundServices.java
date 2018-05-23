@@ -63,7 +63,6 @@ public class ForegroundServices extends LifecycleService {
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
 
-
         Bundle extras = intent.getExtras();
         String driveId = extras.getString(INTENT_EXTRA_DRIVE_ID);
         String passengerRideId = extras.getString(INTENT_EXTRA_PASSENGER_RIDE_ID);

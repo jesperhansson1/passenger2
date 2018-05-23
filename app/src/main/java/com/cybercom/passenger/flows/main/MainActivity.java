@@ -334,7 +334,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private boolean isPassengerRideAlreadyAddedToLocalList(PassengerRide passengerRide) {
-        for (PassengerRide passengerRideFromList: mPassengerRides) {
+        for (PassengerRide passengerRideFromList : mPassengerRides) {
             if (passengerRide.getId().equals(passengerRideFromList.getId())) {
                 return true;
             }
@@ -746,9 +746,8 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onMapClick(LatLng latLng)
-    {
-        if(mIsFragmentAdded){
+    public void onMapClick(LatLng latLng) {
+        if (mIsFragmentAdded) {
             mCreateDriveFragment.hideCreateDialog();
         }
     }
@@ -759,14 +758,11 @@ public class MainActivity extends AppCompatActivity implements
         zoomToFitRoute();
     }
 
-    public void onBoundsParse(Bounds bounds)
-    {
-        if(bounds!=null) {
+    public void onBoundsParse(Bounds bounds) {
+        if (bounds != null) {
             mBounds = bounds;
-        }
-        else
-        {
-            mBounds = new Bounds(0.0,0.0,0.0,0.0);
+        } else {
+            mBounds = new Bounds(0.0, 0.0, 0.0, 0.0);
         }
     }
 
@@ -810,7 +806,6 @@ public class MainActivity extends AppCompatActivity implements
 
         mMarkerCount = 0;
         mCountMarker = true;*/
-
 
 
     }
@@ -873,20 +868,20 @@ public class MainActivity extends AppCompatActivity implements
         mCreateDriveFragment.hideCreateDialogCompletely();
         switch (type) {
             case User.TYPE_DRIVER:
-                if(mBounds==null) {
-                    mBounds = new Bounds(0.0,0.0,0.0,0.0);
+                if (mBounds == null) {
+                    mBounds = new Bounds(0.0, 0.0, 0.0, 0.0);
                 }
                 mMainViewModel.createDrive(time, startLocation, endLocation, seats, mBounds).observe(this,
                         drive -> {
-                    if (drive != null) {
-                        Intent UpdateDriveIntent = new Intent(MainActivity.this, ForegroundServices.class);
-                        UpdateDriveIntent.setAction(Constants.ACTION.STARTFOREGROUND_UPDATE_DRIVER_POSITION);
-                        UpdateDriveIntent.putExtra(ForegroundServices.INTENT_EXTRA_DRIVE_ID, drive.getId());
-                        startService(UpdateDriveIntent);
-                        updatePassengersMarkerPosition(drive.getId());
-                        mCreateDriveFragment.setDefaultValuesToDialog();
-                    }
-                });
+                            if (drive != null) {
+                                Intent UpdateDriveIntent = new Intent(MainActivity.this, ForegroundServices.class);
+                                UpdateDriveIntent.setAction(Constants.ACTION.STARTFOREGROUND_UPDATE_DRIVER_POSITION);
+                                UpdateDriveIntent.putExtra(ForegroundServices.INTENT_EXTRA_DRIVE_ID, drive.getId());
+                                startService(UpdateDriveIntent);
+                                updatePassengersMarkerPosition(drive.getId());
+                                mCreateDriveFragment.setDefaultValuesToDialog();
+                            }
+                        });
                 break;
             case User.TYPE_PASSENGER:
                 mMainViewModel.createDriveRequest(time, startLocation, endLocation, seats).observe(
@@ -1096,17 +1091,20 @@ public class MainActivity extends AppCompatActivity implements
 
     private void showDriverPickUpFragment(PassengerRide passengerRide) {
         mFragmentManager.beginTransaction().add(R.id.main_activity_dialog_container,
-                DriverPassengerPickUpFragment.newInstance(passengerRide)).commit();
+                DriverPassengerPickUpFragment.newInstance(passengerRide),
+                DriverPassengerPickUpFragment.DRIVER_PASSENGER_PICK_UP_FRAGMENT_TAG).commit();
     }
 
     private void showPassengerPickUpFragment(PassengerRide passengerRide) {
         mFragmentManager.beginTransaction().add(R.id.main_activity_dialog_container,
-                DriverPassengerPickUpFragment.newInstance(passengerRide)).commit();
+                DriverPassengerPickUpFragment.newInstance(passengerRide),
+                DriverPassengerPickUpFragment.DRIVER_PASSENGER_PICK_UP_FRAGMENT_TAG).commit();
     }
 
     private void showDriverDropOffFragment(PassengerRide passengerRide) {
         mFragmentManager.beginTransaction().add(R.id.main_activity_dialog_container,
-                DriverDropOffFragment.newInstance(passengerRide)).commit();
+                DriverDropOffFragment.newInstance(passengerRide) ,
+                DriverDropOffFragment.DRIVER_DROP_OFF_FRAGMENT_TAG).commit();
     }
 
     @Nullable
@@ -1121,7 +1119,11 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onPickUpConfirmed(PassengerRide passengerRide) {
-
+        mFragmentManager.beginTransaction()
+                .remove(mFragmentManager
+                        .findFragmentByTag(DriverPassengerPickUpFragment
+                                .DRIVER_PASSENGER_PICK_UP_FRAGMENT_TAG))
+                .commit();
     }
 
     @Override
@@ -1131,7 +1133,10 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onDropOffConfirmation(PassengerRide passengerRide) {
-
+        mFragmentManager.beginTransaction()
+                .remove(mFragmentManager
+                        .findFragmentByTag(DriverDropOffFragment.DRIVER_DROP_OFF_FRAGMENT_TAG))
+                .commit();
     }
 
     @Override
