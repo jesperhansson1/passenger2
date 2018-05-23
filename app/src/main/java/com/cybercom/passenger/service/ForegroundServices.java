@@ -136,6 +136,7 @@ public class ForegroundServices extends LifecycleService {
 
             startForeground(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE,
                     notification);
+
         }
 
         //Uppdatera Passengers position

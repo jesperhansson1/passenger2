@@ -748,9 +748,9 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         mPassengerPositionReference.child(uId).setValue(LocationHelper.convertLocationToPosition(location));
     }
 
-    public LiveData<com.cybercom.passenger.model.PassengerRide> createPassengerRide(Drive drive,
-                                                                                    Position pickUpLocation,
-                                                                                    Position dropOffLocation) {
+    public LiveData<com.cybercom.passenger.model.PassengerRide> createPassengerRide(
+            Drive drive, Position pickUpLocation, Position dropOffLocation, String startAddress,
+            String endAddress) {
         final MutableLiveData<com.cybercom.passenger.model.PassengerRide>
                 passengerRideMutableLiveData = new MutableLiveData<>();
 
@@ -766,7 +766,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
             final com.cybercom.passenger.repository.databasemodel.PassengerRide dbPassengerRide =
                     new com.cybercom.passenger.repository.databasemodel.PassengerRide(drive.getId(),
-                            uId, pickUpLocation, dropOffLocation, false, false);
+                            uId, pickUpLocation, dropOffLocation, false, false, startAddress,
+                            endAddress);
             final DatabaseReference passengerRideRef = mPassengerRideReference.push();
             final String passengerRideId = passengerRideRef.getKey();
 
@@ -774,16 +775,16 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
             mUsersReference.child(firebaseUser.getUid()).addListenerForSingleValueEvent(
                     getEventListenerToBuildPassengerRide(passengerRideId, pickUpLocation,
-                            dropOffLocation, drive, passengerRideMutableLiveData));
+                            dropOffLocation, drive, passengerRideMutableLiveData, startAddress,
+                            endAddress));
         }
         return passengerRideMutableLiveData;
     }
 
-    private ValueEventListener getEventListenerToBuildPassengerRide(String passengerRideId,
-                                                                    Position pickUpLocation,
-                                                                    Position dropOffLocation,
-                                                                    Drive drive,
-                                                                    MutableLiveData<com.cybercom.passenger.model.PassengerRide> passengerRideMutableLiveData) {
+    private ValueEventListener getEventListenerToBuildPassengerRide(
+            String passengerRideId, Position pickUpLocation, Position dropOffLocation, Drive drive,
+            MutableLiveData<com.cybercom.passenger.model.PassengerRide>
+                    passengerRideMutableLiveData, String startAddress, String endAddress) {
         return new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -791,7 +792,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                 com.cybercom.passenger.model.PassengerRide passengerRide =
                         new com.cybercom.passenger.model.PassengerRide(
                                 passengerRideId, drive, passenger, pickUpLocation, dropOffLocation,
-                                false, false);
+                                false, false, startAddress, endAddress);
                 passengerRideMutableLiveData.setValue(passengerRide);
             }
 
@@ -820,7 +821,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                                 // Fetch the Passenger
                                 DatabaseReference dbRefPassengerId = mUsersReference.child(
                                         passengerRide.getPassengerId());
-                                dbRefPassengerId.addListenerForSingleValueEvent(new ValueEventListener() {
+                                dbRefPassengerId.addListenerForSingleValueEvent(
+                                        new ValueEventListener() {
                                     @Override
                                     public void onDataChange(DataSnapshot dataSnapshot) {
                                         final User passenger = dataSnapshot.getValue(User.class);
@@ -881,7 +883,9 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                                             passengerRide.getPickUpPosition(),
                                             passengerRide.getDropOffPosition(),
                                             passengerRide.isPickUpConfirmed(),
-                                            passengerRide.isDropOffConfirmed());
+                                            passengerRide.isDropOffConfirmed(),
+                                            passengerRide.getStartAddress(),
+                                            passengerRide.getEndAddress());
                             passengerRideMutableLiveData.setValue(convertedPassengerRide);
                         }
 

@@ -22,7 +22,7 @@ public class NoMatchFragment extends Fragment implements View.OnClickListener {
     private NoMatchButtonListener mNoMatchButtonListener;
 
     public interface NoMatchButtonListener {
-        void OnNoMatchButtonClicked(int type);
+        void onNoMatchButtonClicked(int type);
     }
 
     public static NoMatchFragment newInstance() {
@@ -66,15 +66,15 @@ public class NoMatchFragment extends Fragment implements View.OnClickListener {
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.fragment_no_match_try_again_button: {
-                mNoMatchButtonListener.OnNoMatchButtonClicked(BUTTON_TRY_AGAIN);
+                mNoMatchButtonListener.onNoMatchButtonClicked(BUTTON_TRY_AGAIN);
                 break;
             }
             case R.id.fragment_no_match_increase_radius_button: {
-                mNoMatchButtonListener.OnNoMatchButtonClicked(BUTTON_INCREASE_RADIUS);
+                mNoMatchButtonListener.onNoMatchButtonClicked(BUTTON_INCREASE_RADIUS);
                 break;
             }
             case R.id.fragment_no_match_cancel_button: {
-                mNoMatchButtonListener.OnNoMatchButtonClicked(BUTTON_CANCEL);
+                mNoMatchButtonListener.onNoMatchButtonClicked(BUTTON_CANCEL);
                 break;
             }
         }

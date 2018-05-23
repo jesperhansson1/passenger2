@@ -12,19 +12,35 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
+import android.content.res.Resources;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.util.TypedValue;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
+import android.view.animation.AnimationUtils;
+import android.view.animation.TranslateAnimation;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.RatingBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
 import com.cybercom.passenger.R;
@@ -90,7 +106,7 @@ public class MainActivity extends AppCompatActivity implements
         FindingCarProgressDialog.FindingCarListener, GoogleMap.OnMyLocationButtonClickListener,
         NoMatchFragment.NoMatchButtonListener, FragmentSizeListener, OnCompleteListener<Void>,
         DriverPassengerPickUpFragment.DriverPassengerPickUpButtonClickListener,
-        DriverDropOffFragment.DriverDropOffConfirmationListener {
+        DriverDropOffFragment.DriverDropOffConfirmationListener, View.OnClickListener {
 
     private static final float ZOOM_LEVEL_STREETS = 15;
 
@@ -135,6 +151,8 @@ public class MainActivity extends AppCompatActivity implements
     private boolean mIsFragmentAdded = false;
     private NoMatchFragment mNoMatchFragment;
     private boolean mCountMarker = true;
+    private LinearLayout mPassengerContainer;
+    private FrameLayout mPassengerDetailedInformation;
 
     private GeofencingClient mGeofencingClient;
     private List<Geofence> mGeofenceList;
@@ -145,6 +163,7 @@ public class MainActivity extends AppCompatActivity implements
 
     private User mCurrentLoggedInUser;
 
+    private HashMap<String, PassengerRide> mPassengers = new HashMap<>();
 
     public Bounds mBounds;
 
@@ -198,8 +217,10 @@ public class MainActivity extends AppCompatActivity implements
         new NotificationHelper(this);
     }
 
-    private void createPassengerRide(Drive drive, Position startPosition, Position endPosition) {
-        mMainViewModel.createPassengerRide(drive, startPosition, endPosition).observe(this, passengerRide -> {
+    private void createPassengerRide(Drive drive, Position startPosition, Position endPosition,
+                                     String startAddress, String endAddress) {
+        mMainViewModel.createPassengerRide(drive, startPosition, endPosition, startAddress,
+                endAddress).observe(this, passengerRide -> {
             Intent updatePassengerIntent = new Intent(MainActivity.this, ForegroundServices.class);
             updatePassengerIntent.setAction(Constants.ACTION.STARTFOREGROUND_UPDATE_PASSENGER_POSITION);
             updatePassengerIntent.putExtra(ForegroundServices.INTENT_EXTRA_PASSENGER_RIDE_ID, passengerRide.getId());
@@ -284,9 +305,16 @@ public class MainActivity extends AppCompatActivity implements
                     break;
                 case Notification.ACCEPT_PASSENGER:
                     showPassengerNotificationDialog(notification);
+                    String startAddress = mMainViewModel.getAddressFromLocation(
+                            LocationHelper.convertPositionToLocation(notification.getDriveRequest()
+                                    .getStartLocation()));
+                    String endAddress = mMainViewModel.getAddressFromLocation(
+                            LocationHelper.convertPositionToLocation(
+                                    notification.getDriveRequest().getEndLocation()));
                     createPassengerRide(notification.getDrive(),
                             notification.getDriveRequest().getStartLocation(),
-                            notification.getDriveRequest().getEndLocation());
+                            notification.getDriveRequest().getEndLocation(), startAddress,
+                            endAddress);
                     updateDriversMarkerPosition(notification.getDrive().getId());
                     dismissMatchingInProgressDialog();
                     break;
@@ -315,6 +343,8 @@ public class MainActivity extends AppCompatActivity implements
                             createGeofence(passengerRide);
                         }
                     }
+                    handlePassengerChanged(passengerRide);
+                    // TODO: add geofences pickup and dropoff location
                 });
             }
         });
@@ -436,7 +466,8 @@ public class MainActivity extends AppCompatActivity implements
             isEndLocationMarkerAdded = true;
         } else {
             mEndLocationMarker.setVisible(true);
-            updateMarkerLocation(mEndLocationMarker, mMainViewModel.getEndMarkerLocation().getValue());
+            updateMarkerLocation(mEndLocationMarker, mMainViewModel.getEndMarkerLocation()
+                    .getValue());
         }
     }
 
@@ -515,12 +546,7 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public boolean onCreateOptionsMenu(@NonNull Menu menu) {
         getMenuInflater().inflate(R.menu.menu_mainactivity_login, menu);
-
-        if (mUser != null) {
-            menu.findItem(R.id.menu_action_login).setVisible(false);
-        } else {
-            menu.findItem(R.id.menu_action_login).setVisible(true);
-        }
+        menu.findItem(R.id.menu_action_login).setVisible(mUser == null);
         return true;
     }
 
@@ -549,7 +575,64 @@ public class MainActivity extends AppCompatActivity implements
         });
 
         mPlaceMarkerInformation = findViewById(R.id.main_activity_place_marker_info);
+        mPassengerContainer = findViewById(R.id.passenger_container);
+        mPassengerDetailedInformation = findViewById(R.id.passenger_detailed_information);
+        mPassengerDetailedInformation.findViewById(R.id.abort_passenger_button)
+                .setOnClickListener(this);
+    }
 
+    private void handlePassengerChanged(PassengerRide passengerRide) {
+        if (passengerRide == null) {
+            return;
+        }
+        if (passengerRide.isDropOffConfirmed()) {
+            mPassengers.remove(passengerRide.getId());
+            removePassengerFab(passengerRide.getId());
+        } else {
+            mPassengers.put(passengerRide.getId(), passengerRide);
+            addPassengerFab(passengerRide.getId());
+        }
+    }
+
+
+    private void addPassengerFab(@NonNull String rideId) {
+
+        if (findPassengerView(rideId) == null) {
+            LayoutInflater layoutInflater = LayoutInflater.from(this);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+
+            Resources resources = getResources();
+            int margin = (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                    R.dimen.pad_16dp, resources.getDisplayMetrics());
+
+            lp.setMargins(margin, margin, margin, margin);
+            LinearLayout fabContainer = (LinearLayout)
+                    layoutInflater.inflate(R.layout.passanger_fab, null);
+            FloatingActionButton fab = fabContainer.findViewById(R.id.passenger_fab);
+            fab.setOnClickListener(this);
+            //fab.setLayoutParams(lp);
+            fab.setTag(rideId);
+            mPassengerContainer.addView(fabContainer);
+        }
+    }
+
+    private void removePassengerFab(@NonNull String rideId) {
+        View child = findPassengerView(rideId);
+        if (child != null) {
+            mPassengerContainer.removeView(child);
+        }
+    }
+
+    private View findPassengerView(@NonNull String rideId) {
+        View child = null;
+        for (int i = 0; i < mPassengerContainer.getChildCount(); i++) {
+            child = mPassengerContainer.getChildAt(i);
+            if (rideId.equals(child.getTag())) {
+                return child;
+            }
+        }
+        return child;
     }
 
     @Override
@@ -675,8 +758,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onCameraMoveStarted(int reason) {
-        if (reason == GoogleMap.OnCameraMoveStartedListener.REASON_GESTURE
-                && mIsFragmentAdded) {
+        if (reason == GoogleMap.OnCameraMoveStartedListener.REASON_GESTURE && mIsFragmentAdded) {
             mCreateDriveFragment.hideCreateDialog();
             Timber.i("onCameraMoveStarted");
         }
@@ -914,7 +996,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void OnNoMatchButtonClicked(int type) {
+    public void onNoMatchButtonClicked(int type) {
         switch (type) {
             case NoMatchFragment.BUTTON_TRY_AGAIN: {
                 matchDriveRequest(mMainViewModel.getMostRecentDriveRequest(),
@@ -1137,5 +1219,140 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onDropOffCanceled(PassengerRide passengerRide) {
 
+    }
+
+    private Animation getCloseDetailedInfoIfNeeded(View clickedFab) {
+        String passengerId = (String)clickedFab.getTag();
+        if (!passengerId.equals(mPassengerDetailedInformation.getTag())) {
+            for (int i = 0; i < mPassengerContainer.getChildCount(); i++) {
+                FloatingActionButton fab =(mPassengerContainer.getChildAt(i)
+                        .findViewById(R.id.passenger_fab));
+                if (fab.getTag().equals(mPassengerDetailedInformation.getTag())) {
+                    return getCloseAnimation(fab, mPassengerDetailedInformation, 200);
+                }
+            }
+        }
+        return null;
+    }
+
+
+    private void updatePassengerDetailedInformation(FloatingActionButton fab) {
+        String tag = (String)fab.getTag();
+        if (tag == null) {
+            return;
+        }
+        PassengerRide passengerRide = mPassengers.get(tag);
+        if (passengerRide == null) {
+            return;
+        }
+        ((TextView)mPassengerDetailedInformation.findViewById(R.id.passenger_name)).setText(
+                passengerRide.getPassenger().getFullName());
+        //TODO add rating to PassengerRide
+        //TODO add image..
+        ((TextView)mPassengerDetailedInformation.findViewById(R.id.passenger_start_location))
+                .setText(passengerRide.getStartAddress());
+        ((TextView)mPassengerDetailedInformation.findViewById(R.id.passenger_end_location))
+                .setText(passengerRide.getEndAddress());
+        //leaf value TODO add leaf value to passengerRide
+        //price TODO add price to passengerRide
+    }
+
+    private void handleRideAborted(String rideId) {
+        Toast.makeText(this, "Implement handling of this", Toast.LENGTH_LONG).show();
+        //TODO Ride aborted from the driver, implement this
+    }
+
+    @Override
+    public void onClick(final View view) {
+        if (view.getId() == R.id.abort_passenger_button) {
+            handleRideAborted((String)mPassengerDetailedInformation.getTag());
+        } else if (view instanceof FloatingActionButton) {
+            updatePassengerDetailedInformation((FloatingActionButton)view);
+            AnimationSet as = new AnimationSet(false);
+            Animation closeOtherAnimation = getCloseDetailedInfoIfNeeded(view);
+            if (closeOtherAnimation != null) {
+                closeOtherAnimation.setAnimationListener(new DetailedInfoAnimationListener(false));
+                mPassengerDetailedInformation.setTag("");
+                mPassengerDetailedInformation.startAnimation(closeOtherAnimation);
+            }
+
+            Object tag = mPassengerDetailedInformation.getTag();
+            if (tag == null || tag.equals("")) {
+                Animation openAnimation = getOpenAnimation(view, mPassengerDetailedInformation,
+                        400);
+                openAnimation.setAnimationListener(new DetailedInfoAnimationListener(true));
+
+                as.addAnimation(openAnimation);
+                mPassengerDetailedInformation.setTag(view.getTag());
+                mPassengerDetailedInformation.startAnimation(openAnimation);
+            } else {
+                Animation closeAnimation = getCloseAnimation(view, mPassengerDetailedInformation,
+                        200);
+                mPassengerDetailedInformation.setTag("");
+                closeAnimation.setAnimationListener(new DetailedInfoAnimationListener(false));
+                mPassengerDetailedInformation.startAnimation(closeAnimation);
+            }
+        }
+    }
+
+    private class DetailedInfoAnimationListener implements Animation.AnimationListener {
+        private final boolean mIsOpenAnimation;
+        DetailedInfoAnimationListener(boolean isOpenAnimation) {
+            mIsOpenAnimation = isOpenAnimation;
+        }
+        @Override
+        public void onAnimationStart(Animation animation) {
+            if (mIsOpenAnimation) {
+                mPassengerDetailedInformation.setVisibility(View.VISIBLE);
+            }
+        }
+
+        @Override
+        public void onAnimationEnd(Animation animation) {
+            if (!mIsOpenAnimation) {
+                mPassengerDetailedInformation.setVisibility(View.INVISIBLE);
+            }
+        }
+
+        @Override
+        public void onAnimationRepeat(Animation animation) {
+
+        }
+    }
+
+    private static AnimationSet getCloseAnimation(View fabView, View detailedView, int duration) {
+        int[] detailedViewLocation = new int[2];
+        int[] fabLocation = new int[2];
+        detailedView.getLocationOnScreen(detailedViewLocation);
+        fabView.getLocationOnScreen(fabLocation);
+        float startX = fabLocation[0] + (fabView.getWidth()/2) - detailedViewLocation[0];
+        float startY = fabLocation[1] + (fabView.getHeight()/2) - detailedViewLocation[1];
+        AnimationSet animSet = new AnimationSet(false);
+        Animation scaleDown = AnimationUtils.loadAnimation(fabView.getContext(),
+                R.anim.scale_down_detailed_info);
+
+        animSet.addAnimation(scaleDown);
+        animSet.addAnimation(new TranslateAnimation(0, startX, 0, startY));
+        animSet.setDuration(duration);
+        return animSet;
+    }
+
+    private static AnimationSet getOpenAnimation(View fabView, View detailedView, int duration) {
+        int[] detailedViewLocation = new int[2];
+        int[] fabLocation = new int[2];
+        detailedView.getLocationOnScreen(detailedViewLocation);
+        fabView.getLocationOnScreen(fabLocation);
+
+        float startX = fabLocation[0] + (fabView.getWidth()/2) - detailedViewLocation[0];
+        float startY = fabLocation[1] + (fabView.getHeight()/2) - detailedViewLocation[1];
+        AnimationSet animSet = new AnimationSet(false);
+        animSet.addAnimation(new AlphaAnimation(0, 1));
+        Animation scaleUpAnimation = AnimationUtils.loadAnimation(fabView.getContext(),
+                R.anim.scale_up_detailed_info);
+
+        animSet.addAnimation(scaleUpAnimation);
+        animSet.addAnimation(new TranslateAnimation(startX, 0, startY, 0));
+        animSet.setDuration(duration);
+        return animSet;
     }
 }
