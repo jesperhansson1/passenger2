@@ -28,6 +28,7 @@ import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.gson.Gson;
+import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -67,7 +68,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private static final String LATITUDE = "latitude";
     private static final String LONGITUDE = "longitude";
 
-    private static final int DEFAULT_DRIVE_REQUEST_RADIUS = 700;
+    public static final int DEFAULT_DRIVE_REQUEST_RADIUS = 700;
 
     private static PassengerRepository sPassengerRepository;
     private DatabaseReference mUsersReference;
@@ -297,41 +298,43 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                         if (driveRequest.getDriverIdBlackList().contains(drive.getDriverId()))
                             Timber.i("No match, driver blacklisted: %s", drive.getDriverId());
 
-//                        if(snapshot.hasChild(BOUNDS))
-//                        {
-//                            Bounds bounds = new Bounds(Double.parseDouble(snapshot.child(BOUNDS).child(NORTHEAST).child(LATITUDE).getValue().toString()),
-//                                    Double.parseDouble(snapshot.child(BOUNDS).child(NORTHEAST).child(LONGITUDE).getValue().toString()),
-//                                    Double.parseDouble(snapshot.child(BOUNDS).child(SOUTHWEST).child(LATITUDE).getValue().toString()),
-//                                    Double.parseDouble(snapshot.child(BOUNDS).child(SOUTHWEST).child(LONGITUDE).getValue().toString()));
-//
-//                            Timber.d(bounds.toString());
-//
-//                            GpsLocations gpsLocations = new GpsLocations();
-//                            LatLng start = gpsLocations.getLocations(radiusMultiplier,
-//                                    new LatLng(bounds.getNorthEastLatitude(),bounds.getNorthEastLongitude()),
-//                                    new LatLng(bounds.getSouthWestLatitude(),bounds.getSouthWestLongitude()));
-//
-//                            LatLng end = gpsLocations.getLocations(radiusMultiplier,
-//                                    new LatLng(bounds.getSouthWestLatitude(),bounds.getSouthWestLongitude()),
-//                                    new LatLng(bounds.getNorthEastLatitude(),bounds.getNorthEastLongitude()));
-//                            Bounds bounds1 = new Bounds(start.getLatitude(),start.getLongitude(),end.getLatitude(),end.getLongitude());
-//
-//                            Timber.d("start " + start.getLatitude() + " : " + start.getLongitude());
-//                            Timber.d("end " + end.getLatitude() + " : " + end.getLongitude());
-//                            //Check for start position and end position
-//                            if(contains(bounds1,driveRequest.getStartLocation().getLatitude(),driveRequest.getStartLocation().getLongitude())){
-//                                if(contains(bounds1,driveRequest.getEndLocation().getLatitude(),driveRequest.getEndLocation().getLongitude()))
-//                                {
-//                                    Timber.d("Match found");
-//
-//                                    bestMatch = drive;
-//                                    bestMatchDriveId = snapshot.getKey();
-//                                   // shortestDistance = distance[0];
-//                                }
-//                            }
-//                        }
+                        if(snapshot.hasChild(BOUNDS))
+                        {
+                            Bounds bounds = new Bounds(Double.parseDouble(snapshot.child(BOUNDS).child(NORTHEAST).child(LATITUDE).getValue().toString()),
+                                    Double.parseDouble(snapshot.child(BOUNDS).child(NORTHEAST).child(LONGITUDE).getValue().toString()),
+                                    Double.parseDouble(snapshot.child(BOUNDS).child(SOUTHWEST).child(LATITUDE).getValue().toString()),
+                                    Double.parseDouble(snapshot.child(BOUNDS).child(SOUTHWEST).child(LONGITUDE).getValue().toString()));
 
-                        if (distance[0] < DEFAULT_DRIVE_REQUEST_RADIUS * radiusMultiplier && !driveRequest.getDriverIdBlackList().contains(drive.getDriverId())) {
+                            Timber.d(bounds.toString());
+
+                            /*GpsLocations gpsLocations = new GpsLocations();
+                            LatLng start = gpsLocations.getLocations(radiusMultiplier,
+                                    new LatLng(bounds.getNorthEastLatitude(),bounds.getNorthEastLongitude()),
+                                    new LatLng(bounds.getSouthWestLatitude(),bounds.getSouthWestLongitude()));
+
+                            LatLng end = gpsLocations.getLocations(radiusMultiplier,
+                                    new LatLng(bounds.getSouthWestLatitude(),bounds.getSouthWestLongitude()),
+                                    new LatLng(bounds.getNorthEastLatitude(),bounds.getNorthEastLongitude()));
+                            Bounds bounds1 = new Bounds(start.latitude,start.longitude,end.latitude,end.longitude);
+
+                            Timber.d("start " + start.latitude + " : " + start.longitude);
+                            Timber.d("end " + end.latitude + " : " + end.longitude);*/
+
+                            bounds.setNewBounds(radiusMultiplier);
+                            //Check for start position and end position
+                            if(contains(bounds,driveRequest.getStartLocation().getLatitude(),driveRequest.getStartLocation().getLongitude())){
+                                if(contains(bounds,driveRequest.getEndLocation().getLatitude(),driveRequest.getEndLocation().getLongitude()))
+                                {
+                                    Timber.d("Match found");
+
+                                    bestMatch = drive;
+                                    bestMatchDriveId = snapshot.getKey();
+                                   // shortestDistance = distance[0];
+                                }
+                            }
+                        }
+
+                        /*if (distance[0] < DEFAULT_DRIVE_REQUEST_RADIUS * radiusMultiplier && !driveRequest.getDriverIdBlackList().contains(drive.getDriverId())) {
                             if (bestMatch == null) {
                                 bestMatch = drive;
                                 bestMatchDriveId = snapshot.getKey();
@@ -341,7 +344,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                                 bestMatchDriveId = snapshot.getKey();
                                 shortestDistance = distance[0];
                             }
-                        }
+                        }*/
                     } else {
                         Timber.d("Drives: Out of time frame!");
                     }
@@ -1016,6 +1019,9 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     }
 
     public boolean contains(Bounds bounds, double latitude, double longitude) {
+
+        Timber.d("checking " + bounds.getNorthEastLatitude() + " : " + bounds.getNorthEastLongitude() + " : " + bounds.getSouthWestLatitude()
+        + " : " + bounds.getSouthWestLongitude() + " -- > " + latitude + " : " + longitude);
         boolean longitudeContained = false;
         boolean latitudeContained = false;
 
@@ -1036,17 +1042,17 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
         // Check if the bbox contains the prime meridian (longitude 0.0).
         if (swLongitude < neLongitude) {
-            if (swLongitude <= longitude && longitude <= neLongitude) {
+            if (swLongitude < longitude && longitude < neLongitude) {
                 longitudeContained = true;
             }
 
-        } else if ((0 < longitude && longitude <= neLongitude) ||
-                (swLongitude <= longitude && longitude < 0)) {
+        } else if ((0 < longitude && longitude < neLongitude) ||
+                (swLongitude < longitude && longitude < 0)) {
             // Contains prime meridian.
             longitudeContained = true;
         }
 
-        if (swLatitude < neLatitude && (swLatitude <= latitude && latitude <= neLatitude)) {
+        if (swLatitude < neLatitude && (swLatitude < latitude && latitude < neLatitude)) {
             latitudeContained = true;
         }
         return (longitudeContained && latitudeContained);
