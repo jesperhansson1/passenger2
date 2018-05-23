@@ -80,9 +80,10 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
 
         setContentView(R.layout.activity_signup);
         Toolbar toolbar = findViewById(R.id.my_toolbar);
-        toolbar.setTitleTextColor(getResources().getColor(R.color.colorWhite));
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle(R.string.signup_title);
+        toolbar.setTitleTextColor(getResources().getColor(R.color.colorBlue));
+
 
         mViewModel = ViewModelProviders.of(this).get(SignUpViewModel.class);
 

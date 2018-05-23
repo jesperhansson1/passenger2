@@ -1,15 +1,12 @@
 package com.cybercom.passenger.flows.car;
 
-import android.arch.lifecycle.LifecycleOwner;
-import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
@@ -20,7 +17,9 @@ import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.accounts.AccountActivity;
 import com.cybercom.passenger.model.Car;
 import com.google.gson.Gson;
+
 import java.util.Calendar;
+
 import timber.log.Timber;
 
 import static com.cybercom.passenger.flows.car.CarsActivity.CAR_COLOR;
@@ -50,7 +49,6 @@ public class CarDetailActivity extends AppCompatActivity {
     private String mApiUrl;
     private CarDetailViewModel mCarDetailViewModel;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,6 +57,8 @@ public class CarDetailActivity extends AppCompatActivity {
         toolbar.setTitleTextColor(getResources().getColor(R.color.colorWhite));
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle(R.string.add_car);
+        toolbar.setTitleTextColor(getResources().getColor(R.color.colorBlue));
+
         initializeUI();
         mExtras = getIntent().getExtras();
         progressBar = findViewById(R.id.progress_bar);
@@ -66,7 +66,6 @@ public class CarDetailActivity extends AppCompatActivity {
         mApiToken = getResources().getString(R.string.car_api_token);
         mApiUrl = getResources().getString(R.string.car_base_url);
         mCarDetailViewModel = ViewModelProviders.of(this).get(CarDetailViewModel.class);
-
     }
 
     @Override
@@ -96,8 +95,8 @@ public class CarDetailActivity extends AppCompatActivity {
                 mEditTextCarNumber.setError(getResources().getString(R.string.car_number_error));
             }
             else {
-                    String url = mApiUrl + mEditTextCarNumber.getText().toString() + "?api_token=" + mApiToken;
-                    getDetails(url,mEditTextCarNumber.getText().toString());
+                String url = mApiUrl + mEditTextCarNumber.getText().toString() + "?api_token=" + mApiToken;
+                getDetails(url,mEditTextCarNumber.getText().toString());
             }
         });
         mButtonSave.setOnClickListener(v -> {
@@ -170,21 +169,18 @@ public class CarDetailActivity extends AppCompatActivity {
 
     private void getDetails(String url, String regNumber) {
         mCarDetailViewModel.setUrl(url, regNumber);
-
         mCarDetailViewModel.getCarLiveData().observe(this, car -> {
-            if (car != null) {
-                mEditTextCarYear.setText(car.getYear());
-                mEditTextCarModel.setText(car.getModel());
-                mEditTextCarColor.setText(car.getColor());
-            }
-        });
-    }
+                    if (car != null) {
 
-   /* public void getDetails(String url, String regno)
-    {
-        mCarDetailViewModel.setUrl(url, regno);
+                            mEditTextCarYear.setText(car.getYear());
+                            mEditTextCarModel.setText(car.getModel());
+                            mEditTextCarColor.setText(car.getColor());
 
-        mCarDetailViewModel.getCarLiveData().observe(myLife, new Observer<Car>() {
+
+                    }
+                });
+
+          /*      mCarDetailViewModel.getCarLiveData().observe(this, new Observer<Car>() {
 
             @Override
             public void onChanged(@Nullable Car car) {
@@ -192,7 +188,6 @@ public class CarDetailActivity extends AppCompatActivity {
                 mEditTextCarModel.setText(car.getModel());
                 mEditTextCarColor.setText(car.getColor());
             }
-        });
-    }*/
-
+        });*/
+    }
 }

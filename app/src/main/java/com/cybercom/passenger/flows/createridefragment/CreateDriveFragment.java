@@ -1,5 +1,6 @@
 package com.cybercom.passenger.flows.createridefragment;
 
+import android.animation.Animator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.arch.lifecycle.ViewModelProviders;
@@ -344,7 +345,6 @@ public class CreateDriveFragment extends Fragment {
         mMainViewModel.setNumberOfPassengers(DEFAULT_PASSENGERS);
         mShowSelectedTime.setText(EMPTY_STRING);
         mShowSelectedTime.setVisibility(View.GONE);
-        mOnFinishedCreatingDriveOrDriveRequest.onFinish();
     }
 
     private void setUpDialogForDrive() {
@@ -400,6 +400,40 @@ public class CreateDriveFragment extends Fragment {
         mShowAndHide.animate().rotation(UP_ARROW_ANIMATION).setDuration(ARROW_ANIMATION_DURATION);
         mFragmentSizeListener.onHeightChanged(mShowAndHide.getHeight());
         mIsCreateDialogUp = false;
+    }
+
+    public void hideCreateDialogCompletely() {
+        if (!mIsCreateDialogUp) {
+            return;
+        }
+        mCreateDriveDialog.animate()
+                .translationY(mCreateDriveDialog.getHeight())
+                .alpha(0)
+                .setDuration(DIALOG_ANIMATION_DURATION);
+        mShowAndHide.animate().rotation(UP_ARROW_ANIMATION).setDuration(ARROW_ANIMATION_DURATION)
+                .setListener(new Animator.AnimatorListener() {
+                    @Override
+                    public void onAnimationStart(Animator animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        mOnFinishedCreatingDriveOrDriveRequest.onFinish();
+                    }
+
+                    @Override
+                    public void onAnimationCancel(Animator animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animator animation) {
+
+                    }
+                });
+        mFragmentSizeListener.onHeightChanged(0);
+
     }
 
     public void setIsOtherFragmentUp(boolean isOtherFragmentUp) {
@@ -482,6 +516,9 @@ public class CreateDriveFragment extends Fragment {
         super.onDetach();
 
         mCreateRideDialogListener = null;
+        mOnFinishedCreatingDriveOrDriveRequest = null;
+        mFragmentSizeListener = null;
+        mOnPlaceMarkerIconClickListener = null;
     }
 
 }

@@ -189,7 +189,7 @@
     <string name="fragment_driver_pick_up_passenger_name">Alice Hicks</string>
     <string name="fragment_driver_pick_up_button_text_no_show">Dök inte upp</string>
     <string name="fragment_driver_pick_up_passenger_image_content_description">Profile image</string>
-    <string name="fragment_driver_drop_off_title">Lämnade du av Alice?</string>
+    <string name="fragment_driver_drop_off_title">Lämnade du av %1$s?</string>
     <string name="fragment_driver_drop_off_passenger_image_content_description">Passenger image</string>
     <string name="fragment_driver_drop_off_passenger_name">Alice Hicks</string>
     <string name="fragment_driver_drop_off_button_text_confirm">Bekräfta avlämning</string>
@@ -205,6 +205,7 @@
     <string name="no_match_fragment_must_implement_listener">Must implement NoMatchButtonListener</string>
     <string name="notification_update_driver_position">Passenger körs i bakgrunden</string>
     <string name="you_have_been_matched">Du har blivit matchad!</string>
+    <string name="eta_minutes">%1$dm</string>
 
 
 </resources>

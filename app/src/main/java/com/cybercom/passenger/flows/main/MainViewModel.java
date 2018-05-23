@@ -210,7 +210,8 @@ public class MainViewModel extends AndroidViewModel {
         return numberOfPassengers;
     }
 
-    private String getAddressFromLocation(Location location) {
+    public String getAddressFromLocation(Location location) {
+
         List<Address> addresses;
         Geocoder geocoder = new Geocoder(getApplication(), Locale.getDefault());
         try {
@@ -318,16 +319,11 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     @SuppressLint("MissingPermission")
-    public LiveData<PassengerRide> createPassengerRide(String driveId) {
-        return mPassengerRepository.createPassengerRide(driveId);
-    }
-
-    public LiveData<String> updatePassengerRideCurrentLocation(Location location) {
-        return mPassengerRepository.updatePassengerRideCurrentLocation(location);
-    }
-
-    public LiveData<Position> getPassengerPositionOnMap() {
-        return mPassengerRepository.getPassengerPositionOnMap();
+    public LiveData<PassengerRide> createPassengerRide(Drive drive, Position startPosition,
+                                                       Position endPosition, String startAddress,
+                                                       String endAddress) {
+        return mPassengerRepository.createPassengerRide(drive, startPosition, endPosition,
+                startAddress, endAddress);
     }
 
     public LiveData<PassengerRide> getPassengerRides(String driveId) {
@@ -348,5 +344,17 @@ public class MainViewModel extends AndroidViewModel {
 
     public void setDriveRequestRadiusMultiplier(int mDriveRequestRadiusMultiplier) {
         this.mDriveRequestRadiusMultiplier = mDriveRequestRadiusMultiplier;
+    }
+
+    public LiveData<Position> getPassengerPosition(String driveId) {
+        return mPassengerRepository.getPassengerPosition(driveId);
+    }
+
+    public LiveData<String> getActiveDriveId() {
+        return mPassengerRepository.getActiveDriveId();
+    }
+
+    public LiveData<Integer> getETA() {
+        return mPassengerRepository.getETAInMin();
     }
 }

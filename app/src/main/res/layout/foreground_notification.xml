@@ -24,13 +24,13 @@
             android:lines="1"
             android:singleLine="true"
             android:text="@string/app_name"
-            android:textColor="#787878"
+            android:textColor="@color/colorBlack"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/notification_text_artist"
             android:layout_width="wrap_content"
-            android:layout_height="42dp"
+            android:layout_height="wrap_content"
             android:ellipsize="end"
             android:lines="1"
             android:singleLine="true"
