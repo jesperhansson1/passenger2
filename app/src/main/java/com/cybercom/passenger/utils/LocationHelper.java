@@ -32,7 +32,11 @@ public class LocationHelper {
         String lat = String.valueOf(position.getLatitude());
         String lng = String.valueOf(position.getLatitude());
 
-        return "Latitude: " + lat + ", Longitude: " + lng;
+        return lat + ',' + lng;
+    }
+
+    public static String getStringFromLatLng(double lat, double lng) {
+        return String.valueOf(lat) + ',' + String.valueOf(lng);
     }
 
     public static Position convertLocationToPosition(Location location){

@@ -40,8 +40,6 @@ class DataParser {
             jsonArrayRoutes = jsonObject.getJSONArray("routes");
             Timber.d(jsonArrayRoutes.toString());
 
-
-
             // Traversing all routes
             for(int i=0;i<jsonArrayRoutes.length();i++){
 

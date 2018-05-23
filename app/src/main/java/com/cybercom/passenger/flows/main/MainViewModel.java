@@ -349,4 +349,8 @@ public class MainViewModel extends AndroidViewModel {
     public LiveData<String> getActiveDriveId() {
         return mPassengerRepository.getActiveDriveId();
     }
+
+    public LiveData<Integer> getETA() {
+        return mPassengerRepository.getETAInMin();
+    }
 }

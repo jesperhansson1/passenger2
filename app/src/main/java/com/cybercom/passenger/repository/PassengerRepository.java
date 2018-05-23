@@ -83,6 +83,9 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private BlockingQueue<Notification> mNotificationQueue = new LinkedBlockingQueue<>();
 
     private MutableLiveData<Notification> mNotification = new MutableLiveData<>();
+
+    MutableLiveData<Integer> mEtaLiveData = new MutableLiveData<>();
+
     private User mCurrentlyLoggedInUser;
     private MutableLiveData<Location> mDriverCurrentLocation = new MutableLiveData<>();
 
@@ -979,6 +982,35 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         return driveIdMutableLiveData;
     }
 
+    public LiveData<PassengerRide> getPassengerRideById(String passengerRideId) {
+        MutableLiveData<PassengerRide> passengerRideLiveData = new MutableLiveData<>();
+
+        mPassengerRideReference.child(passengerRideId).addValueEventListener(
+                new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Timber.i("getPassengerRideById %s", dataSnapshot);
+                PassengerRide passengerRide = dataSnapshot.getValue(PassengerRide.class);
+                passengerRideLiveData.setValue(passengerRide);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        return passengerRideLiveData;
+    }
+
+    public void updateETA(long etaSeconds) {
+        mEtaLiveData.setValue((int) (etaSeconds / 60));
+    }
+
+    public LiveData<Integer> getETAInMin() {
+        return mEtaLiveData;
+    }
+
     public boolean contains(Bounds bounds, double latitude, double longitude) {
         boolean longitudeContained = false;
         boolean latitudeContained = false;
@@ -1015,5 +1047,4 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         }
         return (longitudeContained && latitudeContained);
     }
-
 }

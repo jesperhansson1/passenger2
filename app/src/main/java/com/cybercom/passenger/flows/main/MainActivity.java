@@ -202,6 +202,9 @@ public class MainActivity extends AppCompatActivity implements
         mMainViewModel.createPassengerRide(drive, startPosition, endPosition).observe(this, passengerRide -> {
             Intent updatePassengerIntent = new Intent(MainActivity.this, ForegroundServices.class);
             updatePassengerIntent.setAction(Constants.ACTION.STARTFOREGROUND_UPDATE_PASSENGER_POSITION);
+            updatePassengerIntent.putExtra(ForegroundServices.INTENT_EXTRA_PASSENGER_RIDE_ID, passengerRide.getId());
+            updatePassengerIntent.putExtra(ForegroundServices.INTENT_EXTRA_DRIVE_ID,
+                    passengerRide.getDrive().getId());
             if (passengerRide != null) {
                 updatePassengerIntent.putExtra(PASSENGER_RIDE_KEY, passengerRide.getId());
             }
@@ -875,15 +878,15 @@ public class MainActivity extends AppCompatActivity implements
                 }
                 mMainViewModel.createDrive(time, startLocation, endLocation, seats, mBounds).observe(this,
                         drive -> {
-                            if (drive != null) {
-                                Intent UpdateDriveIntent = new Intent(MainActivity.this, ForegroundServices.class);
-                                UpdateDriveIntent.setAction(Constants.ACTION.STARTFOREGROUND_UPDATE_DRIVER_POSITION);
-                                UpdateDriveIntent.putExtra(DRIVE_ID, drive.getId());
-                                startService(UpdateDriveIntent);
-                                updatePassengersMarkerPosition(drive.getId());
-                                mCreateDriveFragment.setDefaultValuesToDialog();
-                            }
-                        });
+                    if (drive != null) {
+                        Intent UpdateDriveIntent = new Intent(MainActivity.this, ForegroundServices.class);
+                        UpdateDriveIntent.setAction(Constants.ACTION.STARTFOREGROUND_UPDATE_DRIVER_POSITION);
+                        UpdateDriveIntent.putExtra(ForegroundServices.INTENT_EXTRA_DRIVE_ID, drive.getId());
+                        startService(UpdateDriveIntent);
+                        updatePassengersMarkerPosition(drive.getId());
+                        mCreateDriveFragment.setDefaultValuesToDialog();
+                    }
+                });
                 break;
             case User.TYPE_PASSENGER:
                 mMainViewModel.createDriveRequest(time, startLocation, endLocation, seats).observe(
