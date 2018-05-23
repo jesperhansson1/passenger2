@@ -2,6 +2,9 @@ package com.cybercom.passenger.model;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import timber.log.Timber;
+
+import static com.cybercom.passenger.repository.PassengerRepository.DEFAULT_DRIVE_REQUEST_RADIUS;
 import static java.lang.Math.*;
 
 public class Bounds {
@@ -23,14 +26,15 @@ public class Bounds {
         mSouthWestLongitude = southWestLongitude;
     }
 
-    public void setNewBounds()
+    public void setNewBounds(int multiplier)
     {
-        System.out.println(mNorthEastLatitude+" : " + mNorthEastLongitude + " : " + mSouthWestLatitude + " : " + mSouthWestLongitude);
+        double dist = getDistance(multiplier);
+        Timber.d(mNorthEastLatitude+" : " + mNorthEastLongitude + " : " + mSouthWestLatitude + " : " + mSouthWestLongitude);
         LatLng sw = movePoint(mSouthWestLatitude,mSouthWestLongitude,
-                calculateBearing(new LatLng(mNorthEastLatitude,mNorthEastLongitude), new LatLng(mSouthWestLatitude, mSouthWestLongitude)));
-        System.out.println( mSouthWestLatitude + " : " + mSouthWestLongitude + " : " + mNorthEastLatitude+" : " + mNorthEastLongitude);
+                calculateBearing(new LatLng(mNorthEastLatitude,mNorthEastLongitude), new LatLng(mSouthWestLatitude, mSouthWestLongitude)), dist);
+        Timber.d( mSouthWestLatitude + " : " + mSouthWestLongitude + " : " + mNorthEastLatitude+" : " + mNorthEastLongitude);
         LatLng ne = movePoint(mNorthEastLatitude,mNorthEastLongitude,calculateBearing(new LatLng(mSouthWestLatitude,mSouthWestLongitude),
-                new LatLng(mNorthEastLatitude, mNorthEastLongitude)));
+                new LatLng(mNorthEastLatitude, mNorthEastLongitude)), dist);
         mNorthEastLatitude = ne.latitude;
         mNorthEastLongitude = ne.longitude;
         mSouthWestLatitude = sw.latitude;
@@ -79,8 +83,14 @@ public class Bounds {
                 '}';
     }
 
-    public LatLng movePoint(double latitude, double longitude, double bearing) {
-        double distanceInMetres = 989.94949366;//700.0;
+    public double getDistance(int val)
+    {
+        int dist = DEFAULT_DRIVE_REQUEST_RADIUS * val;
+        return Math.sqrt(2 * dist * dist);
+    }
+
+    public LatLng movePoint(double latitude, double longitude, double bearing, double distanceInMetres) {
+        //double distanceInMetres = 989.94949366;//700.0;
 
         double brngRad = toRadians(bearing);
         double latRad = toRadians(latitude);
@@ -91,9 +101,9 @@ public class Bounds {
         double latitudeResult = asin(sin(latRad) * cos(distFrac) + cos(latRad) * sin(distFrac) * cos(brngRad));
         double a = atan2(sin(brngRad) * sin(distFrac) * cos(latRad), cos(distFrac) - sin(latRad) * sin(latitudeResult));
         double longitudeResult = (lonRad + a + 3 * PI) % (2 * PI) - PI;
-        System.out.println("latitude: " +latitudeResult + ", longitude: " + longitudeResult);
+        Timber.d("latitude in rads: " +latitudeResult + ", longitude in rads: " + longitudeResult);
 
-        System.out.println("latitude: " + toDegrees(latitudeResult) + ", longitude: " + toDegrees(longitudeResult));
+        Timber.d("latitude: " + toDegrees(latitudeResult) + ", longitude: " + toDegrees(longitudeResult));
         return new LatLng(toDegrees(latitudeResult),toDegrees(longitudeResult));
     }
 

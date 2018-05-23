@@ -69,7 +69,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private static final String LATITUDE = "latitude";
     private static final String LONGITUDE = "longitude";
 
-    private static final int DEFAULT_DRIVE_REQUEST_RADIUS = 700;
+    public static final int DEFAULT_DRIVE_REQUEST_RADIUS = 700;
 
     private static PassengerRepository sPassengerRepository;
     private DatabaseReference mUsersReference;
@@ -317,7 +317,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                             Timber.d("start " + start.latitude + " : " + start.longitude);
                             Timber.d("end " + end.latitude + " : " + end.longitude);*/
 
-                            bounds.setNewBounds();
+                            bounds.setNewBounds(radiusMultiplier);
                             //Check for start position and end position
                             if(contains(bounds,driveRequest.getStartLocation().getLatitude(),driveRequest.getStartLocation().getLongitude())){
                                 if(contains(bounds,driveRequest.getEndLocation().getLatitude(),driveRequest.getEndLocation().getLongitude()))
@@ -978,7 +978,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
     public boolean contains(Bounds bounds, double latitude, double longitude) {
 
-        System.out.println("checking " + bounds.getNorthEastLatitude() + " : " + bounds.getNorthEastLongitude() + " : " + bounds.getSouthWestLatitude()
+        Timber.d("checking " + bounds.getNorthEastLatitude() + " : " + bounds.getNorthEastLongitude() + " : " + bounds.getSouthWestLatitude()
         + " : " + bounds.getSouthWestLongitude() + " -- > " + latitude + " : " + longitude);
         boolean longitudeContained = false;
         boolean latitudeContained = false;
