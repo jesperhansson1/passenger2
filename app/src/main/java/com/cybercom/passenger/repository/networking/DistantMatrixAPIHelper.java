@@ -38,7 +38,7 @@ public class DistantMatrixAPIHelper {
      * @param response the response
      * @param rowIndex row index
      * @param elementIndex element index
-     * @return The (ETA) duration in milliseconds
+     * @return The (ETA) duration in seconds
      */
     public static long getDurationFromResponse(Response<DistanceMatrixResponse> response,
                                                int rowIndex, int elementIndex) {

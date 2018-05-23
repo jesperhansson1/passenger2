@@ -14,6 +14,8 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
@@ -40,6 +42,9 @@ public class ForegroundServices extends LifecycleService {
 
     public static final int TIME_BETWEEN_ETA_LOOKUPS_DELAY_MILLIS = 30 * 1000;
     private static final long FIRST_TIME_ETA_LOOKUP_DELAY_MILLIS = 2000;
+    private static final long FIRST_ETA_NOTIFICATION_TIME_MIN = 60 * 10;
+    private static final long SECOND_ETA_NOTIFICATION_TIME_MIN = 60 * 7;
+    private static final long THIRD_ETA_NOTIFICATION_TIME_MIN = 60 * 3;
     private PassengerRepository mPassengerRepository = PassengerRepository.getInstance();
     private FusedLocationProviderClient mFusedLocationClient;
     private LocationCallback mLocationCallback;
@@ -53,6 +58,7 @@ public class ForegroundServices extends LifecycleService {
     private Position mPickUpLocation;
     private Position mDriversPosition;
     private boolean mPickUpConfirmed;
+    private long mLastETA;
 
     @Override
     public void onCreate() {
@@ -78,7 +84,6 @@ public class ForegroundServices extends LifecycleService {
                     if (locationResult == null) {
                         return;
                     }
-
                     Location prevLocation;
 
                     int locationResultSize = locationResult.getLocations().size();
@@ -245,7 +250,9 @@ public class ForegroundServices extends LifecycleService {
                     long duration = DistantMatrixAPIHelper.getDurationFromResponse(response, 0, 0);
 //                    long dis = DistantMatrixAPIHelper.getDistanceFromResponse(response, 0, 0);
                     Timber.d("eta: %s", duration);
+                    sendETANotificationIfItIsTime(duration, mLastETA);
                     mPassengerRepository.updateETA(duration);
+                    mLastETA = duration;
                 }
             }
 
@@ -287,4 +294,32 @@ public class ForegroundServices extends LifecycleService {
         return null;
     }
 
+    private void showETANotification(int time) {
+        Intent resultIntent = new Intent(this, MainActivity.class);
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+        stackBuilder.addNextIntentWithParentStack(resultIntent);
+        PendingIntent resultPendingIntent =
+                stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Notification notification = new NotificationCompat.Builder(this,
+                NotificationHelper.TRACKING_CHANNEL)
+                .setSmallIcon(R.drawable.driver)
+                .setContentIntent(resultPendingIntent)
+                .setContentTitle(getString(R.string.eta_notification_title, time))
+                .setContentText(getString(R.string.eta_notification_text, time))
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .build();
+
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+        notificationManager.notify(0, notification);
+    }
+
+    private void sendETANotificationIfItIsTime(long eTA, long lastETA) {
+        if ((eTA < FIRST_ETA_NOTIFICATION_TIME_MIN && lastETA > FIRST_ETA_NOTIFICATION_TIME_MIN) |
+                (eTA < SECOND_ETA_NOTIFICATION_TIME_MIN && lastETA > SECOND_ETA_NOTIFICATION_TIME_MIN) |
+                (eTA < THIRD_ETA_NOTIFICATION_TIME_MIN && lastETA > THIRD_ETA_NOTIFICATION_TIME_MIN)) {
+
+            showETANotification((int) eTA);
+        }
+    }
 }

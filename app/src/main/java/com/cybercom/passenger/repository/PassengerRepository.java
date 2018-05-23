@@ -992,7 +992,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     public LiveData<PassengerRide> getPassengerRideById(String passengerRideId) {
         MutableLiveData<PassengerRide> passengerRideLiveData = new MutableLiveData<>();
 
-        mPassengerRideReference.child(passengerRideId).addValueEventListener(
+        mPassengerRideReference.child(passengerRideId).
+                addValueEventListener(
                 new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {

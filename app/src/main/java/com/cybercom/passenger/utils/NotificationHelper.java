@@ -10,7 +10,7 @@ import com.cybercom.passenger.R;
 public class NotificationHelper extends ContextWrapper {
 
     public static final String TRACKING_CHANNEL = "tracking";
-    private NotificationManager mNotificationManager;
+    public static final String ETA_CHANNEL = "eta";
 
     public NotificationHelper(Context context) {
         super(context);
@@ -21,8 +21,16 @@ public class NotificationHelper extends ContextWrapper {
                     NotificationManager.IMPORTANCE_LOW);
 
             getNotificationManager().createNotificationChannel(trackingChannel);
+            NotificationChannel etaChannel = new NotificationChannel(
+                    ETA_CHANNEL,
+                    getString(R.string.eta_notification_channel),
+                    NotificationManager.IMPORTANCE_LOW);
+            getNotificationManager().createNotificationChannel(etaChannel);
+
         }
     }
+
+    private NotificationManager mNotificationManager;
 
     private NotificationManager getNotificationManager() {
         if (mNotificationManager == null) {
