@@ -126,7 +126,7 @@
                 android:drawablePadding="@dimen/draw_pad"
                 android:ems="10"
                 android:hint="@string/hint_full_name"
-                android:inputType="textPersonName"
+                android:inputType="textPersonName|textCapWords"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/maleLayout" />
@@ -274,6 +274,7 @@
                     android:layout_centerVertical="true"
                     android:background="@drawable/button_corner_round"
                     android:elevation="@dimen/pad_2dp"
+                    android:enabled="false"
                     android:text="@string/next"
                     android:textColor="@color/colorWhite"
                     app:layout_constraintBottom_toBottomOf="parent"
