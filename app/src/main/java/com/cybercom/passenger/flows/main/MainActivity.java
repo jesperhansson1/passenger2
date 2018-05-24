@@ -548,7 +548,7 @@ public class MainActivity extends AppCompatActivity implements
         mNoMatchFragment = NoMatchFragment.newInstance();
 
         mMainViewModel.getLastKnownLocation(location -> {
-            if(location != null){
+            if (location != null) {
                 mMainViewModel.setStartMarkerLocation(location);
                 placeStartLocationMarker();
                 mFragmentManager.beginTransaction()
@@ -682,8 +682,8 @@ public class MainActivity extends AppCompatActivity implements
         dFragment.show(getSupportFragmentManager(), PassengerNotificationDialog.TAG);
     }
 
-    private void removePassengerNotificationDialog(){
-        PassengerNotificationDialog dFragment =(PassengerNotificationDialog)
+    private void removePassengerNotificationDialog() {
+        PassengerNotificationDialog dFragment = (PassengerNotificationDialog)
                 mFragmentManager.findFragmentByTag(PassengerNotificationDialog.TAG);
         mFragmentManager.beginTransaction().remove(dFragment).commit();
     }
@@ -972,7 +972,7 @@ public class MainActivity extends AppCompatActivity implements
         LocalBroadcastManager.getInstance(this).registerReceiver(mGeofenceReceiver, geofenceFilter);
         IntentFilter foregroundServiceFilter = new IntentFilter(FOREGROUND_SERVICE_INTENT_FILTER);
         LocalBroadcastManager.getInstance(this)
-                .registerReceiver(mForegroundReceiver,foregroundServiceFilter);
+                .registerReceiver(mForegroundReceiver, foregroundServiceFilter);
     }
 
     private void setUpGeofencing() {
@@ -1010,6 +1010,7 @@ public class MainActivity extends AppCompatActivity implements
                 .setExpirationDuration(GEOFENCE_TIME_OUT)
                 .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
                 .build());
+
     }
 
     private GeofencingRequest getGeofencingRequest() {
@@ -1085,7 +1086,7 @@ public class MainActivity extends AppCompatActivity implements
 
     private void showDriverDropOffFragment(PassengerRide passengerRide) {
         mFragmentManager.beginTransaction().add(R.id.main_activity_dialog_container,
-                DriverDropOffFragment.newInstance(passengerRide) ,
+                DriverDropOffFragment.newInstance(passengerRide),
                 DriverDropOffFragment.DRIVER_DROP_OFF_FRAGMENT_TAG).commit();
     }
 
@@ -1136,42 +1137,37 @@ public class MainActivity extends AppCompatActivity implements
 
                 String geofenceRequestId = intent.getExtras()
                         .getString(GEOFENCE_EVENTS_REQUEST_ID);
-                String passengerRideId = null;
-                String geoFenceType = null;
+                String passengerRideId;
+                String geoFenceType;
 
                 if (geofenceRequestId != null) {
                     passengerRideId
                             = geofenceRequestId.substring(0, geofenceRequestId.length() - 1);
                     geoFenceType
                             = geofenceRequestId.substring(geofenceRequestId.length() - 1);
-                }
-
-                if (geofenceRequestId != null
-                        && geoFenceType.equals(GEOFENCE_TYPE_PICK_UP)) {
-                    if (mCurrentLoggedInUser.getType() == User.TYPE_DRIVER) {
-                        showDriverPickUpFragment(getPassengerRideFromLocalList(passengerRideId));
-                    } else if (mCurrentLoggedInUser.getType() == User.TYPE_PASSENGER) {
-                        showPassengerPickUpFragment();
+                    if (geoFenceType.equals(GEOFENCE_TYPE_PICK_UP)) {
+                        if (mCurrentLoggedInUser.getType() == User.TYPE_DRIVER) {
+                            showDriverPickUpFragment(getPassengerRideFromLocalList(passengerRideId));
+                        }
+                    } else if (geoFenceType.equals(GEOFENCE_TYPE_DROP_OFF)) {
+                        if (mCurrentLoggedInUser.getType() == User.TYPE_DRIVER) {
+                            showDriverDropOffFragment(getPassengerRideFromLocalList(passengerRideId));
+                        }
+                        removeGeofence(geofenceRequestId);
                     }
-                } else if (geofenceRequestId != null &&
-                        geoFenceType.equals(GEOFENCE_TYPE_DROP_OFF)) {
-                    showDriverDropOffFragment(getPassengerRideFromLocalList(passengerRideId));
                 }
-
-                removeGeofence(geofenceRequestId);
             }
         }
     }
 
-    private class ForegroundServiceReceiver extends BroadcastReceiver{
+    private class ForegroundServiceReceiver extends BroadcastReceiver {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            if(intent.getExtras() != null){
-                if(intent.getExtras().getInt(DIALOG_TO_SHOW) == TYPE_PICK_UP){
+            if (intent.getExtras() != null) {
+                if (intent.getExtras().getInt(DIALOG_TO_SHOW) == TYPE_PICK_UP) {
                     removePassengerNotificationDialog();
                     showPassengerPickUpFragment();
-
                 }
             }
         }

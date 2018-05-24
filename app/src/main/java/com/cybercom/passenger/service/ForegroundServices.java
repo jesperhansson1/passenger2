@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.main.MainActivity;
+import com.cybercom.passenger.interfaces.OnVelocityCheckedListener;
 import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.repository.PassengerRepository;
 import com.cybercom.passenger.repository.networking.DistantMatrixAPIHelper;
@@ -45,11 +46,10 @@ public class ForegroundServices extends LifecycleService {
     public static final int TIME_BETWEEN_ETA_LOOKUPS_DELAY_MILLIS = 30 * 1000;
     private static final long FIRST_TIME_ETA_LOOKUP_DELAY_MILLIS = 2000;
     public static final int DISTANCE_FOR_DETECTING_ARRIVAL_OF_DRIVER = 50;
-    private static final long TIME_BETWEEN_ARRIVAL_DETECTION = 10000;
+    private static final long TIME_BETWEEN_ARRIVAL_DETECTION = 1000;
     private static final Float DRIVER_VELOCITY_THRESHOLD = 3f;
     private static final long COUNT_INTERVAL = 1000;
     public static final int SECONDS_DRIVERS_VELOCITY_NEEDS_TO_BE_UNDER_THRESHOLD = 10;
-    private static final int TOTAL_VELOCITIES_TO_CALCULATE_AVERAGE_VELOCITY_ON = 50;
     private long FIRST_TIME_DETECT_DELAY_MILLIS = 2000;
     private PassengerRepository mPassengerRepository = PassengerRepository.getInstance();
     private FusedLocationProviderClient mFusedLocationClient;
@@ -67,7 +67,6 @@ public class ForegroundServices extends LifecycleService {
     private Float mDriversVelocity;
     private boolean mDropOffConfirmed;
     private float[] distanceBetweenDriverAndPickUpLocation = new float[1];
-    ;
     private Position mDropOffLocation;
     private float[] distanceBetweenDriverAndDropOffLocation = new float[1];
     private boolean mIsVelocityChecking = false;
@@ -75,6 +74,9 @@ public class ForegroundServices extends LifecycleService {
     private List<Float> mVelocityAverage = new ArrayList<>();
     private boolean mIsDriverAtPickUpLocation = false;
     private boolean mIsDriverAtDropOffLocation = false;
+    private int mSecondsCounter = 0;
+    private Handler mVelocityCheckHandler;
+    private Runnable mVelocityCheckRunnable;
 
 
     @Override
@@ -330,10 +332,6 @@ public class ForegroundServices extends LifecycleService {
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
-    private int mSecondsCounter = 0;
-    private Handler mVelocityCheckHandler;
-    private Runnable mVelocityCheckRunnable;
-
     private void checkIfVelocityIsUnderThresholdForAPeriodOfTime(
             OnVelocityCheckedListener onVelocityCheckedListener) {
 
@@ -354,22 +352,6 @@ public class ForegroundServices extends LifecycleService {
         };
 
         mVelocityCheckHandler.postDelayed(mVelocityCheckRunnable, COUNT_INTERVAL);
-
-//        int counter = 0;
-//        while (counter < TOTAL_VELOCITIES_TO_CALCULATE_AVERAGE_VELOCITY_ON) {
-//            Timber.i("checkVelocityAverage: %s", mDriversVelocity);
-//            Timber.i("counter %s", counter);
-//            mVelocityAverage.add(mDriversVelocity);
-//            counter++;
-//        }
-//
-//         Sum up all the values in mVelocityAverage
-//        for (Float velocity : mVelocityAverage) {
-//            mSumVelocity =+ velocity;
-//        }
-//
-//         Check if average value is under the threshold and return true if it is
-//        return mSumVelocity / mVelocityAverage.size() < DRIVER_VELOCITY_THRESHOLD;
     }
 
 
@@ -415,10 +397,6 @@ public class ForegroundServices extends LifecycleService {
             }
         });
 
-    }
-
-    private interface OnVelocityCheckedListener {
-        void onVelocityChecked();
     }
 
     private void createLocationRequest() {

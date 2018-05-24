@@ -88,11 +88,13 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
     private User mCurrentlyLoggedInUser;
     private MutableLiveData<Location> mDriverCurrentLocation = new MutableLiveData<>();
+    private float mDriverCurrentVelocity = 0;
 
     //private String mCurrentDriveId;
     private static final String BOUNDS = "bounds";
     private static final String NORTHEAST = "northeast";
     private static final String SOUTHWEST = "southwest";
+
     /*double mNorthEastLatitude;
     double mNorthEastLongitude;
     double mSouthWestLatitude;
@@ -734,9 +736,11 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
     public void updateDriveCurrentVelocity(String driveId, float velocity) {
         if (driveId != null) {
+            mDriverCurrentVelocity = velocity;
             mDrivesReference.child(driveId).child(CURRENT_VELOCITY).setValue(velocity);
         }
     }
+
 
     public void updatePassengerRideCurrentLocation(Location location) {
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -938,6 +942,10 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
     public MutableLiveData<Location> getDriverCurrentLocation() {
         return mDriverCurrentLocation;
+    }
+
+    public float getDriverCurrentVelocity() {
+        return mDriverCurrentVelocity;
     }
 
     public LiveData<Position> getPassengerPosition(String userId) {

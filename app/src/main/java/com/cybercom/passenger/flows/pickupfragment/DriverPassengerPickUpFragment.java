@@ -131,10 +131,12 @@ public class DriverPassengerPickUpFragment extends Fragment implements View.OnCl
         switch (view.getId()) {
             case R.id.fragment_driver_passenger_pick_up_confirmation_button: {
                 mDriverPassengerPickUpButtonClickListener.onPickUpConfirmed(mPassengerRide);
+                mFragmentSizeListener.onHeightChanged(0);
                 break;
             }
             case R.id.fragment_driver_passenger_pick_up_no_show_button: {
                 mDriverPassengerPickUpButtonClickListener.onPickUpNoShow(mPassengerRide);
+                mFragmentSizeListener.onHeightChanged(0);
                 break;
             }
         }
