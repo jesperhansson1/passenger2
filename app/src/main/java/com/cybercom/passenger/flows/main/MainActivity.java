@@ -221,6 +221,8 @@ public class MainActivity extends AppCompatActivity implements
                                      String startAddress, String endAddress) {
         mMainViewModel.createPassengerRide(drive, startPosition, endPosition, startAddress,
                 endAddress).observe(this, passengerRide -> {
+            //reroute here wrong
+
             Intent updatePassengerIntent = new Intent(MainActivity.this, ForegroundServices.class);
             updatePassengerIntent.setAction(Constants.ACTION.STARTFOREGROUND_UPDATE_PASSENGER_POSITION);
             updatePassengerIntent.putExtra(ForegroundServices.INTENT_EXTRA_PASSENGER_RIDE_ID, passengerRide.getId());
@@ -343,6 +345,10 @@ public class MainActivity extends AppCompatActivity implements
                             createGeofence(passengerRide);
                         }
                     }
+                    //reroute here wrong
+
+
+
                     handlePassengerChanged(passengerRide);
                     // TODO: add geofences pickup and dropoff location
                 });
@@ -794,6 +800,11 @@ public class MainActivity extends AppCompatActivity implements
         if (isAccepted) {
             mMainViewModel.sendAcceptPassengerNotification(notification.getDrive(),
                     notification.getDriveRequest());
+            reRoute(new LatLng(notification.getDrive().getStartLocation().getLatitude(),notification.getDrive().getStartLocation().getLongitude()),
+                    new LatLng(notification.getDrive().getEndLocation().getLatitude(),notification.getDrive().getEndLocation().getLongitude()),
+                    new LatLng(notification.getDriveRequest().getStartLocation().getLatitude(),notification.getDriveRequest().getStartLocation().getLongitude()),
+                    new LatLng(notification.getDriveRequest().getEndLocation().getLatitude(),notification.getDriveRequest().getEndLocation().getLongitude()));
+
         } else {
             mMainViewModel.sendRejectPassengerNotification(notification.getDrive(),
                     notification.getDriveRequest());

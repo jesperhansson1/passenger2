@@ -36,6 +36,7 @@ public class FetchRouteUrl extends AsyncTask<String, Void, String> {
 
     public FetchRouteUrl(GoogleMap googleMap, LatLng origin, LatLng destination, LatLng viaStart, LatLng viaEnd, ParserTask.OnRouteCompletion caller)
     {
+       Timber.d("reroute");
         mGoogleMap = googleMap;
         mCaller = caller;
         execute(getURL(origin,destination, viaStart,viaEnd));
@@ -43,10 +44,12 @@ public class FetchRouteUrl extends AsyncTask<String, Void, String> {
 
     private String getURL(LatLng from, LatLng to, LatLng viaStart, LatLng viaEnd)
     {
+
         String origin = "origin=" + from.latitude + "," + from.longitude;
         String dest = "destination=" + to.latitude + "," + to.longitude;
         String sensor = "sensor=false";
-        String waypoints = "&waypoints=via:" + viaStart.latitude + "%2C1"+ viaStart.longitude + "%7Cvia:" + viaEnd.latitude + "%2C1"+ viaEnd.longitude;
+        //String waypoints = "&waypoints=via:" + viaStart.latitude + "%2C1"+ viaStart.longitude + "%7Cvia:" + viaEnd.latitude + "%2C1"+ viaEnd.longitude;
+        String waypoints = "&waypoints=" + viaStart.latitude + ","+ viaStart.longitude + "|" + viaEnd.latitude + ","+ viaEnd.longitude;
         String params = origin +"&"+ dest + waypoints + "&" + sensor ;
         return "https://maps.googleapis.com/maps/api/directions/json?"+params;
     }
