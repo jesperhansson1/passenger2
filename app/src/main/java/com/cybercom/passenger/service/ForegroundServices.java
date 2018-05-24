@@ -14,6 +14,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
@@ -31,6 +32,9 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -40,6 +44,13 @@ public class ForegroundServices extends LifecycleService {
 
     public static final int TIME_BETWEEN_ETA_LOOKUPS_DELAY_MILLIS = 30 * 1000;
     private static final long FIRST_TIME_ETA_LOOKUP_DELAY_MILLIS = 2000;
+    public static final int DISTANCE_FOR_DETECTING_ARRIVAL_OF_DRIVER = 50;
+    private static final long TIME_BETWEEN_ARRIVAL_DETECTION = 10000;
+    private static final Float DRIVER_VELOCITY_THRESHOLD = 3f;
+    private static final long COUNT_INTERVAL = 1000;
+    public static final int SECONDS_DRIVERS_VELOCITY_NEEDS_TO_BE_UNDER_THRESHOLD = 10;
+    private static final int TOTAL_VELOCITIES_TO_CALCULATE_AVERAGE_VELOCITY_ON = 50;
+    private long FIRST_TIME_DETECT_DELAY_MILLIS = 2000;
     private PassengerRepository mPassengerRepository = PassengerRepository.getInstance();
     private FusedLocationProviderClient mFusedLocationClient;
     private LocationCallback mLocationCallback;
@@ -53,6 +64,18 @@ public class ForegroundServices extends LifecycleService {
     private Position mPickUpLocation;
     private Position mDriversPosition;
     private boolean mPickUpConfirmed;
+    private Float mDriversVelocity;
+    private boolean mDropOffConfirmed;
+    private float[] distanceBetweenDriverAndPickUpLocation = new float[1];
+    ;
+    private Position mDropOffLocation;
+    private float[] distanceBetweenDriverAndDropOffLocation = new float[1];
+    private boolean mIsVelocityChecking = false;
+    private Float mSumVelocity;
+    private List<Float> mVelocityAverage = new ArrayList<>();
+    private boolean mIsDriverAtPickUpLocation = false;
+    private boolean mIsDriverAtDropOffLocation = false;
+
 
     @Override
     public void onCreate() {
@@ -142,16 +165,22 @@ public class ForegroundServices extends LifecycleService {
 
             PassengerRepository.getInstance().getDriverPosition(driveId).observe(this,
                     position -> mDriversPosition = position);
+            PassengerRepository.getInstance().getDriverVeolcity(driveId).observe(this,
+                    velocity -> mDriversVelocity = velocity);
 
             mPassengerRepository.getPassengerRideById(passengerRideId).observe(this,
                     passengerRide -> {
-                if (passengerRide == null) return;
-                mPickUpLocation = passengerRide.getPickUpPosition();
-                mPickUpConfirmed = passengerRide.isPickUpConfirmed();
-            });
+                        if (passengerRide == null) return;
+                        mPickUpLocation = passengerRide.getPickUpPosition();
+                        mDropOffLocation = passengerRide.getDropOffPosition();
+                        mPickUpConfirmed = passengerRide.isPickUpConfirmed();
+                        mDropOffConfirmed = passengerRide.isDropOffConfirmed();
+                    });
 
             new Handler().postDelayed(this::calculateETAToPickUpLocation,
                     FIRST_TIME_ETA_LOOKUP_DELAY_MILLIS);
+            new Handler().postDelayed(this::detectDriverArrival,
+                    FIRST_TIME_DETECT_DELAY_MILLIS);
 
             startScheduledETACalculation();
 
@@ -210,6 +239,140 @@ public class ForegroundServices extends LifecycleService {
         return START_STICKY;
     }
 
+    private void detectDriverArrival() {
+        new Handler().postDelayed(() -> {
+
+            if (mDriversPosition == null | mPickUpLocation == null | mDropOffLocation == null
+                    | mDriversVelocity == null) {
+                return;
+            }
+
+            Timber.i("detectArrival (mDriversPosition): %s", mDriversPosition);
+            Timber.i("detectArrival (mPickUpLocation): %s", mPickUpLocation);
+            Timber.i("detectArrival (mDriversVelocity): %s", mDriversVelocity);
+
+            if (!mPickUpConfirmed || !mIsDriverAtPickUpLocation) {
+                detectArrivalToPickUpLocation();
+            }
+
+            if (!mDropOffConfirmed || !mIsDriverAtDropOffLocation) {
+                detectArrivalToDropOffLocation();
+            }
+
+            detectDriverArrival();
+        }, TIME_BETWEEN_ARRIVAL_DETECTION);
+    }
+
+    private void detectArrivalToPickUpLocation() {
+        if (mIsVelocityChecking) {
+            return;
+        }
+        Location.distanceBetween(mPickUpLocation.getLatitude(),
+                mPickUpLocation.getLongitude(),
+                mDriversPosition.getLatitude(), mDriversPosition.getLongitude(),
+                distanceBetweenDriverAndPickUpLocation);
+
+        if (distanceBetweenDriverAndPickUpLocation[0] < DISTANCE_FOR_DETECTING_ARRIVAL_OF_DRIVER) {
+
+            checkIfVelocityIsUnderThresholdForAPeriodOfTime(() -> {
+                for (Float velocity : mVelocityAverage) {
+                    mSumVelocity = +velocity;
+                }
+
+                if (mSumVelocity / mVelocityAverage.size() < DRIVER_VELOCITY_THRESHOLD) {
+                    Timber.i("Arrival to pick up location is detected");
+                    showDialogInUi(MainActivity.TYPE_PICK_UP);
+                    mIsDriverAtPickUpLocation = true;
+                }
+
+                mIsVelocityChecking = false;
+                mSumVelocity = 0f;
+                mVelocityAverage.clear();
+
+            });
+        }
+    }
+
+    private void detectArrivalToDropOffLocation() {
+        if (mIsVelocityChecking) {
+            return;
+        }
+
+        Location.distanceBetween(mDropOffLocation.getLatitude(),
+                mDropOffLocation.getLongitude(),
+                mDriversPosition.getLatitude(), mDriversPosition.getLongitude(),
+                distanceBetweenDriverAndDropOffLocation);
+
+        if (distanceBetweenDriverAndDropOffLocation[0] < DISTANCE_FOR_DETECTING_ARRIVAL_OF_DRIVER) {
+
+            checkIfVelocityIsUnderThresholdForAPeriodOfTime(() -> {
+                for (Float velocity : mVelocityAverage) {
+                    mSumVelocity = +velocity;
+                }
+
+                if (mSumVelocity / mVelocityAverage.size() < DRIVER_VELOCITY_THRESHOLD) {
+                    Timber.i("Arrival drop off is detected");
+                    showDialogInUi(MainActivity.TYPE_DROP_OFF);
+                    mIsDriverAtDropOffLocation = true;
+                }
+
+                mIsVelocityChecking = false;
+                mSumVelocity = 0f;
+                mVelocityAverage.clear();
+
+            });
+        }
+    }
+
+    private void showDialogInUi(int type) {
+        Intent intent = new Intent(MainActivity.FOREGROUND_SERVICE_INTENT_FILTER);
+        intent.putExtra(MainActivity.DIALOG_TO_SHOW, type);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
+
+    private int mSecondsCounter = 0;
+    private Handler mVelocityCheckHandler;
+    private Runnable mVelocityCheckRunnable;
+
+    private void checkIfVelocityIsUnderThresholdForAPeriodOfTime(
+            OnVelocityCheckedListener onVelocityCheckedListener) {
+
+        mIsVelocityChecking = true;
+
+        mVelocityCheckHandler = new Handler();
+        mVelocityCheckRunnable = () -> {
+            mSecondsCounter++;
+            mVelocityAverage.add(mDriversVelocity);
+
+            if (mSecondsCounter == SECONDS_DRIVERS_VELOCITY_NEEDS_TO_BE_UNDER_THRESHOLD) {
+                onVelocityCheckedListener.onVelocityChecked();
+                mVelocityCheckHandler.removeCallbacks(mVelocityCheckRunnable);
+            }
+
+            mVelocityCheckHandler.postDelayed(mVelocityCheckRunnable, COUNT_INTERVAL);
+
+        };
+
+        mVelocityCheckHandler.postDelayed(mVelocityCheckRunnable, COUNT_INTERVAL);
+
+//        int counter = 0;
+//        while (counter < TOTAL_VELOCITIES_TO_CALCULATE_AVERAGE_VELOCITY_ON) {
+//            Timber.i("checkVelocityAverage: %s", mDriversVelocity);
+//            Timber.i("counter %s", counter);
+//            mVelocityAverage.add(mDriversVelocity);
+//            counter++;
+//        }
+//
+//         Sum up all the values in mVelocityAverage
+//        for (Float velocity : mVelocityAverage) {
+//            mSumVelocity =+ velocity;
+//        }
+//
+//         Check if average value is under the threshold and return true if it is
+//        return mSumVelocity / mVelocityAverage.size() < DRIVER_VELOCITY_THRESHOLD;
+    }
+
+
     private void startScheduledETACalculation() {
         new Handler().postDelayed(() -> {
             calculateETAToPickUpLocation();
@@ -254,6 +417,10 @@ public class ForegroundServices extends LifecycleService {
 
     }
 
+    private interface OnVelocityCheckedListener {
+        void onVelocityChecked();
+    }
+
     private void createLocationRequest() {
         mLocationRequest = LocationRequest.create();
         mLocationRequest.setInterval(INTERVAL);
@@ -284,5 +451,4 @@ public class ForegroundServices extends LifecycleService {
         super.onBind(intent);
         return null;
     }
-
 }

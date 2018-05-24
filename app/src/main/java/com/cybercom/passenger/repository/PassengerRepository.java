@@ -918,6 +918,24 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         return driverPositionLiveData;
     }
 
+    public LiveData<Float> getDriverVeolcity(String driveId) {
+        MutableLiveData<Float> driverVelocityLiveData = new MutableLiveData<>();
+
+        mDrivesReference.child(driveId).child(CURRENT_VELOCITY)
+                .addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                driverVelocityLiveData.setValue(dataSnapshot.getValue(Float.class));
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                driverVelocityLiveData.setValue(null);
+            }
+        });
+        return driverVelocityLiveData;
+    }
+
     public MutableLiveData<Location> getDriverCurrentLocation() {
         return mDriverCurrentLocation;
     }
