@@ -94,6 +94,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private static final String BOUNDS = "bounds";
     private static final String NORTHEAST = "northeast";
     private static final String SOUTHWEST = "southwest";
+    private Drive mMatchedDrive;
 
     /*double mNorthEastLatitude;
     double mNorthEastLongitude;
@@ -359,11 +360,14 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             User driver = dataSnapshot.getValue(User.class);
-                            bestDriveMatch.setValue(new Drive(finalBestMatchDriveId, driver,
+
+                            mMatchedDrive = new Drive(finalBestMatchDriveId, driver,
                                     finalBestMatch.getTime(),
                                     finalBestMatch.getStartLocation(), finalBestMatch.getEndLocation(),
                                     finalBestMatch.getAvailableSeats(), finalBestMatch.getCurrentPosition(),
-                                    finalBestMatch.getCurrentVelocity()));
+                                    finalBestMatch.getCurrentVelocity());
+
+                            bestDriveMatch.setValue(mMatchedDrive);
                         }
 
                         @Override
@@ -381,6 +385,10 @@ public class PassengerRepository implements PassengerRepositoryInterface {
             }
         });
         return bestDriveMatch;
+    }
+
+    public Drive getMatchedDrive() {
+        return mMatchedDrive;
     }
 
     public void sendNotification(Notification notification) {
@@ -850,10 +858,10 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                         }
                     }
 
-            @Override
-            public void onCancelled(DatabaseError error) {
-            }
-        });
+                    @Override
+                    public void onCancelled(DatabaseError error) {
+                    }
+                });
         return passengerRidesLiveData;
     }
 
@@ -922,21 +930,21 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         return driverPositionLiveData;
     }
 
-    public LiveData<Float> getDriverVeolcity(String driveId) {
+    public LiveData<Float> getDriverVelocity(String driveId) {
         MutableLiveData<Float> driverVelocityLiveData = new MutableLiveData<>();
 
         mDrivesReference.child(driveId).child(CURRENT_VELOCITY)
                 .addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                driverVelocityLiveData.setValue(dataSnapshot.getValue(Float.class));
-            }
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        driverVelocityLiveData.setValue(dataSnapshot.getValue(Float.class));
+                    }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                driverVelocityLiveData.setValue(null);
-            }
-        });
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        driverVelocityLiveData.setValue(null);
+                    }
+                });
         return driverVelocityLiveData;
     }
 
@@ -984,18 +992,18 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                 mCurrentlyLoggedInUser = dataSnapshot.getValue(User.class);
                 if (mCurrentlyLoggedInUser != null) {
                     mDrivesReference.orderByChild(DRIVER_ID).equalTo(mCurrentlyLoggedInUser.getUserId()).
-                        addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                    driveIdMutableLiveData.setValue(snapshot.getKey());
+                            addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                        driveIdMutableLiveData.setValue(snapshot.getKey());
+                                    }
                                 }
-                            }
 
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {
-                            }
-                        });
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {
+                                }
+                            });
                 }
             }
 
@@ -1013,18 +1021,18 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
         mPassengerRideReference.child(passengerRideId).addValueEventListener(
                 new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                Timber.i("getPassengerRideById %s", dataSnapshot);
-                PassengerRide passengerRide = dataSnapshot.getValue(PassengerRide.class);
-                passengerRideLiveData.setValue(passengerRide);
-            }
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        Timber.i("getPassengerRideById %s", dataSnapshot);
+                        PassengerRide passengerRide = dataSnapshot.getValue(PassengerRide.class);
+                        passengerRideLiveData.setValue(passengerRide);
+                    }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
 
-            }
-        });
+                    }
+                });
 
         return passengerRideLiveData;
     }
@@ -1051,8 +1059,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
             swLatitude = bounds.getSouthWestLatitude();
             neLongitude = bounds.getNorthEastLongitude();
             neLatitude = bounds.getNorthEastLatitude();
-        }catch (Exception e)
-        {
+        } catch (Exception e) {
             Timber.e(e.getLocalizedMessage());
         }
 

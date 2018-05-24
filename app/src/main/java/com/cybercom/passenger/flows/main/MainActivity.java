@@ -19,6 +19,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
@@ -811,7 +812,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onFinish() {
-        removeFragment(mCreateDriveFragment);
+        removeCreteDriveFragment(mCreateDriveFragment);
 
      /*  mGoogleMap.clear();
         isStartLocationMarkerAdded = false;
@@ -825,7 +826,7 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
-    private void removeFragment(CreateDriveFragment mCreateDriveFragment) {
+    private void removeCreteDriveFragment(CreateDriveFragment mCreateDriveFragment) {
         mIsFragmentAdded = false;
         mFragmentManager.beginTransaction().remove(mCreateDriveFragment).commit();
     }
@@ -1078,9 +1079,9 @@ public class MainActivity extends AppCompatActivity implements
                 DriverPassengerPickUpFragment.DRIVER_PASSENGER_PICK_UP_FRAGMENT_TAG).commit();
     }
 
-    private void showPassengerPickUpFragment() {
+    private void showPassengerPickUpFragment(Drive matchedDrive) {
         mFragmentManager.beginTransaction().add(R.id.main_activity_dialog_container,
-                DriverPassengerPickUpFragment.newInstance(),
+                DriverPassengerPickUpFragment.newInstance(matchedDrive),
                 DriverPassengerPickUpFragment.DRIVER_PASSENGER_PICK_UP_FRAGMENT_TAG).commit();
     }
 
@@ -1102,11 +1103,9 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onPickUpConfirmed(PassengerRide passengerRide) {
-        mFragmentManager.beginTransaction()
-                .remove(mFragmentManager
-                        .findFragmentByTag(DriverPassengerPickUpFragment
-                                .DRIVER_PASSENGER_PICK_UP_FRAGMENT_TAG))
-                .commit();
+        removeFragment(mFragmentManager
+                .findFragmentByTag(DriverPassengerPickUpFragment
+                        .DRIVER_PASSENGER_PICK_UP_FRAGMENT_TAG));
     }
 
     @Override
@@ -1115,16 +1114,32 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
+    public void onPickUpConfirmed(Drive drive) {
+        removeFragment(mFragmentManager
+                .findFragmentByTag(DriverPassengerPickUpFragment
+                        .DRIVER_PASSENGER_PICK_UP_FRAGMENT_TAG));
+    }
+
+    @Override
+    public void onPickUpNoShow(Drive drive) {
+
+    }
+
+    @Override
     public void onDropOffConfirmation(PassengerRide passengerRide) {
-        mFragmentManager.beginTransaction()
-                .remove(mFragmentManager
-                        .findFragmentByTag(DriverDropOffFragment.DRIVER_DROP_OFF_FRAGMENT_TAG))
-                .commit();
+        removeFragment(mFragmentManager
+                .findFragmentByTag(DriverDropOffFragment.DRIVER_DROP_OFF_FRAGMENT_TAG));
     }
 
     @Override
     public void onDropOffCanceled(PassengerRide passengerRide) {
 
+    }
+
+    public void removeFragment(Fragment fragment){
+        mFragmentManager.beginTransaction()
+                .remove(fragment)
+                .commit();
     }
 
     private class GeofenceBroadcastReceiver extends BroadcastReceiver {
@@ -1167,7 +1182,7 @@ public class MainActivity extends AppCompatActivity implements
             if (intent.getExtras() != null) {
                 if (intent.getExtras().getInt(DIALOG_TO_SHOW) == TYPE_PICK_UP) {
                     removePassengerNotificationDialog();
-                    showPassengerPickUpFragment();
+                    showPassengerPickUpFragment(mMainViewModel.getMatchedDrive());
                 }
             }
         }

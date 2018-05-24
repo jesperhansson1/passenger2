@@ -1,10 +1,12 @@
 package com.cybercom.passenger.service;
 
+import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.arch.lifecycle.LifecycleService;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -167,7 +169,7 @@ public class ForegroundServices extends LifecycleService {
 
             PassengerRepository.getInstance().getDriverPosition(driveId).observe(this,
                     position -> mDriversPosition = position);
-            PassengerRepository.getInstance().getDriverVeolcity(driveId).observe(this,
+            PassengerRepository.getInstance().getDriverVelocity(driveId).observe(this,
                     velocity -> mDriversVelocity = velocity);
 
             mPassengerRepository.getPassengerRideById(passengerRideId).observe(this,
@@ -283,7 +285,12 @@ public class ForegroundServices extends LifecycleService {
 
                 if (mSumVelocity / mVelocityAverage.size() < DRIVER_VELOCITY_THRESHOLD) {
                     Timber.i("Arrival to pick up location is detected");
-                    showDialogInUi(MainActivity.TYPE_PICK_UP);
+                    if(isAppInBackground(this)){
+                        showNotification(MainActivity.TYPE_PICK_UP);
+                    }else{
+                        showDialogInUi(MainActivity.TYPE_PICK_UP);
+                    }
+
                     mIsDriverAtPickUpLocation = true;
                 }
 
@@ -314,7 +321,11 @@ public class ForegroundServices extends LifecycleService {
 
                 if (mSumVelocity / mVelocityAverage.size() < DRIVER_VELOCITY_THRESHOLD) {
                     Timber.i("Arrival drop off is detected");
-                    showDialogInUi(MainActivity.TYPE_DROP_OFF);
+                    if(isAppInBackground(this)){
+                        showNotification(MainActivity.TYPE_DROP_OFF);
+                    }else{
+                        showDialogInUi(MainActivity.TYPE_DROP_OFF);
+                    }
                     mIsDriverAtDropOffLocation = true;
                 }
 
@@ -324,6 +335,10 @@ public class ForegroundServices extends LifecycleService {
 
             });
         }
+    }
+
+    private void showNotification(int type) {
+        // TODO implement notification when app is in background
     }
 
     private void showDialogInUi(int type) {
@@ -428,5 +443,27 @@ public class ForegroundServices extends LifecycleService {
         // Used only in case of bound services.
         super.onBind(intent);
         return null;
+    }
+
+    public boolean isAppInBackground(Context context) {
+        boolean isInBackground = true;
+        ActivityManager activityManager
+                = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        if (activityManager != null) {
+            List<ActivityManager.RunningAppProcessInfo> runningProcesses
+                    = activityManager.getRunningAppProcesses();
+            for (ActivityManager.RunningAppProcessInfo processInfo : runningProcesses) {
+                if (processInfo.importance
+                        == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
+                    for (String activeProcess : processInfo.pkgList) {
+                        if (activeProcess.equals(context.getPackageName())) {
+                            isInBackground = false;
+                        }
+                    }
+                }
+            }
+        }
+
+        return isInBackground;
     }
 }
