@@ -12,7 +12,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.location.Location;
 import android.os.Bundle;
@@ -25,7 +24,6 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -38,7 +36,6 @@ import android.view.animation.AnimationUtils;
 import android.view.animation.TranslateAnimation;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -166,6 +163,7 @@ public class MainActivity extends AppCompatActivity implements
     private HashMap<String, PassengerRide> mPassengers = new HashMap<>();
 
     public Bounds mBounds;
+    private List<String> mActiveDriveIdList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -335,15 +333,25 @@ public class MainActivity extends AppCompatActivity implements
             if (driveId == null) {
                 // TODO: No drive is active or drive has been cancelled. Update UI accordingly.
             } else {
+                if (mActiveDriveIdList.contains(driveId)) {
+                    // Make sure to only observe once
+                    Timber.d("Have already added observer");
+                    return;
+                }
+
+                if (mActiveDriveIdList.size() > 1) {
+                    Toast.makeText(this, "Error: More than one drive active " +
+                            "for the current user", Toast.LENGTH_LONG).show();
+                }
+
+                mActiveDriveIdList.add(driveId);
                 mMainViewModel.getPassengerRides(driveId).observe(lifecycleOwner, passengerRide -> {
-                    if (passengerRide != null) {
-                        // TODO: Add floating buttons for PassengerRides
-                        if (isPassengerRideAlreadyAddedToLocalList(passengerRide)) {
-                            replacePassengerRide(passengerRide);
-                        } else {
-                            mPassengerRides.add(passengerRide);
-                            createGeofence(passengerRide);
-                        }
+                    // TODO: Add floating buttons for PassengerRides
+                    if (isPassengerRideAlreadyAddedToLocalList(passengerRide)) {
+                        replacePassengerRide(passengerRide);
+                    } else {
+                        mPassengerRides.add(passengerRide);
+                        createGeofence(passengerRide);
                     }
                     //reroute here wrong
 
@@ -631,14 +639,14 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private View findPassengerView(@NonNull String rideId) {
-        View child = null;
+        View child;
         for (int i = 0; i < mPassengerContainer.getChildCount(); i++) {
             child = mPassengerContainer.getChildAt(i);
             if (rideId.equals(child.getTag())) {
                 return child;
             }
         }
-        return child;
+        return null;
     }
 
     @Override
