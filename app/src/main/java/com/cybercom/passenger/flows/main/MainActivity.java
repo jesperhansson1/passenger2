@@ -622,9 +622,9 @@ public class MainActivity extends AppCompatActivity implements
         if (passengerRide.isDropOffConfirmed()) {
             mPassengers.remove(passengerRide.getId());
             removePassengerFab(passengerRide.getId());
-        } else {
-            mPassengers.put(passengerRide.getId(), passengerRide);
-            addPassengerFab(passengerRide.getId());
+        } else if (mPassengers.get(passengerRide.getId()) == null) {
+                mPassengers.put(passengerRide.getId(), passengerRide);
+                addPassengerFab(passengerRide.getId());
         }
     }
 
