@@ -210,7 +210,8 @@ public class MainViewModel extends AndroidViewModel {
         return numberOfPassengers;
     }
 
-    private String getAddressFromLocation(Location location) {
+    public String getAddressFromLocation(Location location) {
+
         List<Address> addresses;
         Geocoder geocoder = new Geocoder(getApplication(), Locale.getDefault());
         try {
@@ -318,8 +319,11 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     @SuppressLint("MissingPermission")
-    public LiveData<PassengerRide> createPassengerRide(Drive drive, Position startPosition, Position endPosition) {
-        return mPassengerRepository.createPassengerRide(drive, startPosition, endPosition);
+    public LiveData<PassengerRide> createPassengerRide(Drive drive, Position startPosition,
+                                                       Position endPosition, String startAddress,
+                                                       String endAddress) {
+        return mPassengerRepository.createPassengerRide(drive, startPosition, endPosition,
+                startAddress, endAddress);
     }
 
     public LiveData<PassengerRide> getPassengerRides(String driveId) {

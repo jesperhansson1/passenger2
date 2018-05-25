@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal">
+
+    <ImageView
+        android:id="@+id/passenger_end_location_icon"
+        android:layout_width="@dimen/create_drive_fragment_icon_size"
+        android:layout_height="@dimen/create_drive_fragment_icon_size"
+        android:src="@drawable/map_marker_end"
+        android:layout_gravity="start|center_vertical"
+        android:contentDescription="@string/content_description_start_location_icon" />
+
+    <TextView
+        android:id="@+id/passenger_end_location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/activity_margin_half"
+        android:text="@string/driver_confirmation_start_position"
+        android:layout_gravity="center_vertical"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+</LinearLayout>

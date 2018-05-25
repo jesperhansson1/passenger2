@@ -28,6 +28,7 @@ import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.gson.Gson;
+import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -67,7 +68,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private static final String LATITUDE = "latitude";
     private static final String LONGITUDE = "longitude";
 
-    private static final int DEFAULT_DRIVE_REQUEST_RADIUS = 700;
+    public static final int DEFAULT_DRIVE_REQUEST_RADIUS = 700;
 
     private static PassengerRepository sPassengerRepository;
     private DatabaseReference mUsersReference;
@@ -300,41 +301,43 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                         if (driveRequest.getDriverIdBlackList().contains(drive.getDriverId()))
                             Timber.i("No match, driver blacklisted: %s", drive.getDriverId());
 
-//                        if(snapshot.hasChild(BOUNDS))
-//                        {
-//                            Bounds bounds = new Bounds(Double.parseDouble(snapshot.child(BOUNDS).child(NORTHEAST).child(LATITUDE).getValue().toString()),
-//                                    Double.parseDouble(snapshot.child(BOUNDS).child(NORTHEAST).child(LONGITUDE).getValue().toString()),
-//                                    Double.parseDouble(snapshot.child(BOUNDS).child(SOUTHWEST).child(LATITUDE).getValue().toString()),
-//                                    Double.parseDouble(snapshot.child(BOUNDS).child(SOUTHWEST).child(LONGITUDE).getValue().toString()));
-//
-//                            Timber.d(bounds.toString());
-//
-//                            GpsLocations gpsLocations = new GpsLocations();
-//                            LatLng start = gpsLocations.getLocations(radiusMultiplier,
-//                                    new LatLng(bounds.getNorthEastLatitude(),bounds.getNorthEastLongitude()),
-//                                    new LatLng(bounds.getSouthWestLatitude(),bounds.getSouthWestLongitude()));
-//
-//                            LatLng end = gpsLocations.getLocations(radiusMultiplier,
-//                                    new LatLng(bounds.getSouthWestLatitude(),bounds.getSouthWestLongitude()),
-//                                    new LatLng(bounds.getNorthEastLatitude(),bounds.getNorthEastLongitude()));
-//                            Bounds bounds1 = new Bounds(start.getLatitude(),start.getLongitude(),end.getLatitude(),end.getLongitude());
-//
-//                            Timber.d("start " + start.getLatitude() + " : " + start.getLongitude());
-//                            Timber.d("end " + end.getLatitude() + " : " + end.getLongitude());
-//                            //Check for start position and end position
-//                            if(contains(bounds1,driveRequest.getStartLocation().getLatitude(),driveRequest.getStartLocation().getLongitude())){
-//                                if(contains(bounds1,driveRequest.getEndLocation().getLatitude(),driveRequest.getEndLocation().getLongitude()))
-//                                {
-//                                    Timber.d("Match found");
-//
-//                                    bestMatch = drive;
-//                                    bestMatchDriveId = snapshot.getKey();
-//                                   // shortestDistance = distance[0];
-//                                }
-//                            }
-//                        }
+                        if(snapshot.hasChild(BOUNDS))
+                        {
+                            Bounds bounds = new Bounds(Double.parseDouble(snapshot.child(BOUNDS).child(NORTHEAST).child(LATITUDE).getValue().toString()),
+                                    Double.parseDouble(snapshot.child(BOUNDS).child(NORTHEAST).child(LONGITUDE).getValue().toString()),
+                                    Double.parseDouble(snapshot.child(BOUNDS).child(SOUTHWEST).child(LATITUDE).getValue().toString()),
+                                    Double.parseDouble(snapshot.child(BOUNDS).child(SOUTHWEST).child(LONGITUDE).getValue().toString()));
 
-                        if (distance[0] < DEFAULT_DRIVE_REQUEST_RADIUS * radiusMultiplier && !driveRequest.getDriverIdBlackList().contains(drive.getDriverId())) {
+                            Timber.d(bounds.toString());
+
+                            /*GpsLocations gpsLocations = new GpsLocations();
+                            LatLng start = gpsLocations.getLocations(radiusMultiplier,
+                                    new LatLng(bounds.getNorthEastLatitude(),bounds.getNorthEastLongitude()),
+                                    new LatLng(bounds.getSouthWestLatitude(),bounds.getSouthWestLongitude()));
+
+                            LatLng end = gpsLocations.getLocations(radiusMultiplier,
+                                    new LatLng(bounds.getSouthWestLatitude(),bounds.getSouthWestLongitude()),
+                                    new LatLng(bounds.getNorthEastLatitude(),bounds.getNorthEastLongitude()));
+                            Bounds bounds1 = new Bounds(start.latitude,start.longitude,end.latitude,end.longitude);
+
+                            Timber.d("start " + start.latitude + " : " + start.longitude);
+                            Timber.d("end " + end.latitude + " : " + end.longitude);*/
+
+                            bounds.setNewBounds(radiusMultiplier);
+                            //Check for start position and end position
+                            if(contains(bounds,driveRequest.getStartLocation().getLatitude(),driveRequest.getStartLocation().getLongitude())){
+                                if(contains(bounds,driveRequest.getEndLocation().getLatitude(),driveRequest.getEndLocation().getLongitude()))
+                                {
+                                    Timber.d("Match found");
+
+                                    bestMatch = drive;
+                                    bestMatchDriveId = snapshot.getKey();
+                                   // shortestDistance = distance[0];
+                                }
+                            }
+                        }
+
+                        /*if (distance[0] < DEFAULT_DRIVE_REQUEST_RADIUS * radiusMultiplier && !driveRequest.getDriverIdBlackList().contains(drive.getDriverId())) {
                             if (bestMatch == null) {
                                 bestMatch = drive;
                                 bestMatchDriveId = snapshot.getKey();
@@ -344,7 +347,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                                 bestMatchDriveId = snapshot.getKey();
                                 shortestDistance = distance[0];
                             }
-                        }
+                        }*/
                     } else {
                         Timber.d("Drives: Out of time frame!");
                     }
@@ -760,9 +763,9 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         mPassengerPositionReference.child(uId).setValue(LocationHelper.convertLocationToPosition(location));
     }
 
-    public LiveData<com.cybercom.passenger.model.PassengerRide> createPassengerRide(Drive drive,
-                                                                                    Position pickUpLocation,
-                                                                                    Position dropOffLocation) {
+    public LiveData<com.cybercom.passenger.model.PassengerRide> createPassengerRide(
+            Drive drive, Position pickUpLocation, Position dropOffLocation, String startAddress,
+            String endAddress) {
         final MutableLiveData<com.cybercom.passenger.model.PassengerRide>
                 passengerRideMutableLiveData = new MutableLiveData<>();
 
@@ -778,7 +781,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
             final com.cybercom.passenger.repository.databasemodel.PassengerRide dbPassengerRide =
                     new com.cybercom.passenger.repository.databasemodel.PassengerRide(drive.getId(),
-                            uId, pickUpLocation, dropOffLocation, false, false);
+                            uId, pickUpLocation, dropOffLocation, false, false, startAddress,
+                            endAddress);
             final DatabaseReference passengerRideRef = mPassengerRideReference.push();
             final String passengerRideId = passengerRideRef.getKey();
 
@@ -786,16 +790,16 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
             mUsersReference.child(firebaseUser.getUid()).addListenerForSingleValueEvent(
                     getEventListenerToBuildPassengerRide(passengerRideId, pickUpLocation,
-                            dropOffLocation, drive, passengerRideMutableLiveData));
+                            dropOffLocation, drive, passengerRideMutableLiveData, startAddress,
+                            endAddress));
         }
         return passengerRideMutableLiveData;
     }
 
-    private ValueEventListener getEventListenerToBuildPassengerRide(String passengerRideId,
-                                                                    Position pickUpLocation,
-                                                                    Position dropOffLocation,
-                                                                    Drive drive,
-                                                                    MutableLiveData<com.cybercom.passenger.model.PassengerRide> passengerRideMutableLiveData) {
+    private ValueEventListener getEventListenerToBuildPassengerRide(
+            String passengerRideId, Position pickUpLocation, Position dropOffLocation, Drive drive,
+            MutableLiveData<com.cybercom.passenger.model.PassengerRide>
+                    passengerRideMutableLiveData, String startAddress, String endAddress) {
         return new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -803,7 +807,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                 com.cybercom.passenger.model.PassengerRide passengerRide =
                         new com.cybercom.passenger.model.PassengerRide(
                                 passengerRideId, drive, passenger, pickUpLocation, dropOffLocation,
-                                false, false);
+                                false, false, startAddress, endAddress);
                 passengerRideMutableLiveData.setValue(passengerRide);
             }
 
@@ -832,7 +836,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                                 // Fetch the Passenger
                                 DatabaseReference dbRefPassengerId = mUsersReference.child(
                                         passengerRide.getPassengerId());
-                                dbRefPassengerId.addListenerForSingleValueEvent(new ValueEventListener() {
+                                dbRefPassengerId.addListenerForSingleValueEvent(
+                                        new ValueEventListener() {
                                     @Override
                                     public void onDataChange(DataSnapshot dataSnapshot) {
                                         final User passenger = dataSnapshot.getValue(User.class);
@@ -893,7 +898,9 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                                             passengerRide.getPickUpPosition(),
                                             passengerRide.getDropOffPosition(),
                                             passengerRide.isPickUpConfirmed(),
-                                            passengerRide.isDropOffConfirmed());
+                                            passengerRide.isDropOffConfirmed(),
+                                            passengerRide.getStartAddress(),
+                                            passengerRide.getEndAddress());
                             passengerRideMutableLiveData.setValue(convertedPassengerRide);
                         }
 
@@ -1019,7 +1026,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     public LiveData<PassengerRide> getPassengerRideById(String passengerRideId) {
         MutableLiveData<PassengerRide> passengerRideLiveData = new MutableLiveData<>();
 
-        mPassengerRideReference.child(passengerRideId).addValueEventListener(
+        mPassengerRideReference.child(passengerRideId).
+                addValueEventListener(
                 new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
@@ -1046,6 +1054,9 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     }
 
     public boolean contains(Bounds bounds, double latitude, double longitude) {
+
+        Timber.d("checking " + bounds.getNorthEastLatitude() + " : " + bounds.getNorthEastLongitude() + " : " + bounds.getSouthWestLatitude()
+        + " : " + bounds.getSouthWestLongitude() + " -- > " + latitude + " : " + longitude);
         boolean longitudeContained = false;
         boolean latitudeContained = false;
 
@@ -1065,17 +1076,17 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
         // Check if the bbox contains the prime meridian (longitude 0.0).
         if (swLongitude < neLongitude) {
-            if (swLongitude <= longitude && longitude <= neLongitude) {
+            if (swLongitude < longitude && longitude < neLongitude) {
                 longitudeContained = true;
             }
 
-        } else if ((0 < longitude && longitude <= neLongitude) ||
-                (swLongitude <= longitude && longitude < 0)) {
+        } else if ((0 < longitude && longitude < neLongitude) ||
+                (swLongitude < longitude && longitude < 0)) {
             // Contains prime meridian.
             longitudeContained = true;
         }
 
-        if (swLatitude < neLatitude && (swLatitude <= latitude && latitude <= neLatitude)) {
+        if (swLatitude < neLatitude && (swLatitude < latitude && latitude < neLatitude)) {
             latitudeContained = true;
         }
         return (longitudeContained && latitudeContained);

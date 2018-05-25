@@ -26,6 +26,28 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"/>
 
+    <include
+        layout="@layout/passenger_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_margin="@dimen/pad_16dp"
+        tools:layout_editor_absoluteY="458dp" />
+
+    <include
+        android:id="@+id/passenger_detailed_information"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toRightOf="@id/passenger_container"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:visibility="invisible"
+        layout="@layout/passenger_detailed_information" />
+
     <TextView
         android:id="@+id/main_activity_place_marker_info"
         android:layout_width="wrap_content"

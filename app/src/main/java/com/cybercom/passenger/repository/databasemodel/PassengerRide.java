@@ -12,18 +12,23 @@ public class PassengerRide implements Serializable {
     private Position mDropOffPosition;
     private boolean mPickUpConfirmed;
     private boolean mDropOffConfirmed;
+    private String mStartAddress;
+    private String mEndAddress;
 
     public PassengerRide() {
     }
 
     public PassengerRide(String driveId, String passengerId, Position pickUpPosition,
-                         Position dropOffPosition,  boolean pickUpConfirmed, boolean dropOffConfirmed) {
+                         Position dropOffPosition,  boolean pickUpConfirmed,
+                         boolean dropOffConfirmed, String startAddress, String endAddress) {
         mDriveId = driveId;
         mPassengerId = passengerId;
         mPickUpPosition = pickUpPosition;
         mDropOffPosition = dropOffPosition;
         mPickUpConfirmed = pickUpConfirmed;
         mDropOffConfirmed = dropOffConfirmed;
+        mStartAddress = startAddress;
+        mEndAddress = endAddress;
     }
 
     public String getDriveId() {
@@ -73,6 +78,23 @@ public class PassengerRide implements Serializable {
     public void setDropOffConfirmed(boolean dropOffConfirmed) {
         this.mDropOffConfirmed = dropOffConfirmed;
     }
+
+    public void setStartAddress(String startAddress) {
+        mStartAddress = startAddress;
+    }
+
+    public void setEndAddress(String endAddress) {
+        mEndAddress = endAddress;
+    }
+
+    public String getStartAddress() {
+        return mStartAddress;
+    }
+
+    public String getEndAddress() {
+        return mEndAddress;
+    }
+
 
     @Override
     public String toString() {

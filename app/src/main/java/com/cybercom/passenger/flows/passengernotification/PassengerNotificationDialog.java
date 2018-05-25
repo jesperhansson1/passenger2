@@ -71,8 +71,11 @@ public class PassengerNotificationDialog extends DialogFragment implements View.
 
             mETAObserver = integer -> {
                 if (integer != null) {
-                    ((TextView) rootView.findViewById(R.id.passenger_notification_eta)).setText(
+                    if(isAdded()){
+                        rootView.findViewById(R.id.passenger_notification_eta_progressbar).setVisibility(View.GONE);
+                        ((TextView) rootView.findViewById(R.id.passenger_notification_eta_text)).setText(
                             getString(R.string.eta_minutes, integer));
+                    }
                 }
             };
 
