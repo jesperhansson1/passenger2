@@ -1,5 +1,6 @@
 package com.cybercom.passenger.flows.passengernotification;
 
+import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
@@ -29,6 +30,8 @@ public class PassengerNotificationDialog extends DialogFragment implements View.
     public static final String TAG = "PASSENGER_NOTIFICATION_DIALOG";
     private Notification mNotification;
     private MainViewModel mMainViewModel;
+    private Observer<Integer> mETAObserver;
+    private LiveData<Integer> mGetETA;
 
     public interface PassengerNotificationListener {
         void onCancelDrive(Notification notification);
@@ -65,7 +68,8 @@ public class PassengerNotificationDialog extends DialogFragment implements View.
         cancelButton.setOnClickListener(this);
 
         if (getActivity() != null) {
-            mMainViewModel.getETA().observe(getActivity(), integer -> {
+
+            mETAObserver = integer -> {
                 if (integer != null) {
                     if(isAdded()){
                         rootView.findViewById(R.id.passenger_notification_eta_progressbar).setVisibility(View.GONE);
@@ -73,16 +77,18 @@ public class PassengerNotificationDialog extends DialogFragment implements View.
                             getString(R.string.eta_minutes, integer));
                     }
                 }
-            });
-        }
+            };
 
-        if(getArguments() != null){
-            mNotification = (Notification) getArguments().getSerializable(NOTIFICATION_KEY);
+            mGetETA = mMainViewModel.getETA();
+            mGetETA.observe(getActivity(), mETAObserver);
 
-            TextView passengerNotificationName
-                    = rootView.findViewById(R.id.passenger_notification_name);
-            passengerNotificationName.setText(mNotification.getDrive().getDriver().getFullName());
+            if (getArguments() != null) {
+                mNotification = (Notification) getArguments().getSerializable(NOTIFICATION_KEY);
 
+                TextView passengerNotificationName
+                        = rootView.findViewById(R.id.passenger_notification_name);
+                passengerNotificationName.setText(mNotification.getDrive().getDriver().getFullName());
+            }
         }
 
         return rootView;
@@ -95,6 +101,8 @@ public class PassengerNotificationDialog extends DialogFragment implements View.
             getDialog().getWindow().setLayout(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT);
+
+            getDialog().setCanceledOnTouchOutside(false);
 
             getDialog().getWindow().setGravity(Gravity.BOTTOM);
             getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
@@ -114,6 +122,13 @@ public class PassengerNotificationDialog extends DialogFragment implements View.
                     Toast.LENGTH_SHORT).show();
             dismiss();
         }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mGetETA.removeObserver(mETAObserver);
+
     }
 
     @Override

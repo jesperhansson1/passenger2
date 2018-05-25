@@ -21,6 +21,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
@@ -120,6 +121,11 @@ public class MainActivity extends AppCompatActivity implements
     public static final String GEOFENCE_EVENTS_REQUEST_ID = "GEOFENCE_EVENTS_REQUEST_ID";
     private static final String GEOFENCE_TYPE_PICK_UP = "1";
     private static final String GEOFENCE_TYPE_DROP_OFF = "2";
+    public static final String FOREGROUND_SERVICE_INTENT_FILTER = "FOREGROUND_SERVICE";
+    public static final int TYPE_PICK_UP = 1;
+    public static final int TYPE_DROP_OFF = 2;
+    public static final String DIALOG_TO_SHOW = "DIALOG_TO_SHOW";
+
 
     private FirebaseUser mUser;
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 0;
@@ -156,7 +162,8 @@ public class MainActivity extends AppCompatActivity implements
     private PendingIntent mGeofencePendingIntent;
     private List<PassengerRide> mPassengerRides;
 
-    private GeofenceBroadcastReceiver mGeofenceEventsReceiver;
+    private GeofenceBroadcastReceiver mGeofenceReceiver;
+    private ForegroundServiceReceiver mForegroundReceiver;
 
     private User mCurrentLoggedInUser;
 
@@ -176,7 +183,8 @@ public class MainActivity extends AppCompatActivity implements
         mFragmentManager = getSupportFragmentManager();
         createNotificationChannels();
 
-        mGeofenceEventsReceiver = new GeofenceBroadcastReceiver();
+        mGeofenceReceiver = new GeofenceBroadcastReceiver();
+        mForegroundReceiver = new ForegroundServiceReceiver();
 
         if (savedInstanceState == null) {
             if (getIntent().getExtras() != null) {
@@ -346,19 +354,18 @@ public class MainActivity extends AppCompatActivity implements
 
                 mActiveDriveIdList.add(driveId);
                 mMainViewModel.getPassengerRides(driveId).observe(lifecycleOwner, passengerRide -> {
-                    // TODO: Add floating buttons for PassengerRides
-                    if (isPassengerRideAlreadyAddedToLocalList(passengerRide)) {
-                        replacePassengerRide(passengerRide);
-                    } else {
-                        mPassengerRides.add(passengerRide);
-                        createGeofence(passengerRide);
+                    if (passengerRide != null) {
+
+                        if (isPassengerRideAlreadyAddedToLocalList(passengerRide)) {
+                            replacePassengerRide(passengerRide);
+                        } else {
+                            mPassengerRides.add(passengerRide);
+                            createGeofence(passengerRide);
+                        }
                     }
                     //reroute here wrong
-
-
-
                     handlePassengerChanged(passengerRide);
-                    // TODO: add geofences pickup and dropoff location
+
                 });
             }
         });
@@ -378,7 +385,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private boolean isPassengerRideAlreadyAddedToLocalList(PassengerRide passengerRide) {
-        for (PassengerRide passengerRideFromList: mPassengerRides) {
+        for (PassengerRide passengerRideFromList : mPassengerRides) {
             if (passengerRide.getId().equals(passengerRideFromList.getId())) {
                 return true;
             }
@@ -581,11 +588,13 @@ public class MainActivity extends AppCompatActivity implements
         mNoMatchFragment = NoMatchFragment.newInstance();
 
         mMainViewModel.getLastKnownLocation(location -> {
-            mMainViewModel.setStartMarkerLocation(location);
-            placeStartLocationMarker();
-            mFragmentManager.beginTransaction()
-                    .add(R.id.main_activity_dialog_container, mCreateDriveFragment).commit();
-            mIsFragmentAdded = true;
+            if (location != null) {
+                mMainViewModel.setStartMarkerLocation(location);
+                placeStartLocationMarker();
+                mFragmentManager.beginTransaction()
+                        .add(R.id.main_activity_dialog_container, mCreateDriveFragment).commit();
+                mIsFragmentAdded = true;
+            }
         });
 
         mPlaceMarkerInformation = findViewById(R.id.main_activity_place_marker_info);
@@ -780,6 +789,12 @@ public class MainActivity extends AppCompatActivity implements
         dFragment.show(getSupportFragmentManager(), PassengerNotificationDialog.TAG);
     }
 
+    private void removePassengerNotificationDialog() {
+        PassengerNotificationDialog dFragment = (PassengerNotificationDialog)
+                mFragmentManager.findFragmentByTag(PassengerNotificationDialog.TAG);
+        mFragmentManager.beginTransaction().remove(dFragment).commit();
+    }
+
     @Override
     public void onCameraMoveStarted(int reason) {
         if (reason == GoogleMap.OnCameraMoveStartedListener.REASON_GESTURE && mIsFragmentAdded) {
@@ -857,9 +872,8 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onMapClick(LatLng latLng)
-    {
-        if(mIsFragmentAdded){
+    public void onMapClick(LatLng latLng) {
+        if (mIsFragmentAdded) {
             mCreateDriveFragment.hideCreateDialog();
         }
     }
@@ -870,14 +884,11 @@ public class MainActivity extends AppCompatActivity implements
         zoomToFitRoute();
     }
 
-    public void onBoundsParse(Bounds bounds)
-    {
-        if(bounds!=null) {
+    public void onBoundsParse(Bounds bounds) {
+        if (bounds != null) {
             mBounds = bounds;
-        }
-        else
-        {
-            mBounds = new Bounds(0.0,0.0,0.0,0.0);
+        } else {
+            mBounds = new Bounds(0.0, 0.0, 0.0, 0.0);
         }
     }
 
@@ -911,7 +922,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onFinish() {
-        removeFragment(mCreateDriveFragment);
+        removeCreteDriveFragment(mCreateDriveFragment);
 
      /*  mGoogleMap.clear();
         isStartLocationMarkerAdded = false;
@@ -923,10 +934,9 @@ public class MainActivity extends AppCompatActivity implements
         mCountMarker = true;*/
 
 
-
     }
 
-    private void removeFragment(CreateDriveFragment mCreateDriveFragment) {
+    private void removeCreteDriveFragment(CreateDriveFragment mCreateDriveFragment) {
         mIsFragmentAdded = false;
         mFragmentManager.beginTransaction().remove(mCreateDriveFragment).commit();
     }
@@ -984,20 +994,20 @@ public class MainActivity extends AppCompatActivity implements
         mCreateDriveFragment.hideCreateDialogCompletely();
         switch (type) {
             case User.TYPE_DRIVER:
-                if(mBounds==null) {
-                    mBounds = new Bounds(0.0,0.0,0.0,0.0);
+                if (mBounds == null) {
+                    mBounds = new Bounds(0.0, 0.0, 0.0, 0.0);
                 }
                 mMainViewModel.createDrive(time, startLocation, endLocation, seats, mBounds).observe(this,
                         drive -> {
-                    if (drive != null) {
-                        Intent UpdateDriveIntent = new Intent(MainActivity.this, ForegroundServices.class);
-                        UpdateDriveIntent.setAction(Constants.ACTION.STARTFOREGROUND_UPDATE_DRIVER_POSITION);
-                        UpdateDriveIntent.putExtra(ForegroundServices.INTENT_EXTRA_DRIVE_ID, drive.getId());
-                        startService(UpdateDriveIntent);
-                        updatePassengersMarkerPosition(drive.getId());
-                        mCreateDriveFragment.setDefaultValuesToDialog();
-                    }
-                });
+                            if (drive != null) {
+                                Intent UpdateDriveIntent = new Intent(MainActivity.this, ForegroundServices.class);
+                                UpdateDriveIntent.setAction(Constants.ACTION.STARTFOREGROUND_UPDATE_DRIVER_POSITION);
+                                UpdateDriveIntent.putExtra(ForegroundServices.INTENT_EXTRA_DRIVE_ID, drive.getId());
+                                startService(UpdateDriveIntent);
+                                updatePassengersMarkerPosition(drive.getId());
+                                mCreateDriveFragment.setDefaultValuesToDialog();
+                            }
+                        });
                 break;
             case User.TYPE_PASSENGER:
                 mMainViewModel.createDriveRequest(time, startLocation, endLocation, seats).observe(
@@ -1062,14 +1072,18 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onPause() {
         super.onPause();
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mGeofenceEventsReceiver);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mGeofenceReceiver);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mForegroundReceiver);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        IntentFilter filter = new IntentFilter(GEOFENCE_EVENTS_INTENT_FILTER);
-        LocalBroadcastManager.getInstance(this).registerReceiver(mGeofenceEventsReceiver, filter);
+        IntentFilter geofenceFilter = new IntentFilter(GEOFENCE_EVENTS_INTENT_FILTER);
+        LocalBroadcastManager.getInstance(this).registerReceiver(mGeofenceReceiver, geofenceFilter);
+        IntentFilter foregroundServiceFilter = new IntentFilter(FOREGROUND_SERVICE_INTENT_FILTER);
+        LocalBroadcastManager.getInstance(this)
+                .registerReceiver(mForegroundReceiver, foregroundServiceFilter);
     }
 
     private void setUpGeofencing() {
@@ -1168,56 +1182,22 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    private class GeofenceBroadcastReceiver extends BroadcastReceiver {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (intent.getExtras() != null) {
-                Timber.i("onReceive RequestId: %s ", intent.getExtras()
-                        .get(GEOFENCE_EVENTS_REQUEST_ID));
-
-                String geofenceRequestId = intent.getExtras()
-                        .getString(GEOFENCE_EVENTS_REQUEST_ID);
-                String passengerRideId = null;
-                String geoFenceType = null;
-
-                if (geofenceRequestId != null) {
-                    passengerRideId
-                            = geofenceRequestId.substring(0, geofenceRequestId.length() - 1);
-                    geoFenceType
-                            = geofenceRequestId.substring(geofenceRequestId.length() - 1);
-                }
-
-                if (geofenceRequestId != null
-                        && geoFenceType.equals(GEOFENCE_TYPE_PICK_UP)) {
-                    if (mCurrentLoggedInUser.getType() == User.TYPE_DRIVER) {
-                        showDriverPickUpFragment(getPassengerRideFromLocalList(passengerRideId));
-                    } else if (mCurrentLoggedInUser.getType() == User.TYPE_PASSENGER) {
-                        showPassengerPickUpFragment(getPassengerRideFromLocalList(passengerRideId));
-                    }
-                } else if (geofenceRequestId != null &&
-                        geoFenceType.equals(GEOFENCE_TYPE_DROP_OFF)) {
-                    showDriverDropOffFragment(getPassengerRideFromLocalList(passengerRideId));
-                }
-
-                removeGeofence(geofenceRequestId);
-            }
-        }
-    }
-
     private void showDriverPickUpFragment(PassengerRide passengerRide) {
         mFragmentManager.beginTransaction().add(R.id.main_activity_dialog_container,
-                DriverPassengerPickUpFragment.newInstance(passengerRide)).commit();
+                DriverPassengerPickUpFragment.newInstance(passengerRide),
+                DriverPassengerPickUpFragment.DRIVER_PASSENGER_PICK_UP_FRAGMENT_TAG).commit();
     }
 
-    private void showPassengerPickUpFragment(PassengerRide passengerRide) {
+    private void showPassengerPickUpFragment(Drive matchedDrive) {
         mFragmentManager.beginTransaction().add(R.id.main_activity_dialog_container,
-                DriverPassengerPickUpFragment.newInstance(passengerRide)).commit();
+                DriverPassengerPickUpFragment.newInstance(matchedDrive),
+                DriverPassengerPickUpFragment.DRIVER_PASSENGER_PICK_UP_FRAGMENT_TAG).commit();
     }
 
     private void showDriverDropOffFragment(PassengerRide passengerRide) {
         mFragmentManager.beginTransaction().add(R.id.main_activity_dialog_container,
-                DriverDropOffFragment.newInstance(passengerRide)).commit();
+                DriverDropOffFragment.newInstance(passengerRide),
+                DriverDropOffFragment.DRIVER_DROP_OFF_FRAGMENT_TAG).commit();
     }
 
     @Nullable
@@ -1232,7 +1212,9 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onPickUpConfirmed(PassengerRide passengerRide) {
-
+        removeFragment(mFragmentManager
+                .findFragmentByTag(DriverPassengerPickUpFragment
+                        .DRIVER_PASSENGER_PICK_UP_FRAGMENT_TAG));
     }
 
     @Override
@@ -1241,8 +1223,21 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onDropOffConfirmation(PassengerRide passengerRide) {
+    public void onPickUpConfirmed(Drive drive) {
+        removeFragment(mFragmentManager
+                .findFragmentByTag(DriverPassengerPickUpFragment
+                        .DRIVER_PASSENGER_PICK_UP_FRAGMENT_TAG));
+    }
 
+    @Override
+    public void onPickUpNoShow(Drive drive) {
+
+    }
+
+    @Override
+    public void onDropOffConfirmation(PassengerRide passengerRide) {
+        removeFragment(mFragmentManager
+                .findFragmentByTag(DriverDropOffFragment.DRIVER_DROP_OFF_FRAGMENT_TAG));
     }
 
     @Override
@@ -1383,5 +1378,57 @@ public class MainActivity extends AppCompatActivity implements
         animSet.addAnimation(new TranslateAnimation(startX, 0, startY, 0));
         animSet.setDuration(duration);
         return animSet;
+    }
+
+    public void removeFragment(Fragment fragment){
+        mFragmentManager.beginTransaction()
+                .remove(fragment)
+                .commit();
+    }
+
+    private class GeofenceBroadcastReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getExtras() != null) {
+                Timber.i("onReceive RequestId: %s ", intent.getExtras()
+                        .get(GEOFENCE_EVENTS_REQUEST_ID));
+
+                String geofenceRequestId = intent.getExtras()
+                        .getString(GEOFENCE_EVENTS_REQUEST_ID);
+                String passengerRideId;
+                String geoFenceType;
+
+                if (geofenceRequestId != null) {
+                    passengerRideId
+                            = geofenceRequestId.substring(0, geofenceRequestId.length() - 1);
+                    geoFenceType
+                            = geofenceRequestId.substring(geofenceRequestId.length() - 1);
+                    if (geoFenceType.equals(GEOFENCE_TYPE_PICK_UP)) {
+                        if (mCurrentLoggedInUser.getType() == User.TYPE_DRIVER) {
+                            showDriverPickUpFragment(getPassengerRideFromLocalList(passengerRideId));
+                        }
+                    } else if (geoFenceType.equals(GEOFENCE_TYPE_DROP_OFF)) {
+                        if (mCurrentLoggedInUser.getType() == User.TYPE_DRIVER) {
+                            showDriverDropOffFragment(getPassengerRideFromLocalList(passengerRideId));
+                        }
+                        removeGeofence(geofenceRequestId);
+                    }
+                }
+            }
+        }
+    }
+
+    private class ForegroundServiceReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getExtras() != null) {
+                if (intent.getExtras().getInt(DIALOG_TO_SHOW) == TYPE_PICK_UP) {
+                    removePassengerNotificationDialog();
+                    showPassengerPickUpFragment(mMainViewModel.getMatchedDrive());
+                }
+            }
+        }
     }
 }
