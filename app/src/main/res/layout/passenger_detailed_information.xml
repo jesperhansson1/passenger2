@@ -54,6 +54,6 @@
             android:text="@string/finding_driver_cancel"
             android:textColor="@color/colorRed"
             app:layout_constraintTop_toBottomOf="@id/end_location_and_text"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            app:layout_constraintBottom_toBottomOf="parent"/>
     </android.support.constraint.ConstraintLayout>
 </FrameLayout>

@@ -5,6 +5,7 @@ import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.location.Location;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.cybercom.passenger.model.Bounds;
 import com.cybercom.passenger.model.Car;
@@ -16,6 +17,8 @@ import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.repository.databasemodel.PassengerRide;
 import com.cybercom.passenger.repository.databasemodel.utils.DatabaseModelHelper;
 import com.cybercom.passenger.utils.LocationHelper;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseUser;
@@ -667,6 +670,10 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         return driveRequestMutableLiveData;
     }
 
+    public void removeCurrentDrive(String driveId, OnCompleteListener onCompleteListener) {
+        Task task = mDrivesReference.child(driveId).removeValue();
+        task.addOnCompleteListener(onCompleteListener);
+    }
 
     private DatabaseReference getCarsReference() {
         mCarList = new MutableLiveData<>();

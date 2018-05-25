@@ -35,6 +35,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.view.animation.AnimationUtils;
 import android.view.animation.TranslateAnimation;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -131,6 +132,8 @@ public class MainActivity extends AppCompatActivity implements
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 0;
     private MainViewModel mMainViewModel;
     private TextView mPlaceMarkerInformation;
+    private FloatingActionButton mCancelDriveFab;
+    private Button mConfirmCancelDrive;
 
     private FragmentManager mFragmentManager;
     private CreateDriveFragment mCreateDriveFragment;
@@ -230,8 +233,10 @@ public class MainActivity extends AppCompatActivity implements
             //reroute here wrong
 
             Intent updatePassengerIntent = new Intent(MainActivity.this, ForegroundServices.class);
-            updatePassengerIntent.setAction(Constants.ACTION.STARTFOREGROUND_UPDATE_PASSENGER_POSITION);
-            updatePassengerIntent.putExtra(ForegroundServices.INTENT_EXTRA_PASSENGER_RIDE_ID, passengerRide.getId());
+            updatePassengerIntent.setAction(
+                    Constants.ACTION.STARTFOREGROUND_UPDATE_PASSENGER_POSITION);
+            updatePassengerIntent.putExtra(ForegroundServices.INTENT_EXTRA_PASSENGER_RIDE_ID,
+                    passengerRide.getId());
             updatePassengerIntent.putExtra(ForegroundServices.INTENT_EXTRA_DRIVE_ID,
                     passengerRide.getDrive().getId());
             if (passengerRide != null) {
@@ -437,7 +442,8 @@ public class MainActivity extends AppCompatActivity implements
             isStartLocationMarkerAdded = true;
 
         } else {
-            updateMarkerLocation(mStartLocationMarker, mMainViewModel.getStartMarkerLocation().getValue());
+            updateMarkerLocation(mStartLocationMarker,
+                    mMainViewModel.getStartMarkerLocation().getValue());
             updateMarkerLocation(mStartLocationMarker,
                     mMainViewModel.getStartMarkerLocation().getValue());
         }
@@ -539,7 +545,8 @@ public class MainActivity extends AppCompatActivity implements
         }
 
         FindingCarProgressDialog findingCarProgressDialog = FindingCarProgressDialog.getInstance();
-        findingCarProgressDialog.show(fragmentManager, FindingCarProgressDialog.MATCHING_IN_PROGRESS);
+        findingCarProgressDialog.show(fragmentManager,
+                FindingCarProgressDialog.MATCHING_IN_PROGRESS);
     }
 
     private void dismissMatchingInProgressDialog() {
@@ -602,6 +609,10 @@ public class MainActivity extends AppCompatActivity implements
         mPassengerDetailedInformation = findViewById(R.id.passenger_detailed_information);
         mPassengerDetailedInformation.findViewById(R.id.abort_passenger_button)
                 .setOnClickListener(this);
+        mCancelDriveFab = findViewById(R.id.cancel_drive);
+        mCancelDriveFab.setOnClickListener(this);
+        mConfirmCancelDrive = findViewById(R.id.confirm_cancel_drive_button);
+        mConfirmCancelDrive.setOnClickListener(this);
     }
 
     private void handlePassengerChanged(PassengerRide passengerRide) {
@@ -611,9 +622,9 @@ public class MainActivity extends AppCompatActivity implements
         if (passengerRide.isDropOffConfirmed()) {
             mPassengers.remove(passengerRide.getId());
             removePassengerFab(passengerRide.getId());
-        } else {
-            mPassengers.put(passengerRide.getId(), passengerRide);
-            addPassengerFab(passengerRide.getId());
+        } else if (mPassengers.get(passengerRide.getId()) == null) {
+                mPassengers.put(passengerRide.getId(), passengerRide);
+                addPassengerFab(passengerRide.getId());
         }
     }
 
@@ -634,7 +645,6 @@ public class MainActivity extends AppCompatActivity implements
                     layoutInflater.inflate(R.layout.passanger_fab, null);
             FloatingActionButton fab = fabContainer.findViewById(R.id.passenger_fab);
             fab.setOnClickListener(this);
-            //fab.setLayoutParams(lp);
             fab.setTag(rideId);
             mPassengerContainer.addView(fabContainer);
         }
@@ -692,9 +702,12 @@ public class MainActivity extends AppCompatActivity implements
 
         if (!mMainViewModel.isInitialZoomDone()) {
             mMainViewModel.getLastKnownLocation(location -> {
-                LatLng initialZoom = new LatLng(location.getLatitude(), location.getLongitude());
-                animateToLocation(initialZoom);
-                mMainViewModel.setInitialZoomDone(true);
+                if (location != null) {
+                    LatLng initialZoom = new LatLng(location.getLatitude(),
+                            location.getLongitude());
+                    animateToLocation(initialZoom);
+                    mMainViewModel.setInitialZoomDone(true);
+                }
             });
         }
     }
@@ -744,8 +757,6 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void zoomToFitRoute() {
-        final Handler handler = new Handler();
-        //handler.postDelayed(() -> {
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         builder.include(mStartLocationMarker.getPosition());
         builder.include(mEndLocationMarker.getPosition());
@@ -823,10 +834,14 @@ public class MainActivity extends AppCompatActivity implements
         if (isAccepted) {
             mMainViewModel.sendAcceptPassengerNotification(notification.getDrive(),
                     notification.getDriveRequest());
-            reRoute(new LatLng(notification.getDrive().getStartLocation().getLatitude(),notification.getDrive().getStartLocation().getLongitude()),
-                    new LatLng(notification.getDrive().getEndLocation().getLatitude(),notification.getDrive().getEndLocation().getLongitude()),
-                    new LatLng(notification.getDriveRequest().getStartLocation().getLatitude(),notification.getDriveRequest().getStartLocation().getLongitude()),
-                    new LatLng(notification.getDriveRequest().getEndLocation().getLatitude(),notification.getDriveRequest().getEndLocation().getLongitude()));
+            reRoute(new LatLng(notification.getDrive().getStartLocation().getLatitude(),
+                            notification.getDrive().getStartLocation().getLongitude()),
+                    new LatLng(notification.getDrive().getEndLocation().getLatitude()
+                            ,notification.getDrive().getEndLocation().getLongitude()),
+                    new LatLng(notification.getDriveRequest().getStartLocation().getLatitude(),
+                            notification.getDriveRequest().getStartLocation().getLongitude()),
+                    new LatLng(notification.getDriveRequest().getEndLocation().getLatitude(),
+                            notification.getDriveRequest().getEndLocation().getLongitude()));
 
         } else {
             mMainViewModel.sendRejectPassengerNotification(notification.getDrive(),
@@ -922,7 +937,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onFinish() {
-        removeCreteDriveFragment(mCreateDriveFragment);
+        removeCreateDriveFragment();
 
      /*  mGoogleMap.clear();
         isStartLocationMarkerAdded = false;
@@ -936,9 +951,15 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
-    private void removeCreteDriveFragment(CreateDriveFragment mCreateDriveFragment) {
+    private void removeCreateDriveFragment() {
         mIsFragmentAdded = false;
         mFragmentManager.beginTransaction().remove(mCreateDriveFragment).commit();
+    }
+
+    private void addCreateDriveFragment() {
+        mIsFragmentAdded = true;
+        mFragmentManager.beginTransaction().add(R.id.main_activity_dialog_container,
+                mCreateDriveFragment).commit();
     }
 
     @Override
@@ -997,17 +1018,18 @@ public class MainActivity extends AppCompatActivity implements
                 if (mBounds == null) {
                     mBounds = new Bounds(0.0, 0.0, 0.0, 0.0);
                 }
-                mMainViewModel.createDrive(time, startLocation, endLocation, seats, mBounds).observe(this,
-                        drive -> {
-                            if (drive != null) {
-                                Intent UpdateDriveIntent = new Intent(MainActivity.this, ForegroundServices.class);
-                                UpdateDriveIntent.setAction(Constants.ACTION.STARTFOREGROUND_UPDATE_DRIVER_POSITION);
-                                UpdateDriveIntent.putExtra(ForegroundServices.INTENT_EXTRA_DRIVE_ID, drive.getId());
-                                startService(UpdateDriveIntent);
-                                updatePassengersMarkerPosition(drive.getId());
-                                mCreateDriveFragment.setDefaultValuesToDialog();
-                            }
-                        });
+                mMainViewModel.createDrive(time, startLocation, endLocation, seats, mBounds)
+                        .observe(this,drive -> {
+                    if (drive != null) {
+                        Intent UpdateDriveIntent = new Intent(MainActivity.this, ForegroundServices.class);
+                        UpdateDriveIntent.setAction(Constants.ACTION.STARTFOREGROUND_UPDATE_DRIVER_POSITION);
+                        UpdateDriveIntent.putExtra(ForegroundServices.INTENT_EXTRA_DRIVE_ID, drive.getId());
+                        startService(UpdateDriveIntent);
+                        updatePassengersMarkerPosition(drive.getId());
+                        mCreateDriveFragment.setDefaultValuesToDialog();
+                        mCancelDriveFab.setVisibility(View.VISIBLE);
+                    }
+                });
                 break;
             case User.TYPE_PASSENGER:
                 mMainViewModel.createDriveRequest(time, startLocation, endLocation, seats).observe(
@@ -1286,55 +1308,100 @@ public class MainActivity extends AppCompatActivity implements
         //TODO Ride aborted from the driver, implement this
     }
 
+    private void handleRemoveDrive() {
+        String driveId = mActiveDriveIdList.get(0);
+        if (driveId == null) {
+            return;
+        }
+
+        mMainViewModel.removeCurrentDrive(driveId, new OnCompleteListener() {
+            @Override
+            public void onComplete(@NonNull Task task) {
+                handleDriveRemoved(driveId);
+            }
+        });
+    }
+
+    private void handleDriveRemoved(String driveId) {
+        mCancelDriveFab.setVisibility(View.INVISIBLE);
+        mConfirmCancelDrive.setVisibility(View.INVISIBLE);
+        addCreateDriveFragment();
+        mCreateDriveFragment.showCreateDialog();
+        mActiveDriveIdList.remove(driveId);
+        mPassengerContainer.removeAllViews();
+        mPassengerDetailedInformation = findViewById(R.id.passenger_detailed_information);
+        mPassengerDetailedInformation.setVisibility(View.INVISIBLE);
+    }
+
+    private void toogleConfirmButton() {
+        Animation animation;
+        boolean isOpen = mConfirmCancelDrive.getVisibility() == View.VISIBLE;
+        animation = isOpen ? getCloseAnimation(mCancelDriveFab, mConfirmCancelDrive, 200) :
+                getOpenAnimation(mCancelDriveFab, mConfirmCancelDrive, 400);
+        animation.setAnimationListener(new ViewAnimationListener(mConfirmCancelDrive, !isOpen));
+        mConfirmCancelDrive.startAnimation(animation);
+    }
+
     @Override
     public void onClick(final View view) {
         if (view.getId() == R.id.abort_passenger_button) {
-            handleRideAborted((String)mPassengerDetailedInformation.getTag());
+            handleRideAborted((String) mPassengerDetailedInformation.getTag());
+        } else if (view.getId() == R.id.cancel_drive) {
+            toogleConfirmButton();
+        } else if (view.getId() == R.id.confirm_cancel_drive_button) {
+            handleRemoveDrive();
         } else if (view instanceof FloatingActionButton) {
-            updatePassengerDetailedInformation((FloatingActionButton)view);
-            AnimationSet as = new AnimationSet(false);
-            Animation closeOtherAnimation = getCloseDetailedInfoIfNeeded(view);
-            if (closeOtherAnimation != null) {
-                closeOtherAnimation.setAnimationListener(new DetailedInfoAnimationListener(false));
-                mPassengerDetailedInformation.setTag("");
-                mPassengerDetailedInformation.startAnimation(closeOtherAnimation);
-            }
-
-            Object tag = mPassengerDetailedInformation.getTag();
-            if (tag == null || tag.equals("")) {
-                Animation openAnimation = getOpenAnimation(view, mPassengerDetailedInformation,
-                        400);
-                openAnimation.setAnimationListener(new DetailedInfoAnimationListener(true));
-
-                as.addAnimation(openAnimation);
-                mPassengerDetailedInformation.setTag(view.getTag());
-                mPassengerDetailedInformation.startAnimation(openAnimation);
-            } else {
-                Animation closeAnimation = getCloseAnimation(view, mPassengerDetailedInformation,
-                        200);
-                mPassengerDetailedInformation.setTag("");
-                closeAnimation.setAnimationListener(new DetailedInfoAnimationListener(false));
-                mPassengerDetailedInformation.startAnimation(closeAnimation);
-            }
+            handlePassengerFabClicked(view);
         }
     }
 
-    private class DetailedInfoAnimationListener implements Animation.AnimationListener {
+    private void handlePassengerFabClicked(View view) {
+        updatePassengerDetailedInformation((FloatingActionButton)view);
+        AnimationSet as = new AnimationSet(false);
+        Animation closeOtherAnimation = getCloseDetailedInfoIfNeeded(view);
+        if (closeOtherAnimation != null) {
+            closeOtherAnimation.setAnimationListener(new ViewAnimationListener(
+                    mPassengerDetailedInformation, false));
+            mPassengerDetailedInformation.setTag("");
+            mPassengerDetailedInformation.startAnimation(closeOtherAnimation);
+        }
+
+        Object tag = mPassengerDetailedInformation.getTag();
+        if (tag == null || tag.equals("")) {
+            Animation openAnimation = getOpenAnimation(view, mPassengerDetailedInformation, 400);
+            openAnimation.setAnimationListener(new ViewAnimationListener(
+                    mPassengerDetailedInformation, true));
+
+            as.addAnimation(openAnimation);
+            mPassengerDetailedInformation.setTag(view.getTag());
+            mPassengerDetailedInformation.startAnimation(openAnimation);
+        } else {
+            Animation closeAnimation = getCloseAnimation(view, mPassengerDetailedInformation, 200);
+            mPassengerDetailedInformation.setTag("");
+            closeAnimation.setAnimationListener(new ViewAnimationListener(
+                    mPassengerDetailedInformation, false));
+            mPassengerDetailedInformation.startAnimation(closeAnimation);
+        }
+    }
+
+    private class ViewAnimationListener implements Animation.AnimationListener {
         private final boolean mIsOpenAnimation;
-        DetailedInfoAnimationListener(boolean isOpenAnimation) {
+        private final View mView;
+        ViewAnimationListener(@NonNull View view, boolean isOpenAnimation) {
             mIsOpenAnimation = isOpenAnimation;
+            mView = view;
         }
         @Override
         public void onAnimationStart(Animation animation) {
             if (mIsOpenAnimation) {
-                mPassengerDetailedInformation.setVisibility(View.VISIBLE);
+                mView.setVisibility(View.VISIBLE);
             }
         }
 
         @Override
         public void onAnimationEnd(Animation animation) {
             if (!mIsOpenAnimation) {
-                mPassengerDetailedInformation.setVisibility(View.INVISIBLE);
+                mView.setVisibility(View.INVISIBLE);
             }
         }
 
@@ -1344,15 +1411,23 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    private static AnimationSet getCloseAnimation(View fabView, View detailedView, int duration) {
-        int[] detailedViewLocation = new int[2];
-        int[] fabLocation = new int[2];
-        detailedView.getLocationOnScreen(detailedViewLocation);
-        fabView.getLocationOnScreen(fabLocation);
-        float startX = fabLocation[0] + (fabView.getWidth()/2) - detailedViewLocation[0];
-        float startY = fabLocation[1] + (fabView.getHeight()/2) - detailedViewLocation[1];
+    /**
+     * Creates an animation of the viewToAnimate view. It will be animated from it's normal position
+     * to the position of the fromView. The animation will also shrink the view.
+     * @param fromView
+     * @param viewToAnimate
+     * @param duration
+     * @return
+     */
+    private static AnimationSet getCloseAnimation(View fromView, View viewToAnimate, int duration) {
+        int[] viewToAnimateLocation = new int[2];
+        int[] fromViewLocation = new int[2];
+        viewToAnimate.getLocationOnScreen(viewToAnimateLocation);
+        fromView.getLocationOnScreen(fromViewLocation);
+        float startX = fromViewLocation[0] + (fromView.getWidth()/2) - viewToAnimateLocation[0];
+        float startY = fromViewLocation[1] + (fromView.getHeight()/2) - viewToAnimateLocation[1];
         AnimationSet animSet = new AnimationSet(false);
-        Animation scaleDown = AnimationUtils.loadAnimation(fabView.getContext(),
+        Animation scaleDown = AnimationUtils.loadAnimation(fromView.getContext(),
                 R.anim.scale_down_detailed_info);
 
         animSet.addAnimation(scaleDown);
@@ -1361,17 +1436,26 @@ public class MainActivity extends AppCompatActivity implements
         return animSet;
     }
 
-    private static AnimationSet getOpenAnimation(View fabView, View detailedView, int duration) {
+    /**
+     * Creates an animation of the viewToAnimate view. It will be animated from the position of the
+     * fromView to it's normal position. The animation will expand the view from 0% to 100% of it's
+     * normal size.
+     * @param fromView
+     * @param viewToAnimate
+     * @param duration
+     * @return
+     */
+    private static AnimationSet getOpenAnimation(View fromView, View viewToAnimate, int duration) {
         int[] detailedViewLocation = new int[2];
         int[] fabLocation = new int[2];
-        detailedView.getLocationOnScreen(detailedViewLocation);
-        fabView.getLocationOnScreen(fabLocation);
+        viewToAnimate.getLocationOnScreen(detailedViewLocation);
+        fromView.getLocationOnScreen(fabLocation);
 
-        float startX = fabLocation[0] + (fabView.getWidth()/2) - detailedViewLocation[0];
-        float startY = fabLocation[1] + (fabView.getHeight()/2) - detailedViewLocation[1];
+        float startX = fabLocation[0] + (fromView.getWidth()/2) - detailedViewLocation[0];
+        float startY = fabLocation[1] + (fromView.getHeight()/2) - detailedViewLocation[1];
         AnimationSet animSet = new AnimationSet(false);
         animSet.addAnimation(new AlphaAnimation(0, 1));
-        Animation scaleUpAnimation = AnimationUtils.loadAnimation(fabView.getContext(),
+        Animation scaleUpAnimation = AnimationUtils.loadAnimation(fromView.getContext(),
                 R.anim.scale_up_detailed_info);
 
         animSet.addAnimation(scaleUpAnimation);
