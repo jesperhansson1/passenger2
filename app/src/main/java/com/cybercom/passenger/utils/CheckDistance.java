@@ -50,10 +50,6 @@ public class CheckDistance {
                     }
 
 
-                    /*long duration = DistantMatrixAPIHelper.getDurationFromResponse(response, 0, 0);
-                    Timber.d("eta: %s", duration);
-                    System.out.println("response : " + response);*/
-
                 }
             }
 
