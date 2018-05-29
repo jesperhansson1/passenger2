@@ -1237,6 +1237,7 @@ public class MainActivity extends AppCompatActivity implements
         removeFragment(mFragmentManager
                 .findFragmentByTag(DriverPassengerPickUpFragment
                         .DRIVER_PASSENGER_PICK_UP_FRAGMENT_TAG));
+        mMainViewModel.confirmPickUp(passengerRide);
     }
 
     @Override
@@ -1249,6 +1250,7 @@ public class MainActivity extends AppCompatActivity implements
         removeFragment(mFragmentManager
                 .findFragmentByTag(DriverPassengerPickUpFragment
                         .DRIVER_PASSENGER_PICK_UP_FRAGMENT_TAG));
+        mMainViewModel.confirmPickUp(drive.getId());
     }
 
     @Override
@@ -1260,6 +1262,7 @@ public class MainActivity extends AppCompatActivity implements
     public void onDropOffConfirmation(PassengerRide passengerRide) {
         removeFragment(mFragmentManager
                 .findFragmentByTag(DriverDropOffFragment.DRIVER_DROP_OFF_FRAGMENT_TAG));
+        mMainViewModel.confirmDropOff(passengerRide);
     }
 
     @Override

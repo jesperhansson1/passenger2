@@ -5,7 +5,6 @@ import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.location.Location;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.cybercom.passenger.model.Bounds;
 import com.cybercom.passenger.model.Car;
@@ -31,7 +30,6 @@ import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.gson.Gson;
-import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -68,6 +66,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private static final String KEY_PASSENGER_ID = "passengerId";
     private static final String CURRENT_POSITION = "currentPosition";
     private static final String CURRENT_VELOCITY = "currentVelocity";
+    private static final String PICKUP_CONFIRMED = "pickUpConfirmed";
+    private static final String DROPOFF_CONFIRMED = "dropOffConfirmed";
     private static final String LATITUDE = "latitude";
     private static final String LONGITUDE = "longitude";
 
@@ -1097,5 +1097,38 @@ public class PassengerRepository implements PassengerRepositoryInterface {
             latitudeContained = true;
         }
         return (longitudeContained && latitudeContained);
+    }
+
+    public void confirmPickUp(String passengerRideId) {
+        mPassengerRideReference.child(passengerRideId).child(PICKUP_CONFIRMED).setValue(true);
+    }
+
+    public void passengerConfirmPickUp(String driveId) {
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (firebaseUser != null) {
+            String passengerId = firebaseUser.getUid();
+            mPassengerRideReference.orderByChild(DRIVE_ID).equalTo(driveId).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                        PassengerRide passengerRide = snapshot.getValue(PassengerRide.class);
+                        String passengerRideId = snapshot.getKey();
+                        if (passengerRide.getPassengerId().equals(passengerId)) {
+                            mPassengerRideReference.child(passengerRideId).child(PICKUP_CONFIRMED).
+                                    setValue(true);
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
+    }
+
+    public void confirmDropOff(String passengerRideId) {
+        mPassengerRideReference.child(passengerRideId).child(DROPOFF_CONFIRMED).setValue(true);
     }
 }
