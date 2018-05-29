@@ -120,11 +120,11 @@ public class ForegroundServices extends LifecycleService {
                     }
 
                     for (Location location : locationResult.getLocations()) {
-                        mMyLocationMutableLiveData.setValue(location);
                         Timber.d("DriveId %s", driveId);
 
                         mCurrentLocation = location;
                     }
+                    mMyLocationMutableLiveData.setValue(mCurrentLocation);
 
                     float distanceDelta = mCurrentLocation.distanceTo(prevLocation);
                     float timeDelta = Math.abs(mCurrentLocation.getTime() - prevLocation.getTime()) / 1000f;
@@ -177,11 +177,33 @@ public class ForegroundServices extends LifecycleService {
             PassengerRepository.getInstance().getDriverVelocity(driveId).observe(this,
                     velocity -> mDriversVelocity = velocity);
 
+            mLocationCallback = new LocationCallback() {
+                @Override
+                public void onLocationResult(LocationResult locationResult) {
+                    if (locationResult == null) {
+                        return;
+                    }
+
+                    for (Location location : locationResult.getLocations()) {
+                        mCurrentLocation = location;
+                    }
+                    mMyLocationMutableLiveData.setValue(mCurrentLocation);
+                    mPassengerRepository.updatePassengerRideCurrentLocation(mCurrentLocation);
+                }
+            };
+
             mPassengerRepository.getPassengerRideById(passengerRideId).observe(this,
                     passengerRide -> {
                         if (passengerRide == null) return;
                         mPickUpLocation = passengerRide.getPickUpPosition();
                         mDropOffLocation = passengerRide.getDropOffPosition();
+                        boolean isPickUpConfirmed = passengerRide.isPickUpConfirmed();
+
+                        // If passenger is picked up terminate this service
+                        if (!mPickUpConfirmed && isPickUpConfirmed) {
+                            stopLocationUpdates();
+                            stopForeground(true);
+                        }
                         mPickUpConfirmed = passengerRide.isPickUpConfirmed();
                         mDropOffConfirmed = passengerRide.isDropOffConfirmed();
                     });
@@ -194,21 +216,6 @@ public class ForegroundServices extends LifecycleService {
             startScheduledETACalculation();
 
             mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getApplication().getApplicationContext());
-            mLocationCallback = new LocationCallback() {
-                @Override
-                public void onLocationResult(LocationResult locationResult) {
-                    if (locationResult == null) {
-                        return;
-                    }
-
-                    for (Location location : locationResult.getLocations()) {
-                        mMyLocationMutableLiveData.setValue(location);
-
-                        mCurrentLocation = location;
-                    }
-                    mPassengerRepository.updatePassengerRideCurrentLocation(mCurrentLocation);
-                }
-            };
             createLocationRequest();
             startLocationUpdates();
 
@@ -438,6 +445,12 @@ public class ForegroundServices extends LifecycleService {
         mFusedLocationClient.requestLocationUpdates(mLocationRequest,
                 mLocationCallback,
                 Looper.myLooper());
+    }
+
+    public void stopLocationUpdates() {
+        if (mFusedLocationClient != null) {
+            mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+        }
     }
 
     @Override
