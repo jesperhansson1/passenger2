@@ -869,7 +869,7 @@ public class MainActivity extends AppCompatActivity implements
         }
         else
         {
-            mBounds = new Bounds(0.0,0.0,0.0,0.0);
+            mBounds = new Bounds(0.0,0.0,0.0,0.0, 0,0);
         }
     }
 
@@ -977,7 +977,7 @@ public class MainActivity extends AppCompatActivity implements
         switch (type) {
             case User.TYPE_DRIVER:
                 if(mBounds==null) {
-                    mBounds = new Bounds(0.0,0.0,0.0,0.0);
+                    mBounds = new Bounds(0.0,0.0,0.0,0.0, 0, 0);
                 }
                 mMainViewModel.createDrive(time, startLocation, endLocation, seats, mBounds).observe(this,
                         drive -> {

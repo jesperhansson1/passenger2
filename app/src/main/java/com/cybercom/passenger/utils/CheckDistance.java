@@ -1,5 +1,11 @@
 package com.cybercom.passenger.utils;
 
+import android.arch.lifecycle.LifecycleOwner;
+import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.MutableLiveData;
+import android.arch.lifecycle.Observer;
+import android.support.annotation.Nullable;
+
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.repository.networking.DistantMatrixAPIHelper;
 import com.cybercom.passenger.repository.networking.model.DistanceMatrixResponse;
@@ -16,11 +22,12 @@ public class CheckDistance {
     public static final long MIN_DURATION = 1800;
 
     int mPosition = -1;
-    public CheckDistance() {
+    MutableLiveData<Integer> pos = new MutableLiveData<>();
 
+    public CheckDistance() {
     }
 
-    public int calculateETAToPickUpLocation(String start, LatLng pick, LatLng drop) {
+    public void calculateETAToPickUpLocation(String start, LatLng pick, LatLng drop) {
         String pickup = pick.latitude + "," + pick.longitude;
         mPosition = -1;
         DistantMatrixAPIHelper.getInstance().mMatrixAPIService.getDistantMatrix(
@@ -42,14 +49,12 @@ public class CheckDistance {
                             {
                                 minTime = l;
                                 mPosition = i;
-                                System.out.println(mPosition);
+                                System.out.println("position is " + mPosition);
+                                break;
                             }
                             Timber.d("position : duration : %s", i + " : " + l + " : " + minTime);
                         }
-
                     }
-
-
                 }
             }
 
@@ -58,6 +63,5 @@ public class CheckDistance {
                 System.out.println("error");
             }
         });
-        return mPosition;
     }
 }

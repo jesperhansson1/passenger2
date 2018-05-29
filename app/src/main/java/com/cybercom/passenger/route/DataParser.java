@@ -34,6 +34,8 @@ class DataParser {
         JSONArray jsonArrayLegs;
         JSONArray jsonArraySteps;
         JSONObject jsonObjectBounds;
+        String distance = "0"; //in meter
+        String duration = "0"; //in seconds
 
         try {
 
@@ -48,15 +50,28 @@ class DataParser {
                 jsonObjectBounds = ( (JSONObject)jsonArrayRoutes.get(i)).getJSONObject("bounds");
                 JSONObject ne = jsonObjectBounds.getJSONObject("northeast");
 
-                Bounds bounds = new Bounds(Double.parseDouble(jsonObjectBounds.getJSONObject("northeast").get("lat").toString()),
-                        Double.parseDouble(jsonObjectBounds.getJSONObject("northeast").get("lng").toString()),
-                        Double.parseDouble(jsonObjectBounds.getJSONObject("southwest").get("lat").toString()),
-                        Double.parseDouble(jsonObjectBounds.getJSONObject("southwest").get("lng").toString()));
 
-                mDelegate.onBoundsParse(bounds);
 
                 jsonArrayLegs = ( (JSONObject)jsonArrayRoutes.get(i)).getJSONArray("legs");
                 List<HashMap<String, String>> listPath = new ArrayList<>();
+
+                //To get distance and time
+
+                for(int j=0;j<jsonArrayLegs.length();j++) {
+                    System.out.println(((JSONObject) jsonArrayLegs.get(j)).getJSONObject("distance"));
+                    System.out.println(((JSONObject) jsonArrayLegs.get(j)).getJSONObject("duration"));
+                    distance = (((JSONObject)jsonArrayLegs.get(j)).getJSONObject("distance").get("value")).toString();
+                    duration = (((JSONObject)jsonArrayLegs.get(j)).getJSONObject("duration").get("value")).toString();
+                }
+
+                Bounds bounds = new Bounds(Double.parseDouble(jsonObjectBounds.getJSONObject("northeast").get("lat").toString()),
+                        Double.parseDouble(jsonObjectBounds.getJSONObject("northeast").get("lng").toString()),
+                        Double.parseDouble(jsonObjectBounds.getJSONObject("southwest").get("lat").toString()),
+                        Double.parseDouble(jsonObjectBounds.getJSONObject("southwest").get("lng").toString()), Long.parseLong(distance),
+                        Long.parseLong(duration));
+
+                mDelegate.onBoundsParse(bounds);
+
 
                 // Traversing all legs
                 for(int j=0;j<jsonArrayLegs.length();j++){
