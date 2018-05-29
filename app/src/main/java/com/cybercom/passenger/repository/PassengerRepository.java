@@ -304,7 +304,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                         if (driveRequest.getDriverIdBlackList().contains(drive.getDriverId()))
                             Timber.i("No match, driver blacklisted: %s", drive.getDriverId());
 
-                        if(snapshot.hasChild(BOUNDS))
+                        if(snapshot.hasChild(BOUNDS) && snapshot.child(BOUNDS).child(NORTHEAST).child(LATITUDE).getValue() != null)
                         {
                             Bounds bounds = new Bounds(Double.parseDouble(snapshot.child(BOUNDS).child(NORTHEAST).child(LATITUDE).getValue().toString()),
                                     Double.parseDouble(snapshot.child(BOUNDS).child(NORTHEAST).child(LONGITUDE).getValue().toString()),
