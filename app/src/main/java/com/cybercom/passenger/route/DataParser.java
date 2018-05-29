@@ -58,8 +58,8 @@ class DataParser {
                 //To get distance and time
 
                 for(int j=0;j<jsonArrayLegs.length();j++) {
-                    System.out.println(((JSONObject) jsonArrayLegs.get(j)).getJSONObject("distance"));
-                    System.out.println(((JSONObject) jsonArrayLegs.get(j)).getJSONObject("duration"));
+                    Timber.d(((JSONObject) jsonArrayLegs.get(j)).getJSONObject("distance").toString());
+                    Timber.d(((JSONObject) jsonArrayLegs.get(j)).getJSONObject("duration").toString());
                     distance = (((JSONObject)jsonArrayLegs.get(j)).getJSONObject("distance").get("value")).toString();
                     duration = (((JSONObject)jsonArrayLegs.get(j)).getJSONObject("duration").get("value")).toString();
                 }

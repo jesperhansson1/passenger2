@@ -357,8 +357,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                                         if (l < minTime) {
                                             minTime = l;
                                             loc = i;
-                                            System.out.println("position is " + loc);
-                                         //   lkdjfklsdjfklsdklfkds
+                                            Timber.d("position is " + loc);
                                             break;
                                         }
 
@@ -369,7 +368,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                                         {
                                             try
                                             {
-                                                System.out.println("drive id key " + strings.get(loc));
+                                                Timber.d("drive id key " + strings.get(loc));
                                                 bestMatchDriveId = strings.get(loc);
                                                 bestMatch = getDrive(strings.get(loc).toString());
                                                 if (bestMatch != null) {
@@ -410,7 +409,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
                         @Override
                         public void onFailure(Call<DistanceMatrixResponse> call, Throwable t) {
-                            System.out.println("error");
+                            Timber.d("error");
                         }
                     });
                     Timber.d("end position : duration : %s", loc);
@@ -422,7 +421,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
             public void onCancelled(DatabaseError databaseError) {
             }
         });
-        System.out.println("returning " + bestDriveMatch.toString());
+        Timber.d("returning " + bestDriveMatch.toString());
         return bestDriveMatch;
     }
 
@@ -1115,7 +1114,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                         drive = snapshot.getValue(com.cybercom.passenger.repository.databasemodel.Drive.class);
-                        System.out.println("here " + drive.getDriverId() + " : " + drive.getEndLocation());
+                        Timber.d("here " + drive.getDriverId() + " : " + drive.getEndLocation());
                     }
                 }
 
