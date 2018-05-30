@@ -299,7 +299,7 @@ public class ForegroundServices extends LifecycleService {
                     Timber.i("Arrival to pick up location is detected");
                     if(isAppInBackground(this)){
                         showNotification(MainActivity.TYPE_PICK_UP);
-                    }else{
+                    } else {
                         showDialogInUi(MainActivity.TYPE_PICK_UP);
                     }
 
