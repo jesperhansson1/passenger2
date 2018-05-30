@@ -269,7 +269,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     }
 
 
-    public LiveData<Drive> findBestRideMatch(final DriveRequest driveRequest, int radiusMultiplier) {
+    public LiveData<Drive> findBestRideMatch(final DriveRequest driveRequest, int radiusMultiplier, String googleApiKey) {
         final MutableLiveData<Drive> bestDriveMatch = new MutableLiveData<>();
 
         mDrivesReference.addValueEventListener(new ValueEventListener() {
@@ -329,8 +329,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
                     DistantMatrixAPIHelper.getInstance().mMatrixAPIService.getDistantMatrix(
                             stringBuffer.substring(0, stringBuffer.length() - 1).toString(),
-                            pickup,
-                            "AIzaSyDFFhguo8c4JMyaZXtwmcdkvfd33wbjReo").enqueue(new Callback<DistanceMatrixResponse>() {
+                            pickup, googleApiKey).enqueue(new Callback<DistanceMatrixResponse>() {
                         @Override
                         public void onResponse(Call<DistanceMatrixResponse> call, Response<DistanceMatrixResponse> response) {
                             if (response.isSuccessful()) {

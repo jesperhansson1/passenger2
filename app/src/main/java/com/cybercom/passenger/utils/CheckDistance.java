@@ -29,7 +29,7 @@ public class CheckDistance {
     }
 
     public void calculateETAToPickUpLocation(String start, LatLng pick, LatLng drop) {
-        String pickup = pick.latitude + "," + pick.longitude;
+       /* String pickup = pick.latitude + "," + pick.longitude;
         mPosition = -1;
 
         DistantMatrixAPIHelper.getInstance().mMatrixAPIService.getDistantMatrix(
@@ -64,6 +64,6 @@ public class CheckDistance {
             public void onFailure(Call<DistanceMatrixResponse> call, Throwable t) {
                 System.out.println("error");
             }
-        });
+        });*/
     }
 }

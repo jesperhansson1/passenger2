@@ -479,8 +479,9 @@ public class MainActivity extends AppCompatActivity implements
 
     private void matchDriveRequest(final DriveRequest driveRequest, int radiusMultiplier) {
         final LifecycleOwner lifecycleOwner = this;
+        String googleApiKey = getResources().getString(R.string.google_api_key);
 
-        mFindMatch = mMainViewModel.findBestDriveMatch(driveRequest, radiusMultiplier);
+        mFindMatch = mMainViewModel.findBestDriveMatch(driveRequest, radiusMultiplier, googleApiKey);
         showMatchingInProgressDialog();
         mTimer = mMainViewModel.setFindMatchTimer();
 
