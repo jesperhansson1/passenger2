@@ -96,9 +96,6 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private static final String NORTHEAST = "northeast";
     private static final String SOUTHWEST = "southwest";
     public static final long MIN_DURATION = 1800;
-    int mLocationIndex = -1;
-    String mBestMatchDriveId = "";
-    com.cybercom.passenger.repository.databasemodel.Drive mBestMatchDrive = null;
 
     public static PassengerRepository getInstance() {
         if (sPassengerRepository == null) {
@@ -275,8 +272,6 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         mDrivesReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                mBestMatchDrive = null;
-                mBestMatchDriveId = "";
                 //float[] distance = new float[2];
 
                 StringBuffer drivePositionStart = new StringBuffer();
@@ -325,6 +320,10 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                         @Override
                         public void onResponse(Call<DistanceMatrixResponse> call, Response<DistanceMatrixResponse> response) {
                             if (response.isSuccessful()) {
+                                int locationIndex = -1;
+                                String bestMatchDriveId = "";
+                                com.cybercom.passenger.repository.databasemodel.Drive bestMatchDrive = null;
+
                                 int etaListSize = DistantMatrixAPIHelper.getRowsCount(response);
                                 if (etaListSize > 0) {
                                     long minTime = MIN_DURATION;
@@ -332,26 +331,26 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                                         long eta = DistantMatrixAPIHelper.getDurationFromResponse(response, i, 0);
                                         Timber.d("position : duration : %s", i + " : " + eta + " : " + minTime);
                                         if (eta < minTime) {
-                                            mLocationIndex = i;
-                                            Timber.d("position is " + mLocationIndex);
+                                            locationIndex = i;
+                                            Timber.d("position is " + locationIndex);
                                             //Remove break and create hashmap or list or array to add all drives within threshold to pickup location
                                             break;
                                         }
 
                                     }
                                     //check for eta with waypoints for all drives within threshold
-                                    if(mLocationIndex != -1)
+                                    if(locationIndex != -1)
                                     {
                                         if(!listDriveKey.isEmpty())
                                         {
                                             try
                                             {
-                                                Timber.d("drive id key " + listDriveKey.get(mLocationIndex));
-                                                mBestMatchDriveId = listDriveKey.get(mLocationIndex);
-                                                mBestMatchDrive = getDrive(listDriveKey.get(mLocationIndex).toString());
-                                                if (mBestMatchDrive != null) {
-                                                    final com.cybercom.passenger.repository.databasemodel.Drive finalBestMatch = mBestMatchDrive;
-                                                    final String finalBestMatchDriveId = mBestMatchDriveId;
+                                                Timber.d("drive id key " + listDriveKey.get(locationIndex));
+                                                bestMatchDriveId = listDriveKey.get(locationIndex);
+                                                bestMatchDrive = getDrive(listDriveKey.get(locationIndex).toString());
+                                                if (bestMatchDrive != null) {
+                                                    final com.cybercom.passenger.repository.databasemodel.Drive finalBestMatch = bestMatchDrive;
+                                                    final String finalBestMatchDriveId = bestMatchDriveId;
 
                                                     mUsersReference.child(finalBestMatch.getDriverId()).addListenerForSingleValueEvent(new ValueEventListener() {
                                                         @Override
@@ -390,7 +389,6 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                             Timber.d("error");
                         }
                     });
-                    Timber.d("end position : duration : %s", mLocationIndex);
                 }
                // Timber.d("Drives: Best match:  distance: %s, Drive: %s", distance[0], mBestMatchDrive);
             }
