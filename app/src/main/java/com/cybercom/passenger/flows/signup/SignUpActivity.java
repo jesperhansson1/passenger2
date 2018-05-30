@@ -10,13 +10,15 @@ import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -129,7 +131,7 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         mNextButton.setText(R.string.next);
     }
 
-    private void initUI(){
+    private void initUI() {
         mMaleLayout.setSelected(true);
         mMaleTextSelect.setTextColor(getResources().getColor(R.color.colorWhite));
         mFemaleTextSelect.setTextColor(getResources().getColor(R.color.colorBlue));
@@ -138,7 +140,7 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         mSaveRadioButtonAnswer = GENDER_MALE;
 
         mPersonalNumber.setOnFocusChangeListener((v, hasFocus) -> {
-            if(!hasFocus && !mPersonalNumber.getText().toString().isEmpty()) {
+            if (!hasFocus && !mPersonalNumber.getText().toString().isEmpty()) {
                 validatePersonalNumber(mPersonalNumber.getText().toString());
             }
         });
@@ -152,10 +154,34 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         });
 
         mPassword.setOnFocusChangeListener((v, hasFocus) -> {
-            if(!hasFocus && !mPassword.getText().toString().isEmpty()) {
+            if (!hasFocus && !mPassword.getText().toString().isEmpty()) {
                 validatePassword(mPassword.getText().toString());
             }
         });
+
+        TextWatcher textWatcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                enableButtonIfAllFieldsAreValidated();
+            }
+        };
+
+        mFullName.addTextChangedListener(textWatcher);
+        mPhone.addTextChangedListener(textWatcher);
+        mPersonalNumber.addTextChangedListener(textWatcher);
+        mEmail.addTextChangedListener(textWatcher);
+        mPassword.addTextChangedListener(textWatcher);
+
     }
 
     @Override
@@ -248,49 +274,66 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         return filledInTextFields;
     }
 
-    private void validatePhone(String phone){
+    private boolean validatePhone(String phone){
         if(phone.isEmpty()){
             mPhone.setError(getResources().getString(R.string.please_enter_your_phone_number));
+            disableButton();
+            return false;
         }
+        enableButtonIfAllFieldsAreValidated();
+        return true;
     }
 
     private void validatePersonalNumber(String personalNumber){
         if (personalNumber.isEmpty()){
             mPersonalNumber.setError(getResources().getString(R.string.please_enter_your_personal_number));
             mCheckPersonalNumberValidation = false;
+            disableButton();
         } else if(personalNumber.length() == 10 && !ValidatePersonalNumberHelper.hasValidChecksum(
                 personalNumber)){
             mPersonalNumber.setError("The personal number doesn't exist");
+            disableButton();
             mCheckPersonalNumberValidation = false;
         } else if(personalNumber.length() < 10) {
             mPersonalNumber.setError("You have to enter 10 characters for the personal number");
+            disableButton();
             mCheckPersonalNumberValidation = false;
         } else{
             mCheckPersonalNumberValidation = true;
+            enableButtonIfAllFieldsAreValidated();
         }
     }
 
-    private void validateFullName(String fullName){
+    private boolean validateFullName(String fullName){
         if(fullName.isEmpty()){
             mFullName.setError(getResources().getString(R.string.please_enter_your_name));
+            disableButton();
+            return false;
+        } else {
+            enableButtonIfAllFieldsAreValidated();
+            return true;
         }
     }
 
     private void validatePassword(String password){
         if (password.isEmpty()) {
             mPassword.setError(getResources().getString(R.string.please_enter_a_password));
+            disableButton();
             mCheckPasswordValidation = false;
         } else if(password.length() < 6){
             mPassword.setError(getResources().getString(R.string.the_given_password_is_invalid));
+            disableButton();
             mCheckPasswordValidation = false;
         } else{
             mCheckPasswordValidation = true;
+            enableButtonIfAllFieldsAreValidated();
         }
     }
 
     private void validateEmail(String email) {
         if (email.isEmpty()) {
             mEmail.setError(getResources().getString(R.string.please_enter_an_email));
+            disableButton();
             mCheckEmailValidation = false;
         }
 
@@ -298,11 +341,28 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
             mViewModel.validateEmail(email).observe(this, bEmail -> {
                 mCheckEmailValidation = !bEmail;
                 if (bEmail) {
+                    disableButton();
                     mEmail.setError(getResources().getString(
                             R.string.email_address_is_already_in_use_by_another_account));
+                } else {
+                    enableButtonIfAllFieldsAreValidated();
                 }
             });
         }
+    }
+
+    private void enableButtonIfAllFieldsAreValidated() {
+        if (mCheckEmailValidation && mCheckPasswordValidation && mCheckPersonalNumberValidation &&
+                !mFullName.getText().toString().isEmpty() &&
+                !mPhone.getText().toString().isEmpty()) {
+            mNextButton.setEnabled(true);
+        } else {
+            mNextButton.setEnabled(false);
+        }
+    }
+
+    private void disableButton() {
+        mNextButton.setEnabled(false);
     }
 
     private void checkPermissions(Activity activity) {

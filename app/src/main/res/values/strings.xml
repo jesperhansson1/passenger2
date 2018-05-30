@@ -209,6 +209,9 @@
     <string name="notification_update_driver_position">Passenger is currently running in the background</string>
     <string name="tracking_notification_channel">Tracking Channel</string>
     <string name="eta_minutes">%1$dm</string>
-
+    <string name="eta_notification_channel">ETA channel</string>
+    <string name="eta_notification_title">Your ride is expected in %1$d minutes</string>
+    <string name="eta_notification_text">Your ride is expected in %1$d minutes</string>
+    <string name="cancel_drive">Cancel drive</string>
 
 </resources>

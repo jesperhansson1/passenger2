@@ -8,6 +8,9 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.InputFilter;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -80,12 +83,38 @@ public class CarDetailActivity extends AppCompatActivity {
         mEditTextCarModel = findViewById(R.id.editText_cardetails_model);
         mEditTextCarYear = findViewById(R.id.editText_cardetails_year);
         mEditTextCarColor = findViewById(R.id.editText_cardetails_color);
-        /*mEditTextCarModel.setKeyListener(null);
-        mEditTextCarYear.setKeyListener(null);
-        mEditTextCarColor.setKeyListener(null);*/
+
+        mEditTextCarNumber.setFilters(new InputFilter[] {new InputFilter.AllCaps()});
 
         mButtonSave = findViewById(R.id.button_cardetails_save);
         Button buttonFind = findViewById(R.id.button_cardetails_find);
+        mButtonSave.setEnabled(false);
+        buttonFind.setEnabled(false);
+
+        TextWatcher textWatcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (inputsAreValid()) {
+                    mButtonSave.setEnabled(true);
+                    buttonFind.setEnabled(true);
+                } else {
+                    mButtonSave.setEnabled(false);
+                    buttonFind.setEnabled(false);
+                }
+            }
+        };
+
+        mEditTextCarNumber.addTextChangedListener(textWatcher);
 
         buttonFind.setOnClickListener(v -> {
             mEditTextCarModel.setText("");
@@ -109,6 +138,10 @@ public class CarDetailActivity extends AppCompatActivity {
         });
         mErrorDraw = new BitmapDrawable(getResources(),BitmapFactory.decodeResource(getResources(),
                 R.drawable.ic_error));
+    }
+
+    private boolean inputsAreValid() {
+        return !mEditTextCarNumber.getText().toString().isEmpty();
     }
 
     private int checkError(){

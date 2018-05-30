@@ -26,6 +26,7 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.io.IOException;
@@ -106,6 +107,10 @@ public class MainViewModel extends AndroidViewModel {
 
 
         return mPassengerRepository.createDrive(time, startLocation, endLocation, availableSeats, bounds);
+    }
+
+    public void removeCurrentDrive(String driveId, OnCompleteListener onCompleteListener) {
+        mPassengerRepository.removeCurrentDrive(driveId, onCompleteListener);
     }
 
     public LiveData<DriveRequest> createDriveRequest(long time, Position startLocation, Position endLocation, int seats) {
@@ -211,7 +216,9 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     public String getAddressFromLocation(Location location) {
-
+        if (location == null) {
+            return null;
+        }
         List<Address> addresses;
         Geocoder geocoder = new Geocoder(getApplication(), Locale.getDefault());
         try {
@@ -356,5 +363,21 @@ public class MainViewModel extends AndroidViewModel {
 
     public LiveData<Integer> getETA() {
         return mPassengerRepository.getETAInMin();
+    }
+
+    public Drive getMatchedDrive() {
+        return mPassengerRepository.getMatchedDrive();
+    }
+
+    public void confirmPickUp(PassengerRide passengerRide) {
+        mPassengerRepository.confirmPickUp(passengerRide.getId());
+    }
+
+    public void confirmPickUp(String driveId) {
+        mPassengerRepository.passengerConfirmPickUp(driveId);
+    }
+
+    public void confirmDropOff(PassengerRide passengerRide) {
+        mPassengerRepository.confirmDropOff(passengerRide.getId());
     }
 }
