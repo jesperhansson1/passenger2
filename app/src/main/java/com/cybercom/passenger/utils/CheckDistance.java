@@ -25,11 +25,13 @@ public class CheckDistance {
     MutableLiveData<Integer> pos = new MutableLiveData<>();
 
     public CheckDistance() {
+
     }
 
     public void calculateETAToPickUpLocation(String start, LatLng pick, LatLng drop) {
         String pickup = pick.latitude + "," + pick.longitude;
         mPosition = -1;
+
         DistantMatrixAPIHelper.getInstance().mMatrixAPIService.getDistantMatrix(
                 start,
                 pickup,
