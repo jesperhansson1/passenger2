@@ -500,8 +500,9 @@ public class MainActivity extends AppCompatActivity implements
 
     private void matchDriveRequest(final DriveRequest driveRequest, int radiusMultiplier) {
         final LifecycleOwner lifecycleOwner = this;
+        String googleApiKey = getResources().getString(R.string.google_api_key);
 
-        mFindMatch = mMainViewModel.findBestDriveMatch(driveRequest, radiusMultiplier);
+        mFindMatch = mMainViewModel.findBestDriveMatch(driveRequest, radiusMultiplier, googleApiKey);
         showMatchingInProgressDialog();
         mTimer = mMainViewModel.setFindMatchTimer();
 
@@ -903,7 +904,7 @@ public class MainActivity extends AppCompatActivity implements
         if (bounds != null) {
             mBounds = bounds;
         } else {
-            mBounds = new Bounds(0.0, 0.0, 0.0, 0.0);
+            mBounds = new Bounds(0.0, 0.0, 0.0, 0.0, 0, 0);
         }
     }
 
@@ -1015,8 +1016,8 @@ public class MainActivity extends AppCompatActivity implements
         mCreateDriveFragment.hideCreateDialogCompletely();
         switch (type) {
             case User.TYPE_DRIVER:
-                if (mBounds == null) {
-                    mBounds = new Bounds(0.0, 0.0, 0.0, 0.0);
+                if(mBounds == null) {
+                    mBounds = new Bounds(0.0,0.0,0.0,0.0, 0, 0);
                 }
                 mMainViewModel.createDrive(time, startLocation, endLocation, seats, mBounds)
                         .observe(this,drive -> {

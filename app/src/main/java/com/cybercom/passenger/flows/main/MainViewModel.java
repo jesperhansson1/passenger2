@@ -117,9 +117,9 @@ public class MainViewModel extends AndroidViewModel {
         return mPassengerRepository.createDriveRequest(time, startLocation, endLocation, seats);
     }
 
-    public LiveData<Drive> findBestDriveMatch(DriveRequest driveRequest, int radiusMultiplier) {
+    public LiveData<Drive> findBestDriveMatch(DriveRequest driveRequest, int radiusMultiplier, String googleApiKey) {
         mMostRecentDriveRequest = driveRequest;
-        return mPassengerRepository.findBestRideMatch(driveRequest, radiusMultiplier);
+        return mPassengerRepository.findBestRideMatch(driveRequest, radiusMultiplier, googleApiKey);
     }
 
     public void addRequestDriveNotification(DriveRequest driveRequest, Drive drive) {

@@ -15,6 +15,8 @@ import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.repository.databasemodel.PassengerRide;
 import com.cybercom.passenger.repository.databasemodel.utils.DatabaseModelHelper;
+import com.cybercom.passenger.repository.networking.DistantMatrixAPIHelper;
+import com.cybercom.passenger.repository.networking.model.DistanceMatrixResponse;
 import com.cybercom.passenger.utils.LocationHelper;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -38,6 +40,9 @@ import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 import timber.log.Timber;
 
 public class PassengerRepository implements PassengerRepositoryInterface {
@@ -70,6 +75,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private static final String DROPOFF_CONFIRMED = "dropOffConfirmed";
     private static final String LATITUDE = "latitude";
     private static final String LONGITUDE = "longitude";
+    private static final String DISTANCEM = "distance";
+    private static final String DURATIONS = "duration";
 
     public static final int DEFAULT_DRIVE_REQUEST_RADIUS = 700;
 
@@ -83,13 +90,9 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private FirebaseAuth mAuth = FirebaseAuth.getInstance();
     private DatabaseReference mCarsReference;
     private MutableLiveData<List<Car>> mCarList;
-
     private BlockingQueue<Notification> mNotificationQueue = new LinkedBlockingQueue<>();
-
     private MutableLiveData<Notification> mNotification = new MutableLiveData<>();
-
     MutableLiveData<Integer> mEtaLiveData = new MutableLiveData<>();
-
     private User mCurrentlyLoggedInUser;
     private MutableLiveData<Location> mDriverCurrentLocation = new MutableLiveData<>();
     private float mDriverCurrentVelocity = 0;
@@ -98,16 +101,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private static final String BOUNDS = "bounds";
     private static final String NORTHEAST = "northeast";
     private static final String SOUTHWEST = "southwest";
+    public static final long MIN_DURATION = 1800;
     private Drive mMatchedDrive;
-
-    /*double mNorthEastLatitude;
-    double mNorthEastLongitude;
-    double mSouthWestLatitude;
-    double mSouthWestLongitude;
-    Bounds mBounds;
-    private static final String DRIVE_STATUS = "status";
-    private static final String ACTIVE_STATUS = "active";
-    private static final String HISTORY_STATUS = "history";*/
 
     public static PassengerRepository getInstance() {
         if (sPassengerRepository == null) {
@@ -278,29 +273,20 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     }
 
 
-    public LiveData<Drive> findBestRideMatch(final DriveRequest driveRequest, int radiusMultiplier) {
-
+    public LiveData<Drive> findBestRideMatch(final DriveRequest driveRequest, int radiusMultiplier, String googleApiKey) {
         final MutableLiveData<Drive> bestDriveMatch = new MutableLiveData<>();
 
         mDrivesReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                com.cybercom.passenger.repository.databasemodel.Drive bestMatch = null;
-                float shortestDistance = 0;
-                String bestMatchDriveId = "";
-                float[] distance = new float[2];
+                //float[] distance = new float[2];
 
+                StringBuffer drivePositionStart = new StringBuffer();
+                List<String> listDriveKey = new ArrayList<>();
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     com.cybercom.passenger.repository.databasemodel.Drive drive = snapshot.getValue(com.cybercom.passenger.repository.databasemodel.Drive.class);
 
                     if (drive != null && Math.abs(driveRequest.getTime() - drive.getTime()) < DRIVE_REQUEST_MATCH_TIME_THRESHOLD) {
-                        Location.distanceBetween(driveRequest.getStartLocation().getLatitude(), driveRequest.getStartLocation().getLongitude(),
-                                drive.getStartLocation().getLatitude(), drive.getStartLocation().getLongitude(), distance);
-
-                        Timber.d("Drives: distance: %s, driveRequest: lat: %s, lng: %s, drive: lat %s, lng %s",
-                                distance[0], driveRequest.getStartLocation().getLatitude(), driveRequest.getEndLocation().getLongitude(),
-                                drive.getStartLocation().getLatitude(), drive.getStartLocation().getLongitude());
-
                         if (driveRequest.getDriverIdBlackList().contains(drive.getDriverId()))
                             Timber.i("No match, driver blacklisted: %s", drive.getDriverId());
 
@@ -309,58 +295,69 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                             Bounds bounds = new Bounds(Double.parseDouble(snapshot.child(BOUNDS).child(NORTHEAST).child(LATITUDE).getValue().toString()),
                                     Double.parseDouble(snapshot.child(BOUNDS).child(NORTHEAST).child(LONGITUDE).getValue().toString()),
                                     Double.parseDouble(snapshot.child(BOUNDS).child(SOUTHWEST).child(LATITUDE).getValue().toString()),
-                                    Double.parseDouble(snapshot.child(BOUNDS).child(SOUTHWEST).child(LONGITUDE).getValue().toString()));
-
-                            Timber.d(bounds.toString());
-
-                            /*GpsLocations gpsLocations = new GpsLocations();
-                            LatLng start = gpsLocations.getLocations(radiusMultiplier,
-                                    new LatLng(bounds.getNorthEastLatitude(),bounds.getNorthEastLongitude()),
-                                    new LatLng(bounds.getSouthWestLatitude(),bounds.getSouthWestLongitude()));
-
-                            LatLng end = gpsLocations.getLocations(radiusMultiplier,
-                                    new LatLng(bounds.getSouthWestLatitude(),bounds.getSouthWestLongitude()),
-                                    new LatLng(bounds.getNorthEastLatitude(),bounds.getNorthEastLongitude()));
-                            Bounds bounds1 = new Bounds(start.latitude,start.longitude,end.latitude,end.longitude);
-
-                            Timber.d("start " + start.latitude + " : " + start.longitude);
-                            Timber.d("end " + end.latitude + " : " + end.longitude);*/
-
+                                    Double.parseDouble(snapshot.child(BOUNDS).child(SOUTHWEST).child(LONGITUDE).getValue().toString()),
+                                    Long.parseLong(snapshot.child(BOUNDS).child(DISTANCEM).getValue().toString()),
+                                    Long.parseLong(snapshot.child(BOUNDS).child(DURATIONS).getValue().toString()));
+                            Timber.d("bounds " + bounds.toString());
                             bounds.setNewBounds(radiusMultiplier);
                             //Check for start position and end position
                             if(contains(bounds,driveRequest.getStartLocation().getLatitude(),driveRequest.getStartLocation().getLongitude())){
                                 if(contains(bounds,driveRequest.getEndLocation().getLatitude(),driveRequest.getEndLocation().getLongitude()))
                                 {
+                                    listDriveKey.add(snapshot.getKey());
+                                    drivePositionStart.append(drive.getStartLocation().getLatitude()+","+drive.getStartLocation().getLongitude());
+                                    drivePositionStart.append("|");
                                     Timber.d("Match found");
-
-                                    bestMatch = drive;
-                                    bestMatchDriveId = snapshot.getKey();
-                                   // shortestDistance = distance[0];
                                 }
                             }
                         }
-
-                        /*if (distance[0] < DEFAULT_DRIVE_REQUEST_RADIUS * radiusMultiplier && !driveRequest.getDriverIdBlackList().contains(drive.getDriverId())) {
-                            if (bestMatch == null) {
-                                bestMatch = drive;
-                                bestMatchDriveId = snapshot.getKey();
-                                shortestDistance = distance[0];
-                            } else if (distance[0] < shortestDistance) {
-                                bestMatch = drive;
-                                bestMatchDriveId = snapshot.getKey();
-                                shortestDistance = distance[0];
-                            }
-                        }*/
                     } else {
                         Timber.d("Drives: Out of time frame!");
                     }
                 }
-                Timber.d("Drives: Best match:  distance: %s, Drive: %s", distance[0], bestMatch);
+
+                if(drivePositionStart.length()>1) {
+                    LatLng pick = new LatLng(driveRequest.getStartLocation().getLatitude(), driveRequest.getStartLocation().getLongitude());
+                    String pickup = pick.latitude + "," + pick.longitude;
 
 
-                if (bestMatch != null) {
-                    final com.cybercom.passenger.repository.databasemodel.Drive finalBestMatch = bestMatch;
-                    final String finalBestMatchDriveId = bestMatchDriveId;
+                    DistantMatrixAPIHelper.getInstance().mMatrixAPIService.getDistantMatrix(
+                            drivePositionStart.substring(0, drivePositionStart.length() - 1).toString(),
+                            pickup, googleApiKey).enqueue(new Callback<DistanceMatrixResponse>() {
+                        @Override
+                        public void onResponse(Call<DistanceMatrixResponse> call, Response<DistanceMatrixResponse> response) {
+                            if (response.isSuccessful()) {
+                                int locationIndex = -1;
+                                String bestMatchDriveId = "";
+                                com.cybercom.passenger.repository.databasemodel.Drive bestMatchDrive = null;
+
+                                int etaListSize = DistantMatrixAPIHelper.getRowsCount(response);
+                                if (etaListSize > 0) {
+                                    long minTime = MIN_DURATION;
+                                    for (int i = 0; i < etaListSize; i++) {
+                                        long eta = DistantMatrixAPIHelper.getDurationFromResponse(response, i, 0);
+                                        Timber.d("position : duration : %s", i + " : " + eta + " : " + minTime);
+                                        if (eta < minTime) {
+                                            locationIndex = i;
+                                            Timber.d("position is " + locationIndex);
+                                            //Remove break and create hashmap or list or array to add all drives within threshold to pickup location
+                                            break;
+                                        }
+
+                                    }
+                                    //check for eta with waypoints for all drives within threshold
+                                    if(locationIndex != -1)
+                                    {
+                                        if(!listDriveKey.isEmpty())
+                                        {
+                                            try
+                                            {
+                                                Timber.d("drive id key " + listDriveKey.get(locationIndex));
+                                                bestMatchDriveId = listDriveKey.get(locationIndex);
+                                                bestMatchDrive = getDrive(listDriveKey.get(locationIndex).toString());
+                                                if (bestMatchDrive != null) {
+                                                    final com.cybercom.passenger.repository.databasemodel.Drive finalBestMatch = bestMatchDrive;
+                                                    final String finalBestMatchDriveId = bestMatchDriveId;
 
                     mUsersReference.child(finalBestMatch.getDriverId()).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
@@ -376,20 +373,41 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                             bestDriveMatch.setValue(mMatchedDrive);
                         }
 
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
+                                                        @Override
+                                                        public void onCancelled(DatabaseError databaseError) {
 
+                                                        }
+                                                    });
+                                                } else {
+                                                    bestDriveMatch.setValue(null);
+                                                }
+
+
+                                            }
+                                            catch(Exception e)
+                                            {
+                                                Timber.e(e.getLocalizedMessage());
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<DistanceMatrixResponse> call, Throwable t) {
+                            Timber.d("error");
                         }
                     });
-                } else {
-                    bestDriveMatch.setValue(null);
                 }
+               // Timber.d("Drives: Best match:  distance: %s, Drive: %s", distance[0], mBestMatchDrive);
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
             }
         });
+        Timber.d("returning best drive match" + bestDriveMatch.toString());
         return bestDriveMatch;
     }
 
@@ -601,6 +619,10 @@ public class PassengerRepository implements PassengerRepositoryInterface {
             swBounds.put(LONGITUDE, bounds.getSouthWestLongitude());
             mDrivesReference.child(driveId).child(BOUNDS).child(SOUTHWEST).setValue(swBounds);
             mDrivesReference.child(driveId).child(BOUNDS).child(NORTHEAST).setValue(neBounds);
+
+            mDrivesReference.child(driveId).child(BOUNDS).child(DISTANCEM).setValue(bounds.getDistance());
+            mDrivesReference.child(driveId).child(BOUNDS).child(DURATIONS).setValue(bounds.getDuration());
+
             //--------
             mUsersReference.child(firebaseUser.getUid()).addValueEventListener(
                     new ValueEventListener() {
@@ -1096,7 +1118,30 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         if (swLatitude < neLatitude && (swLatitude < latitude && latitude < neLatitude)) {
             latitudeContained = true;
         }
+
+
         return (longitudeContained && latitudeContained);
+    }
+
+    com.cybercom.passenger.repository.databasemodel.Drive drive;
+
+    public com.cybercom.passenger.repository.databasemodel.Drive getDrive(String driveKey)
+    {
+        mDrivesReference.orderByKey().equalTo(driveKey).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                        drive = snapshot.getValue(com.cybercom.passenger.repository.databasemodel.Drive.class);
+                        Timber.d("here " + drive.getDriverId() + " : " + drive.getEndLocation());
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    Timber.d(databaseError.getMessage());
+                }
+            });
+            return drive;
     }
 
     public void confirmPickUp(String passengerRideId) {

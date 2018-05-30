@@ -31,7 +31,7 @@ interface PassengerRepositoryInterface {
 
     LiveData<DriveRequest> createDriveRequest(long time, Position startLocation, Position endLocation, int availableSeats);
 
-    LiveData<Drive> findBestRideMatch(final DriveRequest driveRequest, int radiusMultiplier);
+    LiveData<Drive> findBestRideMatch(final DriveRequest driveRequest, int radiusMultiplier, String googleApiKey);
 
     void createCar(String carId, String userId, Car car);
 

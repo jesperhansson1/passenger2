@@ -54,6 +54,19 @@ public class DistantMatrixAPIHelper {
 
     /**
      * @param response the response
+     * @return Number of rows in int
+     */
+    public static int getRowsCount(Response<DistanceMatrixResponse> response)
+    {
+        if (response.body() != null) {
+            return response.body().getRows().size();
+        }
+        return -1;
+    }
+
+
+    /**
+     * @param response the response
      * @param rowIndex row index
      * @param elementIndex element index
      * @return The distance in meters

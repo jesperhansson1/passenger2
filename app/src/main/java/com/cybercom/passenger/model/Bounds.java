@@ -13,6 +13,8 @@ public class Bounds {
     double mNorthEastLongitude;
     double mSouthWestLatitude;
     double mSouthWestLongitude;
+    long mDistance;
+    long mDuration;
 
     public static final double NORTH_EAST_BEARING = 45.0;
     public static final double SOUTH_WEST_BEARING = 225.0;
@@ -24,11 +26,14 @@ public class Bounds {
 
     }
 
-    public Bounds(double northEastLatitude, double northEastLongitude, double southWestLatitude, double southWestLongitude) {
+    public Bounds(double northEastLatitude, double northEastLongitude, double southWestLatitude, double southWestLongitude, long distance, long duration) {
         mNorthEastLatitude = northEastLatitude;
         mNorthEastLongitude = northEastLongitude;
         mSouthWestLatitude = southWestLatitude;
         mSouthWestLongitude = southWestLongitude;
+        mDistance = distance;
+        mDuration = duration;
+
     }
 
     public void setNewBounds(int multiplier)
@@ -109,4 +114,19 @@ public class Bounds {
         return new LatLng(toDegrees(latitudeResult),toDegrees(longitudeResult));
     }
 
+    public long getDistance() {
+        return mDistance;
+    }
+
+    public void setDistance(long distance) {
+        mDistance = distance;
+    }
+
+    public long getDuration() {
+        return mDuration;
+    }
+
+    public void setDuration(long duration) {
+        mDuration = duration;
+    }
 }
