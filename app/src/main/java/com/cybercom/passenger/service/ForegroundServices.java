@@ -49,9 +49,9 @@ public class ForegroundServices extends LifecycleService {
 
     public static final int TIME_BETWEEN_ETA_LOOKUPS_DELAY_MILLIS = 30 * 1000;
     private static final long FIRST_TIME_ETA_LOOKUP_DELAY_MILLIS = 2000;
-    private static final long FIRST_ETA_NOTIFICATION_TIME_MIN = 60 * 10;
-    private static final long SECOND_ETA_NOTIFICATION_TIME_MIN = 60 * 7;
-    private static final long THIRD_ETA_NOTIFICATION_TIME_MIN = 60 * 3;
+    private static final long FIRST_ETA_NOTIFICATION_TIME_SECONDS = 60 * 10;
+    private static final long SECOND_ETA_NOTIFICATION_TIME_SECONDS = 60 * 7;
+    private static final long THIRD_ETA_NOTIFICATION_TIME_SECONDS = 60 * 3;
     public static final int DISTANCE_FOR_DETECTING_ARRIVAL_OF_DRIVER = 50;
     private static final long TIME_BETWEEN_ARRIVAL_DETECTION = 1000;
     private static final Float DRIVER_VELOCITY_THRESHOLD = 3f;
@@ -465,6 +465,10 @@ public class ForegroundServices extends LifecycleService {
         return null;
     }
 
+
+    /**
+     * @param time The estimated time of arrival (in minutes) to be displayed
+     */
     private void showETANotification(int time) {
         Intent resultIntent = new Intent(this, MainActivity.class);
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
@@ -486,11 +490,11 @@ public class ForegroundServices extends LifecycleService {
     }
 
     private void sendETANotificationIfItIsTime(long eTA, long lastETA) {
-        if ((eTA < FIRST_ETA_NOTIFICATION_TIME_MIN && lastETA > FIRST_ETA_NOTIFICATION_TIME_MIN) |
-                (eTA < SECOND_ETA_NOTIFICATION_TIME_MIN && lastETA > SECOND_ETA_NOTIFICATION_TIME_MIN) |
-                (eTA < THIRD_ETA_NOTIFICATION_TIME_MIN && lastETA > THIRD_ETA_NOTIFICATION_TIME_MIN)) {
+        if ((eTA < FIRST_ETA_NOTIFICATION_TIME_SECONDS && lastETA > FIRST_ETA_NOTIFICATION_TIME_SECONDS) |
+                (eTA < SECOND_ETA_NOTIFICATION_TIME_SECONDS && lastETA > SECOND_ETA_NOTIFICATION_TIME_SECONDS) |
+                (eTA < THIRD_ETA_NOTIFICATION_TIME_SECONDS && lastETA > THIRD_ETA_NOTIFICATION_TIME_SECONDS)) {
 
-            showETANotification((int) eTA);
+            showETANotification(Math.round(eTA / 60));
         }
     }
     public boolean isAppInBackground(Context context) {
