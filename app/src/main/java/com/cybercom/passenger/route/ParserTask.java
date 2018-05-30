@@ -3,56 +3,37 @@ package com.cybercom.passenger.route;
 import android.graphics.Color;
 import android.os.AsyncTask;
 
-import com.cybercom.passenger.model.Bounds;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.maps.model.PolylineOptions;
-
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import timber.log.Timber;
 
-public class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String, String>>>> {
-
-    private static final int ROUTE_WIDTH = 10;
-    private static final int ROUTE_COLOR = Color.rgb(6, 182, 239);
+public class ParserTask extends AsyncTask<String, Integer, List<Route>> {
 
     public interface OnRouteCompletion{
-        void onRouteDrawn(Polyline route);
-        void onBoundsParse(Bounds bounds);
+        void onRoutesFetched(List<Route> routes);
     }
 
     private OnRouteCompletion mDelegate;
 
-    private GoogleMap mGoogleMap;
-
-    ParserTask(GoogleMap googleMap, OnRouteCompletion caller) {
-        mGoogleMap = googleMap;
+    ParserTask(OnRouteCompletion caller) {
         mDelegate = caller;
     }
 
+
+
     // Parsing the data in non-ui thread
     @Override
-    protected List<List<HashMap<String, String>>> doInBackground(String... jsonData) {
-
-        JSONObject jsonObject;
-        List<List<HashMap<String, String>>> listRoutes = null;
+    protected List<Route> doInBackground(String... jsonData) {
+        List<Route> listRoutes = new ArrayList<>();
 
         try {
-            jsonObject = new JSONObject(jsonData[0]);
-            Timber.d(jsonData[0]);
-            DataParser parser = new DataParser(mDelegate);
-            Timber.d(parser.toString());
-
+            JSONObject jsonObject = new JSONObject(jsonData[0]);
             // Starts parsing data
-            listRoutes = parser.parse(jsonObject);
-            Timber.d("Executing routes");
-            Timber.d(listRoutes.toString());
+            listRoutes = DataParser.parseRoutes(jsonObject);
+            Timber.d("Executing routes: " +listRoutes.toString());
 
         } catch (Exception exception) {
             Timber.e(exception.getLocalizedMessage());
@@ -62,28 +43,21 @@ public class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<Str
 
     // Executes in UI thread, after the parsing process
     @Override
-    protected void onPostExecute(List<List<HashMap<String, String>>> result) {
+    protected void onPostExecute(List<Route> result) {
+        mDelegate.onRoutesFetched(result);
+        /*
         ArrayList<LatLng> points;
         PolylineOptions polylineOptions = null;
 
         // Traversing through all the routes
-        for (int i = 0; i < result.size(); i++) {
+        for (Route route : result) {
             points = new ArrayList<>();
             polylineOptions = new PolylineOptions();
 
-            // Fetching i-th route
-            List<HashMap<String, String>> listPath = result.get(i);
-
+            route.getPolyline();
             // Fetching all the points in i-th route
-            for (int j = 0; j < listPath.size(); j++) {
-                HashMap<String, String> hashmapPoint = listPath.get(j);
 
-                double latitude = Double.parseDouble(hashmapPoint.get("lat"));
-                double langitude = Double.parseDouble(hashmapPoint.get("lng"));
-                LatLng latLngPosition = new LatLng(latitude, langitude);
-
-                points.add(latLngPosition);
-            }
+            points.add(latLngPosition);
 
             // Adding all the points in the route to LineOptions
             polylineOptions.addAll(points);
@@ -93,16 +67,12 @@ public class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<Str
             Timber.d("onPostExecute lineoptions decoded");
         }
 
-        // Drawing polyline in the Google Map for the i-th route
-        if(polylineOptions != null) {
+        if (polylineOptions != null) {
             Timber.d(String.valueOf(polylineOptions));
-            if(mGoogleMap!=null) {
-                Polyline route = mGoogleMap.addPolyline(polylineOptions);
-                mDelegate.onRouteDrawn(route);
-            }
+            mDelegate.onRouteDrawn(polylineOptions);
+        } else {
+            Timber.d("Polyline was null");
         }
-        else {
-            Timber.d("without Polylines drawn");
-        }
+        */
     }
 }

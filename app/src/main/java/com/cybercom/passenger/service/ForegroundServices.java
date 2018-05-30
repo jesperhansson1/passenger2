@@ -99,7 +99,7 @@ public class ForegroundServices extends LifecycleService {
         Bundle extras = intent.getExtras();
         String driveId = extras.getString(INTENT_EXTRA_DRIVE_ID);
         String passengerRideId = extras.getString(INTENT_EXTRA_PASSENGER_RIDE_ID);
-        //Uppdatera Drivers position
+        //Update Drivers position
         if (intent.getAction().equals(Constants.ACTION.STARTFOREGROUND_UPDATE_DRIVER_POSITION)) {
 
             mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getApplication().getApplicationContext());
@@ -403,6 +403,7 @@ public class ForegroundServices extends LifecycleService {
         Timber.d("mDriverPos %s , %S", mDriversPosition.getLatitude(), mDriversPosition.getLongitude());
         Timber.d("mPickUpLocation %s , %S", mPickUpLocation.getLatitude(), mPickUpLocation.getLongitude());
 
+        // TODO, this information is in the route/leg..
         DistantMatrixAPIHelper.getInstance().mMatrixAPIService.getDistantMatrix(
                 LocationHelper.getStringFromLatLng(
                         mDriversPosition.getLatitude(), mDriversPosition.getLongitude()),
