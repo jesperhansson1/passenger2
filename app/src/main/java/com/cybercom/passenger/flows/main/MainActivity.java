@@ -42,6 +42,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
+import com.cybercom.passenger.BuildConfig;
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.createridefragment.CreateDriveFragment;
 import com.cybercom.passenger.flows.driverconfirmation.AcceptRejectPassengerDialog;
@@ -179,8 +180,13 @@ public class MainActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Timber.i("First log info");
-        Fabric.with(this, new Crashlytics());
+
+        if (!BuildConfig.DEBUG) {
+            Timber.i("This is the release version");
+            Fabric.with(this, new Crashlytics());
+        } else {
+            Timber.i("This is the debug version");
+        }
 
         mMainViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
         mFragmentManager = getSupportFragmentManager();
