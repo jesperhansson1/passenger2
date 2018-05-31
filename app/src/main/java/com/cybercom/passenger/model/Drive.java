@@ -10,17 +10,23 @@ public class Drive implements Serializable {
     private long mTime;
     private Position mStartLocation;
     private Position mEndLocation;
+    private Position mCurrentPosition;
+    private float mCurrentVelocity;
     private int mAvailableSeats;
+
 
     public Drive(){}
 
-    public Drive(String id, User driver, long time, Position startLocation, Position endLocation, int availableSeats) {
+    public Drive(String id, User driver, long time, Position startLocation, Position endLocation,
+                 int availableSeats, Position currentPosition, float currentVelocity) {
         mId = id;
         mDriver = driver;
         mTime = time;
         mStartLocation = startLocation;
         mEndLocation = endLocation;
         mAvailableSeats = availableSeats;
+        mCurrentPosition = currentPosition;
+        mCurrentVelocity = currentVelocity;
     }
 
     public User getDriver() {
@@ -71,6 +77,8 @@ public class Drive implements Serializable {
                 ", mStartLocation=" + mStartLocation +
                 ", mEndLocation=" + mEndLocation +
                 ", mAvailableSeats=" + mAvailableSeats +
+                ", mCurrentPosition=" + mCurrentPosition +
+                ", mCurrentVelocity=" + mCurrentVelocity +
                 '}';
     }
 
@@ -80,5 +88,21 @@ public class Drive implements Serializable {
 
     public void setId(String mId) {
         this.mId = mId;
+    }
+
+    public Position getCurrentPosition() {
+        return mCurrentPosition;
+    }
+
+    public void setCurrentPosition(Position currentPosition) {
+        this.mCurrentPosition = currentPosition;
+    }
+
+    public float getCurrentVelocity() {
+        return mCurrentVelocity;
+    }
+
+    public void setCurrentVelocity(float currentVelocity) {
+        this.mCurrentVelocity = currentVelocity;
     }
 }

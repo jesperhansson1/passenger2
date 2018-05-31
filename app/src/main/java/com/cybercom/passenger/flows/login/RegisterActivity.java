@@ -12,9 +12,13 @@ import com.cybercom.passenger.flows.signup.SignUpActivity;
 
 public class RegisterActivity extends AppCompatActivity implements View.OnClickListener{
 
-    String mType, mPassenger, mDriver, mLogin, mRegister;
-    Button mLoginButton;
-    ProgressBar progressBar;
+    private String mType;
+    private String mPassenger;
+    private String mDriver;
+    private String mLogin;
+    private String mRegister;
+    private Button mLoginButton;
+    private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +63,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         }
     }
 
-    public void startActivityNext(Class target){
+    private void startActivityNext(Class target) {
         Intent newIntent = new Intent(getApplicationContext(),target);
         newIntent.putExtra(mRegister,mType);
         startActivity(newIntent);

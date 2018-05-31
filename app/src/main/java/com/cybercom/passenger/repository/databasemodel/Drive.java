@@ -8,16 +8,20 @@ public class Drive {
     private long mTime;
     private Position mStartLocation;
     private Position mEndLocation;
+    private Position mCurrentPosition;
+    private float mCurrentVelocity;
     private int mAvailableSeats;
 
     public Drive() {}
 
-    public Drive(String driverId, long time, Position startLocation, Position endLocation, int availableSeats) {
+    public Drive(String driverId, long time, Position startLocation, Position endLocation, int availableSeats, Position currentPosition, float currentVelocity) {
         mDriverId = driverId;
         mTime = time;
         mStartLocation = startLocation;
         mEndLocation = endLocation;
         mAvailableSeats = availableSeats;
+        mCurrentPosition = currentPosition;
+        mCurrentVelocity = currentVelocity;
     }
 
     public String getDriverId() {
@@ -65,9 +69,27 @@ public class Drive {
         return "Drive{" +
                 "mDriverId=" + mDriverId +
                 ", mTime=" + mTime +
+                ", mCurrentPosition =" + mCurrentPosition +
+                ", mCurrentVelocity =" + mCurrentVelocity +
                 ", mStartLocation=" + mStartLocation +
                 ", mEndLocation=" + mEndLocation +
                 ", mAvailableSeats=" + mAvailableSeats +
                 '}';
+    }
+
+    public Position getCurrentPosition() {
+        return mCurrentPosition;
+    }
+
+    public void setCurrentPosition(Position currentPosition) {
+        this.mCurrentPosition = currentPosition;
+    }
+
+    public float getCurrentVelocity() {
+        return mCurrentVelocity;
+    }
+
+    public void setCurrentVelocity(float currentVelocity) {
+        this.mCurrentVelocity = currentVelocity;
     }
 }

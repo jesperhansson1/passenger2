@@ -13,9 +13,11 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 
+import com.cybercom.passenger.model.Bounds;
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Notification;
+import com.cybercom.passenger.model.PassengerRide;
 import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.repository.PassengerRepository;
@@ -24,6 +26,7 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.io.IOException;
@@ -41,6 +44,11 @@ public class MainViewModel extends AndroidViewModel {
     public static final double LOWER_LEFT_LONGITUDE = 10.5798;
     public static final double UPPER_RIGHT_LATITUDE = 69.0599709;
     public static final double UPPER_RIGHT_LONGITUDE = 24.1773101;
+    private static final int INTERVAL = 1000;
+    private static final int FASTEST_INTERVAL = 1000;
+
+    public static final int DRIVE_REQUEST_DEFAULT_MULTIPLIER = 1;
+    public static final int DRIVE_REQUEST_INCREASE_MULTIPLIER_BY_ONE = 1;
 
     private FusedLocationProviderClient mFusedLocationClient;
     private PassengerRepository mPassengerRepository = PassengerRepository.getInstance();
@@ -49,7 +57,9 @@ public class MainViewModel extends AndroidViewModel {
     private LocationCallback mLocationCallback;
     private LocationRequest mLocationRequest;
     private LiveData<Notification> mIncomingNotification;
-    private LiveData<Drive> mFindBestDriveMatch;
+    private DriveRequest mMostRecentDriveRequest;
+
+    private int mDriveRequestRadiusMultiplier;
 
     public MainViewModel(@NonNull Application application) {
         super(application);
@@ -87,22 +97,29 @@ public class MainViewModel extends AndroidViewModel {
 
     private void createLocationRequest() {
         mLocationRequest = LocationRequest.create();
-        mLocationRequest.setInterval(10000);
-        mLocationRequest.setFastestInterval(5000);
+        mLocationRequest.setInterval(INTERVAL);
+        mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 
-    public LiveData<Drive> createDrive(long time, Position startLocation, Position endLocation, int availableSeats) {
-        return mPassengerRepository.createDrive(time, startLocation, endLocation, availableSeats);
+    public LiveData<Drive> createDrive(long time, Position startLocation, Position endLocation,
+                                       int availableSeats, Bounds bounds) {
+
+
+        return mPassengerRepository.createDrive(time, startLocation, endLocation, availableSeats, bounds);
+    }
+
+    public void removeCurrentDrive(String driveId, OnCompleteListener onCompleteListener) {
+        mPassengerRepository.removeCurrentDrive(driveId, onCompleteListener);
     }
 
     public LiveData<DriveRequest> createDriveRequest(long time, Position startLocation, Position endLocation, int seats) {
         return mPassengerRepository.createDriveRequest(time, startLocation, endLocation, seats);
     }
 
-    public LiveData<Drive> findBestDriveMatch(DriveRequest driveRequest) {
-        mFindBestDriveMatch = mPassengerRepository.findBestRideMatch(driveRequest);
-        return mFindBestDriveMatch;
+    public LiveData<Drive> findBestDriveMatch(DriveRequest driveRequest, int radiusMultiplier, String googleApiKey) {
+        mMostRecentDriveRequest = driveRequest;
+        return mPassengerRepository.findBestRideMatch(driveRequest, radiusMultiplier, googleApiKey);
     }
 
     public void addRequestDriveNotification(DriveRequest driveRequest, Drive drive) {
@@ -164,21 +181,18 @@ public class MainViewModel extends AndroidViewModel {
         return mPassengerRepository.getUser();
     }
 
-    public void updateUserType(int type){
+    public void updateUserType(int type) {
         mPassengerRepository.updateUserType(type);
     }
 
     public LiveData<Boolean> setFindMatchTimer() {
         final MutableLiveData<Boolean> findMatchTimerLiveData = new MutableLiveData<>();
 
-        new Handler(Looper.getMainLooper()).postDelayed((new Runnable() {
-            @Override
-            public void run() {
-                Timber.d("findMatch timed out");
-                findMatchTimerLiveData.setValue(true);
-            }
+        new Handler(Looper.getMainLooper()).postDelayed((() -> {
+            Timber.d("findMatch timed out");
+            findMatchTimerLiveData.setValue(true);
         }), FIND_MATCH_TIMEOUT_MS);
-        
+
         return findMatchTimerLiveData;
     }
 
@@ -201,15 +215,18 @@ public class MainViewModel extends AndroidViewModel {
         return numberOfPassengers;
     }
 
-    private String getAddressFromLocation(Location location) {
+    public String getAddressFromLocation(Location location) {
+        if (location == null) {
+            return null;
+        }
         List<Address> addresses;
         Geocoder geocoder = new Geocoder(getApplication(), Locale.getDefault());
         try {
             addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
 
-            if(addresses.size() != 0){
+            if (addresses.size() != 0) {
                 Timber.i(addresses.get(0).toString());
-                return addresses.get(0).getThoroughfare() + " " + addresses.get(0).getFeatureName();
+                return addresses.get(0).getAddressLine(0).split(",")[0];
             }
 
             return "";
@@ -219,7 +236,7 @@ public class MainViewModel extends AndroidViewModel {
         return null;
     }
 
-    public Location getLocationFromAddress(String address) {
+    private Location getLocationFromAddress(String address) {
         List<Address> addresses;
         Geocoder geocoder = new Geocoder(getApplication(), Locale.getDefault());
         try {
@@ -299,7 +316,68 @@ public class MainViewModel extends AndroidViewModel {
         mEndMarkerLocation = endMarker;
     }
 
-    public void setEndAddress(MutableLiveData<String> endAddress){
+    public void setEndAddress(MutableLiveData<String> endAddress) {
         mEndLocationAddress = endAddress;
+    }
+
+    @SuppressLint("MissingPermission")
+    public void setCurrentLocationToDrive(String driveId, Location location) {
+        mPassengerRepository.updateDriveCurrentLocation(driveId, location);
+    }
+
+    @SuppressLint("MissingPermission")
+    public LiveData<PassengerRide> createPassengerRide(Drive drive, Position startPosition,
+                                                       Position endPosition, String startAddress,
+                                                       String endAddress) {
+        return mPassengerRepository.createPassengerRide(drive, startPosition, endPosition,
+                startAddress, endAddress);
+    }
+
+    public LiveData<PassengerRide> getPassengerRides(String driveId) {
+        return mPassengerRepository.getPassengerRides(driveId);
+    }
+
+    public LiveData<Position> getDriverPosition(String driveId) {
+        return mPassengerRepository.getDriverPosition(driveId);
+    }
+
+    public DriveRequest getMostRecentDriveRequest() {
+        return mMostRecentDriveRequest;
+    }
+
+    public int getDriveRequestRadiusMultiplier() {
+        return mDriveRequestRadiusMultiplier;
+    }
+
+    public void setDriveRequestRadiusMultiplier(int mDriveRequestRadiusMultiplier) {
+        this.mDriveRequestRadiusMultiplier = mDriveRequestRadiusMultiplier;
+    }
+
+    public LiveData<Position> getPassengerPosition(String driveId) {
+        return mPassengerRepository.getPassengerPosition(driveId);
+    }
+
+    public LiveData<String> getActiveDriveId() {
+        return mPassengerRepository.getActiveDriveId();
+    }
+
+    public LiveData<Integer> getETA() {
+        return mPassengerRepository.getETAInMin();
+    }
+
+    public Drive getMatchedDrive() {
+        return mPassengerRepository.getMatchedDrive();
+    }
+
+    public void confirmPickUp(PassengerRide passengerRide) {
+        mPassengerRepository.confirmPickUp(passengerRide.getId());
+    }
+
+    public void confirmPickUp(String driveId) {
+        mPassengerRepository.passengerConfirmPickUp(driveId);
+    }
+
+    public void confirmDropOff(PassengerRide passengerRide) {
+        mPassengerRepository.confirmDropOff(passengerRide.getId());
     }
 }

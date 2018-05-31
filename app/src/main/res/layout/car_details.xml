@@ -35,14 +35,15 @@
                 android:layout_height="78dp"
                 android:layout_marginEnd="8dp"
                 android:layout_weight="1"
-                android:drawableLeft="@drawable/ic_looks_two"
                 android:drawablePadding="@dimen/draw_pad"
+                android:drawableStart="@drawable/ic_looks_two"
                 android:ems="10"
                 android:hint="@string/car_number_hint"
-                android:inputType="textCapSentences"
+                android:inputType="textCapCharacters"
                 android:maxLength="@string/car_length"
                 android:translationZ="0dp"
                 app:layout_constraintEnd_toStartOf="@+id/button_cardetails_find"
+                app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textView_cardetails_number" />
 
@@ -69,10 +70,6 @@
                 android:hint="@string/car_model_hint"
                 android:inputType="textPersonName"
                 android:translationZ="0dp"
-                android:clickable="false"
-                android:cursorVisible="false"
-                android:focusable="false"
-                android:focusableInTouchMode="false"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
@@ -102,10 +99,6 @@
                 android:inputType="number"
                 android:maxLength="@string/year_length"
                 android:translationZ="0dp"
-                android:clickable="false"
-                android:cursorVisible="false"
-                android:focusable="false"
-                android:focusableInTouchMode="false"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
@@ -134,10 +127,6 @@
                 android:hint="@string/car_color_hint"
                 android:inputType="textPersonName"
                 android:translationZ="0dp"
-                android:clickable="false"
-                android:cursorVisible="false"
-                android:focusable="false"
-                android:focusableInTouchMode="false"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
@@ -189,10 +178,11 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
                 android:layout_marginTop="8dp"
+                android:textColor="@color/colorWhite"
                 android:text="@string/find_car"
                 app:layout_constraintEnd_toEndOf="parent"
+                android:background="@drawable/button_corner_round"
                 app:layout_constraintTop_toTopOf="@+id/editText_cardetails_number" />
-
 
         </android.support.constraint.ConstraintLayout>
 

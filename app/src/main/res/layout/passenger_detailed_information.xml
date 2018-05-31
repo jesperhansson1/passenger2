@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@android:color/transparent"
+    android:padding="@dimen/activity_margin_half">
+
+    <android.support.constraint.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/driver_confirmation_back"
+        android:padding="@dimen/pad_8dp">
+
+        <include
+            android:id="@+id/passenger_and_avatar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            layout="@layout/passenger_avatar_and_name"/>
+
+        <include
+            android:id="@+id/ride_leaf_and_price"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/pad_16dp"
+            app:layout_constraintTop_toBottomOf="@id/passenger_and_avatar"
+            layout="@layout/ride_leaf_and_price"/>
+
+        <include
+            android:id="@+id/start_location_and_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/pad_16dp"
+            app:layout_constraintTop_toBottomOf="@id/ride_leaf_and_price"
+            layout="@layout/start_location_and_text"/>
+
+        <include
+            android:id="@+id/end_location_and_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/pad_8dp"
+            app:layout_constraintTop_toBottomOf="@id/start_location_and_text"
+            layout="@layout/end_location_and_text"/>
+
+        <Button
+            android:id="@+id/abort_passenger_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/activity_margin_half_double"
+            android:background="@drawable/button_border_round"
+            android:text="@string/finding_driver_cancel"
+            android:textColor="@color/colorRed"
+            app:layout_constraintTop_toBottomOf="@id/end_location_and_text"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+    </android.support.constraint.ConstraintLayout>
+</FrameLayout>

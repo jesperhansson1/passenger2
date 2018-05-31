@@ -1,19 +1,16 @@
 package com.cybercom.passenger.flows.car;
 
-import android.arch.lifecycle.Lifecycle;
-import android.arch.lifecycle.LifecycleOwner;
-import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.AsyncTask;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.InputFilter;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -23,7 +20,9 @@ import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.accounts.AccountActivity;
 import com.cybercom.passenger.model.Car;
 import com.google.gson.Gson;
+
 import java.util.Calendar;
+
 import timber.log.Timber;
 
 import static com.cybercom.passenger.flows.car.CarsActivity.CAR_COLOR;
@@ -33,21 +32,25 @@ import static com.cybercom.passenger.flows.car.CarsActivity.CAR_NUMBER;
 import static com.cybercom.passenger.flows.car.CarsActivity.CAR_YEAR;
 
 
-public class CarDetailActivity extends AppCompatActivity{
+public class CarDetailActivity extends AppCompatActivity {
 
-    EditText mEditTextCarNumber,mEditTextCarModel,mEditTextCarYear,mEditTextCarColor;
-    Button mButtonSave, mButtonFind;
-    Drawable errorDraw;
-    Bundle mExtras;
-    static final String LOGINARRAY = "loginArray";
-    static final String CARARRAY = "carArray";
-    ProgressBar progressBar;
-    String mApiToken;
-    String mApiUrl;
-    CarDetailViewModel mCarDetailVeiwModel;
-    LifecycleOwner myLife;
+    private static final String LOGIN_ARRAY = "loginArray";
+    private static final String CAR_ARRAY = "carArray";
 
-    final String regex = "[A-Za-z]{3}[0-9]{3}";
+    private static final String REGEX = "[A-Za-z]{3}[0-9]{3}";
+
+    private EditText mEditTextCarNumber;
+    private EditText mEditTextCarModel;
+    private EditText mEditTextCarYear;
+    private EditText mEditTextCarColor;
+    private Button mButtonSave;
+    private Drawable mErrorDraw;
+    private Bundle mExtras;
+
+    private ProgressBar progressBar;
+    private String mApiToken;
+    private String mApiUrl;
+    private CarDetailViewModel mCarDetailViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,14 +60,15 @@ public class CarDetailActivity extends AppCompatActivity{
         toolbar.setTitleTextColor(getResources().getColor(R.color.colorWhite));
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle(R.string.add_car);
+        toolbar.setTitleTextColor(getResources().getColor(R.color.colorBlue));
+
         initializeUI();
         mExtras = getIntent().getExtras();
         progressBar = findViewById(R.id.progress_bar);
         progressBar.setVisibility(View.GONE);
         mApiToken = getResources().getString(R.string.car_api_token);
         mApiUrl = getResources().getString(R.string.car_base_url);
-        mCarDetailVeiwModel = ViewModelProviders.of(this).get(CarDetailViewModel.class);
-        myLife = this;
+        mCarDetailViewModel = ViewModelProviders.of(this).get(CarDetailViewModel.class);
     }
 
     @Override
@@ -74,107 +78,113 @@ public class CarDetailActivity extends AppCompatActivity{
         mButtonSave.setText(R.string.next);
     }
 
-    public void initializeUI(){
+    private void initializeUI(){
         mEditTextCarNumber = findViewById(R.id.editText_cardetails_number);
         mEditTextCarModel = findViewById(R.id.editText_cardetails_model);
         mEditTextCarYear = findViewById(R.id.editText_cardetails_year);
         mEditTextCarColor = findViewById(R.id.editText_cardetails_color);
-        mEditTextCarModel.setKeyListener(null);
-        mEditTextCarYear.setKeyListener(null);
-        mEditTextCarColor.setKeyListener(null);
+
+        mEditTextCarNumber.setFilters(new InputFilter[] {new InputFilter.AllCaps()});
 
         mButtonSave = findViewById(R.id.button_cardetails_save);
-        mButtonFind = findViewById(R.id.button_cardetails_find);
-        mButtonFind.setOnClickListener(new View.OnClickListener() {
+        Button buttonFind = findViewById(R.id.button_cardetails_find);
+        mButtonSave.setEnabled(false);
+        buttonFind.setEnabled(false);
+
+        TextWatcher textWatcher = new TextWatcher() {
             @Override
-            public void onClick(View v) {
-                if(mEditTextCarNumber.getText().toString().isEmpty()){
-                    mEditTextCarNumber.setError(getResources().getString(R.string.car_number_error));
-                }
-                else
-                {
-                    if(mEditTextCarNumber.getText().toString().matches(regex)){
-                        Timber.d("matched");
-                        String url = mApiUrl + mEditTextCarNumber.getText().toString() + "?api_token=" + mApiToken;
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
-                        getDetails(url,mEditTextCarNumber.getText().toString());
-                    }
-                    else
-                    {
-                        Timber.d("car number didnot match");
-                        mEditTextCarNumber.setError(getResources().getString(R.string.car_number_invalid),errorDraw);
-                    }
+            }
 
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (inputsAreValid()) {
+                    mButtonSave.setEnabled(true);
+                    buttonFind.setEnabled(true);
+                } else {
+                    mButtonSave.setEnabled(false);
+                    buttonFind.setEnabled(false);
                 }
             }
-        });
-        mButtonSave.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        };
 
-                if(checkError() == 0)
-                {
-                    progressBar.setVisibility(View.VISIBLE);
-                    mButtonSave.setText("");
-                    addCarToList();
-                }
+        mEditTextCarNumber.addTextChangedListener(textWatcher);
+
+        buttonFind.setOnClickListener(v -> {
+            mEditTextCarModel.setText("");
+            mEditTextCarYear.setText("");
+            mEditTextCarColor.setText("");
+            if (mEditTextCarNumber.getText().toString().isEmpty()) {
+                mEditTextCarNumber.setError(getResources().getString(R.string.car_number_error));
+            }
+            else {
+                String url = mApiUrl + mEditTextCarNumber.getText().toString() + "?api_token=" + mApiToken;
+                getDetails(url,mEditTextCarNumber.getText().toString());
             }
         });
-        errorDraw = new BitmapDrawable(getResources(),
-                BitmapFactory.decodeResource(getResources(), R.drawable.ic_error));
+        mButtonSave.setOnClickListener(v -> {
+
+            if(checkError() == 0) {
+                progressBar.setVisibility(View.VISIBLE);
+                mButtonSave.setText("");
+                addCarToList();
+            }
+        });
+        mErrorDraw = new BitmapDrawable(getResources(),BitmapFactory.decodeResource(getResources(),
+                R.drawable.ic_error));
     }
 
-    public int checkError(){
-        int k = 0;
-        if(mEditTextCarNumber.getText().toString().isEmpty()){
-            k = 1;
-            mEditTextCarNumber.setError(getResources().getString(R.string.car_number_error),errorDraw);
-            return k;
+    private boolean inputsAreValid() {
+        return !mEditTextCarNumber.getText().toString().isEmpty();
+    }
+
+    private int checkError(){
+        if (mEditTextCarNumber.getText().length() == 0){
+            mEditTextCarNumber.setError(getResources().getString(R.string.car_number_error), mErrorDraw);
+            return 1;
         }
-        if(mEditTextCarModel.getText().toString().isEmpty()){
-            mEditTextCarModel.setError(getResources().getString(R.string.car_model_error),errorDraw);
-            k = 2;
-            return k;
+        if (mEditTextCarModel.getText().length() == 0){
+            mEditTextCarModel.setError(getResources().getString(R.string.car_model_error), mErrorDraw);
+            return 2;
         }
-        if(mEditTextCarYear.getText().toString().isEmpty()){
-            mEditTextCarYear.setError(getResources().getString(R.string.car_year_error),errorDraw);
-            k = 3;
-            return k;
+        if (mEditTextCarYear.getText().length() == 0){
+            mEditTextCarYear.setError(getResources().getString(R.string.car_year_error), mErrorDraw);
+            return 3;
         }
-        if(mEditTextCarColor.getText().toString().isEmpty()){
-            mEditTextCarColor.setError(getResources().getString(R.string.car_color_error),errorDraw);
-            k = 4;
-            return k;
+        if (mEditTextCarColor.getText().length() == 0){
+            mEditTextCarColor.setError(getResources().getString(R.string.car_color_error), mErrorDraw);
+            return 4;
         }
 
         if(Integer.parseInt(mEditTextCarYear.getText().toString()) >
-                Calendar.getInstance().get(Calendar.YEAR)){
-            mEditTextCarYear.setError(getResources().getString(R.string.car_year_invalid),errorDraw);
-            k = 6;
-            return k;
+                Calendar.getInstance().get(Calendar.YEAR)) {
+            mEditTextCarYear.setError(getResources().getString(R.string.car_year_invalid),
+                    mErrorDraw);
+            return 6;
         }
-        return k;
+        return 0;
     }
 
-    public void addCar()
-    {
+    public void addCar() {
         Intent intent=new Intent();
         intent.putExtra(CAR_NUMBER, mEditTextCarNumber.getText().toString());
         intent.putExtra(CAR_MODEL, mEditTextCarModel.getText().toString());
         intent.putExtra(CAR_YEAR, mEditTextCarYear.getText().toString());
         intent.putExtra(CAR_COLOR,mEditTextCarColor.getText().toString());
-        setResult(CAR_DETAIL,intent);
+        setResult(CAR_DETAIL, intent);
         finish();
     }
 
-    public void addCarToList()
-    {
-        if(mExtras == null)
-        {
+    private void addCarToList() {
+        if (mExtras == null) {
             Timber.e("No values found");
-        }
-        else
-        {
+        } else {
             Car newCar = new Car(mEditTextCarNumber.getText().toString(),
                     mEditTextCarModel.getText().toString(),
                     mEditTextCarYear.getText().toString(),
@@ -183,18 +193,27 @@ public class CarDetailActivity extends AppCompatActivity{
             Gson gson = new Gson();
             String carArray = gson.toJson(newCar);
 
-            Intent intent=new Intent(getApplicationContext(), AccountActivity.class);
-            intent.putExtra(CARARRAY, carArray);
-            intent.putExtra(LOGINARRAY, mExtras.getString(LOGINARRAY));
+            Intent intent = new Intent(getApplicationContext(), AccountActivity.class);
+            intent.putExtra(CAR_ARRAY, carArray);
+            intent.putExtra(LOGIN_ARRAY, mExtras.getString(LOGIN_ARRAY));
             startActivity(intent);
         }
     }
 
-    public void getDetails(String url, String regno)
-    {
-        mCarDetailVeiwModel.setUrl(url, regno);
+    private void getDetails(String url, String regNumber) {
+        mCarDetailViewModel.setUrl(url, regNumber);
+        mCarDetailViewModel.getCarLiveData().observe(this, car -> {
+                    if (car != null) {
 
-        mCarDetailVeiwModel.getCarLiveData().observe(myLife, new Observer<Car>() {
+                            mEditTextCarYear.setText(car.getYear());
+                            mEditTextCarModel.setText(car.getModel());
+                            mEditTextCarColor.setText(car.getColor());
+
+
+                    }
+                });
+
+          /*      mCarDetailViewModel.getCarLiveData().observe(this, new Observer<Car>() {
 
             @Override
             public void onChanged(@Nullable Car car) {
@@ -202,8 +221,6 @@ public class CarDetailActivity extends AppCompatActivity{
                 mEditTextCarModel.setText(car.getModel());
                 mEditTextCarColor.setText(car.getColor());
             }
-        });
+        });*/
     }
-
-
 }

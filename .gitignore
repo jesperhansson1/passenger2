@@ -9,3 +9,4 @@
 .externalNativeBuild
 .idea/modules.xml
 /cloud_functions/functions/node_modules
+keystore.properties

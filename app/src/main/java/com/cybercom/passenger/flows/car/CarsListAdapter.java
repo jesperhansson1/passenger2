@@ -1,6 +1,5 @@
 package com.cybercom.passenger.flows.car;
 
-import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -15,8 +14,7 @@ import timber.log.Timber;
 
 public class CarsListAdapter extends RecyclerView.Adapter<CarsListAdapter.MyViewHolder> {
 
-    private List<Car> mCarList;
-    Context mContext;
+    private final List<Car> mCarList;
 
     @NonNull
     @Override
@@ -33,7 +31,7 @@ public class CarsListAdapter extends RecyclerView.Adapter<CarsListAdapter.MyView
     }
 
     @Override
-    public void onBindViewHolder(MyViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
         Car car = mCarList.get(position);
         holder.carNumber.setText(car.getNumber());
         holder.carModel.setText(car.getModel());
@@ -49,10 +47,10 @@ public class CarsListAdapter extends RecyclerView.Adapter<CarsListAdapter.MyView
     }
 
     static class MyViewHolder extends RecyclerView.ViewHolder {
-        private TextView carNumber;
-        private TextView carModel;
-        private TextView carYear;
-        private TextView carColor;
+        private final TextView carNumber;
+        private final TextView carModel;
+        private final TextView carYear;
+        private final TextView carColor;
 
         MyViewHolder(View view) {
             super(view);

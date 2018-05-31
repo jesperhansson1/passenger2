@@ -3,6 +3,7 @@ package com.cybercom.passenger.route;
 import android.graphics.Color;
 import android.os.AsyncTask;
 
+import com.cybercom.passenger.model.Bounds;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Polyline;
@@ -18,21 +19,23 @@ import timber.log.Timber;
 
 public class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String, String>>>> {
 
-    public static final int ROUTE_WIDTH = 10;
-    public static final int ROUTE_COLOR = Color.rgb(6, 182, 239);
+    private static final int ROUTE_WIDTH = 10;
+    private static final int ROUTE_COLOR = Color.rgb(6, 182, 239);
 
     public interface OnRouteCompletion{
         void onRouteDrawn(Polyline route);
+        void onBoundsParse(Bounds bounds);
     }
 
-    public OnRouteCompletion delegate = null;
+    private OnRouteCompletion mDelegate;
 
     private GoogleMap mGoogleMap;
-    ParserTask(GoogleMap googleMap, OnRouteCompletion caller)
-    {
+
+    ParserTask(GoogleMap googleMap, OnRouteCompletion caller) {
         mGoogleMap = googleMap;
-        delegate = caller;
+        mDelegate = caller;
     }
+
     // Parsing the data in non-ui thread
     @Override
     protected List<List<HashMap<String, String>>> doInBackground(String... jsonData) {
@@ -43,7 +46,7 @@ public class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<Str
         try {
             jsonObject = new JSONObject(jsonData[0]);
             Timber.d(jsonData[0]);
-            DataParser parser = new DataParser();
+            DataParser parser = new DataParser(mDelegate);
             Timber.d(parser.toString());
 
             // Starts parsing data
@@ -60,12 +63,12 @@ public class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<Str
     // Executes in UI thread, after the parsing process
     @Override
     protected void onPostExecute(List<List<HashMap<String, String>>> result) {
-        ArrayList<LatLng> arraylistPoints;
+        ArrayList<LatLng> points;
         PolylineOptions polylineOptions = null;
 
         // Traversing through all the routes
         for (int i = 0; i < result.size(); i++) {
-            arraylistPoints = new ArrayList<>();
+            points = new ArrayList<>();
             polylineOptions = new PolylineOptions();
 
             // Fetching i-th route
@@ -79,11 +82,11 @@ public class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<Str
                 double langitude = Double.parseDouble(hashmapPoint.get("lng"));
                 LatLng latLngPosition = new LatLng(latitude, langitude);
 
-                arraylistPoints.add(latLngPosition);
+                points.add(latLngPosition);
             }
 
             // Adding all the points in the route to LineOptions
-            polylineOptions.addAll(arraylistPoints);
+            polylineOptions.addAll(points);
             polylineOptions.width(ROUTE_WIDTH);
             polylineOptions.color(ROUTE_COLOR);
 
@@ -95,7 +98,7 @@ public class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<Str
             Timber.d(String.valueOf(polylineOptions));
             if(mGoogleMap!=null) {
                 Polyline route = mGoogleMap.addPolyline(polylineOptions);
-                delegate.onRouteDrawn(route);
+                mDelegate.onRouteDrawn(route);
             }
         }
         else {

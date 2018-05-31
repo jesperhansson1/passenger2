@@ -2,7 +2,6 @@ package com.cybercom.passenger.flows.login;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -13,22 +12,20 @@ import android.widget.ProgressBar;
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.forgotpassword.ForgotPasswordActivity;
 import com.cybercom.passenger.flows.main.MainActivity;
-import com.cybercom.passenger.flows.signup.SignUpActivity;
 import com.cybercom.passenger.utils.ToastHelper;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 
-import timber.log.Timber;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
 
-    FirebaseAuth mAuth;
-    EditText mEmail, mPassword;
-    Button mLogin, mSignup, mForgotPassword;
-    Intent mIntent;
-    ProgressBar progressBar;
+    private FirebaseAuth mAuth;
+    private EditText mEmail;
+    private EditText mPassword;
+    private Button mLogin;
+    private Button mSignup;
+    private Button mForgotPassword;
+    private Intent mIntent;
+    private ProgressBar mProgressBar;
 
 
     @Override
@@ -39,9 +36,11 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         toolbar.setTitleTextColor(getResources().getColor(R.color.colorWhite));
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle(R.string.login_title);
+        toolbar.setTitleTextColor(getResources().getColor(R.color.colorBlue));
 
-        progressBar = findViewById(R.id.progress_bar);
-        progressBar.setVisibility(View.GONE);
+
+        mProgressBar = findViewById(R.id.progress_bar);
+        mProgressBar.setVisibility(View.GONE);
 
         mEmail = findViewById(R.id.edittext_loginscreen_email);
         mPassword = findViewById(R.id.edittext_loginscreen_password);
@@ -56,7 +55,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     @Override
     protected void onResume() {
         super.onResume();
-        progressBar.setVisibility(View.GONE);
+        mProgressBar.setVisibility(View.GONE);
         mLogin.setText(R.string.login);
     }
 
@@ -71,20 +70,18 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 if (email.isEmpty() || password.isEmpty()) {
                     ToastHelper.makeToast(getResources().getString(R.string.toast_enter_email_password), LoginActivity.this).show();
                 } else {
-                    progressBar.setVisibility(View.VISIBLE);
+                    mProgressBar.setVisibility(View.VISIBLE);
                     mLogin.setText("");
                     mAuth.signInWithEmailAndPassword(email, password)
-                            .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                                @Override
-                                public void onComplete(@NonNull Task<AuthResult> task) {
-                                    if (task.isSuccessful()) {
-                                        mIntent = new Intent(getApplicationContext(), MainActivity.class);
-                                        startActivity(mIntent);
-                                    } else {
-                                        progressBar.setVisibility(View.GONE);
-                                        mLogin.setText(R.string.login);
-                                        mEmail.setError(getResources().getString(R.string.toast_incorrect_email_password));
-                                    }
+                            .addOnCompleteListener(this, task -> {
+                                if (task.isSuccessful()) {
+                                    mIntent = new Intent(getApplicationContext(), MainActivity.class);
+                                    startActivity(mIntent);
+                                } else {
+                                    mProgressBar.setVisibility(View.GONE);
+                                    mLogin.setText(R.string.login);
+                                    mEmail.setError(getResources().getString(
+                                            R.string.toast_incorrect_email_password));
                                 }
                             });
                 }

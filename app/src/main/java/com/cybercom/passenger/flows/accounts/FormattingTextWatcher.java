@@ -11,7 +11,7 @@ public class FormattingTextWatcher implements TextWatcher {
     private static final String EMPTY_STRING = "";
     private static final String WHITE_SPACE = " ";
     private String lastSource = EMPTY_STRING;
-    int mCount;
+    private int mCount;
 
     public FormattingTextWatcher(int count)
     {

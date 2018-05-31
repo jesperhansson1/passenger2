@@ -15,12 +15,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.model.Notification;
 import com.cybercom.passenger.utils.LocationHelper;
+import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
 import java.util.List;
@@ -30,12 +32,12 @@ import timber.log.Timber;
 
 public class AcceptRejectPassengerDialog extends DialogFragment implements View.OnClickListener {
 
-    public static final String NOTIFICATION_KEY = "NOTIFICATION";
+    private static final String NOTIFICATION_KEY = "NOTIFICATION";
     public static final String TAG = "ACCEPT_REJECT_PASSENGER_DIALOG";
     private Notification mNotification;
 
     public interface ConfirmationListener {
-        void onDriverConfirmation(Boolean isAccepted, Notification notification);
+        void onDriverConfirmation(boolean isAccepted, Notification notification);
     }
 
     public static AcceptRejectPassengerDialog getInstance(Notification notification) {
@@ -47,11 +49,6 @@ public class AcceptRejectPassengerDialog extends DialogFragment implements View.
     }
 
     private ConfirmationListener mConfirmationListener;
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
 
     @Nullable
     @Override
@@ -66,6 +63,15 @@ public class AcceptRejectPassengerDialog extends DialogFragment implements View.
 
         Button declineButton = rootView.findViewById(R.id.driver_confirmation_decline_button);
         declineButton.setOnClickListener(this);
+
+        ImageView leafImageView = rootView.findViewById(R.id.driver_confirmation_leaf);
+        Picasso.with(getActivity()).load(R.drawable.leaf).into(leafImageView);
+
+        ImageView startLocationImageView = rootView.findViewById(R.id.driver_confirmation_start_location_icon);
+        Picasso.with(getActivity()).load(R.drawable.map_marker_start).into(startLocationImageView);
+
+        ImageView endLocationImageView = rootView.findViewById(R.id.driver_confirmation_end_icon);
+        Picasso.with(getActivity()).load(R.drawable.map_marker_end).into(endLocationImageView);
 
         Bundle arguments = getArguments();
         if (arguments != null) {
@@ -144,7 +150,7 @@ public class AcceptRejectPassengerDialog extends DialogFragment implements View.
 
             if(addresses.size() != 0){
                 Timber.i(addresses.get(0).toString());
-                return addresses.get(0).getThoroughfare() + " " + addresses.get(0).getFeatureName();
+                return addresses.get(0).getAddressLine(0).split(",")[0];
             }
 
             return "";

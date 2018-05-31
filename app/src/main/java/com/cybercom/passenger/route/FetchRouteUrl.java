@@ -5,8 +5,6 @@ import android.os.AsyncTask;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 
-import org.json.JSONException;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -36,6 +34,28 @@ public class FetchRouteUrl extends AsyncTask<String, Void, String> {
         return "https://maps.googleapis.com/maps/api/directions/json?"+params;
     }
 
+    public FetchRouteUrl(GoogleMap googleMap, LatLng origin, LatLng destination, LatLng viaStart, LatLng viaEnd, ParserTask.OnRouteCompletion caller)
+    {
+       Timber.d("reroute");
+        mGoogleMap = googleMap;
+        mCaller = caller;
+        execute(getURL(origin,destination, viaStart,viaEnd));
+    }
+
+    private String getURL(LatLng from, LatLng to, LatLng viaStart, LatLng viaEnd)
+    {
+
+        String origin = "origin=" + from.latitude + "," + from.longitude;
+        String dest = "destination=" + to.latitude + "," + to.longitude;
+        String sensor = "sensor=false";
+        //String waypoints = "&waypoints=via:" + viaStart.latitude + "%2C1"+ viaStart.longitude + "%7Cvia:" + viaEnd.latitude + "%2C1"+ viaEnd.longitude;
+        String waypoints = "&waypoints=" + viaStart.latitude + ","+ viaStart.longitude + "|" + viaEnd.latitude + ","+ viaEnd.longitude;
+        String params = origin +"&"+ dest + waypoints + "&" + sensor ;
+        return "https://maps.googleapis.com/maps/api/directions/json?"+params;
+    }
+
+
+
     @Override
     protected String doInBackground(String... url) {
         // For storing data from web service
@@ -59,7 +79,7 @@ public class FetchRouteUrl extends AsyncTask<String, Void, String> {
 
     }
 
-    private String downloadUrl(String urlString) throws IOException, JSONException {
+    private String downloadUrl(String urlString) throws IOException {
 
         HttpURLConnection httpURLConnection;
 
