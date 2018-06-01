@@ -79,6 +79,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
@@ -111,13 +112,14 @@ public class MainActivity extends AppCompatActivity implements
         DriverPassengerPickUpFragment.DriverPassengerPickUpButtonClickListener,
         DriverDropOffFragment.DriverDropOffConfirmationListener, View.OnClickListener {
 
-    private static final float ZOOM_LEVEL_STREETS = 15;
 
     private static final int DELAY_BEFORE_SHOWING_CREATE_DRIVE_AFTER_LOCATION_CHANGED = 1500;
     private static final int PLACE_MARKER_INFO_FADE_DURATION = 1000;
     private static final float PLACE_MARKER_INFO_FADE_OUT_TO = 0.0f;
     private static final float PLACE_MARKER_INFO_FADE_IN_TO = 1.0f;
+    private static final float CHANGE_CAMERA_BEARING_SPEED_THRESHOLD = 1.0f;
     private static final int ZOOM_LEVEL_MY_LOCATION = 17;
+    private static final float ZOOM_LEVEL_STREETS = 15;
     private static final String DRIVE_ID = "driveId";
     private static final String PASSENGER_RIDE_KEY = "passengerRideKey";
     public static final int GEOFENCE_RADIUS = 50;
@@ -408,6 +410,29 @@ public class MainActivity extends AppCompatActivity implements
         return false;
     }
 
+    /**
+     * Start moving the camera to center the current position (the driver's) and also turn the
+     * camera so that the current direction where the car is heading is always upwards.
+     */
+    private void moveCameraOnPositionUpdates() {
+        mMainViewModel.getDriverCurrentLocation().observe(this, location -> {
+            CameraPosition cameraPosition;
+
+            CameraPosition.Builder cameraPositionBuilder = new CameraPosition.Builder()
+                    .zoom(ZOOM_LEVEL_MY_LOCATION);
+
+            // This is needed to prevent erratic camera updates when car has stopped.
+            if (location.hasSpeed() && location.getSpeed() > CHANGE_CAMERA_BEARING_SPEED_THRESHOLD) {
+                cameraPositionBuilder.bearing(location.getBearing());
+
+            }
+
+            cameraPosition = cameraPositionBuilder.target(new LatLng(location.getLatitude(),
+                    location.getLongitude())).build();
+            mGoogleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+        });
+    }
+
         /*
         if (mLocation == null) {
             // Permission not granted to access user location
@@ -509,7 +534,6 @@ public class MainActivity extends AppCompatActivity implements
     private void matchDriveRequest(final DriveRequest driveRequest, int radiusMultiplier) {
         final LifecycleOwner lifecycleOwner = this;
         String googleApiKey = getResources().getString(R.string.google_api_key);
-
         mFindMatch = mMainViewModel.findBestDriveMatch(driveRequest, radiusMultiplier, googleApiKey);
         showMatchingInProgressDialog();
         mTimer = mMainViewModel.setFindMatchTimer();
@@ -1072,6 +1096,7 @@ public class MainActivity extends AppCompatActivity implements
             UpdateDriveIntent.setAction(Constants.ACTION.STARTFOREGROUND_UPDATE_DRIVER_POSITION);
             UpdateDriveIntent.putExtra(ForegroundServices.INTENT_EXTRA_DRIVE_ID, drive.getId());
             startService(UpdateDriveIntent);
+            moveCameraOnPositionUpdates();
             updatePassengersMarkerPosition(drive.getId());
             mCreateDriveFragment.setDefaultValuesToDialog();
             mCancelDriveFab.setVisibility(View.VISIBLE);
