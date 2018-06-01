@@ -325,6 +325,10 @@ public class MainViewModel extends AndroidViewModel {
         mPassengerRepository.updateDriveCurrentLocation(driveId, location);
     }
 
+    public MutableLiveData<Location> getDriverCurrentLocation() {
+        return mPassengerRepository.getDriverCurrentLocation();
+    }
+
     @SuppressLint("MissingPermission")
     public LiveData<PassengerRide> createPassengerRide(Drive drive, Position startPosition,
                                                        Position endPosition, String startAddress,
