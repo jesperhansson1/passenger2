@@ -102,6 +102,8 @@ public class CardFragment extends Fragment {
             else {
                 Timber.e("CARD is valid");
                 Toast.makeText(getContext(),"CARD is valid",Toast.LENGTH_LONG).show();
+
+
                 createUserReturnMain();
             }
         }

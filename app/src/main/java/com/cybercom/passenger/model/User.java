@@ -15,6 +15,7 @@ public class User {
     private String mGender;
     private String mEmail;
     private String mPassword;
+    private String mCustomerId;
 
     /*public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
         public User createFromParcel(Parcel in) {
@@ -64,7 +65,7 @@ public class User {
 
     public User(String userId, String notificationTokenId, int type, String phone,
                 String personalNumber, String fullName, String imageLink,
-                String gender, String email, String password) {
+                String gender, String email, String password, String customerId) {
         mUserId = userId;
         mNotificationTokenId = notificationTokenId;
         mType = type;
@@ -75,6 +76,7 @@ public class User {
         mGender = gender;
         mEmail = email;
         mPassword = password;
+        mCustomerId = customerId;
     }
 
     public String getmEmail() {
@@ -101,6 +103,7 @@ public class User {
         mPhone = phone;
     }
 
+
     @Override
     public String toString() {
         return "User{" +
@@ -112,9 +115,11 @@ public class User {
                 ", mFullName='" + mFullName + '\'' +
                 ", mImageLink='" + mImageLink + '\'' +
                 ", mGender='" + mGender + '\'' +
+                ", mEmail='" + mEmail + '\'' +
+                ", mPassword='" + mPassword + '\'' +
+                ", mCustomerId='" + mCustomerId + '\'' +
                 '}';
     }
-
 
     public String getPersonalNumber() {
         return mPersonalNumber;
@@ -172,4 +177,11 @@ public class User {
         mType = type;
     }
 
+    public String getCustomerId() {
+        return mCustomerId;
+    }
+
+    public void setCustomerId(String customerId) {
+        this.mCustomerId = customerId;
+    }
 }
