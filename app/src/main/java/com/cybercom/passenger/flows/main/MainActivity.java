@@ -112,7 +112,6 @@ public class MainActivity extends AppCompatActivity implements
         DriverPassengerPickUpFragment.DriverPassengerPickUpButtonClickListener,
         DriverDropOffFragment.DriverDropOffConfirmationListener, View.OnClickListener {
 
-    private static final float ZOOM_LEVEL_STREETS = 15;
 
     private static final int DELAY_BEFORE_SHOWING_CREATE_DRIVE_AFTER_LOCATION_CHANGED = 1500;
     private static final int PLACE_MARKER_INFO_FADE_DURATION = 1000;
