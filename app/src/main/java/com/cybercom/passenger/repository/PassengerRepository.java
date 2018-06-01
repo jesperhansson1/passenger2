@@ -288,11 +288,12 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                     com.cybercom.passenger.repository.databasemodel.Drive drive = snapshot.getValue(com.cybercom.passenger.repository.databasemodel.Drive.class);
 
                     if (drive != null && Math.abs(driveRequest.getTime() - drive.getTime()) < DRIVE_REQUEST_MATCH_TIME_THRESHOLD) {
-                        if (driveRequest.getDriverIdBlackList().contains(drive.getDriverId()))
+                        if (driveRequest.getDriverIdBlackList().contains(drive.getDriverId())) {
                             Timber.i("No match, driver blacklisted: %s", drive.getDriverId());
+                        }
 
-                        if(snapshot.hasChild(BOUNDS) && snapshot.child(BOUNDS).child(NORTHEAST).child(LATITUDE).getValue() != null)
-                        {
+                        if(snapshot.hasChild(BOUNDS) && snapshot.child(BOUNDS).child(NORTHEAST).child(LATITUDE).getValue() != null) {
+                            //TODO need to check this....
                             Bounds bounds = new Bounds(Double.parseDouble(snapshot.child(BOUNDS).child(NORTHEAST).child(LATITUDE).getValue().toString()),
                                     Double.parseDouble(snapshot.child(BOUNDS).child(NORTHEAST).child(LONGITUDE).getValue().toString()),
                                     Double.parseDouble(snapshot.child(BOUNDS).child(SOUTHWEST).child(LATITUDE).getValue().toString()),
@@ -302,9 +303,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                             Timber.d("bounds " + bounds.toString());
                             bounds.setNewBounds(radiusMultiplier);
                             //Check for start position and end position
-                            if(contains(bounds,driveRequest.getStartLocation().getLatitude(),driveRequest.getStartLocation().getLongitude())){
-                                if(contains(bounds,driveRequest.getEndLocation().getLatitude(),driveRequest.getEndLocation().getLongitude()))
-                                {
+                            if(contains(bounds,driveRequest.getStartLocation().getLatitude(),driveRequest.getStartLocation().getLongitude())) {
+                                if(contains(bounds,driveRequest.getEndLocation().getLatitude(),driveRequest.getEndLocation().getLongitude())) {
                                     listDriveKey.add(snapshot.getKey());
                                     drivePositionStart.append(drive.getStartLocation().getLatitude()+","+drive.getStartLocation().getLongitude());
                                     drivePositionStart.append("|");
@@ -374,19 +374,16 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                             bestDriveMatch.setValue(mMatchedDrive);
                         }
 
-                                                        @Override
-                                                        public void onCancelled(DatabaseError databaseError) {
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
 
-                                                        }
-                                                    });
+                        }
+                    });
                                                 } else {
                                                     bestDriveMatch.setValue(null);
                                                 }
-
-
                                             }
-                                            catch(Exception e)
-                                            {
+                                            catch(Exception e) {
                                                 Timber.e(e.getLocalizedMessage());
                                             }
                                         }

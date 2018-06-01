@@ -123,7 +123,7 @@ public class GpsLocations {
     private static LatLng getDestinationLatLng(double lat, double lng, double azimuth, double distance) {
         double radiusKm = RADIUS_OF_EARTH / 1000; //Radius of the Earth in km
         double brng = Math.toRadians(azimuth); //Bearing is degrees converted to radians.
-        double d = distance / 1000; //Distance m converted to km
+        double d = distance / 1000; //TextValue m converted to km
         double lat1 = Math.toRadians(lat); //Current dd lat point converted to radians
         double lon1 = Math.toRadians(lng); //Current dd long point converted to radians
         double lat2 = Math.asin(Math.sin(lat1) * Math.cos(d / radiusKm) + Math.cos(lat1) * Math.sin(d / radiusKm) * Math.cos(brng));

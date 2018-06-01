@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
@@ -60,8 +61,9 @@ import com.cybercom.passenger.model.Notification;
 import com.cybercom.passenger.model.PassengerRide;
 import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
-import com.cybercom.passenger.route.FetchRouteUrl;
-import com.cybercom.passenger.route.ParserTask;
+import com.cybercom.passenger.route.FetchRoute;
+import com.cybercom.passenger.model.RidePoints;
+import com.cybercom.passenger.model.Route;
 import com.cybercom.passenger.service.Constants;
 import com.cybercom.passenger.service.ForegroundServices;
 import com.cybercom.passenger.service.GeofenceTransitionsIntentService;
@@ -82,6 +84,7 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -101,7 +104,7 @@ public class MainActivity extends AppCompatActivity implements
         PassengerNotificationDialog.PassengerNotificationListener,
         OnMapReadyCallback, GoogleMap.OnMarkerDragListener, GoogleMap.OnCameraMoveStartedListener,
         GoogleMap.OnMapLongClickListener, GoogleMap.OnMapClickListener,
-        CreateDriveFragment.OnPlaceMarkerIconClickListener, ParserTask.OnRouteCompletion,
+        CreateDriveFragment.OnPlaceMarkerIconClickListener, FetchRoute.OnRouteCompletion,
         CreateDriveFragment.OnFinishedCreatingDriveOrDriveRequest,
         FindingCarProgressDialog.FindingCarListener, GoogleMap.OnMyLocationButtonClickListener,
         NoMatchFragment.NoMatchButtonListener, FragmentSizeListener, OnCompleteListener<Void>,
@@ -127,6 +130,8 @@ public class MainActivity extends AppCompatActivity implements
     public static final int TYPE_PICK_UP = 1;
     public static final int TYPE_DROP_OFF = 2;
     public static final String DIALOG_TO_SHOW = "DIALOG_TO_SHOW";
+    private static final int ROUTE_WIDTH = 10;
+    private static final int ROUTE_COLOR = Color.rgb(6, 182, 239);
 
 
     private FirebaseUser mUser;
@@ -173,7 +178,7 @@ public class MainActivity extends AppCompatActivity implements
 
     private HashMap<String, PassengerRide> mPassengers = new HashMap<>();
 
-    public Bounds mBounds;
+    private Bounds mBounds;
     private List<String> mActiveDriveIdList = new ArrayList<>();
 
     @Override
@@ -366,7 +371,6 @@ public class MainActivity extends AppCompatActivity implements
                 mActiveDriveIdList.add(driveId);
                 mMainViewModel.getPassengerRides(driveId).observe(lifecycleOwner, passengerRide -> {
                     if (passengerRide != null) {
-
                         if (isPassengerRideAlreadyAddedToLocalList(passengerRide)) {
                             replacePassengerRide(passengerRide);
                         } else {
@@ -450,8 +454,6 @@ public class MainActivity extends AppCompatActivity implements
         } else {
             updateMarkerLocation(mStartLocationMarker,
                     mMainViewModel.getStartMarkerLocation().getValue());
-            updateMarkerLocation(mStartLocationMarker,
-                    mMainViewModel.getStartMarkerLocation().getValue());
         }
     }
 
@@ -516,8 +518,12 @@ public class MainActivity extends AppCompatActivity implements
             if (drive != null) {
                 Timber.i("matched drive %s", drive);
                 mMainViewModel.addRequestDriveNotification(driveRequest, drive);
-                if (mFindMatch != null) mFindMatch.removeObserver(mMatchObserver);
-                if (mTimer != null) mTimer.removeObservers(lifecycleOwner);
+                if (mFindMatch != null) {
+                    mFindMatch.removeObserver(mMatchObserver);
+                }
+                if (mTimer != null) {
+                    mTimer.removeObservers(lifecycleOwner);
+                }
             } else {
                 Timber.i("No drives match for the moment. Keep listening.");
             }
@@ -633,6 +639,16 @@ public class MainActivity extends AppCompatActivity implements
                 mPassengers.put(passengerRide.getId(), passengerRide);
                 addPassengerFab(passengerRide.getId());
         }
+        Drive drive = passengerRide.getDrive();
+        Position driveStartLocation = drive.getStartLocation();
+        Position driveEndLocation = drive.getEndLocation();
+        List<RidePoints> ridePointsList = new ArrayList();
+        ridePointsList.add(createRidePointsFromPassengerRide(passengerRide));
+        for (PassengerRide onBordedPassenger : mPassengers.values()) {
+            ridePointsList.add(createRidePointsFromPassengerRide(onBordedPassenger));
+        }
+        reRoute(createLatLngFromPosition(driveStartLocation),
+                createLatLngFromPosition(driveEndLocation), ridePointsList);
     }
 
 
@@ -748,19 +764,16 @@ public class MainActivity extends AppCompatActivity implements
                         mMainViewModel.getEndMarkerLocation().getValue().getLatitude(),
                         mMainViewModel.getEndMarkerLocation().getValue().getLongitude());
 
-                new FetchRouteUrl(mGoogleMap, origin, destination, this);
+                new FetchRoute(origin, destination, null, this);
             }
         }
     }
 
-    private void reRoute(LatLng origin, LatLng destination, LatLng viaStart, LatLng viaEnd)
-    {
+    private void reRoute(LatLng origin, LatLng destination, List<RidePoints> wayPoints) {
         if (mRoute != null) {
             mRoute.remove();
         }
-
-        new FetchRouteUrl(mGoogleMap, origin, destination, viaStart, viaEnd, this);
-
+        new FetchRoute(origin, destination, wayPoints, this);
     }
 
     private void zoomToFitRoute() {
@@ -836,20 +849,21 @@ public class MainActivity extends AppCompatActivity implements
         mCreateDriveFragment.showCreateDialog();
     }
 
+    private RidePoints createRidePointsFromPassengerRide(@NonNull PassengerRide passengerRide) {
+        LatLng pickUp = createLatLngFromPosition(passengerRide.getPickUpPosition());
+        LatLng dropOff = createLatLngFromPosition(passengerRide.getDropOffPosition());
+        return new RidePoints(pickUp, dropOff);
+    }
+
+    private LatLng createLatLngFromPosition(@NonNull Position position) {
+        return new LatLng(position.getLatitude(), position.getLongitude());
+    }
+
     @Override
     public void onDriverConfirmation(boolean isAccepted, Notification notification) {
         if (isAccepted) {
             mMainViewModel.sendAcceptPassengerNotification(notification.getDrive(),
                     notification.getDriveRequest());
-            reRoute(new LatLng(notification.getDrive().getStartLocation().getLatitude(),
-                            notification.getDrive().getStartLocation().getLongitude()),
-                    new LatLng(notification.getDrive().getEndLocation().getLatitude()
-                            ,notification.getDrive().getEndLocation().getLongitude()),
-                    new LatLng(notification.getDriveRequest().getStartLocation().getLatitude(),
-                            notification.getDriveRequest().getStartLocation().getLongitude()),
-                    new LatLng(notification.getDriveRequest().getEndLocation().getLatitude(),
-                            notification.getDriveRequest().getEndLocation().getLongitude()));
-
         } else {
             mMainViewModel.sendRejectPassengerNotification(notification.getDrive(),
                     notification.getDriveRequest());
@@ -901,17 +915,25 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onRouteDrawn(Polyline route) {
-        mRoute = route;
-        zoomToFitRoute();
-    }
-
-    public void onBoundsParse(Bounds bounds) {
-        if (bounds != null) {
-            mBounds = bounds;
-        } else {
-            mBounds = new Bounds(0.0, 0.0, 0.0, 0.0, 0, 0);
+    public void onRoutesFetched(List<Route> routes) {
+        List<LatLng> polylinePoints = new ArrayList<>();
+        for (Route route : routes) {
+            //TODO can we have many routes??
+            Bounds bounds = route.getBounds();
+            if (bounds != null) {
+                mBounds = bounds;
+            } else {
+                mBounds = new Bounds(0.0, 0.0, 0.0, 0.0, 0, 0);
+            }
+            polylinePoints.addAll(route.getPolyline());
         }
+        PolylineOptions polylineOptions = new PolylineOptions();
+        polylineOptions.addAll(polylinePoints);
+        polylineOptions.width(ROUTE_WIDTH);
+        polylineOptions.color(ROUTE_COLOR);
+
+        mRoute = mGoogleMap.addPolyline(polylineOptions);
+        zoomToFitRoute();
     }
 
     @Override
@@ -1026,17 +1048,9 @@ public class MainActivity extends AppCompatActivity implements
                     mBounds = new Bounds(0.0,0.0,0.0,0.0, 0, 0);
                 }
                 mMainViewModel.createDrive(time, startLocation, endLocation, seats, mBounds)
-                        .observe(this,drive -> {
-                    if (drive != null) {
-                        Intent UpdateDriveIntent = new Intent(MainActivity.this, ForegroundServices.class);
-                        UpdateDriveIntent.setAction(Constants.ACTION.STARTFOREGROUND_UPDATE_DRIVER_POSITION);
-                        UpdateDriveIntent.putExtra(ForegroundServices.INTENT_EXTRA_DRIVE_ID, drive.getId());
-                        startService(UpdateDriveIntent);
-                        updatePassengersMarkerPosition(drive.getId());
-                        mCreateDriveFragment.setDefaultValuesToDialog();
-                        mCancelDriveFab.setVisibility(View.VISIBLE);
-                    }
-                });
+                        .observe(this, drive -> {
+                            handleOnGoingDrive(drive);
+                        });
                 break;
             case User.TYPE_PASSENGER:
                 mMainViewModel.createDriveRequest(time, startLocation, endLocation, seats).observe(
@@ -1049,6 +1063,18 @@ public class MainActivity extends AppCompatActivity implements
                             mCreateDriveFragment.setDefaultValuesToDialog();
                         });
                 break;
+        }
+    }
+
+    private void handleOnGoingDrive(Drive drive) {
+        if (drive != null) {
+            Intent UpdateDriveIntent = new Intent(MainActivity.this, ForegroundServices.class);
+            UpdateDriveIntent.setAction(Constants.ACTION.STARTFOREGROUND_UPDATE_DRIVER_POSITION);
+            UpdateDriveIntent.putExtra(ForegroundServices.INTENT_EXTRA_DRIVE_ID, drive.getId());
+            startService(UpdateDriveIntent);
+            updatePassengersMarkerPosition(drive.getId());
+            mCreateDriveFragment.setDefaultValuesToDialog();
+            mCancelDriveFab.setVisibility(View.VISIBLE);
         }
     }
 
@@ -1324,12 +1350,7 @@ public class MainActivity extends AppCompatActivity implements
             return;
         }
 
-        mMainViewModel.removeCurrentDrive(driveId, new OnCompleteListener() {
-            @Override
-            public void onComplete(@NonNull Task task) {
-                handleDriveRemoved(driveId);
-            }
-        });
+        mMainViewModel.removeCurrentDrive(driveId, task -> handleDriveRemoved(driveId));
     }
 
     private void handleDriveRemoved(String driveId) {
@@ -1475,9 +1496,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     public void removeFragment(Fragment fragment){
-        mFragmentManager.beginTransaction()
-                .remove(fragment)
-                .commit();
+        mFragmentManager.beginTransaction().remove(fragment).commit();
     }
 
     private class GeofenceBroadcastReceiver extends BroadcastReceiver {
