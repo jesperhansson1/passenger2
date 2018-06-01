@@ -55,7 +55,7 @@ public class PaymentActivity extends AppCompatActivity {
         findViewById(R.id.button_payment_pay).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new StripeToken(mCardInputWidget.getCard()).execute();
+                startPayment();
             }
         });
         findViewById(R.id.button_payment_calculate).setOnClickListener(new View.OnClickListener() {
@@ -146,8 +146,7 @@ public class PaymentActivity extends AppCompatActivity {
             public void run() {
                 try  {
                     //Your code goes here
-                    creae();
-
+                   StripeToken stripeToken = (StripeToken) new StripeToken(mCardInputWidget.getCard()).execute();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -172,16 +171,17 @@ public class PaymentActivity extends AppCompatActivity {
         //customerParams.put("default_card", mCardInputWidget.getCard());
 
         try {
-
+            customer = Customer.create(customerParams);
             Map<String, Object> params = new HashMap<String, Object>();
-           /* params.put("source", "tok_amex");
-            customer.getSources().create(params);*/
+            params.put("source", "tok_amex");
+            customer.getSources().create(params);
 
 
-            //System.out.println("customer created " + customer.getId());
+            System.out.println("customer created " + customer.getId());
                                /* Map<String, Object> updateParams = new HashMap<String, Object>();
                                 updateParams.put("source", token);
                                 customer.update(updateParams);*/
+            System.out.println("customer created " + customer.toString());
 
             Stripe stripe = new Stripe(getApplicationContext(), "pk_test_QM2w0W5t19PihSq8BMXkSXMY");
 
@@ -198,32 +198,16 @@ public class PaymentActivity extends AppCompatActivity {
 
                         @Override
                         public void onSuccess(com.stripe.android.model.Token token) {
-
-                            System.out.println("token " + token.getId());
+                            Map<String, Object> sourcePparams = new HashMap<String, Object>();
+                            System.out.println("token " + token.toString());
                             params.put("source", token);
-                            params.put("description", "avc");
 
 
                             try
                             {
-                                Thread thread = new Thread(new Runnable() {
 
-                                    @Override
-                                    public void run() {
-                                        try  {
-                                            customer = Customer.create(params);
-
-                                            // customer.update(params);
-                                            System.out.println("customer created " + customer.toString());
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                        }
-                                    }
-                                });
-
-                                thread.start();
-
-
+                                customer.getSources().create(params);
+                                System.out.println("customer created " + customer.toString());
                             }
                             catch(Exception e)
                             {
