@@ -2,19 +2,13 @@ package com.cybercom.passenger.flows.payment;
 
         import android.os.AsyncTask;
         import com.stripe.Stripe;
-        import com.stripe.exception.APIConnectionException;
-        import com.stripe.exception.APIException;
-        import com.stripe.exception.AuthenticationException;
-        import com.stripe.exception.CardException;
-        import com.stripe.exception.InvalidRequestException;
-        import com.stripe.model.Customer;
         import com.stripe.model.Token;
         import com.stripe.android.model.Card;
         import java.util.HashMap;
         import java.util.Map;
         import timber.log.Timber;
 
-        import static com.cybercom.passenger.model.ConstantValues.STRIPE_API_KEY;
+        import static com.cybercom.passenger.flows.payment.Constants.STRIPE_API_KEY;
 
 public class StripeToken extends AsyncTask<String, Void, Token> {
 

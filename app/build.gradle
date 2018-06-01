@@ -79,6 +79,7 @@ dependencies {
     //for color picker
     // compile 'com.github.yukuku:ambilwarna:2.0.1'
     implementation 'com.stripe:stripe-android:6.1.2'
+    implementation 'com.stripe:stripe-java:1.47.0'
     implementation 'com.android.support:cardview-v7:27.1.1'
     implementation 'com.github.florent37:singledateandtimepicker:2.0.1'
     //gson to json
