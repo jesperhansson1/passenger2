@@ -118,6 +118,7 @@ public class MainActivity extends AppCompatActivity implements
     private static final int PLACE_MARKER_INFO_FADE_DURATION = 1000;
     private static final float PLACE_MARKER_INFO_FADE_OUT_TO = 0.0f;
     private static final float PLACE_MARKER_INFO_FADE_IN_TO = 1.0f;
+    private static final float CHANGE_CAMERA_BEARING_SPEED_THRESHOLD = 1.0f;
     private static final int ZOOM_LEVEL_MY_LOCATION = 17;
     private static final float ZOOM_LEVEL_STREETS = 15;
     private static final String DRIVE_ID = "driveId";
@@ -416,12 +417,19 @@ public class MainActivity extends AppCompatActivity implements
      */
     private void moveCameraOnPositionUpdates() {
         mMainViewModel.getDriverCurrentLocation().observe(this, location -> {
-            CameraPosition cameraPosition = new CameraPosition.Builder()
-                    .zoom(ZOOM_LEVEL_MY_LOCATION)
-                    .bearing(location.getBearing())
-                    .target(new LatLng(location.getLatitude(), location.getLongitude()))
-                    .build();
+            CameraPosition cameraPosition;
 
+            CameraPosition.Builder cameraPositionBuilder = new CameraPosition.Builder()
+                    .zoom(ZOOM_LEVEL_MY_LOCATION);
+
+            // This is needed to prevent erratic camera updates when car has stopped.
+            if (location.hasSpeed() && location.getSpeed() > CHANGE_CAMERA_BEARING_SPEED_THRESHOLD) {
+                cameraPositionBuilder.bearing(location.getBearing());
+
+            }
+
+            cameraPosition = cameraPositionBuilder.target(new LatLng(location.getLatitude(),
+                    location.getLongitude())).build();
             mGoogleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
         });
     }
