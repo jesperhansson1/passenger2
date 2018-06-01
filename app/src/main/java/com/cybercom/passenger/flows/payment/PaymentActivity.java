@@ -16,11 +16,18 @@ import com.cybercom.passenger.flows.payment.PriceDistance.ResultDistanceMatrix;
 import com.cybercom.passenger.model.RideFare;
 import com.google.android.gms.maps.model.LatLng;
 import com.stripe.android.PaymentConfiguration;
+import com.stripe.android.RequestOptions;
 import com.stripe.android.Stripe;
 import com.stripe.android.TokenCallback;
 import com.stripe.android.model.Card;
-import com.stripe.android.model.Token;
+
 import com.stripe.android.view.CardInputWidget;
+import com.stripe.model.Customer;
+import com.stripe.model.ExternalAccountCollection;
+import com.stripe.model.Token;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import timber.log.Timber;
 
@@ -48,7 +55,7 @@ public class PaymentActivity extends AppCompatActivity {
         findViewById(R.id.button_payment_pay).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startPayment();
+                new StripeToken(mCardInputWidget.getCard()).execute();
             }
         });
         findViewById(R.id.button_payment_calculate).setOnClickListener(new View.OnClickListener() {
@@ -101,7 +108,7 @@ public class PaymentActivity extends AppCompatActivity {
 
     public void startPayment()
     {
-        mCardToSave = mCardInputWidget.getCard();
+       /* mCardToSave = mCardInputWidget.getCard();
 
         if (mCardToSave == null) {
             showToast("Invalid Card Data");
@@ -116,9 +123,38 @@ public class PaymentActivity extends AppCompatActivity {
             {
                 // Do not continue token creation.
                 showToast("valid Card Data");
-                payC();
+                Thread thread = new Thread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        try  {
+                            //Your code goes here
+                            creae();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+
+                thread.start();
+
             }
-        }
+        }*/
+        Thread thread = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                try  {
+                    //Your code goes here
+                    creae();
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        thread.start();
     }
 
     public void showToast(String errString)
@@ -126,7 +162,202 @@ public class PaymentActivity extends AppCompatActivity {
         Toast.makeText(getApplicationContext(),errString,Toast.LENGTH_LONG).show();
     }
 
-    public void payC()
+    Customer customer;
+    public void creae()
+    {
+        com.stripe.Stripe.apiKey = "sk_test_hOEYoyhsiD3MOJiWW33ztX48";//"pk_test_QM2w0W5t19PihSq8BMXkSXMY";
+
+        Map<String, Object> customerParams = new HashMap<String, Object>();
+        customerParams.put("description", "avc");
+        //customerParams.put("default_card", mCardInputWidget.getCard());
+
+        try {
+
+            Map<String, Object> params = new HashMap<String, Object>();
+           /* params.put("source", "tok_amex");
+            customer.getSources().create(params);*/
+
+
+            //System.out.println("customer created " + customer.getId());
+                               /* Map<String, Object> updateParams = new HashMap<String, Object>();
+                                updateParams.put("source", token);
+                                customer.update(updateParams);*/
+
+            Stripe stripe = new Stripe(getApplicationContext(), "pk_test_QM2w0W5t19PihSq8BMXkSXMY");
+
+            stripe.createToken(
+                    mCardInputWidget.getCard(),
+                    new TokenCallback() {
+                        public void onError(Exception error) {
+                            // Show localized error message
+                            Toast.makeText(getApplicationContext(),
+                                    error.getLocalizedMessage(),
+                                    Toast.LENGTH_LONG
+                            ).show();
+                        }
+
+                        @Override
+                        public void onSuccess(com.stripe.android.model.Token token) {
+
+                            System.out.println("token " + token.getId());
+                            params.put("source", token);
+                            params.put("description", "avc");
+
+
+                            try
+                            {
+                                Thread thread = new Thread(new Runnable() {
+
+                                    @Override
+                                    public void run() {
+                                        try  {
+                                            customer = Customer.create(params);
+
+                                            // customer.update(params);
+                                            System.out.println("customer created " + customer.toString());
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                });
+
+                                thread.start();
+
+
+                            }
+                            catch(Exception e)
+                            {
+                                System.out.println(e.getMessage());
+                            }
+
+
+
+
+                        }
+
+                    });
+
+
+
+
+
+
+        }
+        catch(Exception e)
+        {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public void createCustomer()
+    {
+        com.stripe.Stripe.apiKey = "sk_test_hOEYoyhsiD3MOJiWW33ztX48";//"pk_test_QM2w0W5t19PihSq8BMXkSXMY";
+        //com.stripe.Stripe.apiKey = "pk_test_QM2w0W5t19PihSq8BMXkSXMY";
+
+       /* Map<String, Object> tokenParams = new HashMap<String, Object>();
+        Map<String, Object> cardParams = new HashMap<String, Object>();
+        cardParams.put("number", mCardToSave.getNumber());
+        cardParams.put("exp_month", mCardToSave.getExpMonth());
+        cardParams.put("exp_year", mCardToSave.getExpYear());
+        cardParams.put("cvc", mCardToSave.getCVC());
+        tokenParams.put("card", cardParams);
+
+        Token token = null;*/
+        try
+        {
+
+            Stripe stripe = new Stripe(getApplicationContext(), "pk_test_QM2w0W5t19PihSq8BMXkSXMY");
+            stripe.createToken(
+                    mCardToSave,
+                    new TokenCallback() {
+                        public void onError(Exception error) {
+                            // Show localized error message
+                            Toast.makeText(getApplicationContext(),
+                                    error.getLocalizedMessage(),
+                                    Toast.LENGTH_LONG
+                            ).show();
+                        }
+
+                        @Override
+                        public void onSuccess(com.stripe.android.model.Token token) {
+
+                            System.out.println(token.getId());
+                            Map<String, Object> customerParams = new HashMap<String, Object>();
+
+                            Map<String, Object> shippingParams = new HashMap<String, Object>();
+                            Map<String, Object> addressParams = new HashMap<String, Object>();
+                            addressParams.put("line1", "test line 1");
+                            shippingParams.put("address", addressParams);
+                            shippingParams.put("name", "Test name1");
+
+                          //  customerParams.put("shipping", shippingParams);
+
+                            Map<String, Object> sourceParams = new HashMap<String, Object>();
+                            sourceParams.put("object", "card");
+                            sourceParams.put("number", "4242424242424242");
+                            sourceParams.put("exp_month", 07);
+                            sourceParams.put("exp_year", 2021);
+                            sourceParams.put("cvc", 123);
+                            sourceParams.put("currency", "usd");
+
+                            //customerParams.put("source", sourceParams);
+
+                            customerParams.put("description", "abc");
+
+                            //customerParams.put("source", token);
+                            try {
+                                Customer customer = Customer.create(customerParams);
+                                System.out.println("customer created " + customer.getId());
+                               /* Map<String, Object> updateParams = new HashMap<String, Object>();
+                                updateParams.put("source", token);
+                                customer.update(updateParams);*/
+                                System.out.println("customer created " + customer.toString());
+                            }
+                            catch(Exception e)
+                            {
+                                System.out.println(e.getMessage());
+                            }
+
+                        }
+                    }
+            );
+
+
+
+
+
+          /*  token = Token.create(tokenParams);
+            System.out.println("token " + token.getId());
+
+
+
+
+
+            Map<String, Object> sourceParams = new HashMap<String, Object>();
+            sourceParams.put("source", token.getId()); //?
+            Card source = (Card) customer.getSources().create(sourceParams);
+
+
+
+            Map<String, Object> params = new HashMap<String, Object>();
+            params.put("source", token);
+            customer.getSources().create(params);
+            System.out.println("type " + customer.getSources().getRequestParams());*/
+        }
+        catch(Exception e)
+        {
+            System.out.println(e.getMessage());
+             e.printStackTrace();
+        }
+
+
+        //Stripe.apiKey = "pk_test_QM2w0W5t19PihSq8BMXkSXMY";
+
+
+
+    }
+
+   /* public void payC()
     {
         PaymentConfiguration.init(STRIPE_API_KEY1);
         new Stripe(getApplicationContext()).createToken(
@@ -142,5 +373,5 @@ public class PaymentActivity extends AppCompatActivity {
                         Timber.e("error " + error.getLocalizedMessage());
                     }
                 });
-    }
+    }*/
 }
