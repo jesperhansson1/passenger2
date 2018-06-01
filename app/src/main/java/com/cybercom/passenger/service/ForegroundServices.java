@@ -135,6 +135,7 @@ public class ForegroundServices extends LifecycleService {
                     }
 
                     Timber.d("currentSpeed: %f", speed);
+                    Timber.d("currentBearing: %f", mCurrentLocation.getBearing());
 
                     mPassengerRepository.updateDriveCurrentLocation(driveId, mCurrentLocation);
                     mPassengerRepository.updateDriveCurrentVelocity(driveId, speed);
