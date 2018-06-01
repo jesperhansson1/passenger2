@@ -18,6 +18,7 @@ import com.cybercom.passenger.repository.databasemodel.utils.DatabaseModelHelper
 import com.cybercom.passenger.repository.networking.DistantMatrixAPIHelper;
 import com.cybercom.passenger.repository.networking.model.DistanceMatrixResponse;
 import com.cybercom.passenger.utils.LocationHelper;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
