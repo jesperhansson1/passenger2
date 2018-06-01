@@ -4,20 +4,29 @@ package com.cybercom.passenger.flows.payment;
 import android.os.AsyncTask;
 import com.stripe.Stripe;
 import com.stripe.model.Customer;
-import com.stripe.model.Token;
+
 import java.util.HashMap;
 import java.util.Map;
 import timber.log.Timber;
 
 import static com.cybercom.passenger.flows.payment.Constants.STRIPE_API_KEY;
 
-public class StripeCustomer extends AsyncTask<String, Void, Customer> {
-    Token mToken = null;
-    Customer mCustomer = null;
+public class StripeCustomer extends AsyncTask<String, Void, String> {
+    String mToken = null;
+    String mCustomerId = null;
+    String mEmail = null;
 
-    public StripeCustomer(Token token) {
-        mToken = token;
-        Timber.d(token.toString());
+    OnCustomerCreated mCustomerDelegate;
+
+    public interface OnCustomerCreated{
+        void updateCustomerId(String customerId);
+    }
+
+    public StripeCustomer(String tokenId, String email, OnCustomerCreated delegate) {
+        mToken = tokenId;
+        mEmail = email;
+        mCustomerDelegate = delegate;
+        Timber.d(tokenId.toString());
     }
 
     public StripeCustomer() {
@@ -25,35 +34,37 @@ public class StripeCustomer extends AsyncTask<String, Void, Customer> {
     }
 
     @Override
-    protected Customer doInBackground(String... params) {
-        mCustomer =  postData(mToken);
-        Timber.d("customer id" + mCustomer.toString());
-        return mCustomer;
+    protected String doInBackground(String... params) {
+        mCustomerId =  postData(mToken, mEmail);
+        Timber.d("customer id" + mCustomerId.toString());
+        return mCustomerId;
     }
 
     @Override
-    protected void onPostExecute(Customer customer) {
-        super.onPostExecute(customer);
-        Timber.d("customer created " + customer.toString());
+    protected void onPostExecute(String customerId) {
+        Timber.d("customer created " + customerId);
+        mCustomerDelegate.updateCustomerId(customerId);
+
+
     }
 
-    public Customer postData(Token token) {
+    public String postData(String tokenId, String email) {
+        Customer customer = null;
         Stripe.apiKey = STRIPE_API_KEY;
-        String tokens =token.getId();
         Map<String, Object> customerParams = new HashMap<String, Object>();
-        customerParams.put("description", "iouerowior");
-        customerParams.put("source", tokens);
+        customerParams.put("email", email);
+        customerParams.put("source", tokenId);
         try
         {
-            mCustomer = Customer.create(customerParams);
-            Timber.d("Customer created " + mCustomer.toString());
-            return mCustomer;
+            customer = Customer.create(customerParams);
+            Timber.d("Customer created " + customer.toString());
+            return customer.getId();
 
         }
         catch(Exception e)
         {
             Timber.d("error creating Customer " + e.getMessage());
         }
-        return mCustomer;
+        return customer.getId();
     }
 }

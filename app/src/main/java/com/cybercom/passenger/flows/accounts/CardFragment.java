@@ -15,7 +15,11 @@ import android.widget.Toast;
 
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.main.MainActivity;
+import com.cybercom.passenger.flows.payment.StripeCustomer;
+import com.cybercom.passenger.flows.payment.StripeToken;
+import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.repository.PassengerRepository;
+import com.google.gson.Gson;
 import com.stripe.android.model.Card;
 
 import timber.log.Timber;
@@ -23,7 +27,7 @@ import timber.log.Timber;
 import static com.cybercom.passenger.flows.accounts.AccountActivity.CARARRAY;
 import static com.cybercom.passenger.flows.accounts.AccountActivity.LOGINARRAY;
 
-public class CardFragment extends Fragment {
+public class CardFragment extends Fragment implements StripeToken.OnTokenCreated, StripeCustomer.OnCustomerCreated{
 
     private Button mNext;
     private EditText mEditTextCard;
@@ -32,6 +36,8 @@ public class CardFragment extends Fragment {
     private Bundle mExtras;
     private PassengerRepository repository = PassengerRepository.getInstance();
     private ProgressBar mProgressBar;
+    private String mEmail;
+    private User mUserLogin;
 
     public CardFragment() {
         // Required empty public constructor
@@ -57,6 +63,14 @@ public class CardFragment extends Fragment {
         mNext = rootView.findViewById(R.id.button_fragmentcard_next);
         mNext.setOnClickListener(view -> nextCardClick());
         mExtras = getActivity().getIntent().getExtras();
+
+        if(mExtras!=null)
+        {
+            mUserLogin = (new Gson()).fromJson( mExtras.getString(LOGINARRAY), User.class);
+            mEmail = mUserLogin.getmEmail();
+        }
+
+
         return rootView;
     }
 
@@ -103,18 +117,18 @@ public class CardFragment extends Fragment {
                 Timber.e("CARD is valid");
                 Toast.makeText(getContext(),"CARD is valid",Toast.LENGTH_LONG).show();
 
+                new StripeToken(card,this).execute();
 
-                createUserReturnMain();
             }
         }
     }
 
-    private void createUserReturnMain() {
+    private void createUserReturnMain(String loginArray) {
         mProgressBar.setVisibility(View.VISIBLE);
         mNext.setText("");
         if(mExtras != null) {
             if (mExtras.getString(CARARRAY) != null) {
-                repository.createUserAddCar(mExtras.getString(LOGINARRAY),
+                repository.createUserAddCar(loginArray,
                         mExtras.getString(CARARRAY)).observe(this, firebaseUser -> {
                             if (firebaseUser!=null) {
                                 Intent intent = new Intent(getActivity().getApplicationContext(), MainActivity.class);
@@ -128,7 +142,7 @@ public class CardFragment extends Fragment {
                         });
             }
             else {
-                repository.createUserWithEmailAndPassword(mExtras.getString(LOGINARRAY)).observe(
+                repository.createUserWithEmailAndPassword(loginArray).observe(
                         this, firebaseUser -> {
                     if (firebaseUser!=null) {
                         Intent intent = new Intent(getActivity().getApplicationContext(), MainActivity.class);
@@ -144,5 +158,23 @@ public class CardFragment extends Fragment {
         } else {
             Timber.e("Nothing to add");
         }
+    }
+
+    @Override
+    public void updateTokenId(String tokenId) {
+        Timber.d("token created with id " + tokenId);
+        new StripeCustomer(tokenId, mEmail,this).execute();
+    }
+
+    @Override
+    public void updateCustomerId(String customerId) {
+        Timber.d("customer created with id " + customerId);
+        mUserLogin.setCustomerId(customerId);
+
+        Gson gson = new Gson();
+        String loginArray = gson.toJson(mUserLogin);
+
+
+        createUserReturnMain(loginArray);
     }
 }

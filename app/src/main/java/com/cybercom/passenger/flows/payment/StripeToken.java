@@ -1,6 +1,8 @@
 package com.cybercom.passenger.flows.payment;
 
         import android.os.AsyncTask;
+
+        import com.cybercom.passenger.flows.accounts.CardFragment;
         import com.stripe.Stripe;
         import com.stripe.model.Token;
         import com.stripe.android.model.Card;
@@ -10,35 +12,37 @@ package com.cybercom.passenger.flows.payment;
 
         import static com.cybercom.passenger.flows.payment.Constants.STRIPE_API_KEY;
 
-public class StripeToken extends AsyncTask<String, Void, Token> {
+public class StripeToken extends AsyncTask<String, Void, String> {
 
     com.stripe.android.model.Card mCard = null;
-    Token mToken = null;
+    String mToken = null;
+    OnTokenCreated mTokenDelegate;
 
-    public StripeToken(Card card) {
+    public interface OnTokenCreated{
+        void updateTokenId(String tokenId);
+    }
+
+    public StripeToken(Card card, OnTokenCreated caller) {
         mCard = card;
+        mTokenDelegate = caller;
         Timber.d(mCard.toString());
     }
 
-    public StripeToken() {
-
-    }
-
     @Override
-    protected Token doInBackground(String... params) {
+    protected String doInBackground(String... params) {
         mToken =  postData(mCard);
-        Timber.d("Token id" + mToken.getId());
+        Timber.d("Token id" + mToken);
         return mToken;
     }
 
     @Override
-    protected void onPostExecute(Token token) {
-        super.onPostExecute(token);
+    protected void onPostExecute(String token) {
         Timber.d("token created " + token.toString());
-        StripeCustomer stripeCustomer = (StripeCustomer) new StripeCustomer(token).execute();
+        mTokenDelegate.updateTokenId(token);
     }
 
-    public Token postData(Card card) {
+    public String postData(Card card) {
+        Token token = null;
         Stripe.apiKey = STRIPE_API_KEY;
         Map<String, Object> tokenParams = new HashMap<String, Object>();
         Map<String, Object> cardParams = new HashMap<String, Object>();
@@ -51,16 +55,16 @@ public class StripeToken extends AsyncTask<String, Void, Token> {
 
         try
         {
-            mToken = Token.create(tokenParams);
+            token = Token.create(tokenParams);
             Timber.d("token created " + mToken.toString());
-            return mToken;
+            return token.getId();
 
         }
         catch(Exception e)
         {
             Timber.e("error creating token " + e.getMessage());
         }
-        return mToken;
+        return token.getId();
     }
 }
 
