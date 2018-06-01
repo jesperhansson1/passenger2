@@ -5,8 +5,11 @@ import android.os.AsyncTask;
 import android.support.annotation.Nullable;
 
 import com.cybercom.passenger.R;
+import com.cybercom.passenger.model.RidePoints;
+import com.cybercom.passenger.model.Route;
 import com.google.android.gms.maps.model.LatLng;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -35,7 +38,11 @@ public class FetchRoute extends AsyncTask<String, Void, List<Route>> {
     private static final String ADD = "&";
     private static final String KEY = "key=";
 
-    private ParserTask.OnRouteCompletion mCaller;
+    public interface OnRouteCompletion{
+        void onRoutesFetched(List<Route> routes);
+    }
+
+    private final OnRouteCompletion mOnRouteCompletion;
 
     /**
      *
@@ -45,9 +52,9 @@ public class FetchRoute extends AsyncTask<String, Void, List<Route>> {
      * @param caller
      */
     public FetchRoute(LatLng origin, LatLng destination, @Nullable List<RidePoints> wayPoints,
-                      ParserTask.OnRouteCompletion caller) {
+                      OnRouteCompletion caller) {
         Timber.d("re-route");
-        mCaller = caller;
+        mOnRouteCompletion = caller;
         execute(getRouteURL(origin, destination, wayPoints));
     }
 
@@ -58,7 +65,8 @@ public class FetchRoute extends AsyncTask<String, Void, List<Route>> {
         try {
             // Fetching the data from web service
             String data = downloadUrl(url[0]);
-            routes = parseRoute(data);
+            JSONObject jsonObject = new JSONObject(data);
+            routes = parseRoutes(jsonObject);
             Timber.d(data);
 
         } catch (Exception e) {
@@ -70,23 +78,7 @@ public class FetchRoute extends AsyncTask<String, Void, List<Route>> {
 
     @Override
     protected void onPostExecute(List<Route> result) {
-        super.onPostExecute(result);
-        mCaller.onRoutesFetched(result);
-    }
-
-    private List<Route> parseRoute(String... jsonData ) {
-        List<Route> listRoutes = new ArrayList<>();
-
-        try {
-            JSONObject jsonObject = new JSONObject(jsonData[0]);
-            // Starts parsing data
-            listRoutes = DataParser.parseRoutes(jsonObject);
-            Timber.d("Executing routes: " +listRoutes.toString());
-
-        } catch (Exception exception) {
-            Timber.e(exception.getLocalizedMessage());
-        }
-        return listRoutes;
+        mOnRouteCompletion.onRoutesFetched(result);
     }
 
     private String downloadUrl(String urlString) throws IOException {
@@ -123,7 +115,7 @@ public class FetchRoute extends AsyncTask<String, Void, List<Route>> {
     }
 
     @Nullable
-    private String getWayPointsString(List<RidePoints> wayPoints) {
+    private String getWayPointsString(@Nullable List<RidePoints> wayPoints) {
         if (wayPoints == null) {
             return null;
         }
@@ -166,7 +158,26 @@ public class FetchRoute extends AsyncTask<String, Void, List<Route>> {
         }
         url.append(ADD);
         url.append(KEY);
-        url.append(((Context)mCaller).getResources().getString(R.string.google_api_key));
+        url.append(((Context) mOnRouteCompletion).getResources().getString(R.string.google_api_key));
         return url.toString();
+    }
+
+    private static final String JSON_ROUTES = "routes";
+    /**
+     * Parse the routes object
+     * @param jsonObject A JSONObject holding the routes to parseRoutes
+     * @return A List with all the routes.
+     */
+    private List<Route> parseRoutes(JSONObject jsonObject) {
+        List<Route> routes = new ArrayList<>();
+        try {
+            JSONArray jsonArrayRoutes = jsonObject.getJSONArray(JSON_ROUTES);
+            for(int i=0; i<jsonArrayRoutes.length(); i++) {
+                routes.add(Route.createInstanceFromJsonObject((JSONObject)jsonArrayRoutes.get(i)));
+            }
+        } catch (Exception exception){
+            Timber.e(exception.getLocalizedMessage());
+        }
+        return routes;
     }
 }

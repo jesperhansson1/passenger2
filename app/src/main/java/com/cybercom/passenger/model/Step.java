@@ -1,7 +1,8 @@
-package com.cybercom.passenger.route;
+package com.cybercom.passenger.model;
 
 import android.support.annotation.NonNull;
 
+import com.cybercom.passenger.route.RouteHelper;
 import com.google.android.gms.maps.model.LatLng;
 
 import org.json.JSONException;

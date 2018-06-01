@@ -62,9 +62,8 @@ import com.cybercom.passenger.model.PassengerRide;
 import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.route.FetchRoute;
-import com.cybercom.passenger.route.ParserTask;
-import com.cybercom.passenger.route.RidePoints;
-import com.cybercom.passenger.route.Route;
+import com.cybercom.passenger.model.RidePoints;
+import com.cybercom.passenger.model.Route;
 import com.cybercom.passenger.service.Constants;
 import com.cybercom.passenger.service.ForegroundServices;
 import com.cybercom.passenger.service.GeofenceTransitionsIntentService;
@@ -105,7 +104,7 @@ public class MainActivity extends AppCompatActivity implements
         PassengerNotificationDialog.PassengerNotificationListener,
         OnMapReadyCallback, GoogleMap.OnMarkerDragListener, GoogleMap.OnCameraMoveStartedListener,
         GoogleMap.OnMapLongClickListener, GoogleMap.OnMapClickListener,
-        CreateDriveFragment.OnPlaceMarkerIconClickListener, ParserTask.OnRouteCompletion,
+        CreateDriveFragment.OnPlaceMarkerIconClickListener, FetchRoute.OnRouteCompletion,
         CreateDriveFragment.OnFinishedCreatingDriveOrDriveRequest,
         FindingCarProgressDialog.FindingCarListener, GoogleMap.OnMyLocationButtonClickListener,
         NoMatchFragment.NoMatchButtonListener, FragmentSizeListener, OnCompleteListener<Void>,

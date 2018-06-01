@@ -1,8 +1,6 @@
-package com.cybercom.passenger.route;
+package com.cybercom.passenger.model;
 
 import android.support.annotation.NonNull;
-
-import com.cybercom.passenger.model.Position;
 
 import org.json.JSONArray;
 import org.json.JSONException;

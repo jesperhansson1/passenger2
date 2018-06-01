@@ -1,4 +1,4 @@
-package com.cybercom.passenger.route;
+package com.cybercom.passenger.model;
 
 import android.support.annotation.NonNull;
 
