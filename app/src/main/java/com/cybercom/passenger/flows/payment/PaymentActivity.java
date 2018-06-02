@@ -22,6 +22,11 @@ import com.stripe.android.TokenCallback;
 import com.stripe.android.model.Card;
 
 import com.stripe.android.view.CardInputWidget;
+import com.stripe.exception.APIConnectionException;
+import com.stripe.exception.APIException;
+import com.stripe.exception.AuthenticationException;
+import com.stripe.exception.CardException;
+import com.stripe.exception.InvalidRequestException;
 import com.stripe.model.Customer;
 import com.stripe.model.ExternalAccountCollection;
 import com.stripe.model.Token;
@@ -61,10 +66,57 @@ public class PaymentActivity extends AppCompatActivity {
         findViewById(R.id.button_payment_calculate).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                calculatePayment();
+                calculatePayment1();
             }
         });
         mPaymentViewModel = ViewModelProviders.of(this).get(PaymentViewModel.class);
+    }
+
+    public void calculatePayment1(){
+
+        com.stripe.Stripe.apiKey = "sk_test_hOEYoyhsiD3MOJiWW33ztX48";
+
+        Map<String, Object> tokenParams = new HashMap<String, Object>();
+        Map<String, Object> bankAccountParams = new HashMap<String, Object>();
+        bankAccountParams.put("country", "US");
+        bankAccountParams.put("currency", "usd");
+        bankAccountParams.put("account_holder_name", "test name");
+        bankAccountParams.put("account_holder_type", "individual");
+        bankAccountParams.put("routing_number", "110000000");
+        bankAccountParams.put("account_number", "000123456789");
+        tokenParams.put("bank_account", bankAccountParams);
+
+
+        Thread thread = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                try  {
+                    //Your code goes here
+
+                    try {
+                        Token token = Token.create(tokenParams);
+                        System.out.println(token.getId());
+                    } catch (AuthenticationException e) {
+                        e.printStackTrace();
+                    } catch (InvalidRequestException e) {
+                        e.printStackTrace();
+                    } catch (APIConnectionException e) {
+                        e.printStackTrace();
+                    } catch (CardException e) {
+                        e.printStackTrace();
+                    } catch (APIException e) {
+                        e.printStackTrace();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        thread.start();
+
+
     }
 
     public void calculatePayment()
