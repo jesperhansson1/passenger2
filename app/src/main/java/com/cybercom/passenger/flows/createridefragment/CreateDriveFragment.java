@@ -88,7 +88,7 @@ public class CreateDriveFragment extends Fragment {
     private TextView mNumberOfPassengersTitle;
     private TextView mNumberOfPassengers;
     private AutoCompleteTextView mStartLocation, mEndLocation;
-    private Button mCreateRide;
+    private Button mButtonCreateRide;
     private ProgressBar mCreatingDrive;
     private EditText mShowSelectedTime;
     private long mTimeSelected;
@@ -176,7 +176,7 @@ public class CreateDriveFragment extends Fragment {
         ImageView addPassengers = view.findViewById(R.id.create_drive_add_passenger);
 
         ImageView removePassengers = view.findViewById(R.id.create_drive_remove_passenger);
-        mCreateRide = view.findViewById(R.id.create_drive_button);
+        mButtonCreateRide = view.findViewById(R.id.create_drive_button);
         mCreatingDrive = view.findViewById(R.id.create_drive_progressbar);
 
         RadioGroup timeSelection = view.findViewById(R.id.create_drive_radio_group_when_selection);
@@ -264,12 +264,10 @@ public class CreateDriveFragment extends Fragment {
             displayNumberOfPassengers();
         });
 
-        mCreateRide.setOnClickListener(v -> {
+        mButtonCreateRide.setOnClickListener(v -> {
 
             if (mMainViewModel.getStartMarkerLocation().getValue() != null
                     && mMainViewModel.getEndMarkerLocation().getValue() != null) {
-
-                disableDialog();
 
                 mCreateRideDialogListener.onCreateRide(
                         mTimeSelected, mType, LocationHelper.convertLocationToPosition(
@@ -323,24 +321,18 @@ public class CreateDriveFragment extends Fragment {
         }
     }
 
-    private void disableDialog() {
-        mCreateRide.setText(null);
-        mCreateRide.setEnabled(false);
-        mCreatingDrive.setVisibility(View.VISIBLE);
-    }
-
     public void setDefaultValuesToDialog() {
 
         if (mType == User.TYPE_DRIVER) {
-            mCreateRide.setText(R.string.create_ride);
+            mButtonCreateRide.setText(R.string.create_ride);
         }
         if (mType == User.TYPE_PASSENGER) {
-            mCreateRide.setText(R.string.create_drive_find_ride);
+            mButtonCreateRide.setText(R.string.create_drive_find_ride);
         }
 
         mStartLocation.setText(EMPTY_STRING, false);
         mEndLocation.setText(EMPTY_STRING, false);
-        mCreateRide.setEnabled(true);
+        mButtonCreateRide.setEnabled(true);
         mCreatingDrive.setVisibility(View.GONE);
         mMainViewModel.setNumberOfPassengers(DEFAULT_PASSENGERS);
         mShowSelectedTime.setText(EMPTY_STRING);
@@ -350,14 +342,14 @@ public class CreateDriveFragment extends Fragment {
     private void setUpDialogForDrive() {
         mMainViewModel.setNumberOfPassengers(DEFAULT_PASSENGER_DRIVE);
         displayNumberOfPassengers();
-        mCreateRide.setText(R.string.create_ride);
+        mButtonCreateRide.setText(R.string.create_ride);
         mNumberOfPassengersTitle.setText(R.string.create_drive_available_seats);
     }
 
     private void setUpDialogForDriveRequest() {
         mMainViewModel.setNumberOfPassengers(DEFAULT_PASSENGER_DRIVE_REQUEST);
         displayNumberOfPassengers();
-        mCreateRide.setText(R.string.create_drive_find_ride);
+        mButtonCreateRide.setText(R.string.create_drive_find_ride);
         mNumberOfPassengersTitle.setText(R.string.create_drive_passengers_title);
     }
 

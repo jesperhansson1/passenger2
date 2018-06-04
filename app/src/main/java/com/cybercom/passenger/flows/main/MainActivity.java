@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.arch.lifecycle.LifecycleOwner;
 import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.BroadcastReceiver;
@@ -182,6 +183,8 @@ public class MainActivity extends AppCompatActivity implements
 
     private Bounds mBounds;
     private List<String> mActiveDriveIdList = new ArrayList<>();
+    private Observer<Location> mLocationObserverForCameraUpdates;
+    private MutableLiveData<Location> mDriverCurrentLocationLiveData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -355,13 +358,11 @@ public class MainActivity extends AppCompatActivity implements
         final LifecycleOwner lifecycleOwner = this;
         mPassengerRides = new ArrayList<>();
 
-        mMainViewModel.getActiveDriveId().observe(this, driveId -> {
-            if (driveId == null) {
-                // TODO: No drive is active or drive has been cancelled. Update UI accordingly.
-            } else {
-                if (mActiveDriveIdList.contains(driveId)) {
+        mMainViewModel.getActiveDrive().observe(this, drive -> {
+            if (drive != null) {
+                if (mActiveDriveIdList.contains(drive.getId())) {
                     // Make sure to only observe once
-                    Timber.d("Have already added observer");
+                    Timber.d("Have already added PassengerRide observer");
                     return;
                 }
 
@@ -370,8 +371,8 @@ public class MainActivity extends AppCompatActivity implements
                             "for the current user", Toast.LENGTH_LONG).show();
                 }
 
-                mActiveDriveIdList.add(driveId);
-                mMainViewModel.getPassengerRides(driveId).observe(lifecycleOwner, passengerRide -> {
+                mActiveDriveIdList.add(drive.getId());
+                mMainViewModel.getPassengerRides(drive.getId()).observe(lifecycleOwner, passengerRide -> {
                     if (passengerRide != null) {
                         if (isPassengerRideAlreadyAddedToLocalList(passengerRide)) {
                             replacePassengerRide(passengerRide);
@@ -380,10 +381,10 @@ public class MainActivity extends AppCompatActivity implements
                             createGeofence(passengerRide);
                         }
                     }
-                    //reroute here wrong
                     handlePassengerChanged(passengerRide);
-
                 });
+
+                handleOnGoingDrive(drive);
             }
         });
     }
@@ -415,7 +416,8 @@ public class MainActivity extends AppCompatActivity implements
      * camera so that the current direction where the car is heading is always upwards.
      */
     private void moveCameraOnPositionUpdates() {
-        mMainViewModel.getDriverCurrentLocation().observe(this, location -> {
+
+        mLocationObserverForCameraUpdates = location -> {
             CameraPosition cameraPosition;
 
             CameraPosition.Builder cameraPositionBuilder = new CameraPosition.Builder()
@@ -430,7 +432,16 @@ public class MainActivity extends AppCompatActivity implements
             cameraPosition = cameraPositionBuilder.target(new LatLng(location.getLatitude(),
                     location.getLongitude())).build();
             mGoogleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-        });
+        };
+
+        mDriverCurrentLocationLiveData = mMainViewModel.getDriverCurrentLocation();
+        mDriverCurrentLocationLiveData.observe(this, mLocationObserverForCameraUpdates);
+    }
+
+    private void stopCameraUpdatesOnPositionUpdates() {
+        if (mDriverCurrentLocationLiveData != null) {
+            mDriverCurrentLocationLiveData.removeObserver(mLocationObserverForCameraUpdates);
+        }
     }
 
         /*
@@ -1065,7 +1076,6 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onCreateRide(long time, int type, Position startLocation, Position endLocation,
                              int seats) {
-        mCreateDriveFragment.hideCreateDialogCompletely();
         switch (type) {
             case User.TYPE_DRIVER:
                 if(mBounds == null) {
@@ -1073,7 +1083,7 @@ public class MainActivity extends AppCompatActivity implements
                 }
                 mMainViewModel.createDrive(time, startLocation, endLocation, seats, mBounds)
                         .observe(this, drive -> {
-                            handleOnGoingDrive(drive);
+                            Timber.d("Drive successfully created: %s", drive);
                         });
                 break;
             case User.TYPE_PASSENGER:
@@ -1085,6 +1095,7 @@ public class MainActivity extends AppCompatActivity implements
                             matchDriveRequest(driveRequest,
                                     mMainViewModel.getDriveRequestRadiusMultiplier());
                             mCreateDriveFragment.setDefaultValuesToDialog();
+                            mCreateDriveFragment.hideCreateDialogCompletely();
                         });
                 break;
         }
@@ -1100,6 +1111,7 @@ public class MainActivity extends AppCompatActivity implements
             updatePassengersMarkerPosition(drive.getId());
             mCreateDriveFragment.setDefaultValuesToDialog();
             mCancelDriveFab.setVisibility(View.VISIBLE);
+            mCreateDriveFragment.hideCreateDialogCompletely();
         }
     }
 
@@ -1382,11 +1394,18 @@ public class MainActivity extends AppCompatActivity implements
         mCancelDriveFab.setVisibility(View.INVISIBLE);
         mConfirmCancelDrive.setVisibility(View.INVISIBLE);
         addCreateDriveFragment();
+        stopForegroundService();
+        stopCameraUpdatesOnPositionUpdates();
         mCreateDriveFragment.showCreateDialog();
         mActiveDriveIdList.remove(driveId);
         mPassengerContainer.removeAllViews();
         mPassengerDetailedInformation = findViewById(R.id.passenger_detailed_information);
         mPassengerDetailedInformation.setVisibility(View.INVISIBLE);
+    }
+
+    private void stopForegroundService() {
+        Intent foregroundServiceIntent = new Intent(MainActivity.this, ForegroundServices.class);
+        stopService(foregroundServiceIntent);
     }
 
     private void toogleConfirmButton() {

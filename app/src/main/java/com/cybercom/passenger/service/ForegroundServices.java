@@ -274,6 +274,7 @@ public class ForegroundServices extends LifecycleService {
 
             if (!mDropOffConfirmed || !mIsDriverAtDropOffLocation) {
                 detectArrivalToDropOffLocation();
+                return;
             }
 
             detectDriverArrival();

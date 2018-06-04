@@ -361,8 +361,8 @@ public class MainViewModel extends AndroidViewModel {
         return mPassengerRepository.getPassengerPosition(driveId);
     }
 
-    public LiveData<String> getActiveDriveId() {
-        return mPassengerRepository.getActiveDriveId();
+    public LiveData<Drive> getActiveDrive() {
+        return mPassengerRepository.getActiveDrive();
     }
 
     public LiveData<Integer> getETA() {
