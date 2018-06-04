@@ -229,11 +229,20 @@ public class CardFragment extends Fragment implements StripeTokenAsyncTask.OnTok
 
     }
 
+    //gets the ipaddress
     public String getIpAddress()
     {
         String ipAddress = "100.100.100.100";
-        WifiManager wifiManager = (WifiManager) getContext().getApplicationContext().getSystemService(WIFI_SERVICE);
-        ipAddress = Formatter.formatIpAddress(wifiManager.getConnectionInfo().getIpAddress());
+        try
+        {
+            WifiManager wifiManager = (WifiManager) getContext().getApplicationContext().getSystemService(WIFI_SERVICE);
+            ipAddress = Formatter.formatIpAddress(wifiManager.getConnectionInfo().getIpAddress());
+
+        }
+        catch(Exception e)
+        {
+            Timber.d(e.getLocalizedMessage());
+        }
         Timber.d("ipaddess " + ipAddress);
         return ipAddress;
     }

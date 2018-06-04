@@ -14,6 +14,8 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.location.Location;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -25,6 +27,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
+import android.text.format.Formatter;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -67,6 +70,7 @@ import com.cybercom.passenger.service.ForegroundServices;
 import com.cybercom.passenger.service.GeofenceTransitionsIntentService;
 import com.cybercom.passenger.utils.LocationHelper;
 import com.cybercom.passenger.utils.NotificationHelper;
+import com.google.android.gms.common.util.ArrayUtils;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingClient;
 import com.google.android.gms.location.GeofencingRequest;
@@ -88,6 +92,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.iid.FirebaseInstanceId;
 
+import java.math.BigInteger;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -210,6 +217,7 @@ public class MainActivity extends AppCompatActivity implements
             mMainViewModel.getUser().observe(this, user -> {
                 Timber.i("User: %s logged in", user);
                 mCurrentLoggedInUser = user;
+                System.out.println(" stripe id is " + mCurrentLoggedInUser.getCustomerId() + " type is " + mCurrentLoggedInUser.getType());
             });
         } else {
             if (getSupportActionBar() != null) {
@@ -1501,6 +1509,7 @@ public class MainActivity extends AppCompatActivity implements
                     if (geoFenceType.equals(GEOFENCE_TYPE_PICK_UP)) {
                         if (mCurrentLoggedInUser.getType() == User.TYPE_DRIVER) {
                             showDriverPickUpFragment(getPassengerRideFromLocalList(passengerRideId));
+
                         }
                     } else if (geoFenceType.equals(GEOFENCE_TYPE_DROP_OFF)) {
                         if (mCurrentLoggedInUser.getType() == User.TYPE_DRIVER) {
