@@ -455,7 +455,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                 final com.cybercom.passenger.repository.databasemodel.Drive dbDrive =
                         dataSnapshot.getValue(
                                 com.cybercom.passenger.repository.databasemodel.Drive.class);
-                if (dbDrive == null) {
+
+                if (dbDrive == null || dbDrive.getDriverId() == null) {
                     Timber.e("dbDrive was null");
                     return;
                 }
@@ -588,9 +589,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         Timber.d("Notifcation queue size after add: %d", mNotificationQueue.size());
     }
 
-    public void getNextNotification(Notification notification) {
+    public void getNextNotification() {
         Notification n = mNotificationQueue.poll();
-        Timber.d("Get next notification: %s", notification.toString());
         mNotification.postValue(mNotificationQueue.peek());
         Timber.d("Notifcation queue size after get: %d", mNotificationQueue.size());
     }
@@ -903,6 +903,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private ValueEventListener getEventListenerToFetchDriveAndBuildPassengerRide(
             String passengerRideId, PassengerRide passengerRide, User passenger,
             MutableLiveData<com.cybercom.passenger.model.PassengerRide> passengerRideMutableLiveData) {
+
         return new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -912,10 +913,12 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                 final String driveId = dataSnapshot.getKey();
 
                 if (drive != null) {
+
                     mUsersReference.child(drive.getDriverId()).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             User driver = dataSnapshot.getValue(User.class);
+
                             Drive convertedDrive = new Drive(driveId, driver,
                                     drive.getTime(),
                                     drive.getStartLocation(), drive.getEndLocation(),
@@ -1077,25 +1080,89 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         return driveMutableLiveData;
     }
 
+    public LiveData<com.cybercom.passenger.model.PassengerRide> getActivePassengerRide() {
+        MutableLiveData<com.cybercom.passenger.model.PassengerRide> passengerRideMutableLiveData
+                = new MutableLiveData<>();
+
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (firebaseUser == null) {
+            // TODO: Not logged in...
+            return passengerRideMutableLiveData;
+        }
+
+        mUsersReference.child(firebaseUser.getUid()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                mCurrentlyLoggedInUser = dataSnapshot.getValue(User.class);
+                if (mCurrentlyLoggedInUser != null) {
+                    mPassengerRideReference.orderByChild(KEY_PASSENGER_ID)
+                            .equalTo(mCurrentlyLoggedInUser.getUserId())
+                            .addChildEventListener(new ChildEventListener() {
+                                @Override
+                                public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+                                    com.cybercom.passenger.repository.databasemodel.PassengerRide dbPassengerRide =
+                                            dataSnapshot.getValue(com.cybercom.passenger.repository.databasemodel.PassengerRide.class);
+
+                                    final DatabaseReference driveRef = mDrivesReference.child(
+                                            dbPassengerRide.getDriveId());
+                                    driveRef.addListenerForSingleValueEvent(getEventListenerToFetchDriveAndBuildPassengerRide(dataSnapshot.getKey(),
+                                            dbPassengerRide, mCurrentlyLoggedInUser, passengerRideMutableLiveData));
+                                }
+
+                                @Override
+                                public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+                                }
+
+                                @Override
+                                public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+                                }
+
+                                @Override
+                                public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                }
+
+                            });
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+
+        });
+
+        return passengerRideMutableLiveData;
+    }
+
     public LiveData<PassengerRide> getPassengerRideById(String passengerRideId) {
         MutableLiveData<PassengerRide> passengerRideLiveData = new MutableLiveData<>();
 
         mPassengerRideReference.child(passengerRideId).
-                addValueEventListener(
-                new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        Timber.i("getPassengerRideById %s", dataSnapshot);
-                        PassengerRide passengerRide = dataSnapshot.getValue(PassengerRide.class);
-                        passengerRideLiveData.setValue(passengerRide);
-                    }
+            addValueEventListener(
+            new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    PassengerRide passengerRide = dataSnapshot.getValue(PassengerRide.class);
+                    passengerRideLiveData.setValue(passengerRide);
+                }
 
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
 
-                    }
-                });
-
+                }
+            });
         return passengerRideLiveData;
     }
 
@@ -1157,7 +1224,6 @@ public class PassengerRepository implements PassengerRepositoryInterface {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     drive = snapshot.getValue(com.cybercom.passenger.repository.databasemodel.Drive.class);
-                    Timber.d("here " + drive.getDriverId() + " : " + drive.getEndLocation());
                 }
             }
 

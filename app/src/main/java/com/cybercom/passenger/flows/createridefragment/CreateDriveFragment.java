@@ -155,8 +155,10 @@ public class CreateDriveFragment extends Fragment {
                 .addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                     @Override
                     public void onGlobalLayout() {
-                        mFragmentSizeListener.onHeightChanged(mCreateDriveDialog.getHeight() +
-                                MARGIN);
+                        if (mFragmentSizeListener != null) {
+                            mFragmentSizeListener.onHeightChanged(mCreateDriveDialog.getHeight() +
+                                    MARGIN);
+                        }
                         mCreateDriveDialog.getViewTreeObserver().removeOnGlobalLayoutListener(this);
                     }
                 });
@@ -376,8 +378,10 @@ public class CreateDriveFragment extends Fragment {
                 .setDuration(DIALOG_ANIMATION_DURATION);
         mShowAndHide.animate().rotation(DOWN_ARROW_ROTATION)
                 .setDuration(ARROW_ANIMATION_DURATION);
-        mFragmentSizeListener
-                .onHeightChanged(mCreateDriveDialog.getHeight() + MARGIN);
+        if (mFragmentSizeListener != null) {
+            mFragmentSizeListener
+                    .onHeightChanged(mCreateDriveDialog.getHeight() + MARGIN);
+        }
         mIsCreateDialogUp = true;
 
     }
@@ -390,7 +394,9 @@ public class CreateDriveFragment extends Fragment {
                 .translationY((mCreateDriveDialog.getHeight() + MARGIN) - mShowAndHide.getHeight())
                 .setDuration(DIALOG_ANIMATION_DURATION);
         mShowAndHide.animate().rotation(UP_ARROW_ANIMATION).setDuration(ARROW_ANIMATION_DURATION);
-        mFragmentSizeListener.onHeightChanged(mShowAndHide.getHeight());
+        if (mFragmentSizeListener != null) {
+            mFragmentSizeListener.onHeightChanged(mShowAndHide.getHeight());
+        }
         mIsCreateDialogUp = false;
     }
 
@@ -424,7 +430,9 @@ public class CreateDriveFragment extends Fragment {
 
                     }
                 });
-        mFragmentSizeListener.onHeightChanged(0);
+        if (mFragmentSizeListener != null) {
+            mFragmentSizeListener.onHeightChanged(0);
+        }
 
     }
 

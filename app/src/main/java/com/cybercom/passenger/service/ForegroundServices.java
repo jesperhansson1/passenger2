@@ -259,8 +259,8 @@ public class ForegroundServices extends LifecycleService {
     private void detectDriverArrival() {
         new Handler().postDelayed(() -> {
 
-            if (mDriversPosition == null | mPickUpLocation == null | mDropOffLocation == null
-                    | mDriversVelocity == null) {
+            if (mDriversPosition == null || mPickUpLocation == null || mDropOffLocation == null
+                    || mDriversVelocity == null) {
                 return;
             }
 
