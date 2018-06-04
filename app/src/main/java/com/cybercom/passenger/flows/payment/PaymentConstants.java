@@ -12,5 +12,6 @@ public class PaymentConstants {
     public static final String POSTAL_CODE = "21119";
     public static final String INDIVIDUAL = "individual";
     public static final String PRODUCT_DESCRIPTION = "test";
+    public static final String CURRENCY = "usd";
 
 }

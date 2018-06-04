@@ -9,6 +9,7 @@ package com.cybercom.passenger.flows.payment;
         import java.util.Map;
         import timber.log.Timber;
 
+        import static com.cybercom.passenger.flows.payment.PaymentConstants.CURRENCY;
         import static com.cybercom.passenger.flows.payment.PaymentConstants.STRIPE_API_KEY;
 
 public class StripeTokenAsyncTask extends AsyncTask<String, Void, String> {
@@ -50,12 +51,13 @@ public class StripeTokenAsyncTask extends AsyncTask<String, Void, String> {
         cardParams.put("exp_month", card.getExpMonth());
         cardParams.put("exp_year", card.getExpYear());
         cardParams.put("cvc", card.getCVC());
+        cardParams.put("currency", CURRENCY);
         tokenParams.put("card", cardParams);
 
         try
         {
             token = Token.create(tokenParams);
-            Timber.d("token created " + mToken.toString());
+            Timber.d("token created " + token.toString());
             return token.getId();
 
         }

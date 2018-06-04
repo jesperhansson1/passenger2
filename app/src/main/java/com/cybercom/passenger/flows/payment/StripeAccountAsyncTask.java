@@ -13,6 +13,7 @@ package com.cybercom.passenger.flows.payment;
 
         import static com.cybercom.passenger.flows.payment.PaymentConstants.ADDRESS_LINE1;
         import static com.cybercom.passenger.flows.payment.PaymentConstants.CITY;
+        import static com.cybercom.passenger.flows.payment.PaymentConstants.CURRENCY;
         import static com.cybercom.passenger.flows.payment.PaymentConstants.CUSTOM_ACCOUNT;
         import static com.cybercom.passenger.flows.payment.PaymentConstants.INDIVIDUAL;
         import static com.cybercom.passenger.flows.payment.PaymentConstants.IP;
@@ -79,6 +80,11 @@ public class StripeAccountAsyncTask extends AsyncTask<String, Void, String> {
             Map<String, Object> emailParams = new HashMap<String, Object>();
             params.put("email", email);
             account.update(emailParams);
+
+           /* Map<String, Object> currencyParams = new HashMap<String, Object>();
+            params.put("default_currency", CURRENCY);
+            account.update(currencyParams);*/
+
 
             Map<String, Object> tosAcceptanceParams = new HashMap<String, Object>();
             tosAcceptanceParams.put("date", (long) System.currentTimeMillis() / 1000L);
