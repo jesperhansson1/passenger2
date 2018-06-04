@@ -54,6 +54,7 @@ import com.cybercom.passenger.flows.login.RegisterActivity;
 import com.cybercom.passenger.flows.nomatchfragment.NoMatchFragment;
 import com.cybercom.passenger.flows.passengernotification.PassengerNotificationDialog;
 import com.cybercom.passenger.flows.payment.CalculatePrice;
+import com.cybercom.passenger.flows.payment.StripeChargeAsyncTask;
 import com.cybercom.passenger.flows.pickupfragment.DriverPassengerPickUpFragment;
 import com.cybercom.passenger.flows.progressfindingcar.FindingCarProgressDialog;
 import com.cybercom.passenger.interfaces.FragmentSizeListener;
@@ -114,7 +115,8 @@ public class MainActivity extends AppCompatActivity implements
         FindingCarProgressDialog.FindingCarListener, GoogleMap.OnMyLocationButtonClickListener,
         NoMatchFragment.NoMatchButtonListener, FragmentSizeListener, OnCompleteListener<Void>,
         DriverPassengerPickUpFragment.DriverPassengerPickUpButtonClickListener,
-        DriverDropOffFragment.DriverDropOffConfirmationListener, View.OnClickListener {
+        DriverDropOffFragment.DriverDropOffConfirmationListener, View.OnClickListener,
+        StripeChargeAsyncTask.onChargeCreated{
 
     private static final float ZOOM_LEVEL_STREETS = 15;
 
@@ -1545,7 +1547,15 @@ public class MainActivity extends AppCompatActivity implements
         CalculatePrice calculatePrice = new CalculatePrice(mBounds.getDistance(),seats);
         price = calculatePrice.getPrice();
 
+        new StripeChargeAsyncTask(mCurrentLoggedInUser.getCustomerId(),price,this,false).execute();
+
         Timber.d("price is " + price);
         return price;
     }
+
+    @Override
+    public void chargeBlockedStatus(String chargeId) {
+        Timber.d("charge created with id " + chargeId);
+    }
+
 }
