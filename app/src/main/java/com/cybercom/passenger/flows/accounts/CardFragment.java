@@ -210,8 +210,6 @@ public class CardFragment extends Fragment implements StripeTokenAsyncTask.OnTok
 
         Gson gson = new Gson();
         String loginArray = gson.toJson(mUserLogin);
-
-
         createUserReturnMain(loginArray);
     }
 
@@ -219,14 +217,9 @@ public class CardFragment extends Fragment implements StripeTokenAsyncTask.OnTok
     {
         Timber.d("account created with id " + accountId);
         mUserLogin.setCustomerId(accountId);
-
         Gson gson = new Gson();
         String loginArray = gson.toJson(mUserLogin);
-
-
         createUserReturnMain(loginArray);
-
-
     }
 
     //gets the ipaddress
