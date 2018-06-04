@@ -2,7 +2,6 @@ package com.cybercom.passenger.flows.payment;
 
         import android.os.AsyncTask;
 
-        import com.cybercom.passenger.flows.accounts.CardFragment;
         import com.stripe.Stripe;
         import com.stripe.model.Token;
         import com.stripe.android.model.Card;
@@ -10,9 +9,9 @@ package com.cybercom.passenger.flows.payment;
         import java.util.Map;
         import timber.log.Timber;
 
-        import static com.cybercom.passenger.flows.payment.Constants.STRIPE_API_KEY;
+        import static com.cybercom.passenger.flows.payment.PaymentConstants.STRIPE_API_KEY;
 
-public class StripeToken extends AsyncTask<String, Void, String> {
+public class StripeTokenAsyncTask extends AsyncTask<String, Void, String> {
 
     com.stripe.android.model.Card mCard = null;
     String mToken = null;
@@ -22,7 +21,7 @@ public class StripeToken extends AsyncTask<String, Void, String> {
         void updateTokenId(String tokenId);
     }
 
-    public StripeToken(Card card, OnTokenCreated caller) {
+    public StripeTokenAsyncTask(Card card, OnTokenCreated caller) {
         mCard = card;
         mTokenDelegate = caller;
         Timber.d(mCard.toString());

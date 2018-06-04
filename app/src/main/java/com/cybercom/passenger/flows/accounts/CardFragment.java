@@ -15,8 +15,9 @@ import android.widget.Toast;
 
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.main.MainActivity;
-import com.cybercom.passenger.flows.payment.StripeCustomer;
-import com.cybercom.passenger.flows.payment.StripeToken;
+import com.cybercom.passenger.flows.payment.StripeAccountAsyncTask;
+import com.cybercom.passenger.flows.payment.StripeCustomerAsyncTask;
+import com.cybercom.passenger.flows.payment.StripeTokenAsyncTask;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.repository.PassengerRepository;
 import com.google.gson.Gson;
@@ -26,8 +27,10 @@ import timber.log.Timber;
 
 import static com.cybercom.passenger.flows.accounts.AccountActivity.CARARRAY;
 import static com.cybercom.passenger.flows.accounts.AccountActivity.LOGINARRAY;
+import static com.cybercom.passenger.model.User.TYPE_DRIVER;
+import static com.cybercom.passenger.model.User.TYPE_PASSENGER;
 
-public class CardFragment extends Fragment implements StripeToken.OnTokenCreated, StripeCustomer.OnCustomerCreated{
+public class CardFragment extends Fragment implements StripeTokenAsyncTask.OnTokenCreated, StripeCustomerAsyncTask.OnCustomerCreated, StripeAccountAsyncTask.OnAccountCreated{
 
     private Button mNext;
     private EditText mEditTextCard;
@@ -38,6 +41,10 @@ public class CardFragment extends Fragment implements StripeToken.OnTokenCreated
     private ProgressBar mProgressBar;
     private String mEmail;
     private User mUserLogin;
+    private int mDay,mMonth,mYear;
+    private String mFirstName,mLastName;
+    //0 for driver and 1 for passenger
+    private int mType;
 
     public CardFragment() {
         // Required empty public constructor
@@ -68,6 +75,21 @@ public class CardFragment extends Fragment implements StripeToken.OnTokenCreated
         {
             mUserLogin = (new Gson()).fromJson( mExtras.getString(LOGINARRAY), User.class);
             mEmail = mUserLogin.getmEmail();
+            mType = mUserLogin.getType();
+            mLastName = mUserLogin.getFullName();
+            mFirstName = mUserLogin.getGender();
+            mDay = Integer.parseInt(mUserLogin.getPersonalNumber().substring(4,6));
+            mMonth = Integer.parseInt(mUserLogin.getPersonalNumber().substring(2,4));
+            mYear = Integer.parseInt(mUserLogin.getPersonalNumber().substring(0,2));
+            if((mYear + 2000) > 2018)
+            {
+                mYear = 1900 + mYear;
+            }
+            else
+            {
+                mYear = 2000 + mYear;
+            }
+
         }
 
 
@@ -117,7 +139,7 @@ public class CardFragment extends Fragment implements StripeToken.OnTokenCreated
                 Timber.e("CARD is valid");
                 Toast.makeText(getContext(),"CARD is valid",Toast.LENGTH_LONG).show();
 
-                new StripeToken(card,this).execute();
+                new StripeTokenAsyncTask(card,this).execute();
 
             }
         }
@@ -163,7 +185,16 @@ public class CardFragment extends Fragment implements StripeToken.OnTokenCreated
     @Override
     public void updateTokenId(String tokenId) {
         Timber.d("token created with id " + tokenId);
-        new StripeCustomer(tokenId, mEmail,this).execute();
+        if(mType == TYPE_DRIVER)
+        {
+            Timber.d("Driver logging.. create connected stripe account");
+            new StripeAccountAsyncTask(mDay,mMonth,mYear,mFirstName,mLastName,tokenId,mEmail,this).execute();
+        }
+        if(mType == TYPE_PASSENGER)
+        {
+            Timber.d("Passenger logging.. create stripe customer");
+            new StripeCustomerAsyncTask(tokenId, mEmail, this).execute();
+        }
     }
 
     @Override
@@ -176,5 +207,19 @@ public class CardFragment extends Fragment implements StripeToken.OnTokenCreated
 
 
         createUserReturnMain(loginArray);
+    }
+
+    public void updateAccountId(String accountId)
+    {
+        Timber.d("account created with id " + accountId);
+        mUserLogin.setCustomerId(accountId);
+
+        Gson gson = new Gson();
+        String loginArray = gson.toJson(mUserLogin);
+
+
+        createUserReturnMain(loginArray);
+
+
     }
 }

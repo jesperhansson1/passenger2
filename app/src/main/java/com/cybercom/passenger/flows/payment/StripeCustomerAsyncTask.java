@@ -9,9 +9,9 @@ import java.util.HashMap;
 import java.util.Map;
 import timber.log.Timber;
 
-import static com.cybercom.passenger.flows.payment.Constants.STRIPE_API_KEY;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.STRIPE_API_KEY;
 
-public class StripeCustomer extends AsyncTask<String, Void, String> {
+public class StripeCustomerAsyncTask extends AsyncTask<String, Void, String> {
     String mToken = null;
     String mCustomerId = null;
     String mEmail = null;
@@ -22,14 +22,14 @@ public class StripeCustomer extends AsyncTask<String, Void, String> {
         void updateCustomerId(String customerId);
     }
 
-    public StripeCustomer(String tokenId, String email, OnCustomerCreated delegate) {
+    public StripeCustomerAsyncTask(String tokenId, String email, OnCustomerCreated delegate) {
         mToken = tokenId;
         mEmail = email;
         mCustomerDelegate = delegate;
         Timber.d(tokenId.toString());
     }
 
-    public StripeCustomer() {
+    public StripeCustomerAsyncTask() {
 
     }
 
