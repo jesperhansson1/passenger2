@@ -23,6 +23,8 @@ import com.cybercom.passenger.repository.PassengerRepository;
 import com.google.gson.Gson;
 import com.stripe.android.model.Card;
 
+import java.util.Calendar;
+
 import timber.log.Timber;
 
 import static com.cybercom.passenger.flows.accounts.AccountActivity.CARARRAY;
@@ -81,7 +83,8 @@ public class CardFragment extends Fragment implements StripeTokenAsyncTask.OnTok
             mDay = Integer.parseInt(mUserLogin.getPersonalNumber().substring(4,6));
             mMonth = Integer.parseInt(mUserLogin.getPersonalNumber().substring(2,4));
             mYear = Integer.parseInt(mUserLogin.getPersonalNumber().substring(0,2));
-            if((mYear + 2000) > 2018)
+
+            if((mYear + 2000) > Calendar.getInstance().get(Calendar.YEAR))
             {
                 mYear = 1900 + mYear;
             }
