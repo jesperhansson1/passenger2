@@ -16,7 +16,6 @@ package com.cybercom.passenger.flows.payment;
         import static com.cybercom.passenger.flows.payment.PaymentConstants.CURRENCY;
         import static com.cybercom.passenger.flows.payment.PaymentConstants.CUSTOM_ACCOUNT;
         import static com.cybercom.passenger.flows.payment.PaymentConstants.INDIVIDUAL;
-        import static com.cybercom.passenger.flows.payment.PaymentConstants.IP;
         import static com.cybercom.passenger.flows.payment.PaymentConstants.POSTAL_CODE;
         import static com.cybercom.passenger.flows.payment.PaymentConstants.PRODUCT_DESCRIPTION;
         import static com.cybercom.passenger.flows.payment.PaymentConstants.STRIPE_API_KEY;
