@@ -25,7 +25,7 @@ package com.cybercom.passenger.flows.payment;
 public class StripeAccountAsyncTask extends AsyncTask<String, Void, String> {
 
     int mDay, mMonth, mYear;
-    String mFirstName, mLastName, mTokenId, mEmail, mAccountId;
+    String mFirstName, mLastName, mTokenId, mEmail, mAccountId, mIpAddress;
 
     OnAccountCreated mAccountDelegate;
 
@@ -33,7 +33,8 @@ public class StripeAccountAsyncTask extends AsyncTask<String, Void, String> {
         void updateAccountId(String accountId);
     }
 
-    public StripeAccountAsyncTask(int day, int month, int year, String firstName, String lastName, String tokenId, String email, OnAccountCreated onAccountCreated){
+    public StripeAccountAsyncTask(int day, int month, int year, String firstName, String lastName,
+                                  String tokenId, String email, String ipAddress, OnAccountCreated onAccountCreated){
         mDay = day;
         mMonth = month;
         mYear = year;
@@ -41,12 +42,13 @@ public class StripeAccountAsyncTask extends AsyncTask<String, Void, String> {
         mLastName = lastName;
         mTokenId = tokenId;
         mEmail = email;
+        mIpAddress = ipAddress;
         mAccountDelegate = onAccountCreated;
     }
 
     @Override
     protected String doInBackground(String... strings) {
-        mAccountId =  postData(mDay, mMonth, mYear, mFirstName, mLastName, mTokenId, mEmail);
+        mAccountId =  postData(mDay, mMonth, mYear, mFirstName, mLastName, mTokenId, mEmail, mIpAddress);
         Timber.d("account id" + mAccountId.toString());
         return mAccountId;
     }
@@ -59,7 +61,7 @@ public class StripeAccountAsyncTask extends AsyncTask<String, Void, String> {
     }
 
 
-    public String postData(int day, int month, int year, String firstName, String lastName, String tokenId, String email) {
+    public String postData(int day, int month, int year, String firstName, String lastName, String tokenId, String email, String ipAddress) {
 
         Stripe.apiKey = STRIPE_API_KEY;
 
@@ -88,7 +90,7 @@ public class StripeAccountAsyncTask extends AsyncTask<String, Void, String> {
 
             Map<String, Object> tosAcceptanceParams = new HashMap<String, Object>();
             tosAcceptanceParams.put("date", (long) System.currentTimeMillis() / 1000L);
-            tosAcceptanceParams.put("ip", IP); // Assumes you're not using a proxy
+            tosAcceptanceParams.put("ip", ipAddress); // Assumes you're not using a proxy
             Map<String, Object> paramsw = new HashMap<String, Object>();
             paramsw.put("tos_acceptance", tosAcceptanceParams);
 

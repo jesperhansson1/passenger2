@@ -2,9 +2,11 @@ package com.cybercom.passenger.flows.accounts;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.net.wifi.WifiManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.text.format.Formatter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +29,7 @@ import java.util.Calendar;
 
 import timber.log.Timber;
 
+import static android.content.Context.WIFI_SERVICE;
 import static com.cybercom.passenger.flows.accounts.AccountActivity.CARARRAY;
 import static com.cybercom.passenger.flows.accounts.AccountActivity.LOGINARRAY;
 import static com.cybercom.passenger.model.User.TYPE_DRIVER;
@@ -191,7 +194,7 @@ public class CardFragment extends Fragment implements StripeTokenAsyncTask.OnTok
         if(mType == TYPE_DRIVER)
         {
             Timber.d("Driver logging.. create connected stripe account");
-            new StripeAccountAsyncTask(mDay,mMonth,mYear,mFirstName,mLastName,tokenId,mEmail,this).execute();
+            new StripeAccountAsyncTask(mDay,mMonth,mYear,mFirstName,mLastName,tokenId,mEmail,getIpAddress(),this).execute();
         }
         if(mType == TYPE_PASSENGER)
         {
@@ -224,5 +227,14 @@ public class CardFragment extends Fragment implements StripeTokenAsyncTask.OnTok
         createUserReturnMain(loginArray);
 
 
+    }
+
+    public String getIpAddress()
+    {
+        String ipAddress = "100.100.100.100";
+        WifiManager wifiManager = (WifiManager) getContext().getApplicationContext().getSystemService(WIFI_SERVICE);
+        ipAddress = Formatter.formatIpAddress(wifiManager.getConnectionInfo().getIpAddress());
+        Timber.d("ipaddess " + ipAddress);
+        return ipAddress;
     }
 }
