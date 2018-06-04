@@ -13,11 +13,12 @@ public class DriveRequest implements Serializable {
     private Position mEndLocation;
     private int mExtraPassengers;
     private List<Object> mDriverIdBlackList;
+    private double mPrice;
 
     public DriveRequest(){
     }
 
-    public DriveRequest(String id, User passenger, long time, Position startLocation, Position endLocation, int extraPassengers, List<Object> driverIdBlackList) {
+    public DriveRequest(String id, User passenger, long time, Position startLocation, Position endLocation, int extraPassengers, double price, List<Object> driverIdBlackList) {
         mId = id;
         mPassenger = passenger;
         mTime = time;
@@ -25,6 +26,7 @@ public class DriveRequest implements Serializable {
         mEndLocation = endLocation;
         mExtraPassengers = extraPassengers;
         mDriverIdBlackList = driverIdBlackList;
+        mPrice = price;
     }
 
     public User getPassenger() {
@@ -76,6 +78,7 @@ public class DriveRequest implements Serializable {
                 ", mStartLocation=" + mStartLocation +
                 ", mEndLocation=" + mEndLocation +
                 ", mExtraPassengers=" + mExtraPassengers +
+                ", mPrice=" + mPrice +
                 '}';
     }
 
@@ -97,5 +100,13 @@ public class DriveRequest implements Serializable {
 
     public void setId(String mId) {
         this.mId = mId;
+    }
+
+    public double getPrice() {
+        return mPrice;
+    }
+
+    public void setPrice(double price) {
+        mPrice = price;
     }
 }

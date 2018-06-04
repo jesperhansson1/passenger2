@@ -29,7 +29,7 @@ interface PassengerRepositoryInterface {
 
     LiveData<Drive> createDrive(long time, Position startLocation, Position endLocation, int availableSeats, Bounds bounds);
 
-    LiveData<DriveRequest> createDriveRequest(long time, Position startLocation, Position endLocation, int availableSeats);
+    LiveData<DriveRequest> createDriveRequest(long time, Position startLocation, Position endLocation, int availableSeats, double price);
 
     LiveData<Drive> findBestRideMatch(final DriveRequest driveRequest, int radiusMultiplier, String googleApiKey);
 

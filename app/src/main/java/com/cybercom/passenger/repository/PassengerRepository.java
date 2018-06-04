@@ -565,6 +565,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                 DriveRequest driveRequest = new DriveRequest(driveRequestId,
                         passenger, dbDriveRequest.getTime(), dbDriveRequest.getStartLocation(),
                         dbDriveRequest.getEndLocation(), dbDriveRequest.getExtraPassengers(),
+                        dbDriveRequest.getPrice(),
                         dbDriveRequest.getDriverIdBlackList());
                 addToNotificationQueue(new Notification(Integer.parseInt(
                         payload.get(NOTIFICATION_TYPE_KEY)), driveRequest, drive));
@@ -652,7 +653,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     }
 
     public LiveData<DriveRequest> createDriveRequest(long time, Position startLocation,
-                                                     Position endLocation, int availableSeats) {
+                                                     Position endLocation, int availableSeats, double price) {
         final MutableLiveData<DriveRequest> driveRequestMutableLiveData = new MutableLiveData<>();
 
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -667,7 +668,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
         final com.cybercom.passenger.repository.databasemodel.DriveRequest dbDriveRequest =
                 new com.cybercom.passenger.repository.databasemodel.DriveRequest(uId, time,
-                        startLocation, endLocation, availableSeats, new ArrayList<>());
+                        startLocation, endLocation, availableSeats, price, new ArrayList<>());
         final DatabaseReference ref = mDriveRequestsReference.push();
         final String driveRequestId = ref.getKey();
         ref.setValue(dbDriveRequest);
@@ -680,6 +681,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                         DriveRequest driveRequest = new DriveRequest(driveRequestId, user,
                                 dbDriveRequest.getTime(), dbDriveRequest.getStartLocation(),
                                 dbDriveRequest.getEndLocation(), dbDriveRequest.getExtraPassengers(),
+                                dbDriveRequest.getPrice(),
                                 dbDriveRequest.getDriverIdBlackList());
                         driveRequestMutableLiveData.setValue(driveRequest);
                     }
@@ -1177,4 +1179,5 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     public void confirmDropOff(String passengerRideId) {
         mPassengerRideReference.child(passengerRideId).child(DROPOFF_CONFIRMED).setValue(true);
     }
+
 }

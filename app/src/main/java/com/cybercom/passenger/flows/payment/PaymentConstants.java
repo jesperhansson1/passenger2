@@ -13,5 +13,11 @@ public class PaymentConstants {
     public static final String INDIVIDUAL = "individual";
     public static final String PRODUCT_DESCRIPTION = "test";
     public static final String CURRENCY = "usd";
+    public static final double BASE_SINGLE_PRICE = 35.0; //35kr per swedish mile (0 to 4 miles)
+    public static final double RISE_SINGLE_PRICE = 15.0;  //15 per swedish mile after 4 miles
+    public static final double BASE_MULTIPLE_PRICE = 50.0; //35kr + 15kr per swedish mile (0 to 4 miles)
+    public static final double RISE_MULTIPLE_PRICE = 30.0; //15  + 15kr per swedish mile after 4 miles
+    public static final double TOP_UP_MULTIPLE_PRICE = 10.0; //10kr extra for multiple person
+    public static final double BASE_PRICE = 35.0; //35kr is base fare
 
 }

@@ -62,6 +62,8 @@ class DataParser {
                     Timber.d(((JSONObject) jsonArrayLegs.get(j)).getJSONObject("duration").toString());
                     distance = (((JSONObject)jsonArrayLegs.get(j)).getJSONObject("distance").get("value")).toString();
                     duration = (((JSONObject)jsonArrayLegs.get(j)).getJSONObject("duration").get("value")).toString();
+
+                    Timber.d("distance is " + distance);
                 }
 
                 Bounds bounds = new Bounds(Double.parseDouble(jsonObjectBounds.getJSONObject("northeast").get("lat").toString()),

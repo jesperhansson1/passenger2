@@ -53,6 +53,7 @@ import com.cybercom.passenger.flows.dropofffragment.DriverDropOffFragment;
 import com.cybercom.passenger.flows.login.RegisterActivity;
 import com.cybercom.passenger.flows.nomatchfragment.NoMatchFragment;
 import com.cybercom.passenger.flows.passengernotification.PassengerNotificationDialog;
+import com.cybercom.passenger.flows.payment.CalculatePrice;
 import com.cybercom.passenger.flows.pickupfragment.DriverPassengerPickUpFragment;
 import com.cybercom.passenger.flows.progressfindingcar.FindingCarProgressDialog;
 import com.cybercom.passenger.interfaces.FragmentSizeListener;
@@ -217,7 +218,7 @@ public class MainActivity extends AppCompatActivity implements
             mMainViewModel.getUser().observe(this, user -> {
                 Timber.i("User: %s logged in", user);
                 mCurrentLoggedInUser = user;
-                System.out.println(" stripe id is " + mCurrentLoggedInUser.getCustomerId() + " type is " + mCurrentLoggedInUser.getType());
+                Timber.d(" stripe id is " + mCurrentLoggedInUser.getCustomerId() + " type is " + mCurrentLoggedInUser.getType());
             });
         } else {
             if (getSupportActionBar() != null) {
@@ -920,6 +921,8 @@ public class MainActivity extends AppCompatActivity implements
         } else {
             mBounds = new Bounds(0.0, 0.0, 0.0, 0.0, 0, 0);
         }
+
+
     }
 
     @Override
@@ -1047,7 +1050,7 @@ public class MainActivity extends AppCompatActivity implements
                 });
                 break;
             case User.TYPE_PASSENGER:
-                mMainViewModel.createDriveRequest(time, startLocation, endLocation, seats).observe(
+                mMainViewModel.createDriveRequest(time, startLocation, endLocation, seats, getPrice(seats)).observe(
                         this, driveRequest -> {
                             mMainViewModel.setDriveRequestRadiusMultiplier(
                                     MainViewModel.DRIVE_REQUEST_DEFAULT_MULTIPLIER);
@@ -1533,5 +1536,16 @@ public class MainActivity extends AppCompatActivity implements
                 }
             }
         }
+    }
+
+    public double getPrice(int seats)
+    {
+        double price = 0.0;
+        Timber.d("distance bound " + mBounds.getDistance());
+        CalculatePrice calculatePrice = new CalculatePrice(mBounds.getDistance(),seats);
+        price = calculatePrice.getPrice();
+
+        Timber.d("price is " + price);
+        return price;
     }
 }
