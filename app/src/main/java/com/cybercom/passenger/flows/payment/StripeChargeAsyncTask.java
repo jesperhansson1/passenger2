@@ -41,7 +41,7 @@ public class StripeChargeAsyncTask extends AsyncTask<String, Void, String> {
     @Override
     protected String doInBackground(String... params) {
         mChargeId =  postData(mCustomerId, mAmount, mStatus);
-        Timber.d("customer id" + mCustomerId.toString());
+        Timber.d("charge id" + mChargeId);
         return mChargeId;
     }
 
@@ -56,16 +56,20 @@ public class StripeChargeAsyncTask extends AsyncTask<String, Void, String> {
         String chargeId = null;
         Stripe.apiKey = STRIPE_API_KEY;
 
-        Map<String, Object> params = new HashMap<>();
-        params.put("amount", amount); // $15.00 this time
-        params.put("currency", CURRENCY);
-        params.put("capture", status);
-        params.put("customer", customerId); // Previously stored, then retrieved
+        amount = amount * 100;
+        Timber.d("val "  + (int)amount);
+
+        Map<String, Object> chargeParams = new HashMap<>();
+        chargeParams.put("amount",  (int)amount); // $15.00 this time
+        chargeParams.put("currency", "sek");
+        chargeParams.put("capture", status);
+        chargeParams.put("customer", customerId); // Previously stored, then retrieved
+
 
         try
         {
-            Charge charge = Charge.create(params);
-            Timber.d("Charge created " + charge.toString());
+            Charge charge = Charge.create(chargeParams);
+            Timber.d("Charge created " + charge);
             return charge.getId();
         }
         catch(Exception e)

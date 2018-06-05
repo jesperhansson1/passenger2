@@ -35,7 +35,8 @@ import static com.cybercom.passenger.flows.accounts.AccountActivity.LOGINARRAY;
 import static com.cybercom.passenger.model.User.TYPE_DRIVER;
 import static com.cybercom.passenger.model.User.TYPE_PASSENGER;
 
-public class CardFragment extends Fragment implements StripeTokenAsyncTask.OnTokenCreated, StripeCustomerAsyncTask.OnCustomerCreated, StripeAccountAsyncTask.OnAccountCreated{
+public class CardFragment extends Fragment implements
+        StripeTokenAsyncTask.OnTokenCreated, StripeCustomerAsyncTask.OnCustomerCreated, StripeAccountAsyncTask.OnAccountCreated{
 
     private Button mNext;
     private EditText mEditTextCard;

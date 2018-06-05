@@ -113,8 +113,8 @@ public class MainViewModel extends AndroidViewModel {
         mPassengerRepository.removeCurrentDrive(driveId, onCompleteListener);
     }
 
-    public LiveData<DriveRequest> createDriveRequest(long time, Position startLocation, Position endLocation, int seats, double price) {
-        return mPassengerRepository.createDriveRequest(time, startLocation, endLocation, seats, price);
+    public LiveData<DriveRequest> createDriveRequest(long time, Position startLocation, Position endLocation, int seats, double price, String chargeId) {
+        return mPassengerRepository.createDriveRequest(time, startLocation, endLocation, seats, price, chargeId);
     }
 
     public LiveData<Drive> findBestDriveMatch(DriveRequest driveRequest, int radiusMultiplier, String googleApiKey) {

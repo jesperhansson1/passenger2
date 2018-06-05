@@ -186,6 +186,13 @@ public class MainActivity extends AppCompatActivity implements
     public Bounds mBounds;
     private List<String> mActiveDriveIdList = new ArrayList<>();
 
+    public double mPrice = 0.0;
+    public long mTime = 0;
+    public Position mStartLocation = null;
+    public Position mEndLocation = null;
+    public int mSeats = 0;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -1052,7 +1059,13 @@ public class MainActivity extends AppCompatActivity implements
                 });
                 break;
             case User.TYPE_PASSENGER:
-                mMainViewModel.createDriveRequest(time, startLocation, endLocation, seats, getPrice(seats)).observe(
+
+                mTime = time;
+                mStartLocation = startLocation;
+                mEndLocation = endLocation;
+                mSeats = seats;
+                getPrice(seats);
+               /* mMainViewModel.createDriveRequest(time, startLocation, endLocation, seats, getPrice(seats)).observe(
                         this, driveRequest -> {
                             mMainViewModel.setDriveRequestRadiusMultiplier(
                                     MainViewModel.DRIVE_REQUEST_DEFAULT_MULTIPLIER);
@@ -1060,7 +1073,7 @@ public class MainActivity extends AppCompatActivity implements
                             matchDriveRequest(driveRequest,
                                     mMainViewModel.getDriveRequestRadiusMultiplier());
                             mCreateDriveFragment.setDefaultValuesToDialog();
-                        });
+                        });*/
                 break;
         }
     }
@@ -1540,22 +1553,30 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    public double getPrice(int seats)
+    public void getPrice(int seats)
     {
         double price = 0.0;
         Timber.d("distance bound " + mBounds.getDistance());
         CalculatePrice calculatePrice = new CalculatePrice(mBounds.getDistance(),seats);
         price = calculatePrice.getPrice();
-
+        mPrice = price;
         new StripeChargeAsyncTask(mCurrentLoggedInUser.getCustomerId(),price,this,false).execute();
 
         Timber.d("price is " + price);
-        return price;
+
     }
 
     @Override
     public void chargeBlockedStatus(String chargeId) {
         Timber.d("charge created with id " + chargeId);
+        mMainViewModel.createDriveRequest(mTime, mStartLocation, mEndLocation, mSeats, mPrice, chargeId).observe(
+                this, driveRequest -> {
+                    mMainViewModel.setDriveRequestRadiusMultiplier(
+                            MainViewModel.DRIVE_REQUEST_DEFAULT_MULTIPLIER);
+                    Timber.i("DriveRequest : %s", driveRequest);
+                    matchDriveRequest(driveRequest,
+                            mMainViewModel.getDriveRequestRadiusMultiplier());
+                    mCreateDriveFragment.setDefaultValuesToDialog();
+                });
     }
-
 }
