@@ -1,6 +1,8 @@
 package com.cybercom.passenger.model;
 
-public class User {
+import java.io.Serializable;
+
+public class User implements Serializable {
 
     public static final int TYPE_DRIVER = 0;
     public static final int TYPE_PASSENGER = 1;

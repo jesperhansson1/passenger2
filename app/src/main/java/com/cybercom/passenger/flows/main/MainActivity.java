@@ -51,7 +51,7 @@ import com.cybercom.passenger.flows.driverconfirmation.AcceptRejectPassengerDial
 import com.cybercom.passenger.flows.dropofffragment.DriverDropOffFragment;
 import com.cybercom.passenger.flows.login.RegisterActivity;
 import com.cybercom.passenger.flows.nomatchfragment.NoMatchFragment;
-import com.cybercom.passenger.flows.passengernotification.PassengerNotificationDialog;
+import com.cybercom.passenger.flows.passengernotification.DriveInformationDialog;
 import com.cybercom.passenger.flows.pickupfragment.DriverPassengerPickUpFragment;
 import com.cybercom.passenger.flows.progressfindingcar.FindingCarProgressDialog;
 import com.cybercom.passenger.interfaces.FragmentSizeListener;
@@ -103,7 +103,7 @@ import timber.log.Timber;
 public class MainActivity extends AppCompatActivity implements
         CreateDriveFragment.CreateRideFragmentListener,
         AcceptRejectPassengerDialog.ConfirmationListener,
-        PassengerNotificationDialog.PassengerNotificationListener,
+        DriveInformationDialog.PassengerNotificationListener,
         OnMapReadyCallback, GoogleMap.OnMarkerDragListener, GoogleMap.OnCameraMoveStartedListener,
         GoogleMap.OnMapLongClickListener, GoogleMap.OnMapClickListener,
         CreateDriveFragment.OnPlaceMarkerIconClickListener, FetchRoute.OnRouteCompletion,
@@ -172,7 +172,7 @@ public class MainActivity extends AppCompatActivity implements
     private GeofencingClient mGeofencingClient;
     private List<Geofence> mGeofenceList;
     private PendingIntent mGeofencePendingIntent;
-    private List<PassengerRide> mPassengerRides;
+    private List<PassengerRide> mPassengerRides = new ArrayList<>();;
 
     private GeofenceBroadcastReceiver mGeofenceReceiver;
     private ForegroundServiceReceiver mForegroundReceiver;
@@ -185,6 +185,12 @@ public class MainActivity extends AppCompatActivity implements
     private List<String> mActiveDriveIdList = new ArrayList<>();
     private Observer<Location> mLocationObserverForCameraUpdates;
     private MutableLiveData<Location> mDriverCurrentLocationLiveData;
+
+    // A Drive is active when mActiveDrive != null (Only happens when user is Driver)
+    private Drive mActiveDrive;
+
+    // A PassengerRide is active mActivePassengerRide != null (Only happens when user is Passenger)
+    private PassengerRide mActivePassengerRide;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -220,6 +226,8 @@ public class MainActivity extends AppCompatActivity implements
             mMainViewModel.getUser().observe(this, user -> {
                 Timber.i("User: %s logged in", user);
                 mCurrentLoggedInUser = user;
+                initObservers();
+                setUpGeofencing();
             });
         } else {
             if (getSupportActionBar() != null) {
@@ -234,8 +242,6 @@ public class MainActivity extends AppCompatActivity implements
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map_activitymap_googlemap);
         mapFragment.getMapAsync(this);
-        setUpGeofencing();
-        initObservers();
     }
 
     private void createNotificationChannels() {
@@ -246,21 +252,45 @@ public class MainActivity extends AppCompatActivity implements
                                      String startAddress, String endAddress) {
         mMainViewModel.createPassengerRide(drive, startPosition, endPosition, startAddress,
                 endAddress).observe(this, passengerRide -> {
-            //reroute here wrong
-
-            Intent updatePassengerIntent = new Intent(MainActivity.this, ForegroundServices.class);
-            updatePassengerIntent.setAction(
-                    Constants.ACTION.STARTFOREGROUND_UPDATE_PASSENGER_POSITION);
-            updatePassengerIntent.putExtra(ForegroundServices.INTENT_EXTRA_PASSENGER_RIDE_ID,
-                    passengerRide.getId());
-            updatePassengerIntent.putExtra(ForegroundServices.INTENT_EXTRA_DRIVE_ID,
-                    passengerRide.getDrive().getId());
-            if (passengerRide != null) {
-                updatePassengerIntent.putExtra(PASSENGER_RIDE_KEY, passengerRide.getId());
-            }
-            startService(updatePassengerIntent);
+                    Timber.d("PassengerRide successfully created: %s", passengerRide);
         });
     }
+
+    private void handleOnGoingPassengerRide(PassengerRide passengerRide) {
+        if (mActivePassengerRide != null) {
+            // There could only be one PassengerRide
+            Timber.e("More than one PassengerRide...");
+            return;
+        }
+        mActivePassengerRide = passengerRide;
+        mCreateDriveFragment.hideCreateDialogCompletely();
+        showDriveInformationDialog(passengerRide.getDrive());
+        updateDriversMarkerPosition(passengerRide.getDrive().getId());
+        dismissMatchingInProgressDialog();
+        Intent updatePassengerIntent = new Intent(MainActivity.this, ForegroundServices.class);
+        updatePassengerIntent.setAction(
+                Constants.ACTION.STARTFOREGROUND_UPDATE_PASSENGER_POSITION);
+        updatePassengerIntent.putExtra(ForegroundServices.INTENT_EXTRA_PASSENGER_RIDE_ID,
+                passengerRide.getId());
+        updatePassengerIntent.putExtra(ForegroundServices.INTENT_EXTRA_DRIVE_ID,
+                passengerRide.getDrive().getId());
+        if (passengerRide != null) {
+            updatePassengerIntent.putExtra(PASSENGER_RIDE_KEY, passengerRide.getId());
+        }
+        startService(updatePassengerIntent);
+
+        // Observe the active PassengerRide (Note: the database model version..) for changes
+        mMainViewModel.getPassengerRideById(mActivePassengerRide.getId()).observe(this,
+                passengerRideDatabaseModel -> {
+                    if (!mActivePassengerRide.isPickUpConfirmed() &&
+                            passengerRideDatabaseModel.isPickUpConfirmed()) {
+                        showDriveInformationDialog(mActivePassengerRide.getDrive());
+                        mActivePassengerRide.setPickUpConfirmed(true);
+                    }
+                });
+    }
+
+
 
     private void updateDriversMarkerPosition(String driveId) {
         mMainViewModel.getDriverPosition(driveId).observe(this, position -> {
@@ -322,41 +352,30 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void initObservers() {
-        mMainViewModel.getIncomingNotifications().observe(this, notification -> {
-            if (notification == null) {
-                return;
-            }
-            Timber.d("Notification to be displayed: %s", notification.toString());
+        // Both drivers and passengers could receive notifications
+        observeOnNotifications();
 
-            switch (notification.getType()) {
-                case Notification.REQUEST_DRIVE:
-                    showDriverConfirmationDialogFragment(notification);
-                    break;
-                case Notification.ACCEPT_PASSENGER:
-                    showPassengerNotificationDialog(notification);
-                    String startAddress = mMainViewModel.getAddressFromLocation(
-                            LocationHelper.convertPositionToLocation(notification.getDriveRequest()
-                                    .getStartLocation()));
-                    String endAddress = mMainViewModel.getAddressFromLocation(
-                            LocationHelper.convertPositionToLocation(
-                                    notification.getDriveRequest().getEndLocation()));
-                    createPassengerRide(notification.getDrive(),
-                            notification.getDriveRequest().getStartLocation(),
-                            notification.getDriveRequest().getEndLocation(), startAddress,
-                            endAddress);
-                    updateDriversMarkerPosition(notification.getDrive().getId());
-                    dismissMatchingInProgressDialog();
-                    break;
-                case Notification.REJECT_PASSENGER:
-                    matchDriveRequest(notification.getDriveRequest(),
-                            mMainViewModel.getDriveRequestRadiusMultiplier());
-                    mMainViewModel.getNextNotification(notification);
-                    break;
+        // Drivers could have active drives
+        if (mCurrentLoggedInUser.getType() == User.TYPE_DRIVER) {
+            observeOnActiveDrive();
+        }
+
+        // A passenger could have a PassengerRide
+        if (mCurrentLoggedInUser.getType() == User.TYPE_PASSENGER) {
+            observeOnActivePassengerRide();
+        }
+    }
+
+    private void observeOnActivePassengerRide() {
+        mMainViewModel.getActivePassengerRide().observe(this, passengerRide -> {
+            if (passengerRide != null) {
+                handleOnGoingPassengerRide(passengerRide);
             }
         });
+    }
 
+    private void observeOnActiveDrive() {
         final LifecycleOwner lifecycleOwner = this;
-        mPassengerRides = new ArrayList<>();
 
         mMainViewModel.getActiveDrive().observe(this, drive -> {
             if (drive != null) {
@@ -372,6 +391,7 @@ public class MainActivity extends AppCompatActivity implements
                 }
 
                 mActiveDriveIdList.add(drive.getId());
+                mActiveDrive = drive;
                 mMainViewModel.getPassengerRides(drive.getId()).observe(lifecycleOwner, passengerRide -> {
                     if (passengerRide != null) {
                         if (isPassengerRideAlreadyAddedToLocalList(passengerRide)) {
@@ -385,6 +405,39 @@ public class MainActivity extends AppCompatActivity implements
                 });
 
                 handleOnGoingDrive(drive);
+            }
+        });
+    }
+
+    private void observeOnNotifications() {
+        mMainViewModel.getIncomingNotifications().observe(this, notification -> {
+            if (notification == null) {
+                return;
+            }
+            Timber.d("Notification to be displayed: %s", notification.toString());
+
+            switch (notification.getType()) {
+                case Notification.REQUEST_DRIVE:
+                    showDriverConfirmationDialogFragment(notification);
+                    break;
+                case Notification.ACCEPT_PASSENGER:
+                    String startAddress = mMainViewModel.getAddressFromLocation(
+                            LocationHelper.convertPositionToLocation(notification.getDriveRequest()
+                                    .getStartLocation()));
+                    String endAddress = mMainViewModel.getAddressFromLocation(
+                            LocationHelper.convertPositionToLocation(
+                                    notification.getDriveRequest().getEndLocation()));
+                    createPassengerRide(notification.getDrive(),
+                            notification.getDriveRequest().getStartLocation(),
+                            notification.getDriveRequest().getEndLocation(), startAddress,
+                            endAddress);
+
+                    break;
+                case Notification.REJECT_PASSENGER:
+                    matchDriveRequest(notification.getDriveRequest(),
+                            mMainViewModel.getDriveRequestRadiusMultiplier());
+                    mMainViewModel.getNextNotification();
+                    break;
             }
         });
     }
@@ -842,22 +895,22 @@ public class MainActivity extends AppCompatActivity implements
         dFragment.show(getSupportFragmentManager(), AcceptRejectPassengerDialog.TAG);
     }
 
-    private void showPassengerNotificationDialog(Notification notification) {
+    private void showDriveInformationDialog(Drive drive) {
         FragmentManager fragmentManager = getSupportFragmentManager();
-        PassengerNotificationDialog dialogFragment = (PassengerNotificationDialog)
-                fragmentManager.findFragmentByTag(PassengerNotificationDialog.TAG);
+        DriveInformationDialog dialogFragment = (DriveInformationDialog)
+                fragmentManager.findFragmentByTag(DriveInformationDialog.TAG);
         if (dialogFragment != null) {
             dialogFragment.dismiss();
         }
 
-        PassengerNotificationDialog dFragment = PassengerNotificationDialog.getInstance(
-                notification);
-        dFragment.show(getSupportFragmentManager(), PassengerNotificationDialog.TAG);
+        DriveInformationDialog dFragment = DriveInformationDialog.getInstance(
+                drive);
+        dFragment.show(getSupportFragmentManager(), DriveInformationDialog.TAG);
     }
 
-    private void removePassengerNotificationDialog() {
-        PassengerNotificationDialog dFragment = (PassengerNotificationDialog)
-                mFragmentManager.findFragmentByTag(PassengerNotificationDialog.TAG);
+    private void removeDriveInformationDialog() {
+        DriveInformationDialog dFragment = (DriveInformationDialog)
+                mFragmentManager.findFragmentByTag(DriveInformationDialog.TAG);
         mFragmentManager.beginTransaction().remove(dFragment).commit();
     }
 
@@ -903,12 +956,12 @@ public class MainActivity extends AppCompatActivity implements
             mMainViewModel.sendRejectPassengerNotification(notification.getDrive(),
                     notification.getDriveRequest());
         }
-        mMainViewModel.getNextNotification(notification);
+        mMainViewModel.getNextNotification();
     }
 
     @Override
-    public void onCancelDrive(Notification notification) {
-        mMainViewModel.getNextNotification(notification);
+    public void onCancelDrive(Drive drive) {
+        mMainViewModel.getNextNotification();
     }
 
     @Override
@@ -1304,6 +1357,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onPickUpConfirmed(PassengerRide passengerRide) {
+        // Driver has confirmed pick up
         removeFragment(mFragmentManager
                 .findFragmentByTag(DriverPassengerPickUpFragment
                         .DRIVER_PASSENGER_PICK_UP_FRAGMENT_TAG));
@@ -1312,11 +1366,13 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onPickUpNoShow(PassengerRide passengerRide) {
+        // Driver has reported no show
 
     }
 
     @Override
     public void onPickUpConfirmed(Drive drive) {
+        // Passenger has confirmed pick up
         removeFragment(mFragmentManager
                 .findFragmentByTag(DriverPassengerPickUpFragment
                         .DRIVER_PASSENGER_PICK_UP_FRAGMENT_TAG));
@@ -1325,7 +1381,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onPickUpNoShow(Drive drive) {
-
+        // Passenger has reported no show
     }
 
     @Override
@@ -1582,8 +1638,10 @@ public class MainActivity extends AppCompatActivity implements
         public void onReceive(Context context, Intent intent) {
             if (intent.getExtras() != null) {
                 if (intent.getExtras().getInt(DIALOG_TO_SHOW) == TYPE_PICK_UP) {
-                    removePassengerNotificationDialog();
-                    showPassengerPickUpFragment(mMainViewModel.getMatchedDrive());
+                    removeDriveInformationDialog();
+                    if (mActivePassengerRide != null) {
+                        showPassengerPickUpFragment(mActivePassengerRide.getDrive());
+                    }
                 }
             }
         }

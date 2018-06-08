@@ -169,8 +169,8 @@ public class MainViewModel extends AndroidViewModel {
         mPassengerRepository.setIncomingNotification(payload);
     }
 
-    public void getNextNotification(Notification notification) {
-        mPassengerRepository.getNextNotification(notification);
+    public void getNextNotification() {
+        mPassengerRepository.getNextNotification();
     }
 
     public void refreshToken(String token) {
@@ -365,6 +365,10 @@ public class MainViewModel extends AndroidViewModel {
         return mPassengerRepository.getActiveDrive();
     }
 
+    public LiveData<PassengerRide> getActivePassengerRide() {
+        return mPassengerRepository.getActivePassengerRide();
+    }
+
     public LiveData<Integer> getETA() {
         return mPassengerRepository.getETAInMin();
     }
@@ -383,5 +387,9 @@ public class MainViewModel extends AndroidViewModel {
 
     public void confirmDropOff(PassengerRide passengerRide) {
         mPassengerRepository.confirmDropOff(passengerRide.getId());
+    }
+
+    public LiveData<com.cybercom.passenger.repository.databasemodel.PassengerRide> getPassengerRideById(String passengerRideId) {
+        return mPassengerRepository.getPassengerRideById(passengerRideId);
     }
 }
