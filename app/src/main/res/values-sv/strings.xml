@@ -210,5 +210,7 @@
     <string name="eta_notification_title">Din bil kommer om ca %1$d minuter</string>
     <string name="eta_notification_text">Din bil beräknas om %1$d minuter</string>
     <string name="cancel_drive">Avbryt rutt</string>
+    <string name="driveinformation_cancelpassengerride_button">Avbryt</string>
+    <string name="driveinformation_earlydropoff_button">Hoppa av</string>
 
 </resources>

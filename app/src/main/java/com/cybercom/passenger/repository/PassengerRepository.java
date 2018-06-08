@@ -81,6 +81,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private static final String DURATIONS = "duration";
 
     public static final int DEFAULT_DRIVE_REQUEST_RADIUS = 700;
+    public static final int UNDEFINED_ETA = -1;
 
     private static PassengerRepository sPassengerRepository;
     private DatabaseReference mUsersReference;
@@ -94,7 +95,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private MutableLiveData<List<Car>> mCarList;
     private BlockingQueue<Notification> mNotificationQueue = new LinkedBlockingQueue<>();
     private MutableLiveData<Notification> mNotification = new MutableLiveData<>();
-    MutableLiveData<Integer> mEtaLiveData = new MutableLiveData<>();
+    private MutableLiveData<Integer> mEtaLiveData = new MutableLiveData<>();
     private User mCurrentlyLoggedInUser;
     private MutableLiveData<Location> mDriverCurrentLocation = new MutableLiveData<>();
     private float mDriverCurrentVelocity = 0;
@@ -1167,7 +1168,11 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     }
 
     public void updateETA(long etaSeconds) {
-        mEtaLiveData.setValue((int) (etaSeconds / 60));
+        if (etaSeconds == PassengerRepository.UNDEFINED_ETA) {
+            mEtaLiveData.setValue(PassengerRepository.UNDEFINED_ETA);
+        } else {
+            mEtaLiveData.setValue((int) (etaSeconds / 60));
+        }
     }
 
     public LiveData<Integer> getETAInMin() {

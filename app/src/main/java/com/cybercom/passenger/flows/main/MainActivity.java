@@ -191,6 +191,7 @@ public class MainActivity extends AppCompatActivity implements
 
     // A PassengerRide is active mActivePassengerRide != null (Only happens when user is Passenger)
     private PassengerRide mActivePassengerRide;
+    private Fragment mDriveInformationDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -264,12 +265,12 @@ public class MainActivity extends AppCompatActivity implements
         }
         mActivePassengerRide = passengerRide;
         mCreateDriveFragment.hideCreateDialogCompletely();
-        showDriveInformationDialog(passengerRide.getDrive());
+        showDriveInformationDialog(passengerRide.getDrive(), mActivePassengerRide.isPickUpConfirmed());
         updateDriversMarkerPosition(passengerRide.getDrive().getId());
         dismissMatchingInProgressDialog();
         Intent updatePassengerIntent = new Intent(MainActivity.this, ForegroundServices.class);
         updatePassengerIntent.setAction(
-                Constants.ACTION.STARTFOREGROUND_UPDATE_PASSENGER_POSITION);
+                Constants.ACTION.STARTFOREGROUND_PASSENGER_CLIENT);
         updatePassengerIntent.putExtra(ForegroundServices.INTENT_EXTRA_PASSENGER_RIDE_ID,
                 passengerRide.getId());
         updatePassengerIntent.putExtra(ForegroundServices.INTENT_EXTRA_DRIVE_ID,
@@ -284,7 +285,8 @@ public class MainActivity extends AppCompatActivity implements
                 passengerRideDatabaseModel -> {
                     if (!mActivePassengerRide.isPickUpConfirmed() &&
                             passengerRideDatabaseModel.isPickUpConfirmed()) {
-                        showDriveInformationDialog(mActivePassengerRide.getDrive());
+                        showDriveInformationDialog(mActivePassengerRide.getDrive(),
+                                passengerRideDatabaseModel.isPickUpConfirmed());
                         mActivePassengerRide.setPickUpConfirmed(true);
                     }
                 });
@@ -895,23 +897,20 @@ public class MainActivity extends AppCompatActivity implements
         dFragment.show(getSupportFragmentManager(), AcceptRejectPassengerDialog.TAG);
     }
 
-    private void showDriveInformationDialog(Drive drive) {
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        DriveInformationDialog dialogFragment = (DriveInformationDialog)
-                fragmentManager.findFragmentByTag(DriveInformationDialog.TAG);
-        if (dialogFragment != null) {
-            dialogFragment.dismiss();
-        }
+    private void showDriveInformationDialog(Drive drive, boolean pickUpConfirmed) {
+            removeDriveInformationDialog();
 
-        DriveInformationDialog dFragment = DriveInformationDialog.getInstance(
-                drive);
-        dFragment.show(getSupportFragmentManager(), DriveInformationDialog.TAG);
+        mDriveInformationDialog = DriveInformationDialog.getInstance(
+                drive, pickUpConfirmed);
+
+        mFragmentManager.beginTransaction().add(R.id.main_activity_dialog_container,
+                mDriveInformationDialog).commit();
     }
 
     private void removeDriveInformationDialog() {
-        DriveInformationDialog dFragment = (DriveInformationDialog)
-                mFragmentManager.findFragmentByTag(DriveInformationDialog.TAG);
-        mFragmentManager.beginTransaction().remove(dFragment).commit();
+        if (mDriveInformationDialog != null) {
+            mFragmentManager.beginTransaction().remove(mDriveInformationDialog).commit();
+        }
     }
 
     @Override
@@ -1157,7 +1156,7 @@ public class MainActivity extends AppCompatActivity implements
     private void handleOnGoingDrive(Drive drive) {
         if (drive != null) {
             Intent UpdateDriveIntent = new Intent(MainActivity.this, ForegroundServices.class);
-            UpdateDriveIntent.setAction(Constants.ACTION.STARTFOREGROUND_UPDATE_DRIVER_POSITION);
+            UpdateDriveIntent.setAction(Constants.ACTION.STARTFOREGROUND_DRIVER_CLIENT);
             UpdateDriveIntent.putExtra(ForegroundServices.INTENT_EXTRA_DRIVE_ID, drive.getId());
             startService(UpdateDriveIntent);
             moveCameraOnPositionUpdates();

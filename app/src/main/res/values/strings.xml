@@ -213,5 +213,7 @@
     <string name="eta_notification_title">Your ride is expected in %1$d minutes</string>
     <string name="eta_notification_text">Your ride is expected in %1$d minutes</string>
     <string name="cancel_drive">Cancel drive</string>
+    <string name="driveinformation_cancelpassengerride_button">Cancel</string>
+    <string name="driveinformation_earlydropoff_button">Finish Ride</string>
 
 </resources>
