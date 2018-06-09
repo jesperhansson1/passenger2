@@ -193,7 +193,7 @@
         android:layout_marginStart="@dimen/activity_margin_half_double"
         android:layout_marginTop="@dimen/activity_margin_half_double"
         android:background="@drawable/button_border_round"
-        android:text="@string/passenger_notification_cancel"
+        tools:text="@string/passenger_notification_cancel"
         android:textColor="@color/colorRed"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

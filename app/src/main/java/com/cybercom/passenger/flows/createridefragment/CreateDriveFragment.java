@@ -152,16 +152,16 @@ public class CreateDriveFragment extends Fragment {
         mCreateDriveDialog = view.findViewById(R.id.create_drive_dialog);
 
         mCreateDriveDialog.getViewTreeObserver()
-                .addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                    @Override
-                    public void onGlobalLayout() {
-                        if (mFragmentSizeListener != null) {
-                            mFragmentSizeListener.onHeightChanged(mCreateDriveDialog.getHeight() +
-                                    MARGIN);
-                        }
-                        mCreateDriveDialog.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+            .addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    if (mFragmentSizeListener != null) {
+                        mFragmentSizeListener.onHeightChanged(mCreateDriveDialog.getHeight() +
+                                MARGIN);
                     }
-                });
+                    mCreateDriveDialog.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                }
+            });
 
         mHandler = new Handler();
 
