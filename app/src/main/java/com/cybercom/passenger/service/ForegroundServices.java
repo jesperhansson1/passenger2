@@ -186,13 +186,11 @@ public class ForegroundServices extends LifecycleService {
                     mPickUpConfirmed = passengerRide.isPickUpConfirmed();
                     mDropOffConfirmed = passengerRide.isDropOffConfirmed();
 
-                    if (!mPickUpConfirmed) {
-                        new Handler().postDelayed(this::requestETAInBackgroundAndUpdateToRepository,
-                                FIRST_TIME_ETA_LOOKUP_DELAY_MILLIS);
-                        new Handler().postDelayed(this::detectDriverArrival,
-                                FIRST_TIME_DETECT_DELAY_MILLIS);
+                    new Handler().postDelayed(this::requestETAInBackgroundAndUpdateToRepository,
+                            FIRST_TIME_ETA_LOOKUP_DELAY_MILLIS);
+                    new Handler().postDelayed(this::detectDriverArrival,
+                            FIRST_TIME_DETECT_DELAY_MILLIS);
 
-                    }
                     startScheduledETACalculation();
                 });
 

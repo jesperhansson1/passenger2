@@ -275,9 +275,7 @@ public class MainActivity extends AppCompatActivity implements
                 passengerRide.getId());
         updatePassengerIntent.putExtra(ForegroundServices.INTENT_EXTRA_DRIVE_ID,
                 passengerRide.getDrive().getId());
-        if (passengerRide != null) {
-            updatePassengerIntent.putExtra(PASSENGER_RIDE_KEY, passengerRide.getId());
-        }
+
         startService(updatePassengerIntent);
 
         // Observe the active PassengerRide (Note: the database model version..) for changes
@@ -1642,7 +1640,26 @@ public class MainActivity extends AppCompatActivity implements
                         showPassengerPickUpFragment(mActivePassengerRide.getDrive());
                     }
                 }
+                if (intent.getExtras().getInt(DIALOG_TO_SHOW) == TYPE_DROP_OFF) {
+                    handlePassengerDroppedOff();
+                }
             }
         }
+    }
+
+
+    // Called by Passenger client only
+    private void handlePassengerDroppedOff() {
+        String passengerId = mActivePassengerRide.getId();
+        mMainViewModel.removeCurrentPassengerId(passengerId, task -> handlePassengerRideRemoved(passengerId));
+
+        if (!mIsFragmentAdded) {
+            addCreateDriveFragment();
+        }
+    }
+
+    private void handlePassengerRideRemoved(String passengerId) {
+        removeDriveInformationDialog();
+
     }
 }
