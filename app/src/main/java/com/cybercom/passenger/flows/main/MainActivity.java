@@ -281,11 +281,16 @@ public class MainActivity extends AppCompatActivity implements
         // Observe the active PassengerRide (Note: the database model version..) for changes
         mMainViewModel.getPassengerRideById(mActivePassengerRide.getId()).observe(this,
                 passengerRideDatabaseModel -> {
-                    if (!mActivePassengerRide.isPickUpConfirmed() &&
-                            passengerRideDatabaseModel.isPickUpConfirmed()) {
-                        showDriveInformationDialog(mActivePassengerRide.getDrive(),
-                                passengerRideDatabaseModel.isPickUpConfirmed());
-                        mActivePassengerRide.setPickUpConfirmed(true);
+                    if (passengerRideDatabaseModel != null && passengerRideDatabaseModel.getPassengerId() != null) {
+
+                        if (!mActivePassengerRide.isPickUpConfirmed() &&
+                                passengerRideDatabaseModel.isPickUpConfirmed()) {
+                            showDriveInformationDialog(mActivePassengerRide.getDrive(),
+                                    passengerRideDatabaseModel.isPickUpConfirmed());
+                            mActivePassengerRide.setPickUpConfirmed(true);
+                        }
+                    } else {
+                        handlePassengerRideRemoved(mActivePassengerRide.getId());
                     }
                 });
     }
@@ -710,6 +715,8 @@ public class MainActivity extends AppCompatActivity implements
         mPassengerDetailedInformation = findViewById(R.id.passenger_detailed_information);
         mPassengerDetailedInformation.findViewById(R.id.abort_passenger_button)
                 .setOnClickListener(this);
+        mPassengerDetailedInformation.findViewById(R.id.dropoff_passenger_button)
+                .setOnClickListener(this);
         mCancelDriveFab = findViewById(R.id.cancel_drive);
         mCancelDriveFab.setOnClickListener(this);
         mConfirmCancelDrive = findViewById(R.id.confirm_cancel_drive_button);
@@ -720,12 +727,21 @@ public class MainActivity extends AppCompatActivity implements
         if (passengerRide == null) {
             return;
         }
-        if (passengerRide.isDropOffConfirmed()) {
+        if (mPassengers.get(passengerRide.getId()) == null) {
+
+            mPassengers.put(passengerRide.getId(), passengerRide);
+            addPassengerFab(passengerRide.getId());
+        } else if (passengerRide.isDropOffConfirmed()) {
             mPassengers.remove(passengerRide.getId());
             removePassengerFab(passengerRide.getId());
-        } else if (mPassengers.get(passengerRide.getId()) == null) {
-                mPassengers.put(passengerRide.getId(), passengerRide);
-                addPassengerFab(passengerRide.getId());
+        } else {
+            if (!mPassengers.get(passengerRide.getId()).isPickUpConfirmed() &&
+                    passengerRide.isPickUpConfirmed()) {
+                // Passenger has just been picked up
+                removeGeofence(passengerRide.getId() + GEOFENCE_TYPE_PICK_UP);
+            }
+            mPassengers.put(passengerRide.getId(), passengerRide);
+            updatePassengerDetailedInformation(passengerRide);
         }
         Drive drive = passengerRide.getDrive();
         Position driveStartLocation = drive.getStartLocation();
@@ -737,6 +753,16 @@ public class MainActivity extends AppCompatActivity implements
         }
         reRoute(createLatLngFromPosition(driveStartLocation),
                 createLatLngFromPosition(driveEndLocation), ridePointsList);
+    }
+
+    private void handlePassengerCancelled(String passengerRideId) {
+        mPassengers.remove(passengerRideId);
+        removePassengerFab(passengerRideId);
+        removeGeofence(passengerRideId + GEOFENCE_TYPE_PICK_UP);
+        removeGeofence(passengerRideId + GEOFENCE_TYPE_DROP_OFF);
+
+        findViewById(R.id.passenger_detailed_information).setVisibility(View.INVISIBLE);
+        // TODO: Recalculate the route for the drive
     }
 
 
@@ -769,10 +795,10 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private View findPassengerView(@NonNull String rideId) {
-        View child;
+        LinearLayout child;
         for (int i = 0; i < mPassengerContainer.getChildCount(); i++) {
-            child = mPassengerContainer.getChildAt(i);
-            if (rideId.equals(child.getTag())) {
+            child = (LinearLayout)mPassengerContainer.getChildAt(i);
+            if (child.getChildAt(0) != null && rideId.equals(child.getChildAt(0).getTag())) {
                 return child;
             }
         }
@@ -957,8 +983,14 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onCancelDrive(Drive drive) {
+    public void onCancelPassengerRide() {
         mMainViewModel.getNextNotification();
+
+        if (mActivePassengerRide != null) {
+            mMainViewModel.removeCurrentPassengerId(mActivePassengerRide.getId(), success -> {
+                // UI updates are handle elsewhere
+            });
+        }
     }
 
     @Override
@@ -1414,6 +1446,10 @@ public class MainActivity extends AppCompatActivity implements
             return;
         }
         PassengerRide passengerRide = mPassengers.get(tag);
+        updatePassengerDetailedInformation(passengerRide);
+    }
+
+    private void updatePassengerDetailedInformation(PassengerRide passengerRide) {
         if (passengerRide == null) {
             return;
         }
@@ -1421,8 +1457,17 @@ public class MainActivity extends AppCompatActivity implements
                 passengerRide.getPassenger().getFullName());
         //TODO add rating to PassengerRide
         //TODO add image..
-        ((TextView)mPassengerDetailedInformation.findViewById(R.id.passenger_start_location))
+        ((TextView) mPassengerDetailedInformation.findViewById(R.id.passenger_start_location))
                 .setText(passengerRide.getStartAddress());
+        if (passengerRide.isPickUpConfirmed()) {
+            mPassengerDetailedInformation.findViewById(R.id.dropoff_passenger_button)
+                    .setVisibility(View.VISIBLE);
+            mPassengerDetailedInformation.findViewById(R.id.abort_passenger_button)
+                    .setVisibility(View.GONE);
+        } else {
+            mPassengerDetailedInformation.findViewById(R.id.abort_passenger_button)
+                    .setVisibility(View.VISIBLE);
+        }
         ((TextView)mPassengerDetailedInformation.findViewById(R.id.passenger_end_location))
                 .setText(passengerRide.getEndAddress());
         //leaf value TODO add leaf value to passengerRide
@@ -1430,8 +1475,9 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void handleRideAborted(String rideId) {
-        Toast.makeText(this, "Implement handling of this", Toast.LENGTH_LONG).show();
-        //TODO Ride aborted from the driver, implement this
+        mMainViewModel.removeCurrentPassengerId(rideId, task -> {
+            handlePassengerCancelled(rideId);
+        });
     }
 
     private void handleRemoveDrive() {
@@ -1473,6 +1519,10 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onClick(final View view) {
         if (view.getId() == R.id.abort_passenger_button) {
+            handleRideAborted((String) mPassengerDetailedInformation.getTag());
+        } else if (view.getId() == R.id.dropoff_passenger_button) {
+            // TODO: Payment should be handled here. The call to handleRideAborted should be
+            // replaced.
             handleRideAborted((String) mPassengerDetailedInformation.getTag());
         } else if (view.getId() == R.id.cancel_drive) {
             toogleConfirmButton();
@@ -1653,13 +1703,14 @@ public class MainActivity extends AppCompatActivity implements
         String passengerId = mActivePassengerRide.getId();
         mMainViewModel.removeCurrentPassengerId(passengerId, task -> handlePassengerRideRemoved(passengerId));
 
-        if (!mIsFragmentAdded) {
-            addCreateDriveFragment();
-        }
     }
 
     private void handlePassengerRideRemoved(String passengerId) {
+        stopForegroundService();
         removeDriveInformationDialog();
 
+        if (!mIsFragmentAdded) {
+            addCreateDriveFragment();
+        }
     }
 }

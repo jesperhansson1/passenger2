@@ -83,6 +83,7 @@ public class ForegroundServices extends LifecycleService {
     private int mSecondsCounter = 0;
     private Handler mVelocityCheckHandler;
     private Runnable mVelocityCheckRunnable;
+    private boolean mCancelAllFlag;
 
 
     @Override
@@ -173,7 +174,10 @@ public class ForegroundServices extends LifecycleService {
 
             mPassengerRepository.getPassengerRideById(passengerRideId).observe(this,
                 passengerRide -> {
-                    if (passengerRide == null) return;
+                    if (passengerRide == null) {
+                        mCancelAllFlag = true;
+                        return;
+                    }
                     mPickUpLocation = passengerRide.getPickUpPosition();
                     mDropOffLocation = passengerRide.getDropOffPosition();
                     boolean isPickUpConfirmed = passengerRide.isPickUpConfirmed();
@@ -242,6 +246,10 @@ public class ForegroundServices extends LifecycleService {
     private void detectDriverArrival() {
         new Handler().postDelayed(() -> {
 
+            if (mCancelAllFlag) {
+                return;
+            }
+
             if (mDriversPosition == null || mPickUpLocation == null || mDropOffLocation == null
                     || mDriversVelocity == null) {
                 return;
@@ -251,11 +259,11 @@ public class ForegroundServices extends LifecycleService {
             Timber.i("detectArrival (mPickUpLocation): %s", mPickUpLocation);
             Timber.i("detectArrival (mDriversVelocity): %s", mDriversVelocity);
 
-            if (!mPickUpConfirmed || !mIsDriverAtPickUpLocation) {
+            if (!mPickUpConfirmed) {
                 detectArrivalToPickUpLocation();
             }
 
-            if (!mDropOffConfirmed || !mIsDriverAtDropOffLocation) {
+            if (!mDropOffConfirmed) {
                 detectArrivalToDropOffLocation();
 //                return;
             }
@@ -289,7 +297,7 @@ public class ForegroundServices extends LifecycleService {
                         showDialogInUi(MainActivity.TYPE_PICK_UP);
                     }
 
-                    mIsDriverAtPickUpLocation = true;
+                    mPickUpConfirmed = true;
                 }
 
                 mIsVelocityChecking = false;
@@ -323,7 +331,7 @@ public class ForegroundServices extends LifecycleService {
                     }else{
                         showDialogInUi(MainActivity.TYPE_DROP_OFF);
                     }
-                    mIsDriverAtDropOffLocation = true;
+                    mDropOffConfirmed = true;
                 }
 
                 mIsVelocityChecking = false;
@@ -351,6 +359,9 @@ public class ForegroundServices extends LifecycleService {
 
         mVelocityCheckHandler = new Handler();
         mVelocityCheckRunnable = () -> {
+            if (mCancelAllFlag) {
+                return;
+            }
             mSecondsCounter++;
             mVelocityAverage.add(mDriversVelocity);
 

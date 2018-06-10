@@ -215,5 +215,6 @@
     <string name="cancel_drive">Cancel drive</string>
     <string name="driveinformation_cancelpassengerride_button">Cancel</string>
     <string name="driveinformation_earlydropoff_button">Finish Ride</string>
+    <string name="passener_detailed_information_dropoffbutton">Drop Off</string>
 
 </resources>

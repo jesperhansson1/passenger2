@@ -58,7 +58,7 @@ public class DriveInformationDialog extends Fragment implements View.OnClickList
     private FragmentSizeListener mFragmentSizeListener;
 
     public interface PassengerNotificationListener {
-        void onCancelDrive(Drive drive);
+        void onCancelPassengerRide();
     }
 
     public static DriveInformationDialog getInstance(Drive drive, boolean pickedUpConfirmed) {
@@ -234,7 +234,7 @@ public class DriveInformationDialog extends Fragment implements View.OnClickList
                 if (mPickUpConfirmed) {
                     // TODO: early drop-off
                 } else {
-                    mPassengerNotificationListener.onCancelDrive(mDrive);
+                    mPassengerNotificationListener.onCancelPassengerRide();
                 }
                 break;
             }
