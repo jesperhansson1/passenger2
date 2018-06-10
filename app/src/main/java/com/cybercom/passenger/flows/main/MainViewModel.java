@@ -113,6 +113,10 @@ public class MainViewModel extends AndroidViewModel {
         mPassengerRepository.removeCurrentDrive(driveId, onCompleteListener);
     }
 
+    public void removeCurrentPassengerId(String passengerId, OnCompleteListener onCompleteListener) {
+        mPassengerRepository.removeCurrentPassengerRide(passengerId, onCompleteListener);
+    }
+
     public LiveData<DriveRequest> createDriveRequest(long time, Position startLocation, Position endLocation, int seats) {
         return mPassengerRepository.createDriveRequest(time, startLocation, endLocation, seats);
     }

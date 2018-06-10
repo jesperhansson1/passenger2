@@ -699,6 +699,11 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         task.addOnCompleteListener(onCompleteListener);
     }
 
+    public void removeCurrentPassengerRide(String passengerRideId, OnCompleteListener onCompleteListener) {
+        Task task = mPassengerRideReference.child(passengerRideId).removeValue();
+        task.addOnCompleteListener(onCompleteListener);
+    }
+
     private DatabaseReference getCarsReference() {
         mCarList = new MutableLiveData<>();
         return mCarsReference;

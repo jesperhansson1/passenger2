@@ -212,5 +212,6 @@
     <string name="cancel_drive">Avbryt rutt</string>
     <string name="driveinformation_cancelpassengerride_button">Avbryt</string>
     <string name="driveinformation_earlydropoff_button">Hoppa av</string>
+    <string name="passener_detailed_information_dropoffbutton">Släpp av</string>
 
 </resources>
