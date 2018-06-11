@@ -191,7 +191,7 @@ public class CardFragment extends Fragment implements
 
     @Override
     public void updateTokenId(String tokenId) {
-        Timber.d("token created with id " + tokenId);
+        Timber.d("token created with id %s", tokenId);
         if(mType == TYPE_DRIVER)
         {
             Timber.d("Driver logging.. create connected stripe account");
@@ -206,7 +206,7 @@ public class CardFragment extends Fragment implements
 
     @Override
     public void updateCustomerId(String customerId) {
-        Timber.d("customer created with id " + customerId);
+        Timber.d("customer created with id %s", customerId);
         mUserLogin.setCustomerId(customerId);
 
         Gson gson = new Gson();
@@ -216,7 +216,7 @@ public class CardFragment extends Fragment implements
 
     public void updateAccountId(String accountId)
     {
-        Timber.d("account created with id " + accountId);
+        Timber.d("account created with id %s", accountId);
         mUserLogin.setCustomerId(accountId);
         Gson gson = new Gson();
         String loginArray = gson.toJson(mUserLogin);
@@ -237,7 +237,7 @@ public class CardFragment extends Fragment implements
         {
             Timber.d(e.getLocalizedMessage());
         }
-        Timber.d("ipaddess " + ipAddress);
+        Timber.d("ipaddess %s", ipAddress);
         return ipAddress;
     }
 }

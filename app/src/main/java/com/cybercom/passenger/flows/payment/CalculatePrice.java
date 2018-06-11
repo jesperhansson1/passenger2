@@ -11,8 +11,8 @@ import static com.cybercom.passenger.flows.payment.PaymentConstants.RISE_TRIPLE_
 
 public class CalculatePrice {
 
-    long mDistance;
-    int mNoOfSeats;
+    private long mDistance;
+    private int mNoOfSeats;
 
     public CalculatePrice(long distance, int noOfSeats) {
         mDistance = distance;
@@ -51,24 +51,24 @@ public class CalculatePrice {
         if(distance <= 4.0)
         {
             price = distance *BASE_PRICE;
-            Timber.d(" distance < 4 and 1 " + price);
+            Timber.d(" distance < 4 and 1 %s", price);
         }
         if(distance > 4.0)
         {
             price = 4.0 * BASE_PRICE + (distance - 4.0) * RISE_PRICE;
-            Timber.d(" distance > 4 and 1 " + price);
+            Timber.d(" distance > 4 and 1 %s", price);
         }
         price = price + addPriceExtraPassenger();
         if(price < 35.0)
         {
             price = BASE_PRICE;
-            Timber.d(" price is " + price);
+            Timber.d(" price is %s", price);
         }
         return price;
     }
 
     //Add rise price for total price depending on number of people
-    public double addPriceExtraPassenger()
+    private double addPriceExtraPassenger()
     {
         switch(mNoOfSeats)
         {

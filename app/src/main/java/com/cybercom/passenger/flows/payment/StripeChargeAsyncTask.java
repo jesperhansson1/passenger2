@@ -14,12 +14,11 @@ import static com.cybercom.passenger.flows.payment.PaymentConstants.STRIPE_API_K
 
 public class StripeChargeAsyncTask extends AsyncTask<String, Void, String> {
 
-    int mAmount = 0;
-    String mCustomerId = null;
-    boolean mStatus = false;
-    String mChargeId = null;
+    private int mAmount = 0;
+    private String mCustomerId = null;
+    private boolean mStatus = false;
 
-    onChargeCreated mChargeDelegate;
+    private onChargeCreated mChargeDelegate;
 
     public interface onChargeCreated{
         void onChargeAmountReserved(String chargeId);
@@ -33,20 +32,16 @@ public class StripeChargeAsyncTask extends AsyncTask<String, Void, String> {
         Timber.d(amount  + " to " + customerId);
     }
 
-    public StripeChargeAsyncTask() {
-
-    }
-
     @Override
     protected String doInBackground(String... params) {
-        mChargeId =  postData(mCustomerId, mAmount, mStatus);
-        Timber.d("charge id" + mChargeId);
-        return mChargeId;
+        String chargeId = postData(mCustomerId, mAmount, mStatus);
+        Timber.d("charge id%s", chargeId);
+        return chargeId;
     }
 
     @Override
     protected void onPostExecute(String chargeId) {
-        Timber.d("amount blocked " + chargeId);
+        Timber.d("amount blocked %s", chargeId);
         if(mChargeDelegate != null)
         {
             mChargeDelegate.onChargeAmountReserved(chargeId);
@@ -57,10 +52,10 @@ public class StripeChargeAsyncTask extends AsyncTask<String, Void, String> {
         }
     }
 
-    public String postData(String customerId, int amount, boolean status) {
+    private String postData(String customerId, int amount, boolean status) {
         String chargeId = null;
         Stripe.apiKey = STRIPE_API_KEY;
-        Timber.d("amount is  "  + amount);
+        Timber.d("amount is  %s", amount);
         Map<String, Object> chargeParams = new HashMap<>();
         chargeParams.put("amount",  amount); // $15.00 this time
         chargeParams.put("currency", "sek");
@@ -70,12 +65,12 @@ public class StripeChargeAsyncTask extends AsyncTask<String, Void, String> {
         try
         {
             Charge charge = Charge.create(chargeParams);
-            Timber.d("Charge created " + charge);
-            return charge.getId();
+            Timber.d("Charge created %s", charge);
+            chargeId = charge.getId();
         }
         catch(Exception e)
         {
-            Timber.d("error creating charge " + e.getMessage());
+            Timber.d("error creating charge %s", e.getMessage());
         }
         return chargeId;
     }
