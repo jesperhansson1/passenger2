@@ -186,11 +186,13 @@ public class MainActivity extends AppCompatActivity implements
     public Bounds mBounds;
     private List<String> mActiveDriveIdList = new ArrayList<>();
 
-    public double mPrice = 0.0;
+   /* public double mPrice = 0.0;
     public long mTime = 0;
     public Position mStartLocation = null;
     public Position mEndLocation = null;
-    public int mSeats = 0;
+    public int mSeats = 0;*/
+
+    DriveRequest mPendingDriveRequest;
 
 
     @Override
@@ -1059,21 +1061,8 @@ public class MainActivity extends AppCompatActivity implements
                 });
                 break;
             case User.TYPE_PASSENGER:
-
-                mTime = time;
-                mStartLocation = startLocation;
-                mEndLocation = endLocation;
-                mSeats = seats;
+                mPendingDriveRequest = new DriveRequest(null,null,time,startLocation,endLocation,seats,0.0,null,null);
                 getPrice(seats);
-               /* mMainViewModel.createDriveRequest(time, startLocation, endLocation, seats, getPrice(seats)).observe(
-                        this, driveRequest -> {
-                            mMainViewModel.setDriveRequestRadiusMultiplier(
-                                    MainViewModel.DRIVE_REQUEST_DEFAULT_MULTIPLIER);
-                            Timber.i("DriveRequest : %s", driveRequest);
-                            matchDriveRequest(driveRequest,
-                                    mMainViewModel.getDriveRequestRadiusMultiplier());
-                            mCreateDriveFragment.setDefaultValuesToDialog();
-                        });*/
                 break;
         }
     }
@@ -1559,7 +1548,7 @@ public class MainActivity extends AppCompatActivity implements
         Timber.d("distance bound " + mBounds.getDistance());
         CalculatePrice calculatePrice = new CalculatePrice(mBounds.getDistance(),seats);
         price = calculatePrice.getPrice();
-        mPrice = price;
+        mPendingDriveRequest.setPrice(price);
         Timber.d("price is " + price);
         reserveChargeAmountInBackground((int)price * 100);
 
@@ -1574,7 +1563,8 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onChargeAmountReserved(String chargeId) {
         Timber.d("charge created with id " + chargeId);
-        mMainViewModel.createDriveRequest(mTime, mStartLocation, mEndLocation, mSeats, mPrice, chargeId).observe(
+        mMainViewModel.createDriveRequest(mPendingDriveRequest.getTime(), mPendingDriveRequest.getStartLocation(), mPendingDriveRequest.getEndLocation(),
+                mPendingDriveRequest.getExtraPassengers(), mPendingDriveRequest.getPrice(), chargeId).observe(
                 this, driveRequest -> {
                     mMainViewModel.setDriveRequestRadiusMultiplier(
                             MainViewModel.DRIVE_REQUEST_DEFAULT_MULTIPLIER);
