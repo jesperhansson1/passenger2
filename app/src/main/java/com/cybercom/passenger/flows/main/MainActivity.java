@@ -14,6 +14,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.location.Location;
+import android.media.session.MediaSession;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -1563,15 +1564,21 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onChargeAmountReserved(String chargeId) {
         Timber.d("charge created with id " + chargeId);
-        mMainViewModel.createDriveRequest(mPendingDriveRequest.getTime(), mPendingDriveRequest.getStartLocation(), mPendingDriveRequest.getEndLocation(),
-                mPendingDriveRequest.getExtraPassengers(), mPendingDriveRequest.getPrice(), chargeId).observe(
-                this, driveRequest -> {
-                    mMainViewModel.setDriveRequestRadiusMultiplier(
-                            MainViewModel.DRIVE_REQUEST_DEFAULT_MULTIPLIER);
-                    Timber.i("DriveRequest : %s", driveRequest);
-                    matchDriveRequest(driveRequest,
-                            mMainViewModel.getDriveRequestRadiusMultiplier());
-                    mCreateDriveFragment.setDefaultValuesToDialog();
-                });
+        if(chargeId == null) {
+            Toast.makeText(getApplicationContext(),"Error charging card", Toast.LENGTH_LONG).show();
+        }
+        else
+        {
+            mMainViewModel.createDriveRequest(mPendingDriveRequest.getTime(), mPendingDriveRequest.getStartLocation(), mPendingDriveRequest.getEndLocation(),
+                    mPendingDriveRequest.getExtraPassengers(), mPendingDriveRequest.getPrice(), chargeId).observe(
+                    this, driveRequest -> {
+                        mMainViewModel.setDriveRequestRadiusMultiplier(
+                                MainViewModel.DRIVE_REQUEST_DEFAULT_MULTIPLIER);
+                        Timber.i("DriveRequest : %s", driveRequest);
+                        matchDriveRequest(driveRequest,
+                                mMainViewModel.getDriveRequestRadiusMultiplier());
+                        mCreateDriveFragment.setDefaultValuesToDialog();
+                    });
+        }
     }
 }
