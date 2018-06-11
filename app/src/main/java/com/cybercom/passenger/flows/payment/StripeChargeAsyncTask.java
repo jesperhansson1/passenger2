@@ -55,23 +55,17 @@ public class StripeChargeAsyncTask extends AsyncTask<String, Void, String> {
         {
             Timber.d("charge delegate is null.");
         }
-
-
-
     }
 
     public String postData(String customerId, int amount, boolean status) {
         String chargeId = null;
         Stripe.apiKey = STRIPE_API_KEY;
-
-         Timber.d("amount is  "  + amount);
-
+        Timber.d("amount is  "  + amount);
         Map<String, Object> chargeParams = new HashMap<>();
         chargeParams.put("amount",  amount); // $15.00 this time
         chargeParams.put("currency", "sek");
         chargeParams.put("capture", status);
         chargeParams.put("customer", customerId); // Previously stored, then retrieved
-
 
         try
         {

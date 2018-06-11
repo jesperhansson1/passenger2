@@ -105,6 +105,9 @@ import java.util.List;
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
+import static com.cybercom.passenger.flows.payment.PaymentConstants.CARD_ERROR;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.GOOGLE_API_ERROR;
+
 public class MainActivity extends AppCompatActivity implements
         CreateDriveFragment.CreateRideFragmentListener,
         AcceptRejectPassengerDialog.ConfirmationListener,
@@ -1546,12 +1549,18 @@ public class MainActivity extends AppCompatActivity implements
     public void getPrice(int seats)
     {
         double price = 0.0;
-        Timber.d("distance bound " + mBounds.getDistance());
-        CalculatePrice calculatePrice = new CalculatePrice(mBounds.getDistance(),seats);
-        price = calculatePrice.getPrice();
-        mPendingDriveRequest.setPrice(price);
-        Timber.d("price is " + price);
-        reserveChargeAmountInBackground((int)price * 100);
+        if(mBounds!=null) {
+            Timber.d("distance bound " + mBounds.getDistance());
+            CalculatePrice calculatePrice = new CalculatePrice(mBounds.getDistance(), seats);
+            price = calculatePrice.getPrice();
+            mPendingDriveRequest.setPrice(price);
+            Timber.d("price is " + price);
+            reserveChargeAmountInBackground((int) price * 100);
+        }
+        else
+        {
+            Toast.makeText(getApplicationContext(),GOOGLE_API_ERROR,Toast.LENGTH_LONG).show();
+        }
 
     }
 
@@ -1565,7 +1574,7 @@ public class MainActivity extends AppCompatActivity implements
     public void onChargeAmountReserved(String chargeId) {
         Timber.d("charge created with id " + chargeId);
         if(chargeId == null) {
-            Toast.makeText(getApplicationContext(),"Error charging card", Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(),CARD_ERROR, Toast.LENGTH_LONG).show();
         }
         else
         {

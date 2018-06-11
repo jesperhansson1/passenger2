@@ -82,11 +82,6 @@ public class StripeAccountAsyncTask extends AsyncTask<String, Void, String> {
             params.put("email", email);
             account.update(emailParams);
 
-           /* Map<String, Object> currencyParams = new HashMap<String, Object>();
-            params.put("default_currency", CURRENCY);
-            account.update(currencyParams);*/
-
-
             Map<String, Object> tosAcceptanceParams = new HashMap<String, Object>();
             tosAcceptanceParams.put("date", (long) System.currentTimeMillis() / 1000L);
             tosAcceptanceParams.put("ip", ipAddress); // Assumes you're not using a proxy

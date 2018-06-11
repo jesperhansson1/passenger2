@@ -3,12 +3,11 @@ package com.cybercom.passenger.flows.payment;
 
 import timber.log.Timber;
 
-import static com.cybercom.passenger.flows.payment.PaymentConstants.BASE_MULTIPLE_PRICE;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.BASE_PRICE;
-import static com.cybercom.passenger.flows.payment.PaymentConstants.BASE_SINGLE_PRICE;
-import static com.cybercom.passenger.flows.payment.PaymentConstants.RISE_MULTIPLE_PRICE;
-import static com.cybercom.passenger.flows.payment.PaymentConstants.RISE_SINGLE_PRICE;
-import static com.cybercom.passenger.flows.payment.PaymentConstants.TOP_UP_MULTIPLE_PRICE;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.RISE_DOUBLE_PRICE;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.RISE_PRICE;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.RISE_QUADRUPLE_PRICE;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.RISE_TRIPLE_PRICE;
 
 public class CalculatePrice {
 
@@ -24,7 +23,7 @@ public class CalculatePrice {
         return mDistance;
     }
 
-    public void setmDistance(long distance) {
+    public void setDistance(long distance) {
         mDistance = distance;
     }
 
@@ -44,44 +43,43 @@ public class CalculatePrice {
                 '}';
     }
 
+    //Calculate total price for the given distance
     public double getPrice()
     {
         double price = 0.0;
         double distance = ((double)mDistance)/10000; //m to swedish mile
-
-        if(getNoOfSeats() == 1)
+        if(distance <= 4.0)
         {
-            if(distance <= 4.0)
-            {
-                price = distance *BASE_SINGLE_PRICE;
-                Timber.d(" distance < 4 and 1 " + price);
-            }
-            if(distance > 4.0)
-            {
-                price = 4.0 * BASE_SINGLE_PRICE + (distance - 4.0) * RISE_SINGLE_PRICE;
-                Timber.d(" distance > 4 and 1 " + price);
-            }
-        }else
-        {
-            if(distance <= 4.0)
-            {
-                price = distance * BASE_MULTIPLE_PRICE;
-                Timber.d(" distance < 4 and 2 " + price);
-            }
-            if(distance > 4.0)
-            {
-                price = 4.0 * BASE_MULTIPLE_PRICE + (distance - 4.0) * RISE_MULTIPLE_PRICE;
-                Timber.d(" distance > 4 and 2 " + price);
-            }
-            price = price + TOP_UP_MULTIPLE_PRICE;
-            Timber.d(" distance > 4 and 2 final " + price);
+            price = distance *BASE_PRICE;
+            Timber.d(" distance < 4 and 1 " + price);
         }
-
+        if(distance > 4.0)
+        {
+            price = 4.0 * BASE_PRICE + (distance - 4.0) * RISE_PRICE;
+            Timber.d(" distance > 4 and 1 " + price);
+        }
+        price = price + addPriceExtraPassenger();
         if(price < 35.0)
         {
             price = BASE_PRICE;
+            Timber.d(" price is " + price);
         }
-
         return price;
+    }
+
+    //Add rise price for total price depending on number of people
+    public double addPriceExtraPassenger()
+    {
+        switch(mNoOfSeats)
+        {
+            case 2:
+                return RISE_DOUBLE_PRICE;
+            case 3:
+                return RISE_TRIPLE_PRICE;
+            case 4:
+                return RISE_QUADRUPLE_PRICE;
+            default:
+                return 0.0;
+        }
     }
 }
