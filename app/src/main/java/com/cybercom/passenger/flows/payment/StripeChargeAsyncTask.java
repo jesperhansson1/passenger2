@@ -10,12 +10,11 @@ import java.util.Map;
 
 import timber.log.Timber;
 
-import static com.cybercom.passenger.flows.payment.PaymentConstants.CURRENCY;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.STRIPE_API_KEY;
 
 public class StripeChargeAsyncTask extends AsyncTask<String, Void, String> {
 
-    double mAmount = 0.0;
+    int mAmount = 0;
     String mCustomerId = null;
     boolean mStatus = false;
     String mChargeId = null;
@@ -23,10 +22,10 @@ public class StripeChargeAsyncTask extends AsyncTask<String, Void, String> {
     onChargeCreated mChargeDelegate;
 
     public interface onChargeCreated{
-        void chargeBlockedStatus(String chargeId);
+        void onChargeAmountReserved(String chargeId);
     }
 
-    public StripeChargeAsyncTask(String customerId, double amount, onChargeCreated delegate, boolean capture) {
+    public StripeChargeAsyncTask(String customerId, int amount, onChargeCreated delegate, boolean capture) {
         mAmount = amount;
         mCustomerId = customerId;
         mChargeDelegate = delegate;
@@ -48,19 +47,27 @@ public class StripeChargeAsyncTask extends AsyncTask<String, Void, String> {
     @Override
     protected void onPostExecute(String chargeId) {
         Timber.d("amount blocked " + chargeId);
-        mChargeDelegate.chargeBlockedStatus(chargeId);
+        if(mChargeDelegate != null)
+        {
+            mChargeDelegate.onChargeAmountReserved(chargeId);
+        }
+        else
+        {
+            Timber.d("charge delegate is null.");
+        }
+
+
 
     }
 
-    public String postData(String customerId, double amount, boolean status) {
+    public String postData(String customerId, int amount, boolean status) {
         String chargeId = null;
         Stripe.apiKey = STRIPE_API_KEY;
 
-        amount = amount * 100;
-        Timber.d("val "  + (int)amount);
+         Timber.d("amount is  "  + amount);
 
         Map<String, Object> chargeParams = new HashMap<>();
-        chargeParams.put("amount",  (int)amount); // $15.00 this time
+        chargeParams.put("amount",  amount); // $15.00 this time
         chargeParams.put("currency", "sek");
         chargeParams.put("capture", status);
         chargeParams.put("customer", customerId); // Previously stored, then retrieved

@@ -1560,14 +1560,19 @@ public class MainActivity extends AppCompatActivity implements
         CalculatePrice calculatePrice = new CalculatePrice(mBounds.getDistance(),seats);
         price = calculatePrice.getPrice();
         mPrice = price;
-        new StripeChargeAsyncTask(mCurrentLoggedInUser.getCustomerId(),price,this,false).execute();
-
         Timber.d("price is " + price);
+        reserveChargeAmountInBackground((int)price * 100);
+
+    }
+
+    public void reserveChargeAmountInBackground(int price)
+    {
+        new StripeChargeAsyncTask(mCurrentLoggedInUser.getCustomerId(),price,this,false).execute();
 
     }
 
     @Override
-    public void chargeBlockedStatus(String chargeId) {
+    public void onChargeAmountReserved(String chargeId) {
         Timber.d("charge created with id " + chargeId);
         mMainViewModel.createDriveRequest(mTime, mStartLocation, mEndLocation, mSeats, mPrice, chargeId).observe(
                 this, driveRequest -> {
