@@ -12,6 +12,7 @@ public class PaymentConstants {
     public static final String INDIVIDUAL = "individual";
     public static final String PRODUCT_DESCRIPTION = "test";
     public static final String CURRENCY = "usd";
+    public static final String CURRENCY_SEK = "sek";
 
     public static final double BASE_PRICE = 35.0; //35kr is base fare (0 to 4 miles)
     public static final double RISE_PRICE = 15.0; //15kr is rise fare (4+ miles)
@@ -21,5 +22,8 @@ public class PaymentConstants {
 
     public static final String GOOGLE_API_ERROR = "Google api error";
     public static final String CARD_ERROR = "Error charging card";
+
+    public static final int NO_SHOW_AVGIFT = 0;//no show charge
+    public static final int RIDE_AVGIFT = 1;//charge after ride
 
 }

@@ -4,12 +4,14 @@ import android.os.AsyncTask;
 
 import com.stripe.Stripe;
 import com.stripe.model.Charge;
+import com.stripe.model.Transfer;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import timber.log.Timber;
 
+import static com.cybercom.passenger.flows.payment.PaymentConstants.CURRENCY_SEK;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.STRIPE_API_KEY;
 
 public class StripeChargeAsyncTask extends AsyncTask<String, Void, String> {
@@ -58,7 +60,7 @@ public class StripeChargeAsyncTask extends AsyncTask<String, Void, String> {
         Timber.d("amount is  %s", amount);
         Map<String, Object> chargeParams = new HashMap<>();
         chargeParams.put("amount",  amount); // $15.00 this time
-        chargeParams.put("currency", "sek");
+        chargeParams.put("currency", CURRENCY_SEK);
         chargeParams.put("capture", status);
         chargeParams.put("customer", customerId); // Previously stored, then retrieved
 
