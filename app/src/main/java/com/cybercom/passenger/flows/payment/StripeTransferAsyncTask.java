@@ -23,7 +23,7 @@ public class StripeTransferAsyncTask  extends AsyncTask<String, Void, String> {
     private onTransferCreated mOnTransferDelegate;
 
     public interface onTransferCreated{
-        void onChargeAmountReserved(String chargeId);
+        void onTransferInitiated(String transferId);
     }
 
     public StripeTransferAsyncTask(String chargeId, StripeTransferAsyncTask.onTransferCreated delegate, String accountId) {
@@ -45,7 +45,7 @@ public class StripeTransferAsyncTask  extends AsyncTask<String, Void, String> {
         Timber.d("transfer created %s", transferId);
         if(mOnTransferDelegate != null)
         {
-            mOnTransferDelegate.onChargeAmountReserved(transferId);
+            mOnTransferDelegate.onTransferInitiated(transferId);
         }
         else
         {
