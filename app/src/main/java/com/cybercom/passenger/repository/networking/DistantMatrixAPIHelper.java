@@ -56,8 +56,7 @@ public class DistantMatrixAPIHelper {
      * @param response the response
      * @return Number of rows in int
      */
-    public static int getRowsCount(Response<DistanceMatrixResponse> response)
-    {
+    public static int getRowsCount(Response<DistanceMatrixResponse> response) {
         if (response.body() != null) {
             return response.body().getRows().size();
         }

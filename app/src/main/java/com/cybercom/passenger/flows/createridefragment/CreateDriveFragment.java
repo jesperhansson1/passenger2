@@ -228,14 +228,11 @@ public class CreateDriveFragment extends Fragment {
         if (getActivity() != null) {
             mMainViewModel.getUser().observe(getActivity(), user -> {
                 if (user != null) {
-
-                    if (user.getType() == User.TYPE_DRIVER) {
+                    mType = user.getType();
+                    if (mType == User.TYPE_DRIVER) {
                         setUpDialogForDrive();
-                        mType = user.getType();
-                    }
-                    if (user.getType() == User.TYPE_PASSENGER) {
+                    } else {
                         setUpDialogForDriveRequest();
-                        mType = user.getType();
                     }
                 }
             });
@@ -428,10 +425,10 @@ public class CreateDriveFragment extends Fragment {
 
                     }
                 });
+
         if (mFragmentSizeListener != null) {
             mFragmentSizeListener.onHeightChanged(0);
         }
-
     }
 
     public void setIsOtherFragmentUp(boolean isOtherFragmentUp) {
@@ -452,7 +449,6 @@ public class CreateDriveFragment extends Fragment {
                         try {
                             PlaceBufferResponse locations = task.getResult();
                             Place clickedLocation = locations.get(0);
-
                             if (getActivity() != null) {
                                 InputMethodManager imm = (InputMethodManager) getActivity()
                                         .getSystemService(Activity.INPUT_METHOD_SERVICE);

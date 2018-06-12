@@ -173,6 +173,7 @@ public class MainActivity extends AppCompatActivity implements
     private List<Geofence> mGeofenceList;
     private PendingIntent mGeofencePendingIntent;
 
+    // TODO remove this or the other one..
     // Driver client member
     private List<PassengerRide> mPassengerRides = new ArrayList<>();
 
@@ -194,6 +195,7 @@ public class MainActivity extends AppCompatActivity implements
     // A PassengerRide is active mActivePassengerRide != null (Only happens when user is Passenger)
     private PassengerRide mActivePassengerRide;
     private Fragment mDriveInformationDialog;
+    private String mGoogleApiKey;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -245,6 +247,8 @@ public class MainActivity extends AppCompatActivity implements
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map_activitymap_googlemap);
         mapFragment.getMapAsync(this);
+
+        mGoogleApiKey = getResources().getString(R.string.google_api_key);
     }
 
     private void createNotificationChannels() {
@@ -298,8 +302,6 @@ public class MainActivity extends AppCompatActivity implements
                     }
                 });
     }
-
-
 
     private void updateDriversMarkerPosition(String driveId) {
         mMainViewModel.getDriverPosition(driveId).observe(this, position -> {
@@ -383,6 +385,7 @@ public class MainActivity extends AppCompatActivity implements
         });
     }
 
+
     private void observeOnActiveDrive() {
         final LifecycleOwner lifecycleOwner = this;
 
@@ -401,7 +404,7 @@ public class MainActivity extends AppCompatActivity implements
 
                 mActiveDriveIdList.add(drive.getId());
                 mActiveDrive = drive;
-                mMainViewModel.getPassengerRides(drive.getId()).observe(lifecycleOwner, passengerRide -> {
+                mMainViewModel.getPassengerRides(drive.getId()).observe(this, passengerRide -> {
                     if (passengerRide != null) {
                         if (isPassengerRideAlreadyAddedToLocalList(passengerRide)) {
                             replacePassengerRide(passengerRide);
@@ -486,7 +489,8 @@ public class MainActivity extends AppCompatActivity implements
                     .zoom(ZOOM_LEVEL_MY_LOCATION);
 
             // This is needed to prevent erratic camera updates when car has stopped.
-            if (location.hasSpeed() && location.getSpeed() > CHANGE_CAMERA_BEARING_SPEED_THRESHOLD) {
+            if (location.hasSpeed()
+                    && location.getSpeed() > CHANGE_CAMERA_BEARING_SPEED_THRESHOLD) {
                 cameraPositionBuilder.bearing(location.getBearing());
 
             }
@@ -505,13 +509,6 @@ public class MainActivity extends AppCompatActivity implements
             mDriverCurrentLocationLiveData.removeObserver(mLocationObserverForCameraUpdates);
         }
     }
-
-        /*
-        if (mLocation == null) {
-            // Permission not granted to access user location
-            Timber.i("get updated --> minc");
-            setDefaultLocationToMinc();
-        }*/
 
     private void placeStartLocationMarker() {
 
@@ -606,8 +603,8 @@ public class MainActivity extends AppCompatActivity implements
 
     private void matchDriveRequest(final DriveRequest driveRequest, int radiusMultiplier) {
         final LifecycleOwner lifecycleOwner = this;
-        String googleApiKey = getResources().getString(R.string.google_api_key);
-        mFindMatch = mMainViewModel.findBestDriveMatch(driveRequest, radiusMultiplier, googleApiKey);
+        mFindMatch = mMainViewModel.findBestDriveMatch(driveRequest, radiusMultiplier,
+                mGoogleApiKey);
         showMatchingInProgressDialog();
         mTimer = mMainViewModel.setFindMatchTimer();
 
@@ -755,9 +752,11 @@ public class MainActivity extends AppCompatActivity implements
         Position driveStartLocation = drive.getStartLocation();
         Position driveEndLocation = drive.getEndLocation();
         List<RidePoints> ridePointsList = new ArrayList();
-        ridePointsList.add(createRidePointsFromPassengerRide(passengerRide));
+        ridePointsList.add(createRidePointsFromPassengerRide(passengerRide.getPickUpPosition(),
+                passengerRide.getDropOffPosition()));
         for (PassengerRide onBordedPassenger : mPassengers.values()) {
-            ridePointsList.add(createRidePointsFromPassengerRide(onBordedPassenger));
+            ridePointsList.add(createRidePointsFromPassengerRide(
+                    onBordedPassenger.getPickUpPosition(), onBordedPassenger.getDropOffPosition()));
         }
         reRoute(createLatLngFromPosition(driveStartLocation),
                 createLatLngFromPosition(driveEndLocation), ridePointsList);
@@ -886,7 +885,7 @@ public class MainActivity extends AppCompatActivity implements
                         mMainViewModel.getEndMarkerLocation().getValue().getLatitude(),
                         mMainViewModel.getEndMarkerLocation().getValue().getLongitude());
 
-                new FetchRoute(origin, destination, null, this);
+                new FetchRoute(origin, destination, null, this, mGoogleApiKey);
             }
         }
     }
@@ -895,7 +894,7 @@ public class MainActivity extends AppCompatActivity implements
         if (mRoute != null) {
             mRoute.remove();
         }
-        new FetchRoute(origin, destination, wayPoints, this);
+        new FetchRoute(origin, destination, wayPoints, this, mGoogleApiKey);
     }
 
     private void zoomToFitRoute() {
@@ -968,13 +967,20 @@ public class MainActivity extends AppCompatActivity implements
         mCreateDriveFragment.showCreateDialog();
     }
 
-    private RidePoints createRidePointsFromPassengerRide(@NonNull PassengerRide passengerRide) {
-        LatLng pickUp = createLatLngFromPosition(passengerRide.getPickUpPosition());
-        LatLng dropOff = createLatLngFromPosition(passengerRide.getDropOffPosition());
+    public static RidePoints createRidePointsFromDriveRequest(@NonNull DriveRequest driveRequest) {
+        LatLng pickUp = createLatLngFromPosition(driveRequest.getStartLocation());
+        LatLng dropOff = createLatLngFromPosition(driveRequest.getEndLocation());
         return new RidePoints(pickUp, dropOff);
     }
 
-    private LatLng createLatLngFromPosition(@NonNull Position position) {
+    public static RidePoints createRidePointsFromPassengerRide(@NonNull Position pickUpPosition,
+                                                               @NonNull Position dropOffPosition) {
+        LatLng pickUp = createLatLngFromPosition(pickUpPosition);
+        LatLng dropOff = createLatLngFromPosition(dropOffPosition);
+        return new RidePoints(pickUp, dropOff);
+    }
+
+    public static LatLng createLatLngFromPosition(@NonNull Position position) {
         return new LatLng(position.getLatitude(), position.getLongitude());
     }
 
@@ -1051,6 +1057,7 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onRoutesFetched(List<Route> routes) {
         List<LatLng> polylinePoints = new ArrayList<>();
+
         for (Route route : routes) {
             //TODO can we have many routes??
             Bounds bounds = route.getBounds();
@@ -1066,6 +1073,9 @@ public class MainActivity extends AppCompatActivity implements
         polylineOptions.width(ROUTE_WIDTH);
         polylineOptions.color(ROUTE_COLOR);
 
+        if (mRoute != null) {
+            mRoute.remove();
+        }
         mRoute = mGoogleMap.addPolyline(polylineOptions);
         zoomToFitRoute();
     }
@@ -1101,17 +1111,6 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onFinish() {
         removeCreateDriveFragment();
-
-     /*  mGoogleMap.clear();
-        isStartLocationMarkerAdded = false;
-        isEndLocationMarkerAdded = false;
-        mMainViewModel.getStartMarkerLocation().removeObserver(mStartLocationObserver);
-        mMainViewModel.getEndMarkerLocation().removeObserver(mEndLocationObserver);
-
-        mMarkerCount = 0;
-        mCountMarker = true;*/
-
-
     }
 
     private void removeCreateDriveFragment() {
@@ -1508,7 +1507,8 @@ public class MainActivity extends AppCompatActivity implements
     // Driver client method
     private void handleRemoveDrive() {
         if (mPassengers.size() > 0) {
-            Toast.makeText(this, R.string.main_activity_active_rides_error_message, Toast.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.main_activity_active_rides_error_message,
+                    Toast.LENGTH_LONG).show();
             return;
         }
 

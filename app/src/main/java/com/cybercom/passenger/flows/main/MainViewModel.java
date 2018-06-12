@@ -19,6 +19,7 @@ import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Notification;
 import com.cybercom.passenger.model.PassengerRide;
 import com.cybercom.passenger.model.Position;
+import com.cybercom.passenger.model.Route;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.repository.PassengerRepository;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -104,9 +105,8 @@ public class MainViewModel extends AndroidViewModel {
 
     public LiveData<Drive> createDrive(long time, Position startLocation, Position endLocation,
                                        int availableSeats, Bounds bounds) {
-
-
-        return mPassengerRepository.createDrive(time, startLocation, endLocation, availableSeats, bounds);
+        return mPassengerRepository.createDrive(time, startLocation, endLocation, availableSeats,
+                bounds);
     }
 
     public void removeCurrentDrive(String driveId, OnCompleteListener onCompleteListener) {
