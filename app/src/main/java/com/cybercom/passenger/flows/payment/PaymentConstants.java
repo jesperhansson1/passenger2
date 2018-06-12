@@ -26,4 +26,6 @@ public class PaymentConstants {
     public static final int NO_SHOW_AVGIFT = 0;//no show charge
     public static final int RIDE_AVGIFT = 1;//charge after ride
 
+    public static final int NOSHOW_FEE = 1850; //18.5kr to connected account
+
 }

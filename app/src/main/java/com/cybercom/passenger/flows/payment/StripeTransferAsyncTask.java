@@ -12,11 +12,11 @@ import java.util.Map;
 import timber.log.Timber;
 
 import static com.cybercom.passenger.flows.payment.PaymentConstants.CURRENCY_SEK;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.NOSHOW_FEE;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.STRIPE_API_KEY;
 
 public class StripeTransferAsyncTask  extends AsyncTask<String, Void, String> {
 
-    private int mAmount = 0;
     private String mChargeId = null;
     private String mAccountId = null;
 
@@ -26,17 +26,16 @@ public class StripeTransferAsyncTask  extends AsyncTask<String, Void, String> {
         void onChargeAmountReserved(String chargeId);
     }
 
-    public StripeTransferAsyncTask(String chargeId, int amount, StripeTransferAsyncTask.onTransferCreated delegate, String accountId) {
-        mAmount = amount;
+    public StripeTransferAsyncTask(String chargeId, StripeTransferAsyncTask.onTransferCreated delegate, String accountId) {
         mChargeId = chargeId;
         mAccountId = accountId;
         mOnTransferDelegate = delegate;
-        Timber.d(amount  + " from " + chargeId + " to " + accountId);
+        Timber.d(NOSHOW_FEE  + " from " + mChargeId + " to " + mAccountId);
     }
 
     @Override
     protected String doInBackground(String... params) {
-        String transferId = postData(mChargeId, mAmount, mAccountId);
+        String transferId = postData(mChargeId, NOSHOW_FEE, mAccountId);
         Timber.d("transfer id%s", transferId);
         return transferId;
     }
