@@ -94,13 +94,13 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.iid.FirebaseInstanceId;
-
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
 
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
@@ -251,6 +251,8 @@ public class MainActivity extends AppCompatActivity implements
         setUpGeofencing();
         initObservers();
     }
+
+
 
     private void createNotificationChannels() {
         new NotificationHelper(this);
@@ -1554,8 +1556,8 @@ public class MainActivity extends AppCompatActivity implements
             CalculatePrice calculatePrice = new CalculatePrice(mBounds.getDistance(), seats);
             price = calculatePrice.getPrice();
             mPendingDriveRequest.setPrice(price);
-            Timber.d("price is " + price);
-            reserveChargeAmountInBackground((int) price * 100);
+            Timber.d("price is " + price + " " + (int) (price * 100) );
+            reserveChargeAmountInBackground((int) (price * 100));
         }
         else
         {

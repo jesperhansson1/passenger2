@@ -4,6 +4,7 @@ import android.os.AsyncTask;
 
 import com.stripe.Stripe;
 import com.stripe.model.Charge;
+import com.stripe.model.Refund;
 import com.stripe.model.Transfer;
 
 import java.util.HashMap;
@@ -13,12 +14,16 @@ import timber.log.Timber;
 
 import static com.cybercom.passenger.flows.payment.PaymentConstants.CURRENCY_SEK;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.NOSHOW_FEE;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.NO_SHOW_AVGIFT;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.RIDE_AVGIFT;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.STRIPE_API_KEY;
 
 public class StripeTransferAsyncTask  extends AsyncTask<String, Void, String> {
 
     private String mChargeId = null;
     private String mAccountId = null;
+    private int mPaymentType = RIDE_AVGIFT;
+    private int mAmount = 0;
 
     private onTransferCreated mOnTransferDelegate;
 
@@ -26,16 +31,18 @@ public class StripeTransferAsyncTask  extends AsyncTask<String, Void, String> {
         void onTransferInitiated(String transferId);
     }
 
-    public StripeTransferAsyncTask(String chargeId, StripeTransferAsyncTask.onTransferCreated delegate, String accountId) {
+    public StripeTransferAsyncTask(String chargeId, int amount, StripeTransferAsyncTask.onTransferCreated delegate, String accountId, int paymentType) {
         mChargeId = chargeId;
         mAccountId = accountId;
         mOnTransferDelegate = delegate;
-        Timber.d(NOSHOW_FEE  + " from " + mChargeId + " to " + mAccountId);
+        mPaymentType = paymentType;
+        mAmount = amount;
+        Timber.d(" from " + mChargeId + " to " + mAccountId + "charge " + mAmount + " payment type " + mPaymentType);
     }
 
     @Override
     protected String doInBackground(String... params) {
-        String transferId = postData(mChargeId, NOSHOW_FEE, mAccountId);
+        String transferId = postData(mChargeId, mAmount, mAccountId,mPaymentType);
         Timber.d("transfer id%s", transferId);
         return transferId;
     }
@@ -53,10 +60,14 @@ public class StripeTransferAsyncTask  extends AsyncTask<String, Void, String> {
         }
     }
 
-    private String postData(String chargeId, int amount, String accountId) {
+    private String postData(String chargeId, int amount, String accountId, int mPaymentType) {
         String transferId = null;
         Stripe.apiKey = STRIPE_API_KEY;
 
+        if(mPaymentType == NO_SHOW_AVGIFT)
+        {
+            amount = NOSHOW_FEE;
+        }
         try
         {
             Charge charge = Charge.retrieve(chargeId);
@@ -70,6 +81,15 @@ public class StripeTransferAsyncTask  extends AsyncTask<String, Void, String> {
             Transfer transfer = Transfer.create(transferParams);
             Timber.d("transfer %s", transfer);
             transferId = transfer.getId();
+
+            if(mPaymentType == NO_SHOW_AVGIFT)
+            {
+                Map<String, Object> params = new HashMap<>();
+                params.put("charge", chargeId);
+                Refund refund = Refund.create(params);
+                Timber.d("charge refund %s",refund);
+            }
+
         }
         catch(Exception e)
         {
