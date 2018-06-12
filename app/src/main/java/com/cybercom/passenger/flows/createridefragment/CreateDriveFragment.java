@@ -107,7 +107,6 @@ public class CreateDriveFragment extends Fragment {
 
     private static final AutocompleteFilter AUTOCOMPLETE_LOCATION_FILTER =
             new AutocompleteFilter.Builder()
-                    .setTypeFilter(AutocompleteFilter.TYPE_FILTER_ADDRESS)
                     .setCountry(FILTER_COUNTRY)
                     .build();
     private ImageView mPlaceStartLocation;
@@ -225,7 +224,6 @@ public class CreateDriveFragment extends Fragment {
             mMainViewModel.setWhichMarkerToAdd(MainViewModel.PLACE_END_MARKER);
             mOnPlaceMarkerIconClickListener.onPlaceMarkerIconClicked();
         });
-
 
         if (getActivity() != null) {
             mMainViewModel.getUser().observe(getActivity(), user -> {
