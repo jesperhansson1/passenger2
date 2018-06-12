@@ -258,6 +258,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void handleOnGoingPassengerRide(PassengerRide passengerRide) {
+        Timber.d("handleOnGoingPassengerRide %s", passengerRide);
         if (mActivePassengerRide != null) {
             // There could only be one PassengerRide
             Timber.e("More than one PassengerRide...");
@@ -436,7 +437,7 @@ public class MainActivity extends AppCompatActivity implements
                             notification.getDriveRequest().getStartLocation(),
                             notification.getDriveRequest().getEndLocation(), startAddress,
                             endAddress);
-
+                    mMainViewModel.getNextNotification();
                     break;
                 case Notification.REJECT_PASSENGER:
                     matchDriveRequest(notification.getDriveRequest(),
@@ -1330,7 +1331,9 @@ public class MainActivity extends AppCompatActivity implements
                 geoFenceRequestIdToRemove = mGeofenceList.get(i).getRequestId();
             }
         }
-        mGeofenceList.remove(geoFenceIdToRemove);
+        if (geoFenceIdToRemove != 0) {
+            mGeofenceList.remove(geoFenceIdToRemove);
+        }
 
         // Remove pending intent
         if (mGeofencingClient != null) {
@@ -1465,6 +1468,8 @@ public class MainActivity extends AppCompatActivity implements
             mPassengerDetailedInformation.findViewById(R.id.abort_passenger_button)
                     .setVisibility(View.GONE);
         } else {
+            mPassengerDetailedInformation.findViewById(R.id.dropoff_passenger_button)
+                    .setVisibility(View.GONE);
             mPassengerDetailedInformation.findViewById(R.id.abort_passenger_button)
                     .setVisibility(View.VISIBLE);
         }
@@ -1702,7 +1707,6 @@ public class MainActivity extends AppCompatActivity implements
     private void handlePassengerDroppedOff() {
         String passengerId = mActivePassengerRide.getId();
         mMainViewModel.removeCurrentPassengerId(passengerId, task -> handlePassengerRideRemoved(passengerId));
-
     }
 
     private void handlePassengerRideRemoved(String passengerId) {
@@ -1712,5 +1716,6 @@ public class MainActivity extends AppCompatActivity implements
         if (!mIsFragmentAdded) {
             addCreateDriveFragment();
         }
+        mActivePassengerRide = null;
     }
 }
