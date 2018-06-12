@@ -64,7 +64,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private static final String REFERENCE_PASSENGER_POSITION = "passengerPosition";
 
     private static final String DRIVE_ID = "driveId";
-    public static final String DRIVER_ID = "driverId";
+    private static final String DRIVER_ID = "driverId";
 
     private static final int DRIVE_REQUEST_MATCH_TIME_THRESHOLD = 15 * 60 * 60 * 1000;
     private static final String NOTIFICATION_TYPE_KEY = "type";
@@ -74,6 +74,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private static final String CURRENT_POSITION = "currentPosition";
     private static final String CURRENT_VELOCITY = "currentVelocity";
     private static final String PICKUP_CONFIRMED = "pickUpConfirmed";
+    private static final String PASSENGER_RIDE_CANCELLED = "cancelled";
     private static final String DROPOFF_CONFIRMED = "dropOffConfirmed";
     private static final String LATITUDE = "latitude";
     private static final String LONGITUDE = "longitude";
@@ -699,7 +700,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         task.addOnCompleteListener(onCompleteListener);
     }
 
-    public void removeCurrentPassengerRide(String passengerRideId, OnCompleteListener onCompleteListener) {
+    public void removePassengerRide(String passengerRideId, OnCompleteListener onCompleteListener) {
         Task task = mPassengerRideReference.child(passengerRideId).removeValue();
         task.addOnCompleteListener(onCompleteListener);
     }
@@ -843,7 +844,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                 com.cybercom.passenger.model.PassengerRide passengerRide =
                         new com.cybercom.passenger.model.PassengerRide(
                                 passengerRideId, drive, passenger, pickUpLocation, dropOffLocation,
-                                false, false, startAddress, endAddress);
+                                false, false, startAddress, endAddress,
+                                false);
                 passengerRideMutableLiveData.setValue(passengerRide);
             }
 
@@ -939,7 +941,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                                             passengerRide.isPickUpConfirmed(),
                                             passengerRide.isDropOffConfirmed(),
                                             passengerRide.getStartAddress(),
-                                            passengerRide.getEndAddress());
+                                            passengerRide.getEndAddress(),
+                                            passengerRide.isCancelled());
                             passengerRideMutableLiveData.setValue(convertedPassengerRide);
                         }
 
@@ -1277,4 +1280,9 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     public void confirmDropOff(String passengerRideId) {
         mPassengerRideReference.child(passengerRideId).child(DROPOFF_CONFIRMED).setValue(true);
     }
+
+    public void cancelPassengerRide(String passengerRideId) {
+        mPassengerRideReference.child(passengerRideId).child(PASSENGER_RIDE_CANCELLED).setValue(true);
+    }
+
 }

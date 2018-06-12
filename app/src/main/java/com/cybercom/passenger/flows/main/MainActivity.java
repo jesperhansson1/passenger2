@@ -281,9 +281,8 @@ public class MainActivity extends AppCompatActivity implements
 
         // Observe the active PassengerRide (Note: the database model version..) for changes
         mMainViewModel.getPassengerRideById(mActivePassengerRide.getId()).observe(this,
-                passengerRideDatabaseModel -> {
+                (com.cybercom.passenger.repository.databasemodel.PassengerRide passengerRideDatabaseModel) -> {
                     if (passengerRideDatabaseModel != null && passengerRideDatabaseModel.getPassengerId() != null) {
-
                         if (!mActivePassengerRide.isPickUpConfirmed() &&
                                 passengerRideDatabaseModel.isPickUpConfirmed()) {
                             showDriveInformationDialog(mActivePassengerRide.getDrive(),
@@ -291,7 +290,9 @@ public class MainActivity extends AppCompatActivity implements
                             mActivePassengerRide.setPickUpConfirmed(true);
                         }
                     } else {
-                        handlePassengerRideRemoved(mActivePassengerRide.getId());
+                        if (mActivePassengerRide != null) {
+                            handlePassengerRideRemoved(mActivePassengerRide.getId());
+                        }
                     }
                 });
     }
@@ -724,12 +725,16 @@ public class MainActivity extends AppCompatActivity implements
         mConfirmCancelDrive.setOnClickListener(this);
     }
 
+    // Handle changes in a PassengerRide on the driver client
     private void handlePassengerChanged(PassengerRide passengerRide) {
         if (passengerRide == null) {
             return;
         }
-        if (mPassengers.get(passengerRide.getId()) == null) {
 
+        if (passengerRide.isCancelled()) {
+            mMainViewModel.removePassengerRide(passengerRide.getId(), task ->
+                    handlePassengerCancelled(passengerRide.getId()));
+        } else if (mPassengers.get(passengerRide.getId()) == null) {
             mPassengers.put(passengerRide.getId(), passengerRide);
             addPassengerFab(passengerRide.getId());
         } else if (passengerRide.isDropOffConfirmed()) {
@@ -988,9 +993,7 @@ public class MainActivity extends AppCompatActivity implements
         mMainViewModel.getNextNotification();
 
         if (mActivePassengerRide != null) {
-            mMainViewModel.removeCurrentPassengerId(mActivePassengerRide.getId(), success -> {
-                // UI updates are handle elsewhere
-            });
+            mMainViewModel.cancelPassengerRide(mActivePassengerRide.getId());
         }
     }
 
@@ -1201,6 +1204,9 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onCancelFindingCarPressed(Boolean isCancelPressed) {
         cancelMatchingDrive();
+        if (!mIsFragmentAdded) {
+            addCreateDriveFragment();
+        }
     }
 
     @Override
@@ -1480,7 +1486,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void handleRideAborted(String rideId) {
-        mMainViewModel.removeCurrentPassengerId(rideId, task -> {
+        mMainViewModel.removePassengerRide(rideId, task -> {
             handlePassengerCancelled(rideId);
         });
     }
@@ -1706,7 +1712,7 @@ public class MainActivity extends AppCompatActivity implements
     // Called by Passenger client only
     private void handlePassengerDroppedOff() {
         String passengerId = mActivePassengerRide.getId();
-        mMainViewModel.removeCurrentPassengerId(passengerId, task -> handlePassengerRideRemoved(passengerId));
+        mMainViewModel.removePassengerRide(passengerId, task -> handlePassengerRideRemoved(passengerId));
     }
 
     private void handlePassengerRideRemoved(String passengerId) {

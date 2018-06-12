@@ -113,8 +113,8 @@ public class MainViewModel extends AndroidViewModel {
         mPassengerRepository.removeCurrentDrive(driveId, onCompleteListener);
     }
 
-    public void removeCurrentPassengerId(String passengerId, OnCompleteListener onCompleteListener) {
-        mPassengerRepository.removeCurrentPassengerRide(passengerId, onCompleteListener);
+    public void removePassengerRide(String passengerId, OnCompleteListener onCompleteListener) {
+        mPassengerRepository.removePassengerRide(passengerId, onCompleteListener);
     }
 
     public LiveData<DriveRequest> createDriveRequest(long time, Position startLocation, Position endLocation, int seats) {
@@ -201,7 +201,6 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     // CreateDriveFragment
-
     public static final int PLACE_START_MARKER = 0;
     public static final int PLACE_END_MARKER = 1;
     private int mWhichMarkerToAdd = 0;
@@ -383,6 +382,10 @@ public class MainViewModel extends AndroidViewModel {
 
     public void confirmPickUp(PassengerRide passengerRide) {
         mPassengerRepository.confirmPickUp(passengerRide.getId());
+    }
+
+    public void cancelPassengerRide(String passengerRideId) {
+        mPassengerRepository.cancelPassengerRide(passengerRideId);
     }
 
     public void confirmPickUp(String driveId) {

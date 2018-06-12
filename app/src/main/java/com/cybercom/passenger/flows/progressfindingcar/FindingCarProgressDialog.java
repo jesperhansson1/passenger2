@@ -10,6 +10,8 @@ import android.support.v4.app.DialogFragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -31,6 +33,17 @@ public class FindingCarProgressDialog extends DialogFragment implements View.OnC
 
     private FindingCarListener mFindingCarListener;
 
+
+    @Override public void onStart() {
+        super.onStart();
+
+        Window window = getDialog().getWindow();
+        WindowManager.LayoutParams windowParams = window.getAttributes();
+        windowParams.dimAmount = 0.0f;
+        windowParams.flags |= WindowManager.LayoutParams.FLAG_DIM_BEHIND;
+        window.setAttributes(windowParams);
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -39,6 +52,8 @@ public class FindingCarProgressDialog extends DialogFragment implements View.OnC
         View rootView = inflater.inflate(R.layout.dialog_progress_finding_car, container,
                 false);
 
+
+        this.getDialog().setCanceledOnTouchOutside(false);
         Button cancelButton = rootView.findViewById(R.id.finding_car_cancel);
         cancelButton.setOnClickListener(this);
 
