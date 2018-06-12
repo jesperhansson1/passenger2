@@ -56,6 +56,7 @@ public class DriveInformationDialog extends Fragment implements View.OnClickList
     private boolean mPickUpConfirmed;
     private GestureDetector mGestureDetector;
     private FragmentSizeListener mFragmentSizeListener;
+    private ProgressBar mCancelButtonProgressBar;
 
     public interface PassengerNotificationListener {
         void onCancelPassengerRide();
@@ -91,6 +92,7 @@ public class DriveInformationDialog extends Fragment implements View.OnClickList
                 false);
 
         mETAProgressBar = rootView.findViewById(R.id.passenger_notification_eta_progressbar);
+        mCancelButtonProgressBar = rootView.findViewById(R.id.driveinfo_cancelbutton_progressbar);
         mETAText = rootView.findViewById(R.id.passenger_notification_eta_text);
         mYouHaveBeenMatchedText = rootView.findViewById(R.id.passenger_notification_you_have_been_matched);
         mDriveInformationDialog = rootView.findViewById(R.id.drive_information_dialog);
@@ -231,6 +233,8 @@ public class DriveInformationDialog extends Fragment implements View.OnClickList
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.passenger_notification_cancel_button: {
+                ((Button)v).setText("");
+                mCancelButtonProgressBar.setVisibility(View.VISIBLE);
                 if (mPickUpConfirmed) {
                     // TODO: early drop-off
                 } else {
