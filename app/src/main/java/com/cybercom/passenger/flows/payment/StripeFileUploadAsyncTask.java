@@ -50,7 +50,7 @@ public class StripeFileUploadAsyncTask extends AsyncTask<String, Void, String> {
 
     protected void onPostExecute(String fileUploadId) {
         Timber.d("file is uploaded %s", fileUploadId);
-         if(mOnUploadFileDelegate != null)
+        if(mOnUploadFileDelegate != null)
         {
             mOnUploadFileDelegate.onFileUploaded(fileUploadId);
         }
