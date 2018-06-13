@@ -13,13 +13,13 @@ public class StripeRefundAsyncTask extends AsyncTask<String, Void, String> {
 
     private String mChargeId = null;
 
-    private StripeRefundAsyncTask.onRefundCreated mOnRefundDelegate;
+    private onRefundCreated mOnRefundDelegate;
 
     public interface onRefundCreated{
         void onRefundInitiated(String refundId);
     }
 
-    public StripeRefundAsyncTask(String chargeId, StripeRefundAsyncTask.onRefundCreated delegate) {
+    public StripeRefundAsyncTask(String chargeId, onRefundCreated delegate) {
         mChargeId = chargeId;
         mOnRefundDelegate = delegate;
         Timber.d(" from " + mChargeId + " refund");

@@ -25,4 +25,8 @@ public class PaymentConstants {
 
     public static final int NOSHOW_FEE = 1850; //18.5kr to connected account
 
+
+    public static final String IDENTITY_DOCUMENT = "identity_document";
+
+
 }
