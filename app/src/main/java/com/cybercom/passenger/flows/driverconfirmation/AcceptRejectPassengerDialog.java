@@ -61,6 +61,7 @@ public class AcceptRejectPassengerDialog extends DialogFragment implements View.
         Button acceptButton = rootView.findViewById(R.id.driver_confirmation_accept_button);
         acceptButton.setOnClickListener(this);
 
+        setCancelable(false);
         Button declineButton = rootView.findViewById(R.id.driver_confirmation_decline_button);
         declineButton.setOnClickListener(this);
 

@@ -60,6 +60,8 @@ public class DriveInformationDialog extends Fragment implements View.OnClickList
 
     public interface PassengerNotificationListener {
         void onCancelPassengerRide();
+
+        void onDropOffPassengerRide();
     }
 
     public static DriveInformationDialog getInstance(Drive drive, boolean pickedUpConfirmed) {
@@ -236,7 +238,7 @@ public class DriveInformationDialog extends Fragment implements View.OnClickList
                 ((Button)v).setText("");
                 mCancelButtonProgressBar.setVisibility(View.VISIBLE);
                 if (mPickUpConfirmed) {
-                    // TODO: early drop-off
+                    mPassengerNotificationListener.onDropOffPassengerRide();
                 } else {
                     mPassengerNotificationListener.onCancelPassengerRide();
                 }

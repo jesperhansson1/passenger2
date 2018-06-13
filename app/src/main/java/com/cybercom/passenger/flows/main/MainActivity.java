@@ -172,6 +172,8 @@ public class MainActivity extends AppCompatActivity implements
     private GeofencingClient mGeofencingClient;
     private List<Geofence> mGeofenceList;
     private PendingIntent mGeofencePendingIntent;
+
+    // Driver client member
     private List<PassengerRide> mPassengerRides = new ArrayList<>();;
 
     private GeofenceBroadcastReceiver mGeofenceReceiver;
@@ -725,7 +727,7 @@ public class MainActivity extends AppCompatActivity implements
         mConfirmCancelDrive.setOnClickListener(this);
     }
 
-    // Handle changes in a PassengerRide on the driver client
+    // Driver client method. Handle changes in a PassengerRide.
     private void handlePassengerChanged(PassengerRide passengerRide) {
         if (passengerRide == null) {
             return;
@@ -990,6 +992,17 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onCancelPassengerRide() {
+        // Passenger has clicked on Cancel before getting picked up
+        mMainViewModel.getNextNotification();
+
+        if (mActivePassengerRide != null) {
+            mMainViewModel.cancelPassengerRide(mActivePassengerRide.getId());
+        }
+    }
+
+    @Override
+    public void onDropOffPassengerRide() {
+        // Passenger has clicked drop off before the end destination has been reached
         mMainViewModel.getNextNotification();
 
         if (mActivePassengerRide != null) {
@@ -1485,13 +1498,20 @@ public class MainActivity extends AppCompatActivity implements
         //price TODO add price to passengerRide
     }
 
+    // Driver client method
     private void handleRideAborted(String rideId) {
         mMainViewModel.removePassengerRide(rideId, task -> {
             handlePassengerCancelled(rideId);
         });
     }
 
+    // Driver client method
     private void handleRemoveDrive() {
+        if (mPassengerRides.size() > 0) {
+            Toast.makeText(this, R.string.main_activity_active_rides_error_message, Toast.LENGTH_LONG).show();
+            return;
+        }
+
         String driveId = mActiveDriveIdList.get(0);
         if (driveId == null) {
             return;
@@ -1500,6 +1520,7 @@ public class MainActivity extends AppCompatActivity implements
         mMainViewModel.removeCurrentDrive(driveId, task -> handleDriveRemoved(driveId));
     }
 
+    // Driver client method called when a Drive has been removed
     private void handleDriveRemoved(String driveId) {
         mCancelDriveFab.setVisibility(View.INVISIBLE);
         mConfirmCancelDrive.setVisibility(View.INVISIBLE);
@@ -1530,20 +1551,23 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onClick(final View view) {
         if (view.getId() == R.id.abort_passenger_button) {
+            // The driver has clicked cancel before being picked up
             handleRideAborted((String) mPassengerDetailedInformation.getTag());
         } else if (view.getId() == R.id.dropoff_passenger_button) {
-            // TODO: Payment should be handled here. The call to handleRideAborted should be
-            // replaced.
+            // The driver has clicked dropp off before the end of the drive
             handleRideAborted((String) mPassengerDetailedInformation.getTag());
         } else if (view.getId() == R.id.cancel_drive) {
+            // The driver has clicked the abort floating action button
             toogleConfirmButton();
         } else if (view.getId() == R.id.confirm_cancel_drive_button) {
             handleRemoveDrive();
         } else if (view instanceof FloatingActionButton) {
+            // The driver has clicked on a passenger FAB
             handlePassengerFabClicked(view);
         }
     }
 
+    // Driver client method
     private void handlePassengerFabClicked(View view) {
         updatePassengerDetailedInformation((FloatingActionButton)view);
         AnimationSet as = new AnimationSet(false);
@@ -1586,7 +1610,6 @@ public class MainActivity extends AppCompatActivity implements
                 mView.setVisibility(View.VISIBLE);
             }
         }
-
         @Override
         public void onAnimationEnd(Animation animation) {
             if (!mIsOpenAnimation) {
@@ -1598,8 +1621,8 @@ public class MainActivity extends AppCompatActivity implements
         public void onAnimationRepeat(Animation animation) {
 
         }
-    }
 
+    }
     /**
      * Creates an animation of the viewToAnimate view. It will be animated from it's normal position
      * to the position of the fromView. The animation will also shrink the view.
@@ -1715,6 +1738,7 @@ public class MainActivity extends AppCompatActivity implements
         mMainViewModel.removePassengerRide(passengerId, task -> handlePassengerRideRemoved(passengerId));
     }
 
+    // Passenger client method
     private void handlePassengerRideRemoved(String passengerId) {
         stopForegroundService();
         removeDriveInformationDialog();

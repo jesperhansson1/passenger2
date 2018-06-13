@@ -920,8 +920,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
                 final String driveId = dataSnapshot.getKey();
 
-                if (drive != null) {
-
+                if (drive != null && drive.getDriverId() != null) {
                     mUsersReference.child(drive.getDriverId()).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
