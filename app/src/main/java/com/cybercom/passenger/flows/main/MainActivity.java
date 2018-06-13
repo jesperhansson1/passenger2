@@ -174,7 +174,7 @@ public class MainActivity extends AppCompatActivity implements
     private PendingIntent mGeofencePendingIntent;
 
     // Driver client member
-    private List<PassengerRide> mPassengerRides = new ArrayList<>();;
+    private List<PassengerRide> mPassengerRides = new ArrayList<>();
 
     private GeofenceBroadcastReceiver mGeofenceReceiver;
     private ForegroundServiceReceiver mForegroundReceiver;
@@ -1507,7 +1507,7 @@ public class MainActivity extends AppCompatActivity implements
 
     // Driver client method
     private void handleRemoveDrive() {
-        if (mPassengerRides.size() > 0) {
+        if (mPassengers.size() > 0) {
             Toast.makeText(this, R.string.main_activity_active_rides_error_message, Toast.LENGTH_LONG).show();
             return;
         }
