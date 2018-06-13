@@ -23,6 +23,7 @@ public class StripeAccountAsyncTask extends AsyncTask<String, Void, String> {
     private String mTokenId;
     private String mEmail;
     private String mIpAddress;
+    private String mLegalDocumentId;
 
     private OnAccountCreated mAccountDelegate;
 
@@ -31,7 +32,7 @@ public class StripeAccountAsyncTask extends AsyncTask<String, Void, String> {
     }
 
     public StripeAccountAsyncTask(int day, int month, int year, String firstName, String lastName,
-                                  String tokenId, String email, String ipAddress, OnAccountCreated onAccountCreated){
+                                  String tokenId, String email, String ipAddress, String legalDocumentId, OnAccountCreated onAccountCreated){
         mDay = day;
         mMonth = month;
         mYear = year;
@@ -40,25 +41,26 @@ public class StripeAccountAsyncTask extends AsyncTask<String, Void, String> {
         mTokenId = tokenId;
         mEmail = email;
         mIpAddress = ipAddress;
+        mLegalDocumentId = legalDocumentId;
         mAccountDelegate = onAccountCreated;
     }
 
     @Override
     protected String doInBackground(String... strings) {
-        String accountId = postData(mDay, mMonth, mYear, mFirstName, mLastName, mTokenId, mEmail, mIpAddress);
-        Timber.d("account id%s", accountId);
+        String accountId = postData(mDay, mMonth, mYear, mFirstName, mLastName, mTokenId, mEmail, mIpAddress, mLegalDocumentId);
+        Timber.d("stripe account id %s", accountId);
         return accountId;
     }
 
     @Override
     protected void onPostExecute(String accountId) {
-        super.onPostExecute(accountId);
-        Timber.d(" account created %s", accountId);
+     //   super.onPostExecute(accountId);
+        Timber.d("stripe account created %s", accountId);
         mAccountDelegate.updateAccountId(accountId);
     }
 
 
-    private String postData(int day, int month, int year, String firstName, String lastName, String tokenId, String email, String ipAddress) {
+    private String postData(int day, int month, int year, String firstName, String lastName, String tokenId, String email, String ipAddress, String legalDocumentId) {
 
         Stripe.apiKey = STRIPE_API_KEY;
 
@@ -67,7 +69,7 @@ public class StripeAccountAsyncTask extends AsyncTask<String, Void, String> {
             Map<String, Object> accountParams = new HashMap<>();
             accountParams.put("type", CUSTOM_ACCOUNT);
             accountParams.put("country", SWEDEN);
-            com.stripe.model.Account account = Account.create(accountParams);
+            Account account = Account.create(accountParams);
             Timber.d(account.getId()+"key="+account.getKeys().getPublishable()+"secrete="+account.getKeys().getSecret());
 
             Map<String, String> metadata = new HashMap<>();
@@ -106,8 +108,11 @@ public class StripeAccountAsyncTask extends AsyncTask<String, Void, String> {
             legalEntityParams.put("first_name", firstName);
             legalEntityParams.put("last_name", lastName);
             legalEntityParams.put("type", INDIVIDUAL);
-            paramsw.put("product_description", PRODUCT_DESCRIPTION);
 
+            Map<String, String> verificationParams = new HashMap<String, String>();
+            verificationParams.put("document", legalDocumentId);
+            legalEntityParams.put("verification", verificationParams);
+            paramsw.put("product_description", PRODUCT_DESCRIPTION);
             paramsw.put("legal_entity", legalEntityParams);
             account.update(paramsw);
 
@@ -118,7 +123,7 @@ public class StripeAccountAsyncTask extends AsyncTask<String, Void, String> {
             return account.getId();
 
         }catch(Exception e){
-            Timber.d("exception creating account %s", e.getLocalizedMessage());
+            Timber.d("stripe exception creating account %s", e.getLocalizedMessage());
         }
         return null;
     }

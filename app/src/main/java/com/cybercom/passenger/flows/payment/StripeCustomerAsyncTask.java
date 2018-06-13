@@ -31,13 +31,13 @@ public class StripeCustomerAsyncTask extends AsyncTask<String, Void, String> {
     @Override
     protected String doInBackground(String... params) {
         String customerId = postData(mToken, mEmail);
-        Timber.d("customer id%s", customerId);
+        Timber.d("stripe customer id%s", customerId);
         return customerId;
     }
 
     @Override
     protected void onPostExecute(String customerId) {
-        Timber.d("customer created %s", customerId);
+        Timber.d("stripe customer created %s", customerId);
         mCustomerDelegate.updateCustomerId(customerId);
 
 
@@ -53,12 +53,12 @@ public class StripeCustomerAsyncTask extends AsyncTask<String, Void, String> {
         try
         {
             customer = Customer.create(customerParams);
-            Timber.d("Customer created %s", customer.toString());
+            Timber.d("stripe Customer created %s", customer.toString());
             customerId =  customer.getId();
         }
         catch(Exception e)
         {
-            Timber.d("error creating Customer %s", e.getMessage());
+            Timber.d("stripe error creating Customer %s", e.getMessage());
         }
         return customerId;
     }

@@ -21,23 +21,61 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
-        <activity android:name=".flows.main.MainActivity"
+
+        <activity
+            android:name=".flows.login.FileUploadActivity"
+            android:label="@string/title_file_upload"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+
+        </activity>
+
+        <activity
+            android:name=".flows.main.MainActivity"
+            android:screenOrientation="portrait"
             android:theme="@style/WhiteBackgroundTheme"
-            android:windowSoftInputMode="adjustResize" android:screenOrientation="portrait">
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".flows.forgotpassword.ForgotPasswordActivity" android:theme="@style/WhiteBackgroundTheme" android:screenOrientation="portrait"/>
-        <activity android:name=".flows.signup.PasswordSentActivity" android:theme="@style/WhiteBackgroundTheme" android:screenOrientation="portrait"/>
-        <activity android:name=".flows.signup.SignUpActivity" android:theme="@style/WhiteBackgroundTheme" android:screenOrientation="portrait"/>
-        <activity android:name=".flows.login.LoginActivity" android:theme="@style/WhiteBackgroundTheme" android:screenOrientation="portrait"/>
-        <activity android:name=".flows.car.CarsActivity" android:theme="@style/WhiteBackgroundTheme" android:screenOrientation="portrait" />
-        <activity android:name=".flows.car.CarDetailActivity" android:theme="@style/WhiteBackgroundTheme" android:screenOrientation="portrait"></activity>
-        <activity android:name=".flows.accounts.AccountActivity" android:theme="@style/WhiteBackgroundTheme" android:screenOrientation="portrait"></activity>
-        <activity android:name=".flows.accounts.AccountDetail" android:theme="@style/WhiteBackgroundTheme" android:screenOrientation="portrait"></activity>
-        <activity android:name=".flows.login.RegisterActivity" android:theme="@style/WhiteBackgroundTheme" android:screenOrientation="portrait"></activity>
+        <activity
+            android:name=".flows.forgotpassword.ForgotPasswordActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/WhiteBackgroundTheme" />
+        <activity
+            android:name=".flows.signup.PasswordSentActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/WhiteBackgroundTheme" />
+        <activity
+            android:name=".flows.signup.SignUpActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/WhiteBackgroundTheme" />
+        <activity
+            android:name=".flows.login.LoginActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/WhiteBackgroundTheme" />
+        <activity
+            android:name=".flows.car.CarsActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/WhiteBackgroundTheme" />
+        <activity
+            android:name=".flows.car.CarDetailActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/WhiteBackgroundTheme" />
+        <activity
+            android:name=".flows.accounts.AccountActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/WhiteBackgroundTheme" />
+        <activity
+            android:name=".flows.accounts.AccountDetail"
+            android:screenOrientation="portrait"
+            android:theme="@style/WhiteBackgroundTheme" />
+        <activity
+            android:name=".flows.login.RegisterActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/WhiteBackgroundTheme" />
 
         <service android:name=".service.PassengerInstanceIdService">
             <intent-filter>
@@ -56,7 +94,6 @@
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_color"
             android:resource="@color/colorAccent" />
-
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="38256c6824587d6fb8c72978c282a112ba5e1a55" />
@@ -75,7 +112,8 @@
             android:value="@string/google_maps_key" />
 
         <service android:name=".service.ForegroundServices" />
-        <service android:name=".service.GeofenceTransitionsIntentService"/>
+        <service android:name=".service.GeofenceTransitionsIntentService" />
+
 
     </application>
 

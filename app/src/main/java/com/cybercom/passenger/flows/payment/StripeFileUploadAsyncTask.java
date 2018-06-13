@@ -4,6 +4,7 @@ package com.cybercom.passenger.flows.payment;
 import android.os.AsyncTask;
 
 import com.stripe.Stripe;
+import com.stripe.model.Account;
 import com.stripe.model.FileUpload;
 
 import java.io.File;
@@ -13,6 +14,8 @@ import java.util.Map;
 import timber.log.Timber;
 
 import static com.cybercom.passenger.flows.payment.PaymentConstants.IDENTITY_DOCUMENT;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.INDIVIDUAL;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.PRODUCT_DESCRIPTION;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.STRIPE_API_KEY;
 
 public class StripeFileUploadAsyncTask extends AsyncTask<String, Void, String> {
@@ -25,7 +28,7 @@ public class StripeFileUploadAsyncTask extends AsyncTask<String, Void, String> {
         void onFileUploaded(String fileUploadId);
     }
 
-    StripeFileUploadAsyncTask(File file, onUploadFile delegate)
+    public StripeFileUploadAsyncTask(File file, onUploadFile delegate)
     {
         mFile = file;
         mOnUploadFileDelegate = delegate;
@@ -43,20 +46,20 @@ public class StripeFileUploadAsyncTask extends AsyncTask<String, Void, String> {
         }
         catch (Exception e)
         {
-            Timber.d("error uploading license file %s", e.getMessage());
+            Timber.d("stripe error uploading license file %s", e.getMessage());
             return null;
         }
     }
 
     protected void onPostExecute(String fileUploadId) {
-        Timber.d("file is uploaded %s", fileUploadId);
+        Timber.d("stripe file is uploaded %s", fileUploadId);
         if(mOnUploadFileDelegate != null)
         {
             mOnUploadFileDelegate.onFileUploaded(fileUploadId);
         }
         else
         {
-            Timber.d("Failed to upload file.");
+            Timber.d("stripe Failed to upload file.");
         }
     }
 }

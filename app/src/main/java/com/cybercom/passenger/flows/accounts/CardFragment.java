@@ -17,8 +17,10 @@ import android.widget.Toast;
 
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.main.MainActivity;
+import com.cybercom.passenger.flows.login.FileUploadActivity;
 import com.cybercom.passenger.flows.payment.StripeAccountAsyncTask;
 import com.cybercom.passenger.flows.payment.StripeCustomerAsyncTask;
+import com.cybercom.passenger.flows.payment.StripeFileUploadAsyncTask;
 import com.cybercom.passenger.flows.payment.StripeTokenAsyncTask;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.repository.PassengerRepository;
@@ -36,7 +38,7 @@ import static com.cybercom.passenger.model.User.TYPE_DRIVER;
 import static com.cybercom.passenger.model.User.TYPE_PASSENGER;
 
 public class CardFragment extends Fragment implements
-        StripeTokenAsyncTask.OnTokenCreated, StripeCustomerAsyncTask.OnCustomerCreated, StripeAccountAsyncTask.OnAccountCreated{
+        StripeTokenAsyncTask.OnTokenCreated, StripeCustomerAsyncTask.OnCustomerCreated, StripeAccountAsyncTask.OnAccountCreated, StripeFileUploadAsyncTask.onUploadFile{
 
     private Button mNext;
     private EditText mEditTextCard;
@@ -51,6 +53,10 @@ public class CardFragment extends Fragment implements
     private String mFirstName,mLastName;
     //0 for driver and 1 for passenger
     private int mType;
+    public static final int FILE_UPLOAD_ACTIVITY = 20;
+    public static final String FILE_ID = "file_id";
+    public static final String TOKEN_ID = "token_id";
+    private String mTokenId = null;
 
     public CardFragment() {
         // Required empty public constructor
@@ -157,6 +163,8 @@ public class CardFragment extends Fragment implements
         mNext.setText("");
         if(mExtras != null) {
             if (mExtras.getString(CARARRAY) != null) {
+
+
                 repository.createUserAddCar(loginArray,
                         mExtras.getString(CARARRAY)).observe(this, firebaseUser -> {
                             if (firebaseUser!=null) {
@@ -191,16 +199,36 @@ public class CardFragment extends Fragment implements
 
     @Override
     public void updateTokenId(String tokenId) {
+        mTokenId = tokenId;
         Timber.d("token created with id %s", tokenId);
         if(mType == TYPE_DRIVER)
         {
             Timber.d("Driver logging.. create connected stripe account");
-            new StripeAccountAsyncTask(mDay,mMonth,mYear,mFirstName,mLastName,tokenId,mEmail,getIpAddress(),this).execute();
+            //add license
+
+            Intent fileUploadIntent=new Intent(getActivity().getApplicationContext(),FileUploadActivity.class);
+            startActivityForResult(fileUploadIntent, FILE_UPLOAD_ACTIVITY);// Activity is started with requestCode 2
+
+
         }
         if(mType == TYPE_PASSENGER)
         {
             Timber.d("Passenger logging.. create stripe customer");
             new StripeCustomerAsyncTask(tokenId, mEmail, this).execute();
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        super.onActivityResult(requestCode, resultCode, data);
+        // check if the request code is same as what is passed  here it is 2
+        if(requestCode==FILE_UPLOAD_ACTIVITY)
+        {
+            String fileId = data.getStringExtra(FILE_ID);
+            Timber.d("file uploaded successfully with id %s",fileId);
+            String tokenId = data.getStringExtra(TOKEN_ID);
+            new StripeAccountAsyncTask(mDay,mMonth,mYear,mFirstName,mLastName,mTokenId,mEmail,getIpAddress(),fileId,this).execute();
         }
     }
 
@@ -239,5 +267,12 @@ public class CardFragment extends Fragment implements
         }
         Timber.d("ipaddess %s", ipAddress);
         return ipAddress;
+    }
+
+    //uploads file and gets fileid
+
+    @Override
+    public void onFileUploaded(String fileUploadId) {
+        Timber.d("file uploaded successfully %s", fileUploadId);
     }
 }

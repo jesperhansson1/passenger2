@@ -1552,7 +1552,7 @@ public class MainActivity extends AppCompatActivity implements
     {
         double price = 0.0;
         if(mBounds!=null) {
-            Timber.d("distance bound " + mBounds.getDistance());
+            Timber.d("distance bound %s", mBounds.getDistance());
             CalculatePrice calculatePrice = new CalculatePrice(mBounds.getDistance(), seats);
             price = calculatePrice.getPrice();
             mPendingDriveRequest.setPrice(price);
@@ -1574,7 +1574,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onChargeAmountReserved(String chargeId) {
-        Timber.d("charge created with id " + chargeId);
+        Timber.d("charge created with id %s", chargeId);
         if(chargeId == null) {
             Toast.makeText(getApplicationContext(),CARD_ERROR, Toast.LENGTH_LONG).show();
         }

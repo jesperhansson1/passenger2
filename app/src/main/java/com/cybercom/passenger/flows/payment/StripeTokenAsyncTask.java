@@ -31,13 +31,13 @@ public class StripeTokenAsyncTask extends AsyncTask<String, Void, String> {
     @Override
     protected String doInBackground(String... params) {
         mToken =  postData(mCard);
-        Timber.d("Token id" + mToken);
+        Timber.d("stripe Token id" + mToken);
         return mToken;
     }
 
     @Override
     protected void onPostExecute(String token) {
-        Timber.d("token created " + token.toString());
+        Timber.d("stripe token created " + token.toString());
         mTokenDelegate.updateTokenId(token);
     }
 
@@ -57,13 +57,13 @@ public class StripeTokenAsyncTask extends AsyncTask<String, Void, String> {
         try
         {
             token = Token.create(tokenParams);
-            Timber.d("token created " + token.toString());
+            Timber.d("stripe token created " + token.toString());
             return token.getId();
 
         }
         catch(Exception e)
         {
-            Timber.e("error creating token " + e.getMessage());
+            Timber.d("stripe error creating token " + e.getMessage());
         }
         return token.getId();
     }

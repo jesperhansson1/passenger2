@@ -22,26 +22,26 @@ public class StripeRefundAsyncTask extends AsyncTask<String, Void, String> {
     public StripeRefundAsyncTask(String chargeId, onRefundCreated delegate) {
         mChargeId = chargeId;
         mOnRefundDelegate = delegate;
-        Timber.d(" from " + mChargeId + " refund");
+        Timber.d("stripe from " + mChargeId + " refund");
     }
 
     @Override
     protected String doInBackground(String... params) {
         String refundId = postData(mChargeId);
-        Timber.d("refund id%s", refundId);
+        Timber.d("stripe refund id%s", refundId);
         return refundId;
     }
 
     @Override
     protected void onPostExecute(String refundId) {
-        Timber.d("refund created %s", refundId);
+        Timber.d("stripe refund created %s", refundId);
         if(mOnRefundDelegate != null)
         {
             mOnRefundDelegate.onRefundInitiated(refundId);
         }
         else
         {
-            Timber.d("Failed to create refund.");
+            Timber.d("stripe Failed to create refund.");
         }
     }
 
@@ -54,13 +54,13 @@ public class StripeRefundAsyncTask extends AsyncTask<String, Void, String> {
             Map<String, Object> params = new HashMap<>();
             params.put("charge", chargeId);
             Refund refund = Refund.create(params);
-            Timber.d("charge refund %s",refund);
+            Timber.d("stripe charge refund %s",refund);
             refundId = refund.getId();
 
         }
         catch(Exception e)
         {
-            Timber.d("error creating refund %s", e.getMessage());
+            Timber.d("stripe error creating refund %s", e.getMessage());
         }
         return refundId;
     }

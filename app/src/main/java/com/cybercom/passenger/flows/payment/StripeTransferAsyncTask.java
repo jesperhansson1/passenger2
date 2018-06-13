@@ -31,26 +31,26 @@ public class StripeTransferAsyncTask  extends AsyncTask<String, Void, String> {
         mAccountId = accountId;
         mOnTransferDelegate = delegate;
         mAmount = amount;
-        Timber.d(" from " + mChargeId + " to " + mAccountId + "charge " + mAmount);
+        Timber.d("stripe  from " + mChargeId + " to " + mAccountId + "charge " + mAmount);
     }
 
     @Override
     protected String doInBackground(String... params) {
         String transferId = postData(mChargeId, mAmount, mAccountId);
-        Timber.d("transfer id%s", transferId);
+        Timber.d("stripe transfer id%s", transferId);
         return transferId;
     }
 
     @Override
     protected void onPostExecute(String transferId) {
-        Timber.d("transfer created %s", transferId);
+        Timber.d("stripe transfer created %s", transferId);
         if(mOnTransferDelegate != null)
         {
             mOnTransferDelegate.onTransferInitiated(transferId);
         }
         else
         {
-            Timber.d("Failed to create transfer.");
+            Timber.d("stripe Failed to create transfer.");
         }
     }
 
