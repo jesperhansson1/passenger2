@@ -34,6 +34,20 @@ import timber.log.Timber;
 import static android.content.Context.WIFI_SERVICE;
 import static com.cybercom.passenger.flows.accounts.AccountActivity.CARARRAY;
 import static com.cybercom.passenger.flows.accounts.AccountActivity.LOGINARRAY;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.ADDRESS_LINE1;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.CITY;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.CUSTOM_ACCOUNT;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.INDIVIDUAL;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.INTERNAL_ID;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.POSTAL_CODE;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.PRODUCT_DESCRIPTION;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.SWEDEN;
+import static com.cybercom.passenger.flows.payment.PaymentHelper.createAccountParamsHashMap;
+import static com.cybercom.passenger.flows.payment.PaymentHelper.createCustomerHashMap;
+import static com.cybercom.passenger.flows.payment.PaymentHelper.createLegalEntityParamsHashMap;
+import static com.cybercom.passenger.flows.payment.PaymentHelper.createMetaDataHashMap;
+import static com.cybercom.passenger.flows.payment.PaymentHelper.createTokenHashMap;
+import static com.cybercom.passenger.flows.payment.PaymentHelper.createTosAcceptanceParamsHashMap;
 import static com.cybercom.passenger.model.User.TYPE_DRIVER;
 import static com.cybercom.passenger.model.User.TYPE_PASSENGER;
 
@@ -152,7 +166,7 @@ public class CardFragment extends Fragment implements
                 Timber.e("CARD is valid");
                 Toast.makeText(getContext(),"CARD is valid",Toast.LENGTH_LONG).show();
 
-                new StripeTokenAsyncTask(card,this).execute();
+                new StripeTokenAsyncTask(createTokenHashMap(card),this).execute();
 
             }
         }
@@ -214,7 +228,7 @@ public class CardFragment extends Fragment implements
         if(mType == TYPE_PASSENGER)
         {
             Timber.d("Passenger logging.. create stripe customer");
-            new StripeCustomerAsyncTask(tokenId, mEmail, this).execute();
+            new StripeCustomerAsyncTask(createCustomerHashMap(mEmail,mTokenId), this).execute();
         }
     }
 
@@ -227,10 +241,14 @@ public class CardFragment extends Fragment implements
         {
             String fileId = data.getStringExtra(FILE_ID);
             Timber.d("file uploaded successfully with id %s",fileId);
-            String tokenId = data.getStringExtra(TOKEN_ID);
-            new StripeAccountAsyncTask(mDay,mMonth,mYear,mFirstName,mLastName,mTokenId,mEmail,getIpAddress(),fileId,this).execute();
+
+            new StripeAccountAsyncTask(createAccountParamsHashMap(CUSTOM_ACCOUNT, SWEDEN, createMetaDataHashMap(INTERNAL_ID), mEmail,
+                    createTosAcceptanceParamsHashMap(System.currentTimeMillis() / 1000L, getIpAddress()), PRODUCT_DESCRIPTION,
+                    createLegalEntityParamsHashMap(CITY, ADDRESS_LINE1, POSTAL_CODE, mDay, mMonth, mYear,
+                            mFirstName, mLastName, INDIVIDUAL, fileId)), mTokenId, this).execute();
         }
     }
+
 
     @Override
     public void updateCustomerId(String customerId) {

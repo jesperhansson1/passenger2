@@ -14,9 +14,6 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.location.Location;
-import android.media.session.MediaSession;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -28,7 +25,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
-import android.text.format.Formatter;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -55,7 +51,7 @@ import com.cybercom.passenger.flows.login.RegisterActivity;
 import com.cybercom.passenger.flows.nomatchfragment.NoMatchFragment;
 import com.cybercom.passenger.flows.passengernotification.PassengerNotificationDialog;
 import com.cybercom.passenger.flows.payment.CalculatePrice;
-import com.cybercom.passenger.flows.payment.StripeChargeAsyncTask;
+import com.cybercom.passenger.flows.payment.StripeChargeReserveAsyncTask;
 import com.cybercom.passenger.flows.pickupfragment.DriverPassengerPickUpFragment;
 import com.cybercom.passenger.flows.progressfindingcar.FindingCarProgressDialog;
 import com.cybercom.passenger.interfaces.FragmentSizeListener;
@@ -73,7 +69,6 @@ import com.cybercom.passenger.service.ForegroundServices;
 import com.cybercom.passenger.service.GeofenceTransitionsIntentService;
 import com.cybercom.passenger.utils.LocationHelper;
 import com.cybercom.passenger.utils.NotificationHelper;
-import com.google.android.gms.common.util.ArrayUtils;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingClient;
 import com.google.android.gms.location.GeofencingRequest;
@@ -94,9 +89,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.iid.FirebaseInstanceId;
-import java.math.BigInteger;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -107,6 +100,7 @@ import timber.log.Timber;
 
 import static com.cybercom.passenger.flows.payment.PaymentConstants.CARD_ERROR;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.GOOGLE_API_ERROR;
+import static com.cybercom.passenger.flows.payment.PaymentHelper.createChargeHashMap;
 
 public class MainActivity extends AppCompatActivity implements
         CreateDriveFragment.CreateRideFragmentListener,
@@ -120,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements
         NoMatchFragment.NoMatchButtonListener, FragmentSizeListener, OnCompleteListener<Void>,
         DriverPassengerPickUpFragment.DriverPassengerPickUpButtonClickListener,
         DriverDropOffFragment.DriverDropOffConfirmationListener, View.OnClickListener,
-        StripeChargeAsyncTask.onChargeCreated{
+        StripeChargeReserveAsyncTask.onChargeCreated{
 
     private static final float ZOOM_LEVEL_STREETS = 15;
 
@@ -1568,7 +1562,7 @@ public class MainActivity extends AppCompatActivity implements
 
     public void reserveChargeAmountInBackground(int price)
     {
-        new StripeChargeAsyncTask(mCurrentLoggedInUser.getCustomerId(),price,this,false).execute();
+        new StripeChargeReserveAsyncTask(createChargeHashMap(mCurrentLoggedInUser.getCustomerId(),price,false),this).execute();
 
     }
 

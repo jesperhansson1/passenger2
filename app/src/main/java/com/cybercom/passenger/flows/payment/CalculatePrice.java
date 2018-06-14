@@ -24,6 +24,7 @@ public class CalculatePrice {
     }
 
     public void setDistance(long distance) {
+
         mDistance = distance;
     }
 
@@ -44,23 +45,19 @@ public class CalculatePrice {
     }
 
     //Calculate total price for the given distance
-    public double getPrice()
-    {
+    public double getPrice() {
         double price = 0.0;
         double distance = ((double)mDistance)/10000; //m to swedish mile
-        if(distance <= 4.0)
-        {
+        if(distance <= 4.0) {
             price = distance *BASE_PRICE;
             Timber.d(" distance < 4 and 1 %s", price);
         }
-        if(distance > 4.0)
-        {
+        if(distance > 4.0) {
             price = 4.0 * BASE_PRICE + (distance - 4.0) * RISE_PRICE;
             Timber.d(" distance > 4 and 1 %s", price);
         }
         price = price + addPriceExtraPassenger();
-        if(price < 35.0)
-        {
+        if(price < 35.0) {
             price = BASE_PRICE;
             Timber.d(" price is %s", price);
         }
@@ -68,10 +65,8 @@ public class CalculatePrice {
     }
 
     //Add rise price for total price depending on number of people
-    private double addPriceExtraPassenger()
-    {
-        switch(mNoOfSeats)
-        {
+    private double addPriceExtraPassenger() {
+        switch(mNoOfSeats) {
             case 2:
                 return RISE_DOUBLE_PRICE;
             case 3:

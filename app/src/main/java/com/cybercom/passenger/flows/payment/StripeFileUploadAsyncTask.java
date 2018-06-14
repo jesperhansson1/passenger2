@@ -1,26 +1,24 @@
 package com.cybercom.passenger.flows.payment;
 
-
 import android.os.AsyncTask;
 
 import com.stripe.Stripe;
-import com.stripe.model.Account;
+import com.stripe.exception.APIConnectionException;
+import com.stripe.exception.APIException;
+import com.stripe.exception.AuthenticationException;
+import com.stripe.exception.CardException;
+import com.stripe.exception.InvalidRequestException;
 import com.stripe.model.FileUpload;
 
-import java.io.File;
-import java.util.HashMap;
 import java.util.Map;
 
 import timber.log.Timber;
 
-import static com.cybercom.passenger.flows.payment.PaymentConstants.IDENTITY_DOCUMENT;
-import static com.cybercom.passenger.flows.payment.PaymentConstants.INDIVIDUAL;
-import static com.cybercom.passenger.flows.payment.PaymentConstants.PRODUCT_DESCRIPTION;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.STRIPE_API_KEY;
 
 public class StripeFileUploadAsyncTask extends AsyncTask<String, Void, String> {
 
-    private File mFile;
+    private Map<String, Object> mMapParams;
 
     private onUploadFile mOnUploadFileDelegate;
 
@@ -28,38 +26,30 @@ public class StripeFileUploadAsyncTask extends AsyncTask<String, Void, String> {
         void onFileUploaded(String fileUploadId);
     }
 
-    public StripeFileUploadAsyncTask(File file, onUploadFile delegate)
-    {
-        mFile = file;
+    public StripeFileUploadAsyncTask(Map<String, Object> mapParams, onUploadFile delegate) {
+        mMapParams = mapParams;
         mOnUploadFileDelegate = delegate;
     }
 
     protected String doInBackground(String... params) {
-        try
-        {
+        try {
             Stripe.apiKey = STRIPE_API_KEY;
-            Map<String, Object> fileParams = new HashMap<>();
-            fileParams.put("file", mFile);
-            fileParams.put("purpose",IDENTITY_DOCUMENT);
-            FileUpload fileUpload = FileUpload.create(fileParams);
+            FileUpload fileUpload = FileUpload.create(mMapParams);
             return fileUpload.getId();
+        } catch (APIConnectionException | InvalidRequestException | APIException |
+                AuthenticationException | CardException e) {
+            Timber.d("error uploading license file %s", e.getLocalizedMessage());
         }
-        catch (Exception e)
-        {
-            Timber.d("stripe error uploading license file %s", e.getMessage());
-            return null;
-        }
+        return null;
     }
 
     protected void onPostExecute(String fileUploadId) {
-        Timber.d("stripe file is uploaded %s", fileUploadId);
-        if(mOnUploadFileDelegate != null)
-        {
+        Timber.d("file is uploaded %s", fileUploadId);
+        if(mOnUploadFileDelegate != null) {
             mOnUploadFileDelegate.onFileUploaded(fileUploadId);
         }
-        else
-        {
-            Timber.d("stripe Failed to upload file.");
+        else {
+            Timber.d("Failed to upload file.");
         }
     }
 }

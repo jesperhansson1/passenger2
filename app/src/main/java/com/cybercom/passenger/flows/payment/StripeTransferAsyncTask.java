@@ -3,81 +3,56 @@ package com.cybercom.passenger.flows.payment;
 import android.os.AsyncTask;
 
 import com.stripe.Stripe;
+import com.stripe.exception.APIConnectionException;
+import com.stripe.exception.APIException;
+import com.stripe.exception.AuthenticationException;
+import com.stripe.exception.CardException;
+import com.stripe.exception.InvalidRequestException;
 import com.stripe.model.Charge;
 import com.stripe.model.Transfer;
-
-import java.util.HashMap;
 import java.util.Map;
-
 import timber.log.Timber;
-
-import static com.cybercom.passenger.flows.payment.PaymentConstants.CURRENCY_SEK;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.STRIPE_API_KEY;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.TRANSFER_SOURCE_TRANSACTION;
 
 public class StripeTransferAsyncTask  extends AsyncTask<String, Void, String> {
 
-    private String mChargeId = null;
-    private String mAccountId = null;
-    private int mAmount = 0;
-
+    private Map<String, Object> mMapParams;
     private onTransferCreated mOnTransferDelegate;
 
     public interface onTransferCreated{
         void onTransferInitiated(String transferId);
     }
 
-    public StripeTransferAsyncTask(String chargeId, int amount, StripeTransferAsyncTask.onTransferCreated delegate, String accountId) {
-        mChargeId = chargeId;
-        mAccountId = accountId;
+    public StripeTransferAsyncTask(Map<String, Object> mapParams, onTransferCreated delegate) {
         mOnTransferDelegate = delegate;
-        mAmount = amount;
-        Timber.d("stripe  from " + mChargeId + " to " + mAccountId + "charge " + mAmount);
+        mMapParams = mapParams;
     }
 
     @Override
     protected String doInBackground(String... params) {
-        String transferId = postData(mChargeId, mAmount, mAccountId);
-        Timber.d("stripe transfer id%s", transferId);
-        return transferId;
+        Stripe.apiKey = STRIPE_API_KEY;
+        try {
+            Charge charge = Charge.retrieve((String) mMapParams.get(TRANSFER_SOURCE_TRANSACTION));
+            charge.capture();
+            Transfer transfer = Transfer.create(mMapParams);
+            Timber.d("stripe transfer %s", transfer);
+            return transfer.getId();
+        } catch (APIConnectionException | InvalidRequestException | AuthenticationException |
+                APIException | CardException e) {
+            Timber.d("stripe error creating transfer %s", e.getLocalizedMessage());
+        }
+        return null;
     }
 
     @Override
     protected void onPostExecute(String transferId) {
         Timber.d("stripe transfer created %s", transferId);
-        if(mOnTransferDelegate != null)
-        {
+        if(mOnTransferDelegate != null) {
             mOnTransferDelegate.onTransferInitiated(transferId);
         }
-        else
-        {
+        else {
             Timber.d("stripe Failed to create transfer.");
         }
     }
-
-    private String postData(String chargeId, int amount, String accountId) {
-        String transferId = null;
-        Stripe.apiKey = STRIPE_API_KEY;
-
-        try
-        {
-            Charge charge = Charge.retrieve(chargeId);
-            charge.capture();
-
-            Map<String, Object> transferParams = new HashMap<>();
-            transferParams.put("amount", amount);
-            transferParams.put("currency", CURRENCY_SEK);
-            transferParams.put("source_transaction", chargeId);
-            transferParams.put("destination", accountId);
-            Transfer transfer = Transfer.create(transferParams);
-            Timber.d("transfer %s", transfer);
-            transferId = transfer.getId();
-
-        }
-        catch(Exception e)
-        {
-            Timber.d("error creating transfer %s", e.getMessage());
-        }
-        return transferId;
-    }
-
 }

@@ -3,66 +3,52 @@ package com.cybercom.passenger.flows.payment;
 import android.os.AsyncTask;
 
 import com.stripe.Stripe;
+import com.stripe.exception.APIConnectionException;
+import com.stripe.exception.APIException;
+import com.stripe.exception.AuthenticationException;
+import com.stripe.exception.CardException;
+import com.stripe.exception.InvalidRequestException;
 import com.stripe.model.Refund;
-import java.util.HashMap;
 import java.util.Map;
 import timber.log.Timber;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.STRIPE_API_KEY;
 
 public class StripeRefundAsyncTask extends AsyncTask<String, Void, String> {
 
-    private String mChargeId = null;
-
+    private Map<String, Object> mMapParams;
     private onRefundCreated mOnRefundDelegate;
 
     public interface onRefundCreated{
         void onRefundInitiated(String refundId);
     }
 
-    public StripeRefundAsyncTask(String chargeId, onRefundCreated delegate) {
-        mChargeId = chargeId;
+    public StripeRefundAsyncTask(Map<String, Object> mapParams, onRefundCreated delegate) {
         mOnRefundDelegate = delegate;
-        Timber.d("stripe from " + mChargeId + " refund");
+        mMapParams = mapParams;
     }
 
     @Override
     protected String doInBackground(String... params) {
-        String refundId = postData(mChargeId);
-        Timber.d("stripe refund id%s", refundId);
-        return refundId;
+        Stripe.apiKey = STRIPE_API_KEY;
+        try {
+            Refund refund = Refund.create(mMapParams);
+            Timber.d("stripe charge refund %s",refund);
+            return refund.getId();
+        } catch (APIConnectionException | InvalidRequestException | AuthenticationException |
+                CardException | APIException e) {
+            Timber.d("stripe error creating refund %s", e.getLocalizedMessage());
+        }
+        return null;
     }
 
     @Override
     protected void onPostExecute(String refundId) {
         Timber.d("stripe refund created %s", refundId);
-        if(mOnRefundDelegate != null)
-        {
+        if(mOnRefundDelegate != null) {
             mOnRefundDelegate.onRefundInitiated(refundId);
         }
-        else
-        {
+        else {
             Timber.d("stripe Failed to create refund.");
         }
     }
-
-    private String postData(String chargeId) {
-        String refundId = null;
-        Stripe.apiKey = STRIPE_API_KEY;
-
-        try
-        {
-            Map<String, Object> params = new HashMap<>();
-            params.put("charge", chargeId);
-            Refund refund = Refund.create(params);
-            Timber.d("stripe charge refund %s",refund);
-            refundId = refund.getId();
-
-        }
-        catch(Exception e)
-        {
-            Timber.d("stripe error creating refund %s", e.getMessage());
-        }
-        return refundId;
-    }
-
 }
