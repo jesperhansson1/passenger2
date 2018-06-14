@@ -14,7 +14,8 @@ public class Drive {
 
     public Drive() {}
 
-    public Drive(String driverId, long time, Position startLocation, Position endLocation, int availableSeats, Position currentPosition, float currentVelocity) {
+    public Drive(String driverId, long time, Position startLocation, Position endLocation,
+                 int availableSeats, Position currentPosition, float currentVelocity) {
         mDriverId = driverId;
         mTime = time;
         mStartLocation = startLocation;

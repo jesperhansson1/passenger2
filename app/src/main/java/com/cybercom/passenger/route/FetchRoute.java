@@ -2,7 +2,9 @@ package com.cybercom.passenger.route;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.model.RidePoints;
@@ -52,10 +54,10 @@ public class FetchRoute extends AsyncTask<String, Void, List<Route>> {
      * @param caller
      */
     public FetchRoute(LatLng origin, LatLng destination, @Nullable List<RidePoints> wayPoints,
-                      OnRouteCompletion caller) {
+                      @NonNull OnRouteCompletion caller, String googleApiKey) {
         Timber.d("re-route");
         mOnRouteCompletion = caller;
-        execute(getRouteURL(origin, destination, wayPoints));
+        execute(getRouteURL(origin, destination, wayPoints, googleApiKey));
     }
 
     @Override
@@ -135,7 +137,8 @@ public class FetchRoute extends AsyncTask<String, Void, List<Route>> {
         return wayPointsString.toString();
     }
 
-    private String getRouteURL(LatLng from, LatLng to, @Nullable List<RidePoints> wayPoints) {
+    private String getRouteURL(LatLng from, LatLng to, @Nullable List<RidePoints> wayPoints,
+                               String googleApiKey) {
         StringBuilder url = new StringBuilder();
         url.append(DIRECTIONS_URL);
         // Add origin drive point
@@ -158,7 +161,7 @@ public class FetchRoute extends AsyncTask<String, Void, List<Route>> {
         }
         url.append(ADD);
         url.append(KEY);
-        url.append(((Context) mOnRouteCompletion).getResources().getString(R.string.google_api_key));
+        url.append(googleApiKey);
         return url.toString();
     }
 

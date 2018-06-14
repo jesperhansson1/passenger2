@@ -101,7 +101,8 @@ public class ForegroundServices extends LifecycleService {
         //Update Drivers position
         if (intent.getAction().equals(Constants.ACTION.STARTFOREGROUND_DRIVER_CLIENT)) {
 
-            mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getApplication().getApplicationContext());
+            mFusedLocationClient = LocationServices.getFusedLocationProviderClient(
+                    getApplicationContext());
             mLocationCallback = new LocationCallback() {
                 @Override
                 public void onLocationResult(LocationResult locationResult) {
@@ -128,7 +129,8 @@ public class ForegroundServices extends LifecycleService {
                     mMyLocationMutableLiveData.setValue(mCurrentLocation);
 
                     float distanceDelta = mCurrentLocation.distanceTo(prevLocation);
-                    float timeDelta = Math.abs(mCurrentLocation.getTime() - prevLocation.getTime()) / 1000f;
+                    float timeDelta = Math.abs(mCurrentLocation.getTime() - prevLocation.getTime())
+                            / 1000f;
                     float speed = 1;
 
                     if (timeDelta != 0.0f) {
@@ -147,6 +149,7 @@ public class ForegroundServices extends LifecycleService {
             startLocationUpdates();
 
             startForegroundService();
+
         }
 
         //Uppdatera Passengers position
@@ -198,7 +201,8 @@ public class ForegroundServices extends LifecycleService {
                     startScheduledETACalculation();
                 });
 
-            mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getApplication().getApplicationContext());
+            mFusedLocationClient = LocationServices.getFusedLocationProviderClient(
+                    getApplicationContext());
             createLocationRequest();
             startLocationUpdates();
 

@@ -21,8 +21,8 @@ public class Bounds {
     private long mDistance;
     private long mDuration;
 
-    public static final double NORTH_EAST_BEARING = 45.0;
-    public static final double SOUTH_WEST_BEARING = 225.0;
+    private static final double NORTH_EAST_BEARING = 45.0;
+    private static final double SOUTH_WEST_BEARING = 225.0;
     private static final long RADIUS_OF_EARTH = 6371000; // radius of earth in m
 
 
@@ -53,20 +53,6 @@ public class Bounds {
 
     }
 
-    public void setNewBounds(int multiplier) {
-        double dist = getDistance(multiplier);
-        Timber.d(mNorthEastLatitude+" : " + mNorthEastLongitude + " : " + mSouthWestLatitude + " : "
-                + mSouthWestLongitude);
-        LatLng sw = movePoint(mSouthWestLatitude,mSouthWestLongitude, SOUTH_WEST_BEARING, dist);
-        Timber.d( mSouthWestLatitude + " : " + mSouthWestLongitude + " : " + mNorthEastLatitude+" : "
-                + mNorthEastLongitude);
-        LatLng ne = movePoint(mNorthEastLatitude,mNorthEastLongitude,NORTH_EAST_BEARING, dist);
-        mNorthEastLatitude = ne.latitude;
-        mNorthEastLongitude = ne.longitude;
-        mSouthWestLatitude = sw.latitude;
-        mSouthWestLongitude = sw.longitude;
-    }
-
     public double getNorthEastLatitude() {
         return mNorthEastLatitude;
     }
@@ -93,13 +79,8 @@ public class Bounds {
                 '}';
     }
 
-    public double getDistance(int val) {
-        int dist = DEFAULT_DRIVE_REQUEST_RADIUS * val;
-        return Math.sqrt(2 * dist * dist);
-    }
-
-    public LatLng movePoint(double latitude, double longitude, double bearing,
-                            double distanceInMetres) {
+    private static LatLng movePoint(double latitude, double longitude, double bearing,
+                                    double distanceInMetres) {
         //double distanceInMetres = 989.94949366;//700.0;
 
         double brngRad = toRadians(bearing);
@@ -137,5 +118,66 @@ public class Bounds {
     // TODO remove duration from Bounds
     public void setDuration(long duration) {
         mDuration = duration;
+    }
+
+    /**
+     * Check if the provided position is within the bounds. The bounds can be extended by prvoiding
+     * a non 0 value to the multiplier paramter. This will increase the bounds box by the value
+     * of PassengerRepository.DEFAULT_DRIVE_REQUEST_RADIUS time the multiplier.
+     * @param bounds
+     * @param position
+     * @param multiplier
+     * @return true, if the position is within the provided bounds, false otherwise
+     */
+    public static boolean isPositionWithinBounds(@NonNull Bounds bounds, Position position,
+                                                 int multiplier) {
+        double dist = getDistance(multiplier);
+
+        LatLng sw = movePoint(bounds.getSouthWestLatitude(), bounds.getSouthWestLongitude(),
+                SOUTH_WEST_BEARING, dist);
+
+        LatLng ne = movePoint(bounds.getNorthEastLatitude(), bounds.getNorthEastLongitude(),
+                NORTH_EAST_BEARING, dist);
+        return contains(sw, ne, position.getLatitude(), position.getLongitude());
+    }
+
+    private static boolean contains(LatLng sw, LatLng ne, double latitude, double longitude) {
+        boolean longitudeContained = false;
+        boolean latitudeContained = false;
+        double swLongitude = 0.0;
+        double swLatitude = 0.0;
+        double neLongitude = 0.0;
+        double neLatitude = 0.0;
+
+        try {
+            swLongitude = sw.longitude;
+            swLatitude = sw.latitude;
+            neLongitude = ne.longitude;
+            neLatitude = ne.latitude;
+        } catch (Exception e) {
+            Timber.e(e.getLocalizedMessage());
+        }
+
+        // Check if the bbox contains the prime meridian (longitude 0.0).
+        if (swLongitude < neLongitude) {
+            if (swLongitude < longitude && longitude < neLongitude) {
+                longitudeContained = true;
+            }
+
+        } else if ((0 < longitude && longitude < neLongitude) ||
+                (swLongitude < longitude && longitude < 0)) {
+            // Contains prime meridian.
+            longitudeContained = true;
+        }
+
+        if (swLatitude < neLatitude && (swLatitude < latitude && latitude < neLatitude)) {
+            latitudeContained = true;
+        }
+        return (longitudeContained && latitudeContained);
+    }
+
+    private static double getDistance(int val) {
+        int dist = DEFAULT_DRIVE_REQUEST_RADIUS * val;
+        return Math.sqrt(2) * dist;
     }
 }

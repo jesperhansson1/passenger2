@@ -34,7 +34,7 @@ public class Drive implements Serializable {
     }
 
     public void setDriver(User driver) {
-        this.mDriver = driver;
+        mDriver = driver;
     }
 
     public long getTime() {
