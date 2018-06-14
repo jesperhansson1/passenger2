@@ -112,6 +112,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private static final String SOUTHWEST = "southwest";
     public static final long MIN_DURATION = 1800;
     private Drive mMatchedDrive;
+    ValueEventListener mBestMatchEventListener;
 
     public static PassengerRepository getInstance() {
         if (sPassengerRepository == null) {
@@ -302,11 +303,10 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         return pickupString.toString();
     }
 
-    public LiveData<Drive> findBestRideMatch(final DriveRequest driveRequest, int radiusMultiplier,
-                                             String googleApiKey) {
-        final MutableLiveData<Drive> bestDriveMatch = new MutableLiveData<>();
-
-        mDrivesReference.addValueEventListener(new ValueEventListener() {
+    private ValueEventListener getBestMatchValueEventListener(
+            final DriveRequest driveRequest, int radiusMultiplier,String googleApiKey,
+            MutableLiveData<Drive> bestDriveMatch) {
+        return new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 final List<com.cybercom.passenger.repository.databasemodel.Drive> candidateDrives
@@ -339,30 +339,45 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                     String pickup = createPickupString(driveRequest.getStartLocation());
                     DistantMatrixAPIHelper.getInstance().mMatrixAPIService.getDistantMatrix(
                             drivesString, pickup, googleApiKey).enqueue(
-                                    new Callback<DistanceMatrixResponse>() {
-                        @Override
-                        public void onResponse(Call<DistanceMatrixResponse> call,
-                                               Response<DistanceMatrixResponse> response) {
-                            handleDistanceMatrixResponse(candidateBounds, response, candidateDrives,
-                                    candidateDriveIdList, bestDriveMatch, driveRequest,
-                                    googleApiKey);
-                        }
+                            new Callback<DistanceMatrixResponse>() {
+                                @Override
+                                public void onResponse(Call<DistanceMatrixResponse> call,
+                                                       Response<DistanceMatrixResponse> response) {
+                                    handleDistanceMatrixResponse(candidateBounds, response,
+                                            candidateDrives, candidateDriveIdList, bestDriveMatch,
+                                            driveRequest, googleApiKey);
+                                }
 
-                        @Override
-                        public void onFailure(Call<DistanceMatrixResponse> call, Throwable t) {
-                            Timber.d("error");
-                        }
-                    });
+                                @Override
+                                public void onFailure(Call<DistanceMatrixResponse> call, Throwable t) {
+                                    Timber.d("error");
+                                }
+                            });
                 }
-                mDrivesReference.removeEventListener(this);
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
             }
-        });
-        Timber.d("returning best drive match" + bestDriveMatch.toString());
+        };
+    }
+
+    public LiveData<Drive> findBestRideMatch(final DriveRequest driveRequest, int radiusMultiplier,
+                                             String googleApiKey) {
+        final MutableLiveData<Drive> bestDriveMatch = new MutableLiveData<>();
+        if (mBestMatchEventListener == null) {
+            mBestMatchEventListener = getBestMatchValueEventListener(driveRequest, radiusMultiplier,
+                    googleApiKey, bestDriveMatch);
+            mDrivesReference.addValueEventListener(mBestMatchEventListener);
+        }
         return bestDriveMatch;
+    }
+
+    public void cancelBestRideMatch() {
+        if (mBestMatchEventListener != null) {
+            mDrivesReference.removeEventListener(mBestMatchEventListener);
+            mBestMatchEventListener = null;
+        }
     }
 
     private void checkEtaForPossibleDrives(
@@ -720,8 +735,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
             String uId = firebaseUser.getUid();
 
             final com.cybercom.passenger.repository.databasemodel.Drive dbDrive =
-                    new com.cybercom.passenger.repository.databasemodel.Drive(uId, time, startLocation,
-                            endLocation, availableSeats, null, 0f);
+                    new com.cybercom.passenger.repository.databasemodel.Drive(uId, time,
+                            startLocation, endLocation, availableSeats, startLocation, 0f);
             final DatabaseReference ref = mDrivesReference.push();
             final String driveId = ref.getKey();
             ref.setValue(dbDrive);
