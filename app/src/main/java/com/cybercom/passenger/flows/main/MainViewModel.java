@@ -19,7 +19,6 @@ import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Notification;
 import com.cybercom.passenger.model.PassengerRide;
 import com.cybercom.passenger.model.Position;
-import com.cybercom.passenger.model.Route;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.repository.PassengerRepository;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -124,6 +123,10 @@ public class MainViewModel extends AndroidViewModel {
     public LiveData<Drive> findBestDriveMatch(DriveRequest driveRequest, int radiusMultiplier, String googleApiKey) {
         mMostRecentDriveRequest = driveRequest;
         return mPassengerRepository.findBestRideMatch(driveRequest, radiusMultiplier, googleApiKey);
+    }
+
+    public void cancelDriveMatch() {
+        mPassengerRepository.cancelBestRideMatch();
     }
 
     public void addRequestDriveNotification(DriveRequest driveRequest, Drive drive) {

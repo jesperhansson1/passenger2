@@ -612,12 +612,7 @@ public class MainActivity extends AppCompatActivity implements
             if (drive != null) {
                 Timber.i("matched drive %s", drive);
                 mMainViewModel.addRequestDriveNotification(driveRequest, drive);
-                if (mFindMatch != null) {
-                    mFindMatch.removeObserver(mMatchObserver);
-                }
-                if (mTimer != null) {
-                    mTimer.removeObservers(lifecycleOwner);
-                }
+                cancelMatchingDrive();
             } else {
                 Timber.i("No drives match for the moment. Keep listening.");
             }
@@ -628,6 +623,8 @@ public class MainActivity extends AppCompatActivity implements
         mTimer.observe(lifecycleOwner, aBoolean -> {
             showNoMatchDialog();
             cancelMatchingDrive();
+            dismissMatchingInProgressDialog();
+
         });
     }
 
@@ -639,7 +636,8 @@ public class MainActivity extends AppCompatActivity implements
         if (mTimer != null) {
             mTimer.removeObservers(lifecycleOwner);
         }
-        dismissMatchingInProgressDialog();
+        mMainViewModel.cancelDriveMatch();
+
     }
 
     private void showMatchingInProgressDialog() {
@@ -1216,6 +1214,7 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onCancelFindingCarPressed(Boolean isCancelPressed) {
         cancelMatchingDrive();
+        dismissMatchingInProgressDialog();
         if (!mIsFragmentAdded) {
             addCreateDriveFragment();
         }
