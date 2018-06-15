@@ -75,22 +75,22 @@ public class PaymentConstants {
     private static final String CONNECT_EMAIL = "email";
     private static final String CONNECT_DATE = "date";
     private static final String CONNECT_IP = "ip";
-    static final String CONNECT_TOS_ACCEPTANCE = "tos_acceptance";
-    static final String CONNECT_DAY = "day";
-    static final String CONNECT_MONTH = "month";
-    static final String CONNECT_YEAR = "year";
-    static final String CONNECT_CITY = "city";
-    static final String CONNECT_LINE1 = "line1";
-    static final String CONNECT_POSTAL_CODE = "postal_code";
-    static final String CONNECT_ADDRESS = "address";
-    static final String CONNECT_PERSONAL_ADDRESS = "personal_address";
-    static final String CONNECT_DOB = "dob";
-    static final String CONNECT_FIRST_NAME = "first_name";
-    static final String CONNECT_LAST_NAME = "last_name";
-    static final String CONNECT_DOCUMENT = "document";
-    static final String CONNECT_VERIFICATION = "verification";
-    static final String CONNECT_PRODUCT_DESCTIPTION = "product_description";
-    static final String CONNECT_LEGAL_ENTITY = "legal_entity";
+    private static final String CONNECT_TOS_ACCEPTANCE = "tos_acceptance";
+    private static final String CONNECT_DAY = "day";
+    private static final String CONNECT_MONTH = "month";
+    private static final String CONNECT_YEAR = "year";
+    private static final String CONNECT_CITY = "city";
+    private static final String CONNECT_LINE1 = "line1";
+    private static final String CONNECT_POSTAL_CODE = "postal_code";
+    private static final String CONNECT_ADDRESS = "address";
+    private static final String CONNECT_PERSONAL_ADDRESS = "personal_address";
+    private static final String CONNECT_DOB = "dob";
+    private static final String CONNECT_FIRST_NAME = "first_name";
+    private static final String CONNECT_LAST_NAME = "last_name";
+    private static final String CONNECT_DOCUMENT = "document";
+    private static final String CONNECT_VERIFICATION = "verification";
+    private static final String CONNECT_PRODUCT_DESCTIPTION = "product_description";
+    private static final String CONNECT_LEGAL_ENTITY = "legal_entity";
     static final String CONNECT_EXTERNAL_ACCOUNT = "external_account";
 
     static final String[] CONNECT_DOB_ARRAY = {CONNECT_DAY, CONNECT_MONTH, CONNECT_YEAR};
@@ -103,5 +103,14 @@ public class PaymentConstants {
     static final String[] CONNECT_METADATA_ARRAY = {CONNECT_INTERNAL_ID};
     static final String[] CONNECT_ACCOUNT_ARRAY = {CONNECT_TYPE, CONNECT_COUNTRY, CONNECT_METADATA, CONNECT_EMAIL,
             CONNECT_TOS_ACCEPTANCE, CONNECT_PRODUCT_DESCTIPTION, CONNECT_LEGAL_ENTITY};
+
+    public static final String TOKEN = "token";
+    public static final String TRANSFER = "transfer";
+    public static final String REFUND = "refund";
+    public static final String FILE_UPLOAD = "file_upload";
+    public static final String CUSTOMER = "customer";
+    public static final String ACCOUNT = "account";
+    public static final String RESERVE = "reserve";
+    public static final String SPLIT_CHAR = ":";
 
 }

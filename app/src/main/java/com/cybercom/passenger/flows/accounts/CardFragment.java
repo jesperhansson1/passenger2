@@ -18,10 +18,7 @@ import android.widget.Toast;
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.main.MainActivity;
 import com.cybercom.passenger.flows.login.FileUploadActivity;
-import com.cybercom.passenger.flows.payment.StripeAccountAsyncTask;
-import com.cybercom.passenger.flows.payment.StripeCustomerAsyncTask;
-import com.cybercom.passenger.flows.payment.StripeFileUploadAsyncTask;
-import com.cybercom.passenger.flows.payment.StripeTokenAsyncTask;
+import com.cybercom.passenger.flows.payment.StripeAsyncTask;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.repository.PassengerRepository;
 import com.google.gson.Gson;
@@ -34,14 +31,18 @@ import timber.log.Timber;
 import static android.content.Context.WIFI_SERVICE;
 import static com.cybercom.passenger.flows.accounts.AccountActivity.CARARRAY;
 import static com.cybercom.passenger.flows.accounts.AccountActivity.LOGINARRAY;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.ACCOUNT;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.ADDRESS_LINE1;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.CITY;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.CUSTOMER;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.CUSTOM_ACCOUNT;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.INDIVIDUAL;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.INTERNAL_ID;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.POSTAL_CODE;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.PRODUCT_DESCRIPTION;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.SPLIT_CHAR;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.SWEDEN;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.TOKEN;
 import static com.cybercom.passenger.flows.payment.PaymentHelper.createAccountParamsHashMap;
 import static com.cybercom.passenger.flows.payment.PaymentHelper.createCustomerHashMap;
 import static com.cybercom.passenger.flows.payment.PaymentHelper.createLegalEntityParamsHashMap;
@@ -51,8 +52,7 @@ import static com.cybercom.passenger.flows.payment.PaymentHelper.createTosAccept
 import static com.cybercom.passenger.model.User.TYPE_DRIVER;
 import static com.cybercom.passenger.model.User.TYPE_PASSENGER;
 
-public class CardFragment extends Fragment implements
-        StripeTokenAsyncTask.OnTokenCreated, StripeCustomerAsyncTask.OnCustomerCreated, StripeAccountAsyncTask.OnAccountCreated, StripeFileUploadAsyncTask.onUploadFile{
+public class CardFragment extends Fragment implements StripeAsyncTask.StripeAsyncTaskDelegate{
 
     private Button mNext;
     private EditText mEditTextCard;
@@ -87,7 +87,6 @@ public class CardFragment extends Fragment implements
         View rootView = inflater.inflate(R.layout.fragment_card, container, false);
         mProgressBar = rootView.findViewById(R.id.progress_bar);
         mProgressBar.setVisibility(View.GONE);
-
         mEditTextCard = rootView.findViewById(R.id.editText_fragmentcard_card);
         //after every four digits, add space
         mEditTextCard.addTextChangedListener(new FormattingTextWatcher(4));
@@ -96,9 +95,7 @@ public class CardFragment extends Fragment implements
         mNext = rootView.findViewById(R.id.button_fragmentcard_next);
         mNext.setOnClickListener(view -> nextCardClick());
         mExtras = getActivity().getIntent().getExtras();
-
-        if(mExtras!=null)
-        {
+        if(mExtras!=null) {
             mUserLogin = (new Gson()).fromJson( mExtras.getString(LOGINARRAY), User.class);
             mEmail = mUserLogin.getmEmail();
             mType = mUserLogin.getType();
@@ -107,19 +104,13 @@ public class CardFragment extends Fragment implements
             mDay = Integer.parseInt(mUserLogin.getPersonalNumber().substring(4,6));
             mMonth = Integer.parseInt(mUserLogin.getPersonalNumber().substring(2,4));
             mYear = Integer.parseInt(mUserLogin.getPersonalNumber().substring(0,2));
-
-            if((mYear + 2000) > Calendar.getInstance().get(Calendar.YEAR))
-            {
+            if((mYear + 2000) > Calendar.getInstance().get(Calendar.YEAR)) {
                 mYear = 1900 + mYear;
             }
-            else
-            {
+            else {
                 mYear = 2000 + mYear;
             }
-
         }
-
-
         return rootView;
     }
 
@@ -131,7 +122,6 @@ public class CardFragment extends Fragment implements
     }
 
     private void nextCardClick(){
-
         if(mEditTextCard.getText().toString().isEmpty()) {
             mEditTextCard.setError(getResources().getString(R.string.card_number_error));
         } else if(mEditTextExpire.getText().toString().isEmpty()) {
@@ -142,11 +132,9 @@ public class CardFragment extends Fragment implements
             Timber.d(mEditTextCard.getText().toString());
             Timber.d(mEditTextExpire.getText().toString());
             Timber.d(mEditTextCode.getText().toString());
-
             String[] expire;
             int month = 0;
             int year = 2000;
-
             try {
                 expire = mEditTextExpire.getText().toString().split("/");
                 month = Integer.parseInt(expire[0]);
@@ -155,9 +143,8 @@ public class CardFragment extends Fragment implements
                 Timber.e(e.getLocalizedMessage());
             }
 
-            Card card = new Card(mEditTextCard.getText().toString().replace(' ','-'), month, year,
-                    mEditTextCode.getText().toString());
-
+            Card card = new Card(mEditTextCard.getText().toString().replace(' ','-'),
+                    month, year, mEditTextCode.getText().toString());
             if (!card.validateCard()) {
                 Timber.e("CARD is not valid");
                 Toast.makeText(getContext(),"CARD is not valid",Toast.LENGTH_LONG).show();
@@ -165,9 +152,7 @@ public class CardFragment extends Fragment implements
             else {
                 Timber.e("CARD is valid");
                 Toast.makeText(getContext(),"CARD is valid",Toast.LENGTH_LONG).show();
-
-                new StripeTokenAsyncTask(createTokenHashMap(card),this).execute();
-
+                new StripeAsyncTask(createTokenHashMap(card),this, TOKEN).execute();
             }
         }
     }
@@ -177,13 +162,13 @@ public class CardFragment extends Fragment implements
         mNext.setText("");
         if(mExtras != null) {
             if (mExtras.getString(CARARRAY) != null) {
-
-
                 repository.createUserAddCar(loginArray,
                         mExtras.getString(CARARRAY)).observe(this, firebaseUser -> {
                             if (firebaseUser!=null) {
-                                Intent intent = new Intent(getActivity().getApplicationContext(), MainActivity.class);
-                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                Intent intent = new Intent(getActivity().getApplicationContext(),
+                                        MainActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
+                                        Intent.FLAG_ACTIVITY_CLEAR_TASK);
                                 startActivity(intent);
                             } else {
                                 Timber.d("Error, no user found");
@@ -196,8 +181,10 @@ public class CardFragment extends Fragment implements
                 repository.createUserWithEmailAndPassword(loginArray).observe(
                         this, firebaseUser -> {
                     if (firebaseUser!=null) {
-                        Intent intent = new Intent(getActivity().getApplicationContext(), MainActivity.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        Intent intent = new Intent(getActivity().getApplicationContext(),
+                                MainActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
+                                Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         startActivity(intent);
                     } else {
                         mProgressBar.setVisibility(View.GONE);
@@ -211,57 +198,49 @@ public class CardFragment extends Fragment implements
         }
     }
 
-    @Override
     public void updateTokenId(String tokenId) {
         mTokenId = tokenId;
         Timber.d("token created with id %s", tokenId);
-        if(mType == TYPE_DRIVER)
-        {
+        if(mType == TYPE_DRIVER) {
             Timber.d("Driver logging.. create connected stripe account");
             //add license
-
-            Intent fileUploadIntent=new Intent(getActivity().getApplicationContext(),FileUploadActivity.class);
+            Intent fileUploadIntent=new Intent(getActivity().getApplicationContext(),
+                    FileUploadActivity.class);
             startActivityForResult(fileUploadIntent, FILE_UPLOAD_ACTIVITY);// Activity is started with requestCode 2
-
-
         }
-        if(mType == TYPE_PASSENGER)
-        {
+        if(mType == TYPE_PASSENGER) {
             Timber.d("Passenger logging.. create stripe customer");
-            new StripeCustomerAsyncTask(createCustomerHashMap(mEmail,mTokenId), this).execute();
+            new StripeAsyncTask(createCustomerHashMap(mEmail,mTokenId),
+                    this,CUSTOMER).execute();
         }
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data)
-    {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         // check if the request code is same as what is passed  here it is 2
-        if(requestCode==FILE_UPLOAD_ACTIVITY)
-        {
+        if(requestCode==FILE_UPLOAD_ACTIVITY) {
             String fileId = data.getStringExtra(FILE_ID);
             Timber.d("file uploaded successfully with id %s",fileId);
-
-            new StripeAccountAsyncTask(createAccountParamsHashMap(CUSTOM_ACCOUNT, SWEDEN, createMetaDataHashMap(INTERNAL_ID), mEmail,
-                    createTosAcceptanceParamsHashMap(System.currentTimeMillis() / 1000L, getIpAddress()), PRODUCT_DESCRIPTION,
-                    createLegalEntityParamsHashMap(CITY, ADDRESS_LINE1, POSTAL_CODE, mDay, mMonth, mYear,
-                            mFirstName, mLastName, INDIVIDUAL, fileId)), mTokenId, this).execute();
+            new StripeAsyncTask(createAccountParamsHashMap(CUSTOM_ACCOUNT,
+                    SWEDEN, createMetaDataHashMap(INTERNAL_ID), mEmail,
+                    createTosAcceptanceParamsHashMap(System.currentTimeMillis() / 1000L,
+                            getIpAddress()), PRODUCT_DESCRIPTION,
+                    createLegalEntityParamsHashMap(CITY, ADDRESS_LINE1, POSTAL_CODE, mDay, mMonth,
+                            mYear, mFirstName, mLastName, INDIVIDUAL, fileId)),
+                    this, ACCOUNT).execute(mTokenId);
         }
     }
 
-
-    @Override
     public void updateCustomerId(String customerId) {
         Timber.d("customer created with id %s", customerId);
         mUserLogin.setCustomerId(customerId);
-
         Gson gson = new Gson();
         String loginArray = gson.toJson(mUserLogin);
         createUserReturnMain(loginArray);
     }
 
-    public void updateAccountId(String accountId)
-    {
+    public void updateAccountId(String accountId) {
         Timber.d("account created with id %s", accountId);
         mUserLogin.setCustomerId(accountId);
         Gson gson = new Gson();
@@ -270,14 +249,12 @@ public class CardFragment extends Fragment implements
     }
 
     //gets the ipaddress
-    public String getIpAddress()
-    {
+    public String getIpAddress() {
         String ipAddress = "100.100.100.100";
         try
         {
             WifiManager wifiManager = (WifiManager) getContext().getApplicationContext().getSystemService(WIFI_SERVICE);
             ipAddress = Formatter.formatIpAddress(wifiManager.getConnectionInfo().getIpAddress());
-
         }
         catch(Exception e)
         {
@@ -287,10 +264,22 @@ public class CardFragment extends Fragment implements
         return ipAddress;
     }
 
-    //uploads file and gets fileid
-
     @Override
-    public void onFileUploaded(String fileUploadId) {
-        Timber.d("file uploaded successfully %s", fileUploadId);
+    public void onStripeTaskCompleted(String result) {
+        Timber.d("result is %s", result);
+        String[] value = result.split(SPLIT_CHAR);
+        switch (value[1]){
+            case TOKEN:
+                updateTokenId(value[0]);
+                break;
+            case CUSTOMER:
+                updateCustomerId(value[0]);
+                break;
+            case ACCOUNT:
+                updateAccountId(value[0]);
+                break;
+            default:
+                break;
+        }
     }
 }

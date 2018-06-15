@@ -51,6 +51,7 @@ import com.cybercom.passenger.flows.login.RegisterActivity;
 import com.cybercom.passenger.flows.nomatchfragment.NoMatchFragment;
 import com.cybercom.passenger.flows.passengernotification.PassengerNotificationDialog;
 import com.cybercom.passenger.flows.payment.CalculatePrice;
+import com.cybercom.passenger.flows.payment.StripeAsyncTask;
 import com.cybercom.passenger.flows.payment.StripeChargeReserveAsyncTask;
 import com.cybercom.passenger.flows.pickupfragment.DriverPassengerPickUpFragment;
 import com.cybercom.passenger.flows.progressfindingcar.FindingCarProgressDialog;
@@ -100,6 +101,8 @@ import timber.log.Timber;
 
 import static com.cybercom.passenger.flows.payment.PaymentConstants.CARD_ERROR;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.GOOGLE_API_ERROR;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.RESERVE;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.SPLIT_CHAR;
 import static com.cybercom.passenger.flows.payment.PaymentHelper.createChargeHashMap;
 
 public class MainActivity extends AppCompatActivity implements
@@ -114,7 +117,7 @@ public class MainActivity extends AppCompatActivity implements
         NoMatchFragment.NoMatchButtonListener, FragmentSizeListener, OnCompleteListener<Void>,
         DriverPassengerPickUpFragment.DriverPassengerPickUpButtonClickListener,
         DriverDropOffFragment.DriverDropOffConfirmationListener, View.OnClickListener,
-        StripeChargeReserveAsyncTask.onChargeCreated{
+        StripeAsyncTask.StripeAsyncTaskDelegate{
 
     private static final float ZOOM_LEVEL_STREETS = 15;
 
@@ -1409,6 +1412,20 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+    @Override
+    public void onStripeTaskCompleted(String result) {
+        Timber.d("result is %s", result);
+        String[] value = result.split(SPLIT_CHAR);
+        switch (value[1]){
+            case RESERVE:
+                onChargeAmountReserved(value[0]);
+                break;
+            default:
+                break;
+        }
+
+    }
+
     private class ViewAnimationListener implements Animation.AnimationListener {
         private final boolean mIsOpenAnimation;
         private final View mView;
@@ -1562,11 +1579,10 @@ public class MainActivity extends AppCompatActivity implements
 
     public void reserveChargeAmountInBackground(int price)
     {
-        new StripeChargeReserveAsyncTask(createChargeHashMap(mCurrentLoggedInUser.getCustomerId(),price,false),this).execute();
+        new StripeAsyncTask(createChargeHashMap(mCurrentLoggedInUser.getCustomerId(),price,false),this, RESERVE).execute();
 
     }
 
-    @Override
     public void onChargeAmountReserved(String chargeId) {
         Timber.d("charge created with id %s", chargeId);
         if(chargeId == null) {
