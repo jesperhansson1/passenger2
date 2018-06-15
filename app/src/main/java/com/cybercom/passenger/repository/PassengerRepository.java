@@ -15,7 +15,6 @@ import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Notification;
 import com.cybercom.passenger.model.Position;
-import com.cybercom.passenger.model.RidePoints;
 import com.cybercom.passenger.model.Route;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.repository.databasemodel.PassengerRide;
@@ -381,7 +380,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     }
 
     private void checkEtaForPossibleDrives(
-            int index, List<Bounds> boundsList, List<RidePoints> driveRequestRidePoints,
+            int index, List<Bounds> boundsList, List<LatLng> driveRequestLatLngs,
             List<com.cybercom.passenger.repository.databasemodel.Drive> candidateDrives,
             List<String> candidateDriveIdList,
             MutableLiveData<Drive> matchedDriveLiveData, String googleApiKey) {
@@ -393,22 +392,21 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         Bounds bounds = boundsList.get(index);
         String driveId = candidateDriveIdList.get(index);
 
-        getPassengerRidesList(index, boundsList, driveRequestRidePoints, candidateDrives,
+        getPassengerRidesList(index, boundsList, driveRequestLatLngs, candidateDrives,
                 candidateDriveIdList, matchedDriveLiveData, googleApiKey, drive, bounds, driveId);
     }
 
-    private void fetchRerouteAndCompairETA(
-            int index, List<Bounds> boundsList, List<RidePoints>
-            ridePoints, List<com.cybercom.passenger.repository.databasemodel.Drive> candidateDrives,
+    private void fetchRerouteAndCompareETA(
+            int index, List<Bounds> boundsList, List<LatLng> latLngList,
+            List<com.cybercom.passenger.repository.databasemodel.Drive> candidateDrives,
             List<String> candidateDriveIdList, MutableLiveData<Drive> matchedDriveLiveData,
             String googleApiKey, com.cybercom.passenger.repository.databasemodel.Drive drive,
-            Bounds bounds, String driveId, List<RidePoints> ridePointsList) {
+            Bounds bounds, String driveId, List<LatLng> passengerLatLngList) {
 
         LatLng currentPosition = MainActivity.createLatLngFromPosition(drive.getCurrentPosition());
         LatLng endLocation = MainActivity.createLatLngFromPosition(drive.getEndLocation());
-        ridePoints.addAll(ridePointsList);
-
-        new FetchRoute(currentPosition, endLocation, ridePoints,
+        latLngList.addAll(passengerLatLngList);
+        new FetchRoute(currentPosition, endLocation, latLngList,
                 routes -> {
                     Route route = routes.get(0);
                     long eta = route.getBounds().getDuration();
@@ -435,7 +433,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                             }
                         });
                     } else {
-                        checkEtaForPossibleDrives(index + 1, boundsList, ridePoints,
+                        checkEtaForPossibleDrives(index + 1, boundsList, latLngList,
                                 candidateDrives, candidateDriveIdList,
                                 matchedDriveLiveData, googleApiKey);
                     }
@@ -477,12 +475,14 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         }
 
         try {
-            List<RidePoints> ridePointsList = new ArrayList();
+            List<LatLng> latLngs = new ArrayList();
             //TODO move to common place...
-            ridePointsList.add(MainActivity.createRidePointsFromDriveRequest(driveRequest));
+            latLngs.add(MainActivity.createLatLngFromPosition(
+                    driveRequest.getStartLocation()));
+            latLngs.add(MainActivity.createLatLngFromPosition(driveRequest.getEndLocation()));
 
-            checkEtaForPossibleDrives(0, candidateBounds, ridePointsList,
-                    candidateDrives, candidateIdList, bestDriveMatch, googleApiKey);
+            checkEtaForPossibleDrives(0, candidateBounds, latLngs, candidateDrives, candidateIdList,
+                    bestDriveMatch, googleApiKey);
         }
         catch(Exception e) {
             Timber.e(e.getLocalizedMessage());
@@ -923,6 +923,13 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         }
     }
 
+    public void updateDriveCurrentDuration(@NonNull String driveId, long duration, long distance) {
+        if (driveId != null) {
+            mDrivesReference.child(driveId).child(BOUNDS).child(DURATIONS).setValue(duration);
+            mDrivesReference.child(driveId).child(BOUNDS).child(DISTANCEM).setValue(distance);
+        }
+    }
+
 
     public void updatePassengerRideCurrentLocation(Location location) {
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -991,7 +998,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     }
 
     private void getPassengerRidesList(
-            int index, List<Bounds> boundsList, List<RidePoints> ridePoints,
+            int index, List<Bounds> boundsList, List<LatLng> latLngs,
             List<com.cybercom.passenger.repository.databasemodel.Drive> candidateDrives,
             List<String> candidateDriveIdList, MutableLiveData<Drive> matchedDriveLiveData,
             String googleApiKey, com.cybercom.passenger.repository.databasemodel.Drive drive,
@@ -1001,17 +1008,23 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                 .addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                List<RidePoints> ridePointsList = new ArrayList();
-                int i = 1;
+                List<LatLng> passangersLatLngList = new ArrayList();
+
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     PassengerRide passengerRide = snapshot.getValue(PassengerRide.class);
-                    ridePointsList.add(MainActivity.createRidePointsFromPassengerRide(
-                            passengerRide.getPickUpPosition(), passengerRide.getDropOffPosition()));
+                    if (!passengerRide.isPickUpConfirmed()) {
+                        passangersLatLngList.add(MainActivity.createLatLngFromPosition(
+                                passengerRide.getPickUpPosition()));
+                    }
+                    if (!passengerRide.isDropOffConfirmed()) {
+                        passangersLatLngList.add(MainActivity.createLatLngFromPosition(
+                                passengerRide.getPickUpPosition()));
+                    }
                 }
 
-                fetchRerouteAndCompairETA(index, boundsList, ridePoints, candidateDrives,
+                fetchRerouteAndCompareETA(index, boundsList, latLngs, candidateDrives,
                         candidateDriveIdList, matchedDriveLiveData, googleApiKey, drive, bounds,
-                        driveId, ridePointsList);
+                        driveId, passangersLatLngList);
             }
 
             @Override
@@ -1020,7 +1033,6 @@ public class PassengerRepository implements PassengerRepositoryInterface {
             }
         });
     }
-
 
     public LiveData<com.cybercom.passenger.model.PassengerRide> getPassengerRides(String driveId) {
         MutableLiveData<com.cybercom.passenger.model.PassengerRide> passengerRidesLiveData =
@@ -1076,7 +1088,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
     private ValueEventListener getEventListenerToFetchDriveAndBuildPassengerRide(
             String passengerRideId, PassengerRide passengerRide, User passenger,
-            MutableLiveData<com.cybercom.passenger.model.PassengerRide> passengerRideMutableLiveData) {
+            MutableLiveData<com.cybercom.passenger.model.PassengerRide>
+                    passengerRideMutableLiveData) {
 
         return new ValueEventListener() {
             @Override
@@ -1226,17 +1239,16 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
                             @Override
                             public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-
+                                driveMutableLiveData.setValue(null);
                             }
 
                             @Override
-                            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
+                            public void onChildMoved(@NonNull DataSnapshot dataSnapshot,
+                                                     @Nullable String s) {
                             }
 
                             @Override
                             public void onCancelled(@NonNull DatabaseError databaseError) {
-
                             }
 
                         });
@@ -1352,15 +1364,27 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         return mEtaLiveData;
     }
 
-    com.cybercom.passenger.repository.databasemodel.Drive drive;
 
-    public com.cybercom.passenger.repository.databasemodel.Drive getDrive(String driveKey)
-    {
-        mDrivesReference.orderByKey().equalTo(driveKey).addValueEventListener(new ValueEventListener() {
+    /**
+     * Gets a drive given a driveId. The method returns a live data that will be updated once the
+     * drive is fetched from Firebase
+     * @param driveId The id of the drive
+     * @return MutableLiveData<Drive> holding the drive.
+     */
+    public MutableLiveData<Drive> getDrive(String driveId) {
+        MutableLiveData<Drive> driveLiveData = new MutableLiveData<>();
+        mDrivesReference.orderByKey().equalTo(driveId).addListenerForSingleValueEvent(
+                new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    drive = snapshot.getValue(com.cybercom.passenger.repository.databasemodel.Drive.class);
+                    com.cybercom.passenger.repository.databasemodel.Drive drive;
+                    drive = snapshot.getValue(
+                            com.cybercom.passenger.repository.databasemodel.Drive.class);
+                    Drive modelDrive = new Drive(driveId, null, 0, drive.getStartLocation(),
+                            drive.getEndLocation(), drive.getAvailableSeats(),
+                            drive.getCurrentPosition(), drive.getCurrentVelocity());
+                    driveLiveData.setValue(modelDrive);
                 }
             }
 
@@ -1369,7 +1393,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                 Timber.d(databaseError.getMessage());
             }
         });
-        return drive;
+        return driveLiveData;
     }
 
     public void confirmPickUp(String passengerRideId) {
@@ -1401,12 +1425,50 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         }
     }
 
+    /**
+     * Returns a livedata containing a list of remaining latlng for the current drive.
+     * That is, if the passenger has been picked up, the passengers pickup location is not added and
+     * so on.
+      * @param driveId The id of the drive.
+     * @return
+     */
+    public MutableLiveData<List<LatLng>> getPassengersRemainingLatLngs(
+            String driveId) {
+        MutableLiveData<List<LatLng>> passengersLatLngs = new MutableLiveData<>();
+        mPassengerRideReference.orderByChild(DRIVE_ID).equalTo(driveId)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                List<LatLng> latLngs = new ArrayList<>();
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    PassengerRide passengerRide = snapshot.getValue(PassengerRide.class);
+                    if (!passengerRide.isPickUpConfirmed()) {
+                        latLngs.add(MainActivity.createLatLngFromPosition(
+                                passengerRide.getPickUpPosition()));
+                    }
+                    if (!passengerRide.isDropOffConfirmed()) {
+                        latLngs.add(MainActivity.createLatLngFromPosition(
+                                passengerRide.getDropOffPosition()));
+                    }
+                }
+                passengersLatLngs.setValue(latLngs);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+        return passengersLatLngs;
+    }
+
     public void confirmDropOff(String passengerRideId) {
         mPassengerRideReference.child(passengerRideId).child(DROPOFF_CONFIRMED).setValue(true);
     }
 
     public void cancelPassengerRide(String passengerRideId) {
-        mPassengerRideReference.child(passengerRideId).child(PASSENGER_RIDE_CANCELLED).setValue(true);
+        mPassengerRideReference.child(passengerRideId).child(PASSENGER_RIDE_CANCELLED).setValue(
+                true);
     }
 
 }

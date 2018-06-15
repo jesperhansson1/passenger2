@@ -1,13 +1,9 @@
 package com.cybercom.passenger.route;
 
-import android.content.Context;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
-import com.cybercom.passenger.R;
-import com.cybercom.passenger.model.RidePoints;
 import com.cybercom.passenger.model.Route;
 import com.google.android.gms.maps.model.LatLng;
 
@@ -50,14 +46,14 @@ public class FetchRoute extends AsyncTask<String, Void, List<Route>> {
      *
      * @param origin
      * @param destination
-     * @param wayPoints
+     * @param latLngs
      * @param caller
      */
-    public FetchRoute(LatLng origin, LatLng destination, @Nullable List<RidePoints> wayPoints,
+    public FetchRoute(LatLng origin, LatLng destination, @Nullable List<LatLng> latLngs,
                       @NonNull OnRouteCompletion caller, String googleApiKey) {
         Timber.d("re-route");
         mOnRouteCompletion = caller;
-        execute(getRouteURL(origin, destination, wayPoints, googleApiKey));
+        execute(getRouteURL(origin, destination, latLngs, googleApiKey));
     }
 
     @Override
@@ -117,27 +113,23 @@ public class FetchRoute extends AsyncTask<String, Void, List<Route>> {
     }
 
     @Nullable
-    private String getWayPointsString(@Nullable List<RidePoints> wayPoints) {
-        if (wayPoints == null) {
+    private String getWayPointsString(@Nullable List<LatLng> latLngs) {
+        if (latLngs == null || latLngs.size() == 0) {
             return null;
         }
         StringBuilder wayPointsString = new StringBuilder();
         wayPointsString.append(WAYPOINTS);
         wayPointsString.append(OPTIMIZE_TRUE);
-        for (RidePoints wayPoint : wayPoints) {
+        for (LatLng wayPoint : latLngs) {
             wayPointsString.append(DIVIDER);
-            wayPointsString.append(wayPoint.getFromPoint().latitude);
+            wayPointsString.append(wayPoint.latitude);
             wayPointsString.append(COMMA);
-            wayPointsString.append(wayPoint.getFromPoint().longitude);
-            wayPointsString.append(DIVIDER);
-            wayPointsString.append(wayPoint.getToPoint().latitude);
-            wayPointsString.append(COMMA);
-            wayPointsString.append(wayPoint.getToPoint().longitude);
+            wayPointsString.append(wayPoint.longitude);
         }
         return wayPointsString.toString();
     }
 
-    private String getRouteURL(LatLng from, LatLng to, @Nullable List<RidePoints> wayPoints,
+    private String getRouteURL(LatLng from, LatLng to, @Nullable List<LatLng> latLngs,
                                String googleApiKey) {
         StringBuilder url = new StringBuilder();
         url.append(DIRECTIONS_URL);
@@ -153,8 +145,7 @@ public class FetchRoute extends AsyncTask<String, Void, List<Route>> {
         url.append(COMMA);
         url.append(to.longitude);
 
-        // Add any existing waypoints
-        String wayPointsString = getWayPointsString(wayPoints);
+        String wayPointsString = getWayPointsString(latLngs);
         if (wayPointsString != null) {
             url.append(ADD);
             url.append(wayPointsString);

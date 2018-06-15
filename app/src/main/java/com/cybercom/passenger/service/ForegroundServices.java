@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.app.NotificationManagerCompat;
@@ -24,9 +25,11 @@ import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.main.MainActivity;
 import com.cybercom.passenger.interfaces.OnVelocityCheckedListener;
 import com.cybercom.passenger.model.Position;
+import com.cybercom.passenger.model.Route;
 import com.cybercom.passenger.repository.PassengerRepository;
 import com.cybercom.passenger.repository.networking.DistantMatrixAPIHelper;
 import com.cybercom.passenger.repository.networking.model.DistanceMatrixResponse;
+import com.cybercom.passenger.route.FetchRoute;
 import com.cybercom.passenger.utils.LocationHelper;
 import com.cybercom.passenger.utils.NotificationHelper;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -64,6 +67,7 @@ public class ForegroundServices extends LifecycleService {
     private Location mCurrentLocation = new Location("");
     private static final int INTERVAL = 1000;
     private static final int FASTEST_INTERVAL = 1000;
+    private static final long UPDATE_DRIVE_DURATION_AND_DISTANCE_INTERVAL_MS = 60000;
     public static final String INTENT_EXTRA_DRIVE_ID = "driveId";
     public static final String INTENT_EXTRA_PASSENGER_RIDE_ID = "passengerRideId";
     private Position mPickUpLocation;
@@ -78,29 +82,47 @@ public class ForegroundServices extends LifecycleService {
     private boolean mIsVelocityChecking = false;
     private Float mSumVelocity;
     private List<Float> mVelocityAverage = new ArrayList<>();
-    private boolean mIsDriverAtPickUpLocation = false;
-    private boolean mIsDriverAtDropOffLocation = false;
     private int mSecondsCounter = 0;
     private Handler mVelocityCheckHandler;
     private Runnable mVelocityCheckRunnable;
     private boolean mCancelAllFlag;
+    private String mDriveId;
+    private Handler mHandler;
 
+    private Runnable mUpdateDurationAndDistanceRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (mDriveId != null) {
+                rerouteDriverAtInterval(mDriveId);
+            }
+            mHandler.postDelayed(this, UPDATE_DRIVE_DURATION_AND_DISTANCE_INTERVAL_MS);
+        }
+    };
 
     @Override
     public void onCreate() {
+        mHandler = new Handler();
         super.onCreate();
+
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
-
         Bundle extras = intent.getExtras();
-        String driveId = extras.getString(INTENT_EXTRA_DRIVE_ID);
+        mDriveId = extras.getString(INTENT_EXTRA_DRIVE_ID);
         String passengerRideId = extras.getString(INTENT_EXTRA_PASSENGER_RIDE_ID);
         //Update Drivers position
         if (intent.getAction().equals(Constants.ACTION.STARTFOREGROUND_DRIVER_CLIENT)) {
 
+            mPassengerRepository.getActiveDrive().observe(this, drive -> {
+
+                if (drive == null) {
+                    stopLocationUpdates();
+                    stopDurationAndDistanceUpdates();
+                }
+            });
+            mHandler.post(mUpdateDurationAndDistanceRunnable);
             mFusedLocationClient = LocationServices.getFusedLocationProviderClient(
                     getApplicationContext());
             mLocationCallback = new LocationCallback() {
@@ -121,7 +143,7 @@ public class ForegroundServices extends LifecycleService {
                     }
 
                     for (Location location : locationResult.getLocations()) {
-                        Timber.d("DriveId %s", driveId);
+                        Timber.d("DriveId %s", mDriveId);
 
                         mCurrentLocation = location;
                     }
@@ -140,8 +162,8 @@ public class ForegroundServices extends LifecycleService {
                     Timber.d("currentSpeed: %f", speed);
                     Timber.d("currentBearing: %f", mCurrentLocation.getBearing());
 
-                    mPassengerRepository.updateDriveCurrentLocation(driveId, mCurrentLocation);
-                    mPassengerRepository.updateDriveCurrentVelocity(driveId, speed);
+                    mPassengerRepository.updateDriveCurrentLocation(mDriveId, mCurrentLocation);
+                    mPassengerRepository.updateDriveCurrentVelocity(mDriveId, speed);
                 }
             };
 
@@ -155,9 +177,9 @@ public class ForegroundServices extends LifecycleService {
         //Uppdatera Passengers position
         if (intent.getAction().equals(Constants.ACTION.STARTFOREGROUND_PASSENGER_CLIENT)) {
 
-            PassengerRepository.getInstance().getDriverPosition(driveId).observe(this,
+            PassengerRepository.getInstance().getDriverPosition(mDriveId).observe(this,
                     position -> mDriversPosition = position);
-            PassengerRepository.getInstance().getDriverVelocity(driveId).observe(this,
+            PassengerRepository.getInstance().getDriverVelocity(mDriveId).observe(this,
                     velocity -> mDriversVelocity = velocity);
 
             mLocationCallback = new LocationCallback() {
@@ -218,6 +240,27 @@ public class ForegroundServices extends LifecycleService {
             stopSelf();
         }
         return START_STICKY;
+    }
+
+    private void rerouteDriverAtInterval(@NonNull final String driveId) {
+        String mGoogleApiKey = getResources().getString(R.string.google_api_key);
+        mPassengerRepository.getDrive(driveId).observe(this, drive -> {
+            //Drive has been fetched
+            mPassengerRepository.getPassengersRemainingLatLngs(driveId).observe(
+                    ForegroundServices.this, latLngs ->
+                            new FetchRoute(MainActivity.createLatLngFromPosition(
+                                    drive.getCurrentPosition()),
+                                    MainActivity.createLatLngFromPosition(drive.getEndLocation()),
+                                    latLngs, routes -> {
+
+                                if (routes.size() > 0) {
+                                    Route route = routes.get(0);
+
+                                    mPassengerRepository.updateDriveCurrentDuration(driveId,
+                                            route.getBounds().getDuration(),
+                                            route.getBounds().getDistance());
+                                } }, mGoogleApiKey));
+        });
     }
 
     private void startForegroundService() {
@@ -454,6 +497,10 @@ public class ForegroundServices extends LifecycleService {
         if (mFusedLocationClient != null) {
             mFusedLocationClient.removeLocationUpdates(mLocationCallback);
         }
+    }
+
+    public void stopDurationAndDistanceUpdates() {
+        mHandler.removeCallbacks(mUpdateDurationAndDistanceRunnable);
     }
 
     @Override
