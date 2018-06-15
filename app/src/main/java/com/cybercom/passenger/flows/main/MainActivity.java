@@ -52,7 +52,6 @@ import com.cybercom.passenger.flows.nomatchfragment.NoMatchFragment;
 import com.cybercom.passenger.flows.passengernotification.PassengerNotificationDialog;
 import com.cybercom.passenger.flows.payment.CalculatePrice;
 import com.cybercom.passenger.flows.payment.StripeAsyncTask;
-import com.cybercom.passenger.flows.payment.StripeChargeReserveAsyncTask;
 import com.cybercom.passenger.flows.pickupfragment.DriverPassengerPickUpFragment;
 import com.cybercom.passenger.flows.progressfindingcar.FindingCarProgressDialog;
 import com.cybercom.passenger.interfaces.FragmentSizeListener;
@@ -1423,7 +1422,6 @@ public class MainActivity extends AppCompatActivity implements
             default:
                 break;
         }
-
     }
 
     private class ViewAnimationListener implements Animation.AnimationListener {

@@ -19,7 +19,7 @@ import android.view.View;
 import android.widget.ImageView;
 
 import com.cybercom.passenger.R;
-import com.cybercom.passenger.flows.payment.StripeFileUploadAsyncTask;
+import com.cybercom.passenger.flows.payment.StripeAsyncTask;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -30,9 +30,11 @@ import static android.os.Build.VERSION_CODES.M;
 import static com.cybercom.passenger.flows.accounts.CardFragment.FILE_ID;
 import static com.cybercom.passenger.flows.accounts.CardFragment.FILE_UPLOAD_ACTIVITY;
 import static com.cybercom.passenger.flows.accounts.CardFragment.TOKEN_ID;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.FILE_UPLOAD;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.SPLIT_CHAR;
 import static com.cybercom.passenger.flows.payment.PaymentHelper.createUploadFileHashMap;
 
-public class FileUploadActivity extends AppCompatActivity implements StripeFileUploadAsyncTask.onUploadFile {
+public class FileUploadActivity extends AppCompatActivity implements StripeAsyncTask.StripeAsyncTaskDelegate {
     private Uri mImageCaptureUri;
     private static final int CAMERA_PIC_REQUEST = 1337;
     private static final int REQUEST_CAMERA_PERMISSION = 1;
@@ -117,7 +119,7 @@ public class FileUploadActivity extends AppCompatActivity implements StripeFileU
             File finalFile = new File(getRealPathFromURI(tempUri));
 
             Timber.d("file path is " + finalFile.getAbsolutePath() + " file exists  " + finalFile.exists());
-            new StripeFileUploadAsyncTask(createUploadFileHashMap(finalFile), this).execute();
+            new StripeAsyncTask(createUploadFileHashMap(finalFile), this, FILE_UPLOAD).execute();
             }
 
     }
@@ -146,15 +148,26 @@ public class FileUploadActivity extends AppCompatActivity implements StripeFileU
 
     }
 
-    @Override
     public void onFileUploaded(String fileUploadId) {
-
         Intent intent=new Intent();
         intent.putExtra(FILE_ID,fileUploadId);
         intent.putExtra(TOKEN_ID,mTokenId);
         setResult(FILE_UPLOAD_ACTIVITY,intent);
-        finish();//finishing activity
-
         Timber.d("file uploaded successfully %s", fileUploadId);
+        finish();//finishing activity
+    }
+
+    @Override
+    public void onStripeTaskCompleted(String result) {
+        Timber.d("result is %s", result);
+        String[] value = result.split(SPLIT_CHAR);
+        switch (value[1]){
+            case FILE_UPLOAD:
+                onFileUploaded(value[0]);
+                break;
+            default:
+                break;
+        }
+
     }
 }
