@@ -12,6 +12,7 @@ public class PassengerRide implements Serializable {
     private Position mDropOffPosition;
     private boolean mPickUpConfirmed;
     private boolean mDropOffConfirmed;
+    private boolean mCancelled;
     private String mStartAddress;
     private String mEndAddress;
 
@@ -105,6 +106,15 @@ public class PassengerRide implements Serializable {
                 ", mDropOffPosition=" + mDropOffPosition + '\'' +
                 ", mPickUpConfirmed=" + mPickUpConfirmed + '\'' +
                 ", mDropOffConfirmed=" + mDropOffConfirmed + '\'' +
+                ", mDropOffConfirmed=" + mCancelled + '\'' +
                 '}';
+    }
+
+    public boolean isCancelled() {
+        return mCancelled;
+    }
+
+    public void setCancelled(boolean mCancelled) {
+        this.mCancelled = mCancelled;
     }
 }

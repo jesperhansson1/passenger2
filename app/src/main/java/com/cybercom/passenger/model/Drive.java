@@ -34,7 +34,7 @@ public class Drive implements Serializable {
     }
 
     public void setDriver(User driver) {
-        this.mDriver = driver;
+        mDriver = driver;
     }
 
     public long getTime() {
@@ -95,7 +95,7 @@ public class Drive implements Serializable {
     }
 
     public void setCurrentPosition(Position currentPosition) {
-        this.mCurrentPosition = currentPosition;
+        mCurrentPosition = currentPosition;
     }
 
     public float getCurrentVelocity() {
@@ -103,6 +103,6 @@ public class Drive implements Serializable {
     }
 
     public void setCurrentVelocity(float currentVelocity) {
-        this.mCurrentVelocity = currentVelocity;
+        mCurrentVelocity = currentVelocity;
     }
 }

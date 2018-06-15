@@ -8,8 +8,6 @@ import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
@@ -52,7 +50,7 @@ public class ForegroundServices extends LifecycleService {
     private static final long FIRST_ETA_NOTIFICATION_TIME_SECONDS = 60 * 10;
     private static final long SECOND_ETA_NOTIFICATION_TIME_SECONDS = 60 * 7;
     private static final long THIRD_ETA_NOTIFICATION_TIME_SECONDS = 60 * 3;
-    public static final int DISTANCE_FOR_DETECTING_ARRIVAL_OF_DRIVER = 50;
+    public static final int DISTANCE_FOR_DETECTING_ARRIVAL_OF_DRIVER = 80;
     private static final long TIME_BETWEEN_ARRIVAL_DETECTION = 1000;
     private static final Float DRIVER_VELOCITY_THRESHOLD = 3f;
     private static final long COUNT_INTERVAL = 1000;
@@ -85,6 +83,7 @@ public class ForegroundServices extends LifecycleService {
     private int mSecondsCounter = 0;
     private Handler mVelocityCheckHandler;
     private Runnable mVelocityCheckRunnable;
+    private boolean mCancelAllFlag;
 
 
     @Override
@@ -99,10 +98,11 @@ public class ForegroundServices extends LifecycleService {
         Bundle extras = intent.getExtras();
         String driveId = extras.getString(INTENT_EXTRA_DRIVE_ID);
         String passengerRideId = extras.getString(INTENT_EXTRA_PASSENGER_RIDE_ID);
-        //Uppdatera Drivers position
-        if (intent.getAction().equals(Constants.ACTION.STARTFOREGROUND_UPDATE_DRIVER_POSITION)) {
+        //Update Drivers position
+        if (intent.getAction().equals(Constants.ACTION.STARTFOREGROUND_DRIVER_CLIENT)) {
 
-            mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getApplication().getApplicationContext());
+            mFusedLocationClient = LocationServices.getFusedLocationProviderClient(
+                    getApplicationContext());
             mLocationCallback = new LocationCallback() {
                 @Override
                 public void onLocationResult(LocationResult locationResult) {
@@ -113,6 +113,7 @@ public class ForegroundServices extends LifecycleService {
                     Location prevLocation;
 
                     int locationResultSize = locationResult.getLocations().size();
+
                     if (locationResultSize == 1) {
                         prevLocation = mCurrentLocation;
                     } else {
@@ -124,10 +125,12 @@ public class ForegroundServices extends LifecycleService {
 
                         mCurrentLocation = location;
                     }
+
                     mMyLocationMutableLiveData.setValue(mCurrentLocation);
 
                     float distanceDelta = mCurrentLocation.distanceTo(prevLocation);
-                    float timeDelta = Math.abs(mCurrentLocation.getTime() - prevLocation.getTime()) / 1000f;
+                    float timeDelta = Math.abs(mCurrentLocation.getTime() - prevLocation.getTime())
+                            / 1000f;
                     float speed = 1;
 
                     if (timeDelta != 0.0f) {
@@ -135,6 +138,7 @@ public class ForegroundServices extends LifecycleService {
                     }
 
                     Timber.d("currentSpeed: %f", speed);
+                    Timber.d("currentBearing: %f", mCurrentLocation.getBearing());
 
                     mPassengerRepository.updateDriveCurrentLocation(driveId, mCurrentLocation);
                     mPassengerRepository.updateDriveCurrentVelocity(driveId, speed);
@@ -144,33 +148,12 @@ public class ForegroundServices extends LifecycleService {
             createLocationRequest();
             startLocationUpdates();
 
-            Intent notificationIntent = new Intent(this, MainActivity.class);
-            notificationIntent.setAction(Constants.ACTION.MAIN);
-            notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                    | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
-                    notificationIntent, 0);
+            startForegroundService();
 
-            RemoteViews notificationView = new RemoteViews(this.getPackageName(), R.layout.foreground_notification);
-
-            Bitmap icon = BitmapFactory.decodeResource(getResources(),
-                    R.mipmap.ic_launcher);
-
-            Notification notification = new NotificationCompat.Builder(this,
-                    NotificationHelper.TRACKING_CHANNEL)
-                    .setContentTitle(getString(R.string.passenger))
-                    .setTicker(getString(R.string.passenger))
-                    .setContentText(getString(R.string.passenger))
-                    .setSmallIcon(R.mipmap.ic_launcher)
-                    .setContent(notificationView)
-                    .setOngoing(true).build();
-
-            startForeground(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE,
-                    notification);
         }
 
         //Uppdatera Passengers position
-        if (intent.getAction().equals(Constants.ACTION.STARTFOREGROUND_UPDATE_PASSENGER_POSITION)) {
+        if (intent.getAction().equals(Constants.ACTION.STARTFOREGROUND_PASSENGER_CLIENT)) {
 
             PassengerRepository.getInstance().getDriverPosition(driveId).observe(this,
                     position -> mDriversPosition = position);
@@ -193,56 +176,38 @@ public class ForegroundServices extends LifecycleService {
             };
 
             mPassengerRepository.getPassengerRideById(passengerRideId).observe(this,
-                    passengerRide -> {
-                        if (passengerRide == null) return;
-                        mPickUpLocation = passengerRide.getPickUpPosition();
-                        mDropOffLocation = passengerRide.getDropOffPosition();
-                        boolean isPickUpConfirmed = passengerRide.isPickUpConfirmed();
+                passengerRide -> {
+                    if (passengerRide == null) {
+                        mCancelAllFlag = true;
+                        return;
+                    }
+                    mPickUpLocation = passengerRide.getPickUpPosition();
+                    mDropOffLocation = passengerRide.getDropOffPosition();
+                    boolean isPickUpConfirmed = passengerRide.isPickUpConfirmed();
 
-                        // If passenger is picked up terminate this service
-                        if (!mPickUpConfirmed && isPickUpConfirmed) {
-                            stopLocationUpdates();
-                            stopForeground(true);
-                        }
-                        mPickUpConfirmed = passengerRide.isPickUpConfirmed();
-                        mDropOffConfirmed = passengerRide.isDropOffConfirmed();
-                    });
+                    // If passenger is picked up terminate this service
+                    if (!mPickUpConfirmed && isPickUpConfirmed) {
+                        stopLocationUpdates();
+                        stopForeground(true);
+                    }
+                    mPickUpConfirmed = passengerRide.isPickUpConfirmed();
+                    mDropOffConfirmed = passengerRide.isDropOffConfirmed();
 
-            new Handler().postDelayed(this::calculateETAToPickUpLocation,
-                    FIRST_TIME_ETA_LOOKUP_DELAY_MILLIS);
-            new Handler().postDelayed(this::detectDriverArrival,
-                    FIRST_TIME_DETECT_DELAY_MILLIS);
+                    new Handler().postDelayed(this::requestETAInBackgroundAndUpdateToRepository,
+                            FIRST_TIME_ETA_LOOKUP_DELAY_MILLIS);
+                    new Handler().postDelayed(this::detectDriverArrival,
+                            FIRST_TIME_DETECT_DELAY_MILLIS);
 
-            startScheduledETACalculation();
+                    startScheduledETACalculation();
+                });
 
-            mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getApplication().getApplicationContext());
+            mFusedLocationClient = LocationServices.getFusedLocationProviderClient(
+                    getApplicationContext());
             createLocationRequest();
             startLocationUpdates();
 
-            Intent notificationIntent = new Intent(this, MainActivity.class);
-            notificationIntent.setAction(Constants.ACTION.MAIN);
-            notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                    | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
-                    notificationIntent, 0);
-
-            RemoteViews notificationView = new RemoteViews(this.getPackageName(), R.layout.foreground_notification);
-
-            Notification notification = new NotificationCompat.Builder(this,
-                    NotificationHelper.TRACKING_CHANNEL)
-                    .setContentTitle(getString(R.string.passenger))
-                    .setTicker(getString(R.string.passenger))
-                    .setContentText(getString(R.string.passenger))
-                    .setSmallIcon(R.mipmap.ic_launcher)
-                    .setContent(notificationView)
-                    .setOngoing(true).build();
-
-            startForeground(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE,
-                    notification);
+            startForegroundService();
         }
-
-        //Get Driver Position
-        //Get Passenger Position
 
         if (intent.getAction().equals(Constants.ACTION.STARTFOREGROUND)) {
             Toast.makeText(this, "Start Service", Toast.LENGTH_SHORT).show();
@@ -255,11 +220,42 @@ public class ForegroundServices extends LifecycleService {
         return START_STICKY;
     }
 
+    private void startForegroundService() {
+        Notification notification = buildForegroundServiceNotification();
+
+        startForeground(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE,
+                notification);
+    }
+
+    private Notification buildForegroundServiceNotification() {
+        Intent notificationIntent = new Intent(this, MainActivity.class);
+        notificationIntent.setAction(Constants.ACTION.MAIN);
+        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
+                notificationIntent, 0);
+
+        RemoteViews notificationView = new RemoteViews(this.getPackageName(), R.layout.foreground_notification);
+
+        return new NotificationCompat.Builder(this,
+                NotificationHelper.TRACKING_CHANNEL)
+                .setContentTitle(getString(R.string.passenger))
+                .setTicker(getString(R.string.passenger))
+                .setContentText(getString(R.string.passenger))
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContent(notificationView)
+                .setOngoing(true).build();
+    }
+
     private void detectDriverArrival() {
         new Handler().postDelayed(() -> {
 
-            if (mDriversPosition == null | mPickUpLocation == null | mDropOffLocation == null
-                    | mDriversVelocity == null) {
+            if (mCancelAllFlag) {
+                return;
+            }
+
+            if (mDriversPosition == null || mPickUpLocation == null || mDropOffLocation == null
+                    || mDriversVelocity == null) {
                 return;
             }
 
@@ -267,12 +263,13 @@ public class ForegroundServices extends LifecycleService {
             Timber.i("detectArrival (mPickUpLocation): %s", mPickUpLocation);
             Timber.i("detectArrival (mDriversVelocity): %s", mDriversVelocity);
 
-            if (!mPickUpConfirmed || !mIsDriverAtPickUpLocation) {
+            if (!mPickUpConfirmed) {
                 detectArrivalToPickUpLocation();
             }
 
-            if (!mDropOffConfirmed || !mIsDriverAtDropOffLocation) {
+            if (!mDropOffConfirmed) {
                 detectArrivalToDropOffLocation();
+//                return;
             }
 
             detectDriverArrival();
@@ -291,19 +288,20 @@ public class ForegroundServices extends LifecycleService {
         if (distanceBetweenDriverAndPickUpLocation[0] < DISTANCE_FOR_DETECTING_ARRIVAL_OF_DRIVER) {
 
             checkIfVelocityIsUnderThresholdForAPeriodOfTime(() -> {
+
                 for (Float velocity : mVelocityAverage) {
                     mSumVelocity = +velocity;
                 }
 
                 if (mSumVelocity / mVelocityAverage.size() < DRIVER_VELOCITY_THRESHOLD) {
-                    Timber.i("Arrival to pick up location is detected");
+                    mPassengerRepository.updateETA(PassengerRepository.UNDEFINED_ETA);
                     if(isAppInBackground(this)){
                         showNotification(MainActivity.TYPE_PICK_UP);
                     } else {
                         showDialogInUi(MainActivity.TYPE_PICK_UP);
                     }
 
-                    mIsDriverAtPickUpLocation = true;
+                    mPickUpConfirmed = true;
                 }
 
                 mIsVelocityChecking = false;
@@ -332,13 +330,12 @@ public class ForegroundServices extends LifecycleService {
                 }
 
                 if (mSumVelocity / mVelocityAverage.size() < DRIVER_VELOCITY_THRESHOLD) {
-                    Timber.i("Arrival drop off is detected");
                     if(isAppInBackground(this)){
                         showNotification(MainActivity.TYPE_DROP_OFF);
                     }else{
                         showDialogInUi(MainActivity.TYPE_DROP_OFF);
                     }
-                    mIsDriverAtDropOffLocation = true;
+                    mDropOffConfirmed = true;
                 }
 
                 mIsVelocityChecking = false;
@@ -366,6 +363,9 @@ public class ForegroundServices extends LifecycleService {
 
         mVelocityCheckHandler = new Handler();
         mVelocityCheckRunnable = () -> {
+            if (mCancelAllFlag) {
+                return;
+            }
             mSecondsCounter++;
             mVelocityAverage.add(mDriversVelocity);
 
@@ -381,33 +381,32 @@ public class ForegroundServices extends LifecycleService {
         mVelocityCheckHandler.postDelayed(mVelocityCheckRunnable, COUNT_INTERVAL);
     }
 
-
     private void startScheduledETACalculation() {
         new Handler().postDelayed(() -> {
-            calculateETAToPickUpLocation();
 
-            if (mPickUpConfirmed) {
+            requestETAInBackgroundAndUpdateToRepository();
+
+            if (mDropOffConfirmed) {
                 return;
             }
-
             // Re-run this until passenger is picked up or is dismissed or cancels
             startScheduledETACalculation();
         }, TIME_BETWEEN_ETA_LOOKUPS_DELAY_MILLIS);
     }
 
-    private void calculateETAToPickUpLocation() {
-        if (mDriversPosition == null | mPickUpLocation == null) {
+    private void requestETAInBackgroundAndUpdateToRepository() {
+        if (mDriversPosition == null || mPickUpLocation == null || mDropOffLocation == null) {
             return;
         }
 
-        Timber.d("mDriverPos %s , %S", mDriversPosition.getLatitude(), mDriversPosition.getLongitude());
-        Timber.d("mPickUpLocation %s , %S", mPickUpLocation.getLatitude(), mPickUpLocation.getLongitude());
+        Position endPosition = mPickUpConfirmed ? mDropOffLocation : mPickUpLocation;
 
+        // TODO, this information is in the route/leg..
         DistantMatrixAPIHelper.getInstance().mMatrixAPIService.getDistantMatrix(
                 LocationHelper.getStringFromLatLng(
                         mDriversPosition.getLatitude(), mDriversPosition.getLongitude()),
                 LocationHelper.getStringFromLatLng(
-                        mPickUpLocation.getLatitude(), mPickUpLocation.getLongitude()),
+                        endPosition.getLatitude(), endPosition.getLongitude()),
                 getResources().getString(R.string.google_api_key)).enqueue(new Callback<DistanceMatrixResponse>() {
             @Override
             public void onResponse(Call<DistanceMatrixResponse> call, Response<DistanceMatrixResponse> response) {
@@ -415,9 +414,13 @@ public class ForegroundServices extends LifecycleService {
                     long duration = DistantMatrixAPIHelper.getDurationFromResponse(response, 0, 0);
 //                    long dis = DistantMatrixAPIHelper.getDistanceFromResponse(response, 0, 0);
                     Timber.d("eta: %s", duration);
-                    sendETANotificationIfItIsTime(duration, mLastETA);
-                    mPassengerRepository.updateETA(duration);
-                    mLastETA = duration;
+                    if (!mPickUpConfirmed) {
+                        sendETANotificationIfItIsTime(duration, mLastETA);
+                    }
+                    if (duration != mLastETA) {
+                        mPassengerRepository.updateETA(duration);
+                        mLastETA = duration;
+                    }
                 }
             }
 

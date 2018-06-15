@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
     android:background="@android:color/transparent"
     android:padding="@dimen/activity_margin_half">
 
@@ -52,7 +53,21 @@
             android:layout_marginTop="@dimen/activity_margin_half_double"
             android:background="@drawable/button_border_round"
             android:text="@string/finding_driver_cancel"
+            tools:visibility="visible"
+            android:visibility="gone"
             android:textColor="@color/colorRed"
+            app:layout_constraintTop_toBottomOf="@id/end_location_and_text"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <Button
+            android:id="@+id/dropoff_passenger_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/activity_margin_half_double"
+            android:background="@drawable/button_corner_round"
+            android:text="@string/passener_detailed_information_dropoffbutton"
+            android:textColor="@color/colorWhite"
+            android:visibility="gone"
             app:layout_constraintTop_toBottomOf="@id/end_location_and_text"
             app:layout_constraintBottom_toBottomOf="parent"/>
     </android.support.constraint.ConstraintLayout>

@@ -113,6 +113,10 @@ public class MainViewModel extends AndroidViewModel {
         mPassengerRepository.removeCurrentDrive(driveId, onCompleteListener);
     }
 
+    public void removePassengerRide(String passengerId, OnCompleteListener onCompleteListener) {
+        mPassengerRepository.removePassengerRide(passengerId, onCompleteListener);
+    }
+
     public LiveData<DriveRequest> createDriveRequest(long time, Position startLocation, Position endLocation, int seats, double price, String chargeId) {
         return mPassengerRepository.createDriveRequest(time, startLocation, endLocation, seats, price, chargeId);
     }
@@ -120,6 +124,10 @@ public class MainViewModel extends AndroidViewModel {
     public LiveData<Drive> findBestDriveMatch(DriveRequest driveRequest, int radiusMultiplier, String googleApiKey) {
         mMostRecentDriveRequest = driveRequest;
         return mPassengerRepository.findBestRideMatch(driveRequest, radiusMultiplier, googleApiKey);
+    }
+
+    public void cancelDriveMatch() {
+        mPassengerRepository.cancelBestRideMatch();
     }
 
     public void addRequestDriveNotification(DriveRequest driveRequest, Drive drive) {
@@ -169,8 +177,8 @@ public class MainViewModel extends AndroidViewModel {
         mPassengerRepository.setIncomingNotification(payload);
     }
 
-    public void getNextNotification(Notification notification) {
-        mPassengerRepository.getNextNotification(notification);
+    public void getNextNotification() {
+        mPassengerRepository.getNextNotification();
     }
 
     public void refreshToken(String token) {
@@ -197,7 +205,6 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     // CreateDriveFragment
-
     public static final int PLACE_START_MARKER = 0;
     public static final int PLACE_END_MARKER = 1;
     private int mWhichMarkerToAdd = 0;
@@ -325,6 +332,10 @@ public class MainViewModel extends AndroidViewModel {
         mPassengerRepository.updateDriveCurrentLocation(driveId, location);
     }
 
+    public MutableLiveData<Location> getDriverCurrentLocation() {
+        return mPassengerRepository.getDriverCurrentLocation();
+    }
+
     @SuppressLint("MissingPermission")
     public LiveData<PassengerRide> createPassengerRide(Drive drive, Position startPosition,
                                                        Position endPosition, String startAddress,
@@ -357,8 +368,12 @@ public class MainViewModel extends AndroidViewModel {
         return mPassengerRepository.getPassengerPosition(driveId);
     }
 
-    public LiveData<String> getActiveDriveId() {
-        return mPassengerRepository.getActiveDriveId();
+    public LiveData<Drive> getActiveDrive() {
+        return mPassengerRepository.getActiveDrive();
+    }
+
+    public LiveData<PassengerRide> getActivePassengerRide() {
+        return mPassengerRepository.getActivePassengerRide();
     }
 
     public LiveData<Integer> getETA() {
@@ -373,6 +388,10 @@ public class MainViewModel extends AndroidViewModel {
         mPassengerRepository.confirmPickUp(passengerRide.getId());
     }
 
+    public void cancelPassengerRide(String passengerRideId) {
+        mPassengerRepository.cancelPassengerRide(passengerRideId);
+    }
+
     public void confirmPickUp(String driveId) {
         mPassengerRepository.passengerConfirmPickUp(driveId);
     }
@@ -381,4 +400,7 @@ public class MainViewModel extends AndroidViewModel {
         mPassengerRepository.confirmDropOff(passengerRide.getId());
     }
 
+    public LiveData<com.cybercom.passenger.repository.databasemodel.PassengerRide> getPassengerRideById(String passengerRideId) {
+        return mPassengerRepository.getPassengerRideById(passengerRideId);
+    }
 }
