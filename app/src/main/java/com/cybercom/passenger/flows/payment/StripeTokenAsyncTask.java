@@ -1,19 +1,19 @@
 package com.cybercom.passenger.flows.payment;
 
-        import android.os.AsyncTask;
-        import com.stripe.Stripe;
-        import com.stripe.exception.APIConnectionException;
-        import com.stripe.exception.APIException;
-        import com.stripe.exception.AuthenticationException;
-        import com.stripe.exception.CardException;
-        import com.stripe.exception.InvalidRequestException;
-        import com.stripe.model.Token;
-        import java.util.Map;
-        import timber.log.Timber;
-        import static com.cybercom.passenger.flows.payment.PaymentConstants.STRIPE_API_KEY;
+import android.os.AsyncTask;
+import com.stripe.Stripe;
+import com.stripe.exception.APIConnectionException;
+import com.stripe.exception.APIException;
+import com.stripe.exception.AuthenticationException;
+import com.stripe.exception.CardException;
+import com.stripe.exception.InvalidRequestException;
+import com.stripe.model.Token;
+import java.util.Map;
+import timber.log.Timber;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.STRIPE_API_KEY;
 
+//creates and returns token id for a given card object
 public class StripeTokenAsyncTask extends AsyncTask<String, Void, String> {
-
     private OnTokenCreated mTokenDelegate;
     private Map<String, Object> mMapParams;
 

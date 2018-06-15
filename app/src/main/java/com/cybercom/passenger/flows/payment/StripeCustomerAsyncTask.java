@@ -15,6 +15,7 @@ import timber.log.Timber;
 
 import static com.cybercom.passenger.flows.payment.PaymentConstants.STRIPE_API_KEY;
 
+//Creates stripe customer and returns id with given parameters and attaches a card for the same
 public class StripeCustomerAsyncTask extends AsyncTask<String, Void, String> {
 
     private OnCustomerCreated mCustomerDelegate;

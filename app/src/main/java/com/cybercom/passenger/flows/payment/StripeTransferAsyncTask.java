@@ -15,6 +15,7 @@ import timber.log.Timber;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.STRIPE_API_KEY;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.TRANSFER_SOURCE_TRANSACTION;
 
+//creates and returns transfer id after transfering predefined amount to given connected account
 public class StripeTransferAsyncTask  extends AsyncTask<String, Void, String> {
 
     private Map<String, Object> mMapParams;

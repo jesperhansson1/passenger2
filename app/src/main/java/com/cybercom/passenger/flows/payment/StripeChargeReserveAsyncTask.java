@@ -13,6 +13,8 @@ import timber.log.Timber;
 
 import static com.cybercom.passenger.flows.payment.PaymentConstants.STRIPE_API_KEY;
 
+//Creates stripe charge object for pre-blocking a specified amount for a customer with a given card
+
 public class StripeChargeReserveAsyncTask extends AsyncTask<String, Void, String> {
 
     private Map<String, Object> mMapParams;

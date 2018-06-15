@@ -13,6 +13,7 @@ import java.util.Map;
 import timber.log.Timber;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.STRIPE_API_KEY;
 
+//creates and returns refund id for a given charge object
 public class StripeRefundAsyncTask extends AsyncTask<String, Void, String> {
 
     private Map<String, Object> mMapParams;
