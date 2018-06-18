@@ -113,7 +113,8 @@ public class MainViewModel extends AndroidViewModel {
         mPassengerRepository.removeCurrentDrive(driveId, onCompleteListener);
     }
 
-    public void removePassengerRide(String passengerId, OnCompleteListener onCompleteListener) {
+        public void removePassengerRide(String passengerId, OnCompleteListener onCompleteListener) {
+        System.out.println("remove passenger ride");
         mPassengerRepository.removePassengerRide(passengerId, onCompleteListener);
     }
 
@@ -339,9 +340,9 @@ public class MainViewModel extends AndroidViewModel {
     @SuppressLint("MissingPermission")
     public LiveData<PassengerRide> createPassengerRide(Drive drive, Position startPosition,
                                                        Position endPosition, String startAddress,
-                                                       String endAddress) {
+                                                       String endAddress, String chargeId) {
         return mPassengerRepository.createPassengerRide(drive, startPosition, endPosition,
-                startAddress, endAddress);
+                startAddress, endAddress, chargeId);
     }
 
     public LiveData<PassengerRide> getPassengerRides(String driveId) {
@@ -397,6 +398,7 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     public void confirmDropOff(PassengerRide passengerRide) {
+        System.out.println("drop off");
         mPassengerRepository.confirmDropOff(passengerRide.getId());
     }
 

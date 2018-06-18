@@ -104,9 +104,12 @@ import timber.log.Timber;
 
 import static com.cybercom.passenger.flows.payment.PaymentConstants.CARD_ERROR;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.GOOGLE_API_ERROR;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.NOSHOW_FEE;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.RESERVE;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.SPLIT_CHAR;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.TRANSFER;
 import static com.cybercom.passenger.flows.payment.PaymentHelper.createChargeHashMap;
+import static com.cybercom.passenger.flows.payment.PaymentHelper.createTransferHashMap;
 
 public class MainActivity extends AppCompatActivity implements
         CreateDriveFragment.CreateRideFragmentListener,
@@ -276,9 +279,9 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void createPassengerRide(Drive drive, Position startPosition, Position endPosition,
-                                     String startAddress, String endAddress) {
+                                     String startAddress, String endAddress, String chargeId) {
         mMainViewModel.createPassengerRide(drive, startPosition, endPosition, startAddress,
-                endAddress).observe(this, passengerRide -> {
+                endAddress, chargeId).observe(this, passengerRide -> {
                     Timber.d("PassengerRide successfully created: %s", passengerRide);
         });
     }
@@ -420,6 +423,7 @@ public class MainActivity extends AppCompatActivity implements
                 mActiveDriveIdList.add(drive.getId());
                 mActiveDrive = drive;
                 mMainViewModel.getPassengerRides(drive.getId()).observe(this, passengerRide -> {
+                    Timber.i("isdropoff confirmed here");
                     if (passengerRide != null) {
                         if (isPassengerRideAlreadyAddedToLocalList(passengerRide)) {
                             replacePassengerRide(passengerRide);
@@ -468,10 +472,11 @@ public class MainActivity extends AppCompatActivity implements
                     String endAddress = mMainViewModel.getAddressFromLocation(
                             LocationHelper.convertPositionToLocation(
                                     notification.getDriveRequest().getEndLocation()));
+
                     createPassengerRide(notification.getDrive(),
                             notification.getDriveRequest().getStartLocation(),
                             notification.getDriveRequest().getEndLocation(), startAddress,
-                            endAddress);
+                            endAddress, notification.getDriveRequest().getChargeId());
                     mMainViewModel.getNextNotification();
                     break;
                 case Notification.REJECT_PASSENGER:
@@ -760,12 +765,14 @@ public class MainActivity extends AppCompatActivity implements
         }
 
         if (passengerRide.isCancelled()) {
+            droppOffPayment(passengerRide);
             mMainViewModel.removePassengerRide(passengerRide.getId(), task ->
                     handlePassengerCancelled(passengerRide.getId()));
         } else if (mPassengers.get(passengerRide.getId()) == null) {
             mPassengers.put(passengerRide.getId(), passengerRide);
             addPassengerFab(passengerRide.getId());
-        } else if (passengerRide.isDropOffConfirmed()) {
+        } else if (!mPassengers.get(passengerRide.getId()).isDropOffConfirmed() &&
+                passengerRide.isDropOffConfirmed()) {
             mPassengers.remove(passengerRide.getId());
             removePassengerFab(passengerRide.getId());
         } else {
@@ -1460,6 +1467,8 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onPickUpNoShow(PassengerRide passengerRide) {
         // Driver has reported no show
+        new StripeAsyncTask(createTransferHashMap(passengerRide.getChargeId(), NOSHOW_FEE,
+                      passengerRide.getDrive().getDriver().getCustomerId()), this, TRANSFER).execute();
 
     }
 
@@ -1479,9 +1488,15 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onDropOffConfirmation(PassengerRide passengerRide) {
-        removeFragment(mFragmentManager
-                .findFragmentByTag(DriverDropOffFragment.DRIVER_DROP_OFF_FRAGMENT_TAG));
+        Timber.i("dropoff 1 ");
+
+//        removeFragment(mFragmentManager
+//                .findFragmentByTag(DriverDropOffFragment.DRIVER_DROP_OFF_FRAGMENT_TAG));
         mMainViewModel.confirmDropOff(passengerRide);
+        Timber.i("make transfer here");
+        //initiate payment
+        //new StripeAsyncTask(createTransferHashMap(passengerRide.getChargeId(),10,
+          //      passengerRide.getDrive().getDriver().getCustomerId()), this, TRANSFER).execute();
     }
 
     @Override
@@ -1542,6 +1557,7 @@ public class MainActivity extends AppCompatActivity implements
 
     // Driver client method
     private void handleRideAborted(String rideId) {
+        droppOffPayment(getPassengerRideFromLocalList(rideId));
         mMainViewModel.removePassengerRide(rideId, task -> {
             handlePassengerCancelled(rideId);
         });
@@ -1597,7 +1613,8 @@ public class MainActivity extends AppCompatActivity implements
             // The driver has clicked cancel before being picked up
             handleRideAborted((String) mPassengerDetailedInformation.getTag());
         } else if (view.getId() == R.id.dropoff_passenger_button) {
-            // The driver has clicked dropp off before the end of the drive
+            //passengerride- dropoff- true
+            // The driver has clicked drop off before the end of the drive
             handleRideAborted((String) mPassengerDetailedInformation.getTag());
         } else if (view.getId() == R.id.cancel_drive) {
             // The driver has clicked the abort floating action button
@@ -1647,6 +1664,9 @@ public class MainActivity extends AppCompatActivity implements
         switch (value[1]){
             case RESERVE:
                 onChargeAmountReserved(value[0]);
+                break;
+            case TRANSFER:
+                onTransferAmount(value[0]);
                 break;
             default:
                 break;
@@ -1834,10 +1854,23 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+    public  void onTransferAmount(String transferId)
+    {
+        Timber.d("stripe transfer created with id %s", transferId);
+        if(transferId == null) {
+            Toast.makeText(getApplicationContext(),"transfer not successful ", Toast.LENGTH_LONG).show();
+        }
+        else
+        {
+            Toast.makeText(getApplicationContext(),"transfer successful "+ transferId, Toast.LENGTH_LONG).show();
+        }
+    }
+
 
     // Called by Passenger client only
     private void handlePassengerDroppedOff() {
         String passengerId = mActivePassengerRide.getId();
+        droppOffPayment(mActivePassengerRide);
         mMainViewModel.removePassengerRide(passengerId, task -> handlePassengerRideRemoved(passengerId));
     }
 
@@ -1852,4 +1885,13 @@ public class MainActivity extends AppCompatActivity implements
         }
         mActivePassengerRide = null;
     }
+
+    private void droppOffPayment(PassengerRide passengerRide)
+    {
+        Timber.d("isdropoff confirmed");
+        new StripeAsyncTask(createTransferHashMap(passengerRide.getChargeId(),10,
+                passengerRide.getDrive().getDriver().getCustomerId()), this, TRANSFER).execute();
+    }
+
+
 }
