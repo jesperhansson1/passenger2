@@ -9,9 +9,9 @@
         <item name="android:textColorHighlight">@color/colorBlue</item>
     </style>
 
-        <style name="WhiteBackgroundTheme" parent="Theme.AppCompat.Light.NoActionBar">
-            <item name="android:windowBackground">@color/colorWhite</item>
-        </style>
+    <style name="WhiteBackgroundTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowBackground">@color/colorWhite</item>
+    </style>
 
     <style name="switch_passenger_driver" parent="Theme.AppCompat.Light">
         <!-- active thumb & track color (30% transparency) -->

@@ -14,17 +14,22 @@ public class DriveRequest implements Serializable {
     private Position mEndLocation;
     private int mExtraPassengers;
     private List<Object> mDriverIdBlackList;
+    private double mPrice;
+    private String mChargeId;
 
     public DriveRequest(){
     }
 
-    public DriveRequest(String passengerId, long time, Position startLocation, Position endLocation, int extraPassengers, List<Object> driverIdBlacklist) {
+    public DriveRequest(String passengerId, long time, Position startLocation, Position endLocation,
+                        int extraPassengers, double price, String chargeId, List<Object> driverIdBlacklist) {
         mPassengerId = passengerId;
         mTime = time;
         mStartLocation = startLocation;
         mEndLocation = endLocation;
         mExtraPassengers = extraPassengers;
         mDriverIdBlackList = driverIdBlacklist;
+        mPrice = price;
+        mChargeId = chargeId;
     }
 
     public String getPassengerId() {
@@ -79,6 +84,8 @@ public class DriveRequest implements Serializable {
                 ", mStartLocation=" + mStartLocation +
                 ", mEndLocation=" + mEndLocation +
                 ", mExtraPassengers=" + mExtraPassengers +
+                ", mPrice=" + mPrice +
+                ", mChargeId=" + mChargeId +
                 '}';
     }
 
@@ -89,5 +96,20 @@ public class DriveRequest implements Serializable {
 
     public void setDriverIdBlackList(List<Object> driverIdBlackList) {
         this.mDriverIdBlackList = driverIdBlackList;
+    }
+
+    public double getPrice() {
+        return mPrice;
+    }
+
+    public void setPrice(double price) {
+        mPrice = price;
+    }
+    public String getChargeId() {
+        return mChargeId;
+    }
+
+    public void setChargeId(String chargeId) {
+        mChargeId = chargeId;
     }
 }

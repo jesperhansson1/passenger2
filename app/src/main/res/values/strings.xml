@@ -217,5 +217,6 @@
     <string name="driveinformation_earlydropoff_button">Finish Ride</string>
     <string name="passener_detailed_information_dropoffbutton">Drop Off</string>
     <string name="main_activity_active_rides_error_message">Not possible to abort a drive when passenger has joined</string>
+    <string name="title_file_upload">License Upload</string>
 
 </resources>

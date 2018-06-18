@@ -51,6 +51,8 @@ import com.cybercom.passenger.flows.driverconfirmation.AcceptRejectPassengerDial
 import com.cybercom.passenger.flows.dropofffragment.DriverDropOffFragment;
 import com.cybercom.passenger.flows.login.RegisterActivity;
 import com.cybercom.passenger.flows.nomatchfragment.NoMatchFragment;
+import com.cybercom.passenger.flows.payment.CalculatePrice;
+import com.cybercom.passenger.flows.payment.StripeAsyncTask;
 import com.cybercom.passenger.flows.passengernotification.DriveInformationDialog;
 import com.cybercom.passenger.flows.pickupfragment.DriverPassengerPickUpFragment;
 import com.cybercom.passenger.flows.progressfindingcar.FindingCarProgressDialog;
@@ -97,8 +99,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
+
+import static com.cybercom.passenger.flows.payment.PaymentConstants.CARD_ERROR;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.GOOGLE_API_ERROR;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.RESERVE;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.SPLIT_CHAR;
+import static com.cybercom.passenger.flows.payment.PaymentHelper.createChargeHashMap;
 
 public class MainActivity extends AppCompatActivity implements
         CreateDriveFragment.CreateRideFragmentListener,
@@ -111,7 +120,8 @@ public class MainActivity extends AppCompatActivity implements
         FindingCarProgressDialog.FindingCarListener, GoogleMap.OnMyLocationButtonClickListener,
         NoMatchFragment.NoMatchButtonListener, FragmentSizeListener, OnCompleteListener<Void>,
         DriverPassengerPickUpFragment.DriverPassengerPickUpButtonClickListener,
-        DriverDropOffFragment.DriverDropOffConfirmationListener, View.OnClickListener {
+        DriverDropOffFragment.DriverDropOffConfirmationListener, View.OnClickListener,
+        StripeAsyncTask.StripeAsyncTaskDelegate{
 
 
     private static final int DELAY_BEFORE_SHOWING_CREATE_DRIVE_AFTER_LOCATION_CHANGED = 1500;
@@ -197,6 +207,15 @@ public class MainActivity extends AppCompatActivity implements
     private Fragment mDriveInformationDialog;
     private String mGoogleApiKey;
 
+   /* public double mPrice = 0.0;
+    public long mTime = 0;
+    public Position mStartLocation = null;
+    public Position mEndLocation = null;
+    public int mSeats = 0;*/
+
+    DriveRequest mPendingDriveRequest;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -231,6 +250,7 @@ public class MainActivity extends AppCompatActivity implements
             mMainViewModel.getUser().observe(this, user -> {
                 Timber.i("User: %s logged in", user);
                 mCurrentLoggedInUser = user;
+                Timber.d(" stripe id is " + mCurrentLoggedInUser.getCustomerId() + " type is " + mCurrentLoggedInUser.getType());
                 initObservers();
                 setUpGeofencing();
             });
@@ -1183,16 +1203,8 @@ public class MainActivity extends AppCompatActivity implements
                         });
                 break;
             case User.TYPE_PASSENGER:
-                mMainViewModel.createDriveRequest(time, startLocation, endLocation, seats).observe(
-                        this, driveRequest -> {
-                            mMainViewModel.setDriveRequestRadiusMultiplier(
-                                    MainViewModel.DRIVE_REQUEST_DEFAULT_MULTIPLIER);
-                            Timber.i("DriveRequest : %s", driveRequest);
-                            matchDriveRequest(driveRequest,
-                                    mMainViewModel.getDriveRequestRadiusMultiplier());
-                            mCreateDriveFragment.setDefaultValuesToDialog();
-                            mCreateDriveFragment.hideCreateDialogCompletely();
-                        });
+                mPendingDriveRequest = new DriveRequest(null,null,time,startLocation,endLocation,seats,0.0,null,null);
+                getPrice(seats);
                 break;
         }
     }
@@ -1596,6 +1608,19 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+    @Override
+    public void onStripeTaskCompleted(String result) {
+        Timber.d("result is %s", result);
+        String[] value = result.split(SPLIT_CHAR);
+        switch (value[1]){
+            case RESERVE:
+                onChargeAmountReserved(value[0]);
+                break;
+            default:
+                break;
+        }
+    }
+
     private class ViewAnimationListener implements Animation.AnimationListener {
         private final boolean mIsOpenAnimation;
         private final View mView;
@@ -1727,6 +1752,51 @@ public class MainActivity extends AppCompatActivity implements
                     handlePassengerDroppedOff();
                 }
             }
+        }
+    }
+
+    public void getPrice(int seats)
+    {
+        double price = 0.0;
+        if(mBounds!=null) {
+            Timber.d("distance bound %s", mBounds.getDistance());
+            CalculatePrice calculatePrice = new CalculatePrice(mBounds.getDistance(), seats);
+            price = calculatePrice.getPrice();
+            mPendingDriveRequest.setPrice(price);
+            Timber.d("price is " + price + " " + (int) (price * 100) );
+            reserveChargeAmountInBackground((int) (price * 100));
+        }
+        else
+        {
+            Toast.makeText(getApplicationContext(),GOOGLE_API_ERROR,Toast.LENGTH_LONG).show();
+        }
+
+    }
+
+    public void reserveChargeAmountInBackground(int price)
+    {
+        new StripeAsyncTask(createChargeHashMap(mCurrentLoggedInUser.getCustomerId(),price,false),this, RESERVE).execute();
+
+    }
+
+    public void onChargeAmountReserved(String chargeId) {
+        Timber.d("charge created with id %s", chargeId);
+        if(chargeId == null) {
+            Toast.makeText(getApplicationContext(),CARD_ERROR, Toast.LENGTH_LONG).show();
+        }
+        else
+        {
+            mMainViewModel.createDriveRequest(mPendingDriveRequest.getTime(), mPendingDriveRequest.getStartLocation(), mPendingDriveRequest.getEndLocation(),
+                    mPendingDriveRequest.getExtraPassengers(), mPendingDriveRequest.getPrice(), chargeId).observe(
+                    this, driveRequest -> {
+                        mMainViewModel.setDriveRequestRadiusMultiplier(
+                                MainViewModel.DRIVE_REQUEST_DEFAULT_MULTIPLIER);
+                        Timber.i("DriveRequest : %s", driveRequest);
+                        matchDriveRequest(driveRequest,
+                                mMainViewModel.getDriveRequestRadiusMultiplier());
+                        mCreateDriveFragment.setDefaultValuesToDialog();
+                        mCreateDriveFragment.hideCreateDialogCompletely();
+                    });
         }
     }
 
