@@ -65,7 +65,6 @@ import com.cybercom.passenger.model.PassengerRide;
 import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.route.FetchRoute;
-import com.cybercom.passenger.model.RidePoints;
 import com.cybercom.passenger.model.Route;
 import com.cybercom.passenger.service.Constants;
 import com.cybercom.passenger.service.ForegroundServices;
@@ -769,15 +768,26 @@ public class MainActivity extends AppCompatActivity implements
         Drive drive = passengerRide.getDrive();
         Position driveStartLocation = drive.getStartLocation();
         Position driveEndLocation = drive.getEndLocation();
-        List<RidePoints> ridePointsList = new ArrayList();
-        ridePointsList.add(createRidePointsFromPassengerRide(passengerRide.getPickUpPosition(),
-                passengerRide.getDropOffPosition()));
-        for (PassengerRide onBordedPassenger : mPassengers.values()) {
-            ridePointsList.add(createRidePointsFromPassengerRide(
-                    onBordedPassenger.getPickUpPosition(), onBordedPassenger.getDropOffPosition()));
+        List<LatLng> latLngPointsList = new ArrayList();
+
+        latLngPointsList.addAll(getLatLngsFromPassengerRide(passengerRide));
+
+        for (PassengerRide onBoardedPassenger : mPassengers.values()) {
+            latLngPointsList.addAll(getLatLngsFromPassengerRide(onBoardedPassenger));
         }
         reRoute(createLatLngFromPosition(driveStartLocation),
-                createLatLngFromPosition(driveEndLocation), ridePointsList);
+                createLatLngFromPosition(driveEndLocation), latLngPointsList);
+    }
+
+    private List<LatLng> getLatLngsFromPassengerRide(@NonNull PassengerRide passengerRide) {
+        List<LatLng> latLngs = new ArrayList<>();
+        if (!passengerRide.isPickUpConfirmed()) {
+            latLngs.add(createLatLngFromPosition(passengerRide.getPickUpPosition()));
+        }
+        if (!passengerRide.isDropOffConfirmed()) {
+            latLngs.add(createLatLngFromPosition(passengerRide.getDropOffPosition()));
+        }
+        return latLngs;
     }
 
     private void handlePassengerCancelled(String passengerRideId) {
@@ -908,11 +918,11 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    private void reRoute(LatLng origin, LatLng destination, List<RidePoints> wayPoints) {
+    private void reRoute(LatLng origin, LatLng destination, List<LatLng> latLngs) {
         if (mRoute != null) {
             mRoute.remove();
         }
-        new FetchRoute(origin, destination, wayPoints, this, mGoogleApiKey);
+        new FetchRoute(origin, destination, latLngs, this, mGoogleApiKey);
     }
 
     private void zoomToFitRoute() {
@@ -983,19 +993,6 @@ public class MainActivity extends AppCompatActivity implements
 
         hidePlaceMarkerInformation();
         mCreateDriveFragment.showCreateDialog();
-    }
-
-    public static RidePoints createRidePointsFromDriveRequest(@NonNull DriveRequest driveRequest) {
-        LatLng pickUp = createLatLngFromPosition(driveRequest.getStartLocation());
-        LatLng dropOff = createLatLngFromPosition(driveRequest.getEndLocation());
-        return new RidePoints(pickUp, dropOff);
-    }
-
-    public static RidePoints createRidePointsFromPassengerRide(@NonNull Position pickUpPosition,
-                                                               @NonNull Position dropOffPosition) {
-        LatLng pickUp = createLatLngFromPosition(pickUpPosition);
-        LatLng dropOff = createLatLngFromPosition(dropOffPosition);
-        return new RidePoints(pickUp, dropOff);
     }
 
     public static LatLng createLatLngFromPosition(@NonNull Position position) {
