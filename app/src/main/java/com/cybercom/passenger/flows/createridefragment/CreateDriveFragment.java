@@ -412,7 +412,8 @@ public class CreateDriveFragment extends Fragment {
 
                     @Override
                     public void onAnimationEnd(Animator animation) {
-                        mOnFinishedCreatingDriveOrDriveRequest.onFinish();
+                        if(mOnFinishedCreatingDriveOrDriveRequest != null)
+                            mOnFinishedCreatingDriveOrDriveRequest.onFinish();
                     }
 
                     @Override
