@@ -1536,17 +1536,17 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
         System.out.println(prices);
         System.out.println(accountId);
 
-        double driverReimbursement = dist * FARE_PER_MILE * 100;
+        double driverReimbursement = dist * FARE_PER_MILE ;
         boolean paid = false;
         int i = 0;
         for(double price : prices){
             if(price > driverReimbursement){
-                new StripeAsyncTask(createTransferHashMap(chargeIds[i], (int)driverReimbursement,
+                new StripeAsyncTask(createTransferHashMap(chargeIds[i], (int)driverReimbursement * 100,
                         accountId), this,
                         TRANSFER).execute();
                 driverReimbursement = 0;
             }else{
-                new StripeAsyncTask(createTransferHashMap(chargeIds[i], (int)price,
+                new StripeAsyncTask(createTransferHashMap(chargeIds[i], (int)price * 100,
                         accountId), this,
                         TRANSFER).execute();
                 driverReimbursement = driverReimbursement - price;

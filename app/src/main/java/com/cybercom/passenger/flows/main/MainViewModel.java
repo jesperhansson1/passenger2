@@ -422,8 +422,8 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     public void checkPayment(){
-        String[] chargeIds = {"ch_1Cf4GAG9vrlt7rUJMk2oze5f", "ch_1Cf104G9vrlt7rUJ9Gcwpmr1"};
-        double[] prices = {1010.39, 35.00};
-        mPassengerRepository.paymentTransfer(15, chargeIds, prices, "acct_1CdCujIVDrjmczfq");
+        String[] chargeIds = {"ch_1Cf4DWG9vrlt7rUJrHUc33O8"};
+        double[] prices = {1010.39};
+        mPassengerRepository.paymentTransfer(10, chargeIds, prices, "acct_1CdCujIVDrjmczfq");
     }
 }
