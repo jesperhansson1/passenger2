@@ -70,6 +70,9 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private static final String DRIVE_ID = "driveId";
     private static final String DRIVER_ID = "driverId";
 
+    private static final String CHARGE_ID = "chargeId";
+    private static final String PASSENGER_ID = "passengerId";
+
     private static final int DRIVE_REQUEST_MATCH_TIME_THRESHOLD = 15 * 60 * 60 * 1000;
     private static final String NOTIFICATION_TYPE_KEY = "type";
     private static final String KEY_PAYLOAD_DRIVE_REQUEST_ID = "driveRequest";
@@ -1410,4 +1413,33 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         mPassengerRideReference.child(passengerRideId).child(PASSENGER_RIDE_CANCELLED).setValue(true);
     }
 
+    //returns chargeid associated with drive and passenger
+    String chargeId = null;
+    public String getChargeIdForRefund(Drive drive, String passengerId) {
+
+        Timber.d("getChargeIdForRefund %s", drive.getId() + " " + passengerId);
+        mPassengerRideReference.orderByChild(DRIVE_ID).equalTo(drive.getId()).addListenerForSingleValueEvent(
+                new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                            PassengerRide passengerRide = snapshot.getValue(PassengerRide.class);
+                            Timber.d("result: %s", passengerRide);
+                            if (passengerRide != null) {
+                                if (passengerRide.getPassengerId().equalsIgnoreCase(passengerId)) {
+                                    chargeId = passengerRide.getChargeId();
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                        Timber.d("error fetching passengerrides %s", drive.getId() + " " + passengerId);
+                    }
+                }
+        );
+        System.out.println(chargeId);
+        return chargeId;
+    }
 }

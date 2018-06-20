@@ -106,10 +106,13 @@ import timber.log.Timber;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.CARD_ERROR;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.GOOGLE_API_ERROR;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.NOSHOW_FEE;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.REFUND;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.RESERVE;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.SPLIT_CHAR;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.TRANSFER;
 import static com.cybercom.passenger.flows.payment.PaymentHelper.createChargeHashMap;
+import static com.cybercom.passenger.flows.payment.PaymentHelper.createCustomerHashMap;
+import static com.cybercom.passenger.flows.payment.PaymentHelper.createRefundHashMap;
 import static com.cybercom.passenger.flows.payment.PaymentHelper.createTransferHashMap;
 
 public class MainActivity extends AppCompatActivity implements
@@ -209,6 +212,8 @@ public class MainActivity extends AppCompatActivity implements
     private PassengerRide mActivePassengerRide;
     private Fragment mDriveInformationDialog;
     private String mGoogleApiKey;
+    private boolean mRefund = false; //flag for refund
+    private String mRefundChargeId; //chargeid for which refund has to be done
 
    /* public double mPrice = 0.0;
     public long mTime = 0;
@@ -1434,10 +1439,13 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onPickUpNoShow(PassengerRide passengerRide) {
+        Timber.d("Driver has reported no show. Minimum avgift is charged for customer and refunded remaining amount");
         // Driver has reported no show
         new StripeAsyncTask(createTransferHashMap(passengerRide.getChargeId(), NOSHOW_FEE,
-                      passengerRide.getDrive().getDriver().getCustomerId()), this, TRANSFER).execute();
-
+                      passengerRide.getDrive().getDriver().getCustomerId()), this,
+                TRANSFER).execute();
+        mRefund = true;
+        mRefundChargeId = passengerRide.getChargeId();
     }
 
     @Override
@@ -1451,7 +1459,10 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onPickUpNoShow(Drive drive) {
+        Timber.d("passenger has reported no show. Customer will be refunded with entire amount");
         // Passenger has reported no show
+        String chargeId = mMainViewModel.getChargeId(drive,mUser.getUid());
+        new StripeAsyncTask(createRefundHashMap(chargeId),this,REFUND).execute();
     }
 
     @Override
@@ -1636,6 +1647,9 @@ public class MainActivity extends AppCompatActivity implements
             case TRANSFER:
                 onTransferAmount(value[0]);
                 break;
+            case REFUND:
+                onRefundAmount(value[0]);
+                break;
             default:
                 break;
         }
@@ -1806,8 +1820,11 @@ public class MainActivity extends AppCompatActivity implements
         }
         else
         {
-            mMainViewModel.createDriveRequest(mPendingDriveRequest.getTime(), mPendingDriveRequest.getStartLocation(), mPendingDriveRequest.getEndLocation(),
-                    mPendingDriveRequest.getExtraPassengers(), mPendingDriveRequest.getPrice(), chargeId).observe(
+            mMainViewModel.createDriveRequest(mPendingDriveRequest.getTime(),
+                    mPendingDriveRequest.getStartLocation(),
+                    mPendingDriveRequest.getEndLocation(),
+                    mPendingDriveRequest.getExtraPassengers(),
+                    mPendingDriveRequest.getPrice(), chargeId).observe(
                     this, driveRequest -> {
                         mMainViewModel.setDriveRequestRadiusMultiplier(
                                 MainViewModel.DRIVE_REQUEST_DEFAULT_MULTIPLIER);
@@ -1829,9 +1846,25 @@ public class MainActivity extends AppCompatActivity implements
         else
         {
             Toast.makeText(getApplicationContext(),"transfer successful "+ transferId, Toast.LENGTH_LONG).show();
+            //if refund flag is true
+            if(mRefund){
+                new StripeAsyncTask(createRefundHashMap(mRefundChargeId),this,REFUND).execute();
+                mRefund = false;
+            }
         }
     }
 
+    public void onRefundAmount(String refundId)
+    {
+        Timber.d("stripe refund created with id %s", refundId);
+        if(refundId == null) {
+            Toast.makeText(getApplicationContext(),"refund not successful ", Toast.LENGTH_LONG).show();
+        }
+        else
+        {
+            Toast.makeText(getApplicationContext(),"refund successful "+ refundId, Toast.LENGTH_LONG).show();
+        }
+    }
 
     // Called by Passenger client only
     private void handlePassengerDroppedOff() {
