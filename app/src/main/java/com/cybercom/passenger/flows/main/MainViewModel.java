@@ -340,9 +340,10 @@ public class MainViewModel extends AndroidViewModel {
     @SuppressLint("MissingPermission")
     public LiveData<PassengerRide> createPassengerRide(Drive drive, Position startPosition,
                                                        Position endPosition, String startAddress,
-                                                       String endAddress, String chargeId) {
+                                                       String endAddress, String chargeId,
+                                                       double price) {
         return mPassengerRepository.createPassengerRide(drive, startPosition, endPosition,
-                startAddress, endAddress, chargeId);
+                startAddress, endAddress, chargeId, price);
     }
 
     public LiveData<PassengerRide> getPassengerRides(String driveId) {
@@ -418,5 +419,11 @@ public class MainViewModel extends AndroidViewModel {
     //charge no show fee for passenger customer and refund remaining amount
     public  void noShowPassenger(PassengerRide passengerRide){
         mPassengerRepository.transferRefund(passengerRide);
+    }
+
+    public void checkPayment(){
+        String[] chargeIds = {"ch_1Cf4GAG9vrlt7rUJMk2oze5f", "ch_1Cf104G9vrlt7rUJ9Gcwpmr1"};
+        double[] prices = {1010.39, 35.00};
+        mPassengerRepository.paymentTransfer(15, chargeIds, prices, "acct_1CdCujIVDrjmczfq");
     }
 }

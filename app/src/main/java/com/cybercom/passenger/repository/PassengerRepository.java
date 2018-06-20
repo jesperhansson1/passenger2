@@ -52,6 +52,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import timber.log.Timber;
 
+import static com.cybercom.passenger.flows.payment.PaymentConstants.FARE_PER_MILE;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.NOSHOW_FEE;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.REFUND;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.RESERVE;
@@ -969,7 +970,7 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
 
     public LiveData<com.cybercom.passenger.model.PassengerRide> createPassengerRide(
             Drive drive, Position pickUpLocation, Position dropOffLocation, String startAddress,
-            String endAddress, String chargeId) {
+            String endAddress, String chargeId, double price) {
         final MutableLiveData<com.cybercom.passenger.model.PassengerRide>
                 passengerRideMutableLiveData = new MutableLiveData<>();
 
@@ -986,7 +987,7 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
             final com.cybercom.passenger.repository.databasemodel.PassengerRide dbPassengerRide =
                     new com.cybercom.passenger.repository.databasemodel.PassengerRide(drive.getId(),
                             uId, pickUpLocation, dropOffLocation, false, false, startAddress,
-                            endAddress, chargeId);
+                            endAddress, chargeId, price);
             final DatabaseReference passengerRideRef = mPassengerRideReference.push();
             final String passengerRideId = passengerRideRef.getKey();
 
@@ -995,7 +996,7 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
             mUsersReference.child(firebaseUser.getUid()).addListenerForSingleValueEvent(
                     getEventListenerToBuildPassengerRide(passengerRideId, pickUpLocation,
                             dropOffLocation, drive, passengerRideMutableLiveData, startAddress,
-                            endAddress, chargeId));
+                            endAddress, chargeId, price));
         }
         return passengerRideMutableLiveData;
     }
@@ -1003,7 +1004,8 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
     private ValueEventListener getEventListenerToBuildPassengerRide(
             String passengerRideId, Position pickUpLocation, Position dropOffLocation, Drive drive,
             MutableLiveData<com.cybercom.passenger.model.PassengerRide>
-                    passengerRideMutableLiveData, String startAddress, String endAddress, String chargeId) {
+                    passengerRideMutableLiveData, String startAddress, String endAddress,
+            String chargeId, double price) {
         return new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -1012,7 +1014,7 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
                         new com.cybercom.passenger.model.PassengerRide(
                                 passengerRideId, drive, passenger, pickUpLocation, dropOffLocation,
                                 false, false, startAddress, endAddress,
-                                false, chargeId);
+                                false, chargeId, price);
                 passengerRideMutableLiveData.setValue(passengerRide);
             }
 
@@ -1147,7 +1149,8 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
                                             passengerRide.getStartAddress(),
                                             passengerRide.getEndAddress(),
                                             passengerRide.isCancelled(),
-                                            passengerRide.getChargeId());
+                                            passengerRide.getChargeId(),
+                                            passengerRide.getPrice());
                             passengerRideMutableLiveData.setValue(convertedPassengerRide);
                         }
 
@@ -1587,8 +1590,32 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
 
     private void onReserve(String value){
         Timber.d("stripe amount reserved is %s", value);
-
-
     }
+
+    public void paymentTransfer(int dist, String[] chargeIds, double[] prices, String accountId){
+        System.out.println(dist);
+        System.out.println(chargeIds);
+        System.out.println(prices);
+        System.out.println(accountId);
+
+        double driverReimbursement = dist * FARE_PER_MILE * 100;
+        boolean paid = false;
+        int i = 0;
+        for(double price : prices){
+            if(price > driverReimbursement){
+                new StripeAsyncTask(createTransferHashMap(chargeIds[i], (int)driverReimbursement,
+                        accountId), this,
+                        TRANSFER).execute();
+                driverReimbursement = 0;
+            }else{
+                new StripeAsyncTask(createTransferHashMap(chargeIds[i], (int)price,
+                        accountId), this,
+                        TRANSFER).execute();
+                driverReimbursement = driverReimbursement - price;
+            }
+            i = i + 1;
+        }
+    }
+
 
 }

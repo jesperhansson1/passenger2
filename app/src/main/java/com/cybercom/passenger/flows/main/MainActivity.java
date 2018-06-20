@@ -276,6 +276,8 @@ public class MainActivity extends AppCompatActivity implements
         mapFragment.getMapAsync(this);
 
         mGoogleApiKey = getResources().getString(R.string.google_api_key);
+
+        mMainViewModel.checkPayment();
     }
 
     private void createNotificationChannels() {
@@ -283,9 +285,10 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void createPassengerRide(Drive drive, Position startPosition, Position endPosition,
-                                     String startAddress, String endAddress, String chargeId) {
+                                     String startAddress, String endAddress, String chargeId,
+                                     double price) {
         mMainViewModel.createPassengerRide(drive, startPosition, endPosition, startAddress,
-                endAddress, chargeId).observe(this, passengerRide -> {
+                endAddress, chargeId, price).observe(this, passengerRide -> {
                     Timber.d("PassengerRide successfully created: %s", passengerRide);
         });
     }
@@ -480,7 +483,8 @@ public class MainActivity extends AppCompatActivity implements
                     createPassengerRide(notification.getDrive(),
                             notification.getDriveRequest().getStartLocation(),
                             notification.getDriveRequest().getEndLocation(), startAddress,
-                            endAddress, notification.getDriveRequest().getChargeId());
+                            endAddress, notification.getDriveRequest().getChargeId(),
+                            notification.getDriveRequest().getPrice());
                     mMainViewModel.getNextNotification();
                     break;
                 case Notification.REJECT_PASSENGER:
@@ -1611,6 +1615,7 @@ public class MainActivity extends AppCompatActivity implements
     public void onClick(final View view) {
         if (view.getId() == R.id.abort_passenger_button) {
             // The driver has clicked cancel before being picked up
+
             handleRideAborted((String) mPassengerDetailedInformation.getTag());
         } else if (view.getId() == R.id.dropoff_passenger_button) {
             //passengerride- dropoff- true

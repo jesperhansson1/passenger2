@@ -26,6 +26,7 @@ public class PaymentConstants {
     public static final String CARD_ERROR = "Error charging card";
 
     public static final int NOSHOW_FEE = 1850; //18.5kr to connected account
+    public static final double FARE_PER_MILE = 18.50; //18.5kr to connected account
 
 
     static final String IDENTITY_DOCUMENT = "identity_document";
