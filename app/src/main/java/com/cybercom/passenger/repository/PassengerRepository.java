@@ -57,6 +57,7 @@ import static com.cybercom.passenger.flows.payment.PaymentConstants.RESERVE;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.RETRIEVE;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.SPLIT_CHAR;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.TRANSFER;
+import static com.cybercom.passenger.flows.payment.PaymentHelper.createRefundHashMap;
 
 public class PassengerRepository implements PassengerRepositoryInterface, StripeAsyncTask.StripeAsyncTaskDelegate {
 
@@ -1510,15 +1511,18 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
                     }
                 }
         );
-        System.out.println(chargeId);
+        Timber.d("stripe charge with id %s", chargeId);
         return chargeId;
     }
 
-    public void getAmountInCharge(String chargeId)
-    {
+    public void getAmountInCharge(String chargeId) {
         new StripeAsyncTask(null,this,RETRIEVE).execute(chargeId);
     }
 
+    public void refundFull(String chargeId)
+    {
+        new StripeAsyncTask(createRefundHashMap(chargeId),this,REFUND).execute();
+    }
 
     @Override
     public void onStripeTaskCompleted(String result) {
@@ -1528,14 +1532,19 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
             case RETRIEVE:
                 onChargeAmountRetrieved(value[0]);
                 break;
-
+            case REFUND:
+                onRefund(value[0]);
+                break;
             default:
                 break;
         }
     }
 
-    public void onChargeAmountRetrieved(String value)
-    {
+    private void onChargeAmountRetrieved(String value) {
         Timber.d("stripe amount reserved is %s", value);
+    }
+
+    private void onRefund(String value) {
+        Timber.d("stripe amount refunded is %s", value);
     }
 }
