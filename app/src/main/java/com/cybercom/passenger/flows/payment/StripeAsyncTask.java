@@ -102,6 +102,7 @@ public class StripeAsyncTask extends AsyncTask<String, Void, String> {
                 case RETRIEVE:
                     Charge charge1 = Charge.retrieve(params[0]);
                     result = String.valueOf(charge1.getAmount());
+                    break;
                 default:
                     break;
             }

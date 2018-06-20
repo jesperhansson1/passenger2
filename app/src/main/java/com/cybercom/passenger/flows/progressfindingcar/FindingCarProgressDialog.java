@@ -1,5 +1,6 @@
 package com.cybercom.passenger.flows.progressfindingcar;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -59,6 +60,7 @@ public class FindingCarProgressDialog extends DialogFragment implements View.OnC
         window.setAttributes(windowParams);
     }
 
+    @SuppressLint("SetTextI18n")
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -67,8 +69,10 @@ public class FindingCarProgressDialog extends DialogFragment implements View.OnC
         View rootView = inflater.inflate(R.layout.dialog_progress_finding_car, container,
                 false);
 
+
         TextView priceTextView = rootView.findViewById(R.id.finding_car_price_title);
-        priceTextView.setText("Price : " + mAmount);
+        priceTextView.setText(rootView.getContext().getApplicationContext().getResources().
+                getString(R.string.passenger_notification_price_title) + " : " + mAmount);
         this.getDialog().setCanceledOnTouchOutside(false);
         Button cancelButton = rootView.findViewById(R.id.finding_car_cancel);
         cancelButton.setOnClickListener(this);
