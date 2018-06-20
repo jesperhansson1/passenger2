@@ -276,8 +276,6 @@ public class MainActivity extends AppCompatActivity implements
         mapFragment.getMapAsync(this);
 
         mGoogleApiKey = getResources().getString(R.string.google_api_key);
-
-        mMainViewModel.checkPayment();
     }
 
     private void createNotificationChannels() {
