@@ -27,9 +27,10 @@ public class FindingCarProgressDialog extends DialogFragment implements View.OnC
 
     public static final String MATCHING_IN_PROGRESS = "MATCHING_IN_PROGRESS";
     String mAmount = "0";
+    String mChargeId = null;
 
     public interface FindingCarListener {
-        void onCancelFindingCarPressed(Boolean isCancelPressed);
+        void onCancelFindingCarPressed(Boolean isCancelPressed, String chargeId);
     }
 
     public static FindingCarProgressDialog getInstance() {
@@ -41,6 +42,11 @@ public class FindingCarProgressDialog extends DialogFragment implements View.OnC
     public void setAmount(double amount)
     {
         mAmount = String.valueOf(PaymentHelper.roundToPlace(amount,PRECISION)) + "Kr";
+    }
+
+    public void setChargeId(String chargeId)
+    {
+        mChargeId = chargeId;
     }
 
     @Override public void onStart() {
@@ -102,7 +108,7 @@ public class FindingCarProgressDialog extends DialogFragment implements View.OnC
         switch (v.getId()){
             case R.id.finding_car_cancel:{
                 Timber.i("Finding car cancel button pressed");
-                mFindingCarListener.onCancelFindingCarPressed(true);
+                mFindingCarListener.onCancelFindingCarPressed(true, mChargeId);
                 dismiss();
                 break;
             }

@@ -111,7 +111,6 @@ import static com.cybercom.passenger.flows.payment.PaymentConstants.RESERVE;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.SPLIT_CHAR;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.TRANSFER;
 import static com.cybercom.passenger.flows.payment.PaymentHelper.createChargeHashMap;
-import static com.cybercom.passenger.flows.payment.PaymentHelper.createCustomerHashMap;
 import static com.cybercom.passenger.flows.payment.PaymentHelper.createRefundHashMap;
 import static com.cybercom.passenger.flows.payment.PaymentHelper.createTransferHashMap;
 
@@ -635,7 +634,7 @@ public class MainActivity extends AppCompatActivity implements
         final LifecycleOwner lifecycleOwner = this;
         mFindMatch = mMainViewModel.findBestDriveMatch(driveRequest, radiusMultiplier,
                 mGoogleApiKey);
-        showMatchingInProgressDialog(driveRequest.getPrice());
+        showMatchingInProgressDialog(driveRequest.getPrice(), driveRequest.getChargeId());
         mTimer = mMainViewModel.setFindMatchTimer();
 
         mMatchObserver = drive -> {
@@ -670,7 +669,7 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
-    private void showMatchingInProgressDialog(double amount) {
+    private void showMatchingInProgressDialog(double amount, String chargeId) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         DialogFragment fragment = (DialogFragment) fragmentManager.findFragmentByTag(
                 FindingCarProgressDialog.MATCHING_IN_PROGRESS);
@@ -681,6 +680,7 @@ public class MainActivity extends AppCompatActivity implements
 
         FindingCarProgressDialog findingCarProgressDialog = FindingCarProgressDialog.getInstance();
         findingCarProgressDialog.setAmount(amount);
+        findingCarProgressDialog.setChargeId(chargeId);
         findingCarProgressDialog.show(fragmentManager,
                 FindingCarProgressDialog.MATCHING_IN_PROGRESS);
     }
@@ -1237,7 +1237,8 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onCancelFindingCarPressed(Boolean isCancelPressed) {
+    public void onCancelFindingCarPressed(Boolean isCancelPressed, String chargeId) {
+        mMainViewModel.refundFull(chargeId);
         cancelMatchingDrive();
         dismissMatchingInProgressDialog();
         if (!mIsFragmentAdded) {
@@ -1442,11 +1443,12 @@ public class MainActivity extends AppCompatActivity implements
     public void onPickUpNoShow(PassengerRide passengerRide) {
         Timber.d("Driver has reported no show. Minimum avgift is charged for customer and refunded remaining amount");
         // Driver has reported no show
+        mRefund = true;
+        mRefundChargeId = passengerRide.getChargeId();
         new StripeAsyncTask(createTransferHashMap(passengerRide.getChargeId(), NOSHOW_FEE,
                       passengerRide.getDrive().getDriver().getCustomerId()), this,
                 TRANSFER).execute();
-        mRefund = true;
-        mRefundChargeId = passengerRide.getChargeId();
+
     }
 
     @Override
@@ -1462,8 +1464,7 @@ public class MainActivity extends AppCompatActivity implements
     public void onPickUpNoShow(Drive drive) {
         Timber.d("passenger has reported no show. Customer will be refunded with entire amount");
         // Passenger has reported no show
-        String chargeId = mMainViewModel.getChargeId(drive,mUser.getUid());
-        new StripeAsyncTask(createRefundHashMap(chargeId),this,REFUND).execute();
+        mMainViewModel.refundFull(mMainViewModel.getChargeId(drive,mUser.getUid()));
     }
 
     @Override
@@ -1648,9 +1649,9 @@ public class MainActivity extends AppCompatActivity implements
             case TRANSFER:
                 onTransferAmount(value[0]);
                 break;
-            case REFUND:
+            /*case REFUND:
                 onRefundAmount(value[0]);
-                break;
+                break;*/
             default:
                 break;
         }
@@ -1849,13 +1850,13 @@ public class MainActivity extends AppCompatActivity implements
             Toast.makeText(getApplicationContext(),"transfer successful "+ transferId, Toast.LENGTH_LONG).show();
             //if refund flag is true
             if(mRefund){
-                new StripeAsyncTask(createRefundHashMap(mRefundChargeId),this,REFUND).execute();
+                mMainViewModel.refundFull(mRefundChargeId);
                 mRefund = false;
             }
         }
     }
 
-    public void onRefundAmount(String refundId)
+    /*public void onRefundAmount(String refundId)
     {
         Timber.d("stripe refund created with id %s", refundId);
         if(refundId == null) {
@@ -1865,7 +1866,7 @@ public class MainActivity extends AppCompatActivity implements
         {
             Toast.makeText(getApplicationContext(),"refund successful "+ refundId, Toast.LENGTH_LONG).show();
         }
-    }
+    }*/
 
     // Called by Passenger client only
     private void handlePassengerDroppedOff() {
