@@ -131,6 +131,7 @@ public class MainActivity extends AppCompatActivity implements
     private static final float PLACE_MARKER_INFO_FADE_OUT_TO = 0.0f;
     private static final float PLACE_MARKER_INFO_FADE_IN_TO = 1.0f;
     private static final float CHANGE_CAMERA_BEARING_SPEED_THRESHOLD = 1.0f;
+    public static final int ZOOM_LEVEL_FOLLOW_DRIVER = 19;
     private static final int ZOOM_LEVEL_MY_LOCATION = 17;
     private static final float ZOOM_LEVEL_STREETS = 15;
     private static final String DRIVE_ID = "driveId";
@@ -291,6 +292,7 @@ public class MainActivity extends AppCompatActivity implements
         });
     }
 
+    // Passenger client method
     private void handleOnGoingPassengerRide(PassengerRide passengerRide) {
         Timber.d("handleOnGoingPassengerRide %s", passengerRide);
         if (mActivePassengerRide != null) {
@@ -309,6 +311,11 @@ public class MainActivity extends AppCompatActivity implements
         mMainViewModel.getPassengerRideById(mActivePassengerRide.getId()).observe(this,
                 (com.cybercom.passenger.repository.databasemodel.PassengerRide passengerRideDatabaseModel) -> {
                     if (passengerRideDatabaseModel != null && passengerRideDatabaseModel.getPassengerId() != null) {
+                        if (!mActivePassengerRide.isCancelled() &&
+                                passengerRideDatabaseModel.isCancelled()) {
+                            handlePassengerRideRemoved(mActivePassengerRide.getId());
+                            return;
+                        }
                         if (!mActivePassengerRide.isPickUpConfirmed() &&
                                 passengerRideDatabaseModel.isPickUpConfirmed()) {
                             removeFragment(mFragmentManager
@@ -317,6 +324,11 @@ public class MainActivity extends AppCompatActivity implements
                             showDriveInformationDialog(mActivePassengerRide.getDrive(),
                                     passengerRideDatabaseModel.isPickUpConfirmed());
                             mActivePassengerRide.setPickUpConfirmed(true);
+                        }
+                        if (!mActivePassengerRide.isDropOffConfirmed() &&
+                                passengerRideDatabaseModel.isDropOffConfirmed()) {
+                            mActivePassengerRide.setDropOffConfirmed(true);
+                            handlePassengerRideRemoved(mActivePassengerRide.getId());
                         }
                     } else {
                         if (mActivePassengerRide != null) {
@@ -400,9 +412,11 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+    // Passenger client method
     private void observeOnActivePassengerRide() {
         mMainViewModel.getActivePassengerRide().observe(this, passengerRide -> {
-            if (passengerRide != null) {
+            if (passengerRide != null && !passengerRide.isDropOffConfirmed() &&
+                    !passengerRide.isCancelled()) {
                 handleOnGoingPassengerRide(passengerRide);
             }
         });
@@ -428,7 +442,8 @@ public class MainActivity extends AppCompatActivity implements
                 mActiveDriveIdList.add(drive.getId());
                 mActiveDrive = drive;
                 mMainViewModel.getPassengerRides(drive.getId()).observe(this, passengerRide -> {
-                    if (passengerRide != null) {
+                    if (passengerRide != null && !passengerRide.isCancelled()
+                            && !passengerRide.isDropOffConfirmed()) {
                         if (isPassengerRideAlreadyAddedToLocalList(passengerRide)) {
                             replacePassengerRide(passengerRide);
                         } else {
@@ -466,9 +481,11 @@ public class MainActivity extends AppCompatActivity implements
             Timber.d("Notification to be displayed: %s", notification.toString());
 
             switch (notification.getType()) {
+                // Driver client can receive these
                 case Notification.REQUEST_DRIVE:
                     showDriverConfirmationDialogFragment(notification);
                     break;
+                // Passenger clients can receive these
                 case Notification.ACCEPT_PASSENGER:
                     String startAddress = mMainViewModel.getAddressFromLocation(
                             LocationHelper.convertPositionToLocation(notification.getDriveRequest()
@@ -484,6 +501,7 @@ public class MainActivity extends AppCompatActivity implements
                             notification.getDriveRequest().getPrice());
                     mMainViewModel.getNextNotification();
                     break;
+                    // Passenger clients can receive these
                 case Notification.REJECT_PASSENGER:
                     matchDriveRequest(notification.getDriveRequest(),
                             mMainViewModel.getDriveRequestRadiusMultiplier());
@@ -525,13 +543,12 @@ public class MainActivity extends AppCompatActivity implements
             CameraPosition cameraPosition;
 
             CameraPosition.Builder cameraPositionBuilder = new CameraPosition.Builder()
-                    .zoom(ZOOM_LEVEL_MY_LOCATION);
+                    .zoom(ZOOM_LEVEL_FOLLOW_DRIVER);
 
             // This is needed to prevent erratic camera updates when car has stopped.
             if (location.hasSpeed()
                     && location.getSpeed() > CHANGE_CAMERA_BEARING_SPEED_THRESHOLD) {
                 cameraPositionBuilder.bearing(location.getBearing());
-
             }
 
             cameraPosition = cameraPositionBuilder.target(new LatLng(location.getLatitude(),
@@ -771,14 +788,11 @@ public class MainActivity extends AppCompatActivity implements
             return;
         }
 
-        if (passengerRide.isCancelled()) {
-            mMainViewModel.removePassengerRide(passengerRide.getId(), task ->
-                    handlePassengerCancelled(passengerRide.getId()));
-        } else if (mPassengers.get(passengerRide.getId()) == null) {
+        if (mPassengers.get(passengerRide.getId()) == null
+            && !passengerRide.isDropOffConfirmed() && !passengerRide.isCancelled()) {
             mPassengers.put(passengerRide.getId(), passengerRide);
             addPassengerFab(passengerRide.getId(), passengerRide.getPassenger().getUserId());
-        } else if (!mPassengers.get(passengerRide.getId()).isDropOffConfirmed() &&
-                passengerRide.isDropOffConfirmed()) {
+        } else if (passengerRide.isDropOffConfirmed() || passengerRide.isCancelled()) {
             mPassengers.remove(passengerRide.getId());
             removePassengerFab(passengerRide.getId());
         } else {
@@ -1069,7 +1083,7 @@ public class MainActivity extends AppCompatActivity implements
         mMainViewModel.getNextNotification();
 
         if (mActivePassengerRide != null) {
-            mMainViewModel.cancelPassengerRide(mActivePassengerRide.getId());
+            mMainViewModel.confirmDropOff(mActivePassengerRide.getId());
         }
     }
 
@@ -1359,29 +1373,34 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void addGeofenceToList(PassengerRide passengerRide) {
-        // Add pick up geoFence
-        mGeofenceList.add(new Geofence.Builder()
-                .setRequestId(passengerRide.getId() + GEOFENCE_TYPE_PICK_UP)
-                .setCircularRegion(
-                        passengerRide.getPickUpPosition().getLatitude(),
-                        passengerRide.getPickUpPosition().getLongitude(),
-                        GEOFENCE_RADIUS
-                )
-                .setExpirationDuration(GEOFENCE_TIME_OUT)
-                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
-                .build());
 
-        // Add drop off geoFence
-        mGeofenceList.add(new Geofence.Builder()
-                .setRequestId(passengerRide.getId() + GEOFENCE_TYPE_DROP_OFF)
-                .setCircularRegion(
-                        passengerRide.getDropOffPosition().getLatitude(),
-                        passengerRide.getDropOffPosition().getLongitude(),
-                        GEOFENCE_RADIUS
-                )
-                .setExpirationDuration(GEOFENCE_TIME_OUT)
-                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
-                .build());
+        if (!passengerRide.isPickUpConfirmed()) {
+            // Add pick up geoFence
+            mGeofenceList.add(new Geofence.Builder()
+                    .setRequestId(passengerRide.getId() + GEOFENCE_TYPE_PICK_UP)
+                    .setCircularRegion(
+                            passengerRide.getPickUpPosition().getLatitude(),
+                            passengerRide.getPickUpPosition().getLongitude(),
+                            GEOFENCE_RADIUS
+                    )
+                    .setExpirationDuration(GEOFENCE_TIME_OUT)
+                    .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
+                    .build());
+        }
+
+        if (passengerRide.isDropOffConfirmed()) {
+            // Add drop off geoFence
+            mGeofenceList.add(new Geofence.Builder()
+                    .setRequestId(passengerRide.getId() + GEOFENCE_TYPE_DROP_OFF)
+                    .setCircularRegion(
+                            passengerRide.getDropOffPosition().getLatitude(),
+                            passengerRide.getDropOffPosition().getLongitude(),
+                            GEOFENCE_RADIUS
+                    )
+                    .setExpirationDuration(GEOFENCE_TIME_OUT)
+                    .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
+                    .build());
+        }
     }
 
     private GeofencingRequest getGeofencingRequest() {
@@ -1512,7 +1531,7 @@ public class MainActivity extends AppCompatActivity implements
     public void onDropOffConfirmation(PassengerRide passengerRide) {
         removeFragment(mFragmentManager
                 .findFragmentByTag(DriverDropOffFragment.DRIVER_DROP_OFF_FRAGMENT_TAG));
-        mMainViewModel.confirmDropOff(passengerRide);
+        mMainViewModel.confirmDropOff(passengerRide.getId());
     }
 
     @Override
@@ -1572,13 +1591,6 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     // Driver client method
-    private void handleRideAborted(String rideId) {
-        mMainViewModel.removePassengerRide(rideId, task -> {
-            handlePassengerCancelled(rideId);
-        });
-    }
-
-    // Driver client method
     private void handleRemoveDrive() {
         if (mPassengers.size() > 0) {
             Toast.makeText(this, R.string.main_activity_active_rides_error_message,
@@ -1626,10 +1638,12 @@ public class MainActivity extends AppCompatActivity implements
     public void onClick(final View view) {
         if (view.getId() == R.id.abort_passenger_button) {
             // The driver has clicked cancel before being picked up
-            handleRideAborted((String) mPassengerDetailedInformation.getTag());
+            mMainViewModel.cancelPassengerRide((String) mPassengerDetailedInformation.getTag());
+            handlePassengerCancelled((String) mPassengerDetailedInformation.getTag());
         } else if (view.getId() == R.id.dropoff_passenger_button) {
             // The driver has clicked drop off before the end of the drive
-            handleRideAborted((String) mPassengerDetailedInformation.getTag());
+            mMainViewModel.confirmDropOff((String) mPassengerDetailedInformation.getTag());
+            handlePassengerCancelled((String) mPassengerDetailedInformation.getTag());
         } else if (view.getId() == R.id.cancel_drive) {
             // The driver has clicked the abort floating action button
             toogleConfirmButton();
@@ -1868,10 +1882,10 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    // Called by Passenger client only
+
+    // Passenger client method
     private void handlePassengerDroppedOff() {
-        String passengerId = mActivePassengerRide.getId();
-        mMainViewModel.removePassengerRide(passengerId, task -> handlePassengerRideRemoved(passengerId));
+        mMainViewModel.confirmDropOff(mActivePassengerRide.getId());
     }
 
     // Passenger client method
