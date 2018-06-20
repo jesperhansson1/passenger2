@@ -1530,14 +1530,9 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
         Timber.d("stripe amount reserved is %s", value);
     }
 
+    //This method has to be called when the last passenger has been dropped off
     public void paymentTransfer(int dist, String[] chargeIds, double[] prices, String accountId){
-        System.out.println(dist);
-        System.out.println(chargeIds);
-        System.out.println(prices);
-        System.out.println(accountId);
-
         double driverReimbursement = dist * FARE_PER_MILE ;
-        boolean paid = false;
         int i = 0;
         for(double price : prices){
             if(price > driverReimbursement){
@@ -1554,6 +1549,4 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
             i = i + 1;
         }
     }
-
-
 }
