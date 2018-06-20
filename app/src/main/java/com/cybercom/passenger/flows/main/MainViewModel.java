@@ -405,4 +405,9 @@ public class MainViewModel extends AndroidViewModel {
     public LiveData<com.cybercom.passenger.repository.databasemodel.PassengerRide> getPassengerRideById(String passengerRideId) {
         return mPassengerRepository.getPassengerRideById(passengerRideId);
     }
+
+    public String getChargeId(Drive drive, String passengerId)
+    {
+        return mPassengerRepository.getChargeIdForRefund(drive,passengerId);
+    }
 }
