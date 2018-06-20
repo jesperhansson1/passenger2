@@ -52,12 +52,15 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import timber.log.Timber;
 
+import static com.cybercom.passenger.flows.payment.PaymentConstants.NOSHOW_FEE;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.REFUND;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.RESERVE;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.RETRIEVE;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.SPLIT_CHAR;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.TRANSFER;
+import static com.cybercom.passenger.flows.payment.PaymentHelper.createChargeHashMap;
 import static com.cybercom.passenger.flows.payment.PaymentHelper.createRefundHashMap;
+import static com.cybercom.passenger.flows.payment.PaymentHelper.createTransferHashMap;
 
 public class PassengerRepository implements PassengerRepositoryInterface, StripeAsyncTask.StripeAsyncTaskDelegate {
 
@@ -123,6 +126,8 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
     public static final long MIN_DURATION = 1800;
     private Drive mMatchedDrive;
     ValueEventListener mBestMatchEventListener;
+    private boolean mRefund = false;
+    private String mRefundChargeId = null;
 
     public static PassengerRepository getInstance() {
         if (sPassengerRepository == null) {
@@ -795,8 +800,16 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
         return driveMutableLiveData;
     }
 
+    //reserve charge before driverequest is created
+    public void reserveChargeAmountInBackground(int price, String customerId, DriveRequest pendingDriveRequest){
+       // mPendingDriveRequest = pendingDriveRequest;
+
+        new StripeAsyncTask(createChargeHashMap(customerId, price,false),this, RESERVE).execute();
+    }
+
     public LiveData<DriveRequest> createDriveRequest(long time, Position startLocation,
                                                      Position endLocation, int availableSeats, double price, String chargeId) {
+
 
         getAmountInCharge(chargeId);
         final MutableLiveData<DriveRequest> driveRequestMutableLiveData = new MutableLiveData<>();
@@ -1486,7 +1499,7 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
     }
 
     //returns chargeid associated with drive and passenger
-    String chargeId = null;
+    String mChargeId = null;
     public String getChargeIdForRefund(Drive drive, String passengerId) {
 
         Timber.d("getChargeIdForRefund %s", drive.getId() + " " + passengerId);
@@ -1499,7 +1512,7 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
                             Timber.d("result: %s", passengerRide);
                             if (passengerRide != null) {
                                 if (passengerRide.getPassengerId().equalsIgnoreCase(passengerId)) {
-                                    chargeId = passengerRide.getChargeId();
+                                    mChargeId = passengerRide.getChargeId();
                                     break;
                                 }
                             }
@@ -1511,8 +1524,8 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
                     }
                 }
         );
-        Timber.d("stripe charge with id %s", chargeId);
-        return chargeId;
+        Timber.d("stripe charge with id %s", mChargeId);
+        return mChargeId;
     }
 
     public void getAmountInCharge(String chargeId) {
@@ -1535,6 +1548,12 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
             case REFUND:
                 onRefund(value[0]);
                 break;
+            case TRANSFER:
+                onTransfer(value[0]);
+                break;
+            case RESERVE:
+                onReserve(value[0]);
+                break;
             default:
                 break;
         }
@@ -1547,4 +1566,29 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
     private void onRefund(String value) {
         Timber.d("stripe amount refunded is %s", value);
     }
+
+    public void transferRefund(com.cybercom.passenger.model.PassengerRide passengerRide){
+        mRefund = true;
+        mRefundChargeId = passengerRide.getChargeId();
+        new StripeAsyncTask(createTransferHashMap(passengerRide.getChargeId(), NOSHOW_FEE,
+                passengerRide.getDrive().getDriver().getCustomerId()), this,
+                TRANSFER).execute();
+    }
+
+    private void onTransfer(String value){
+        Timber.d("stripe amount transfered is %s", value);
+        if(mRefund){
+            if(mRefundChargeId != null){
+                new StripeAsyncTask(createRefundHashMap(mRefundChargeId),this,REFUND).execute();
+                mRefundChargeId = null;
+            }
+        }
+    }
+
+    private void onReserve(String value){
+        Timber.d("stripe amount reserved is %s", value);
+
+
+    }
+
 }

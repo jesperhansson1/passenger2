@@ -771,7 +771,6 @@ public class MainActivity extends AppCompatActivity implements
         }
 
         if (passengerRide.isCancelled()) {
-            droppOffPayment(passengerRide);
             mMainViewModel.removePassengerRide(passengerRide.getId(), task ->
                     handlePassengerCancelled(passengerRide.getId()));
         } else if (mPassengers.get(passengerRide.getId()) == null) {
@@ -1475,11 +1474,7 @@ public class MainActivity extends AppCompatActivity implements
     public void onPickUpNoShow(PassengerRide passengerRide) {
         Timber.d("Driver has reported no show. Minimum avgift is charged for customer and refunded remaining amount");
         // Driver has reported no show
-        mRefund = true;
-        mRefundChargeId = passengerRide.getChargeId();
-        new StripeAsyncTask(createTransferHashMap(passengerRide.getChargeId(), NOSHOW_FEE,
-                      passengerRide.getDrive().getDriver().getCustomerId()), this,
-                TRANSFER).execute();
+        mMainViewModel.noShowPassenger(passengerRide);
 
     }
 
@@ -1502,14 +1497,7 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onDropOffConfirmation(PassengerRide passengerRide) {
         Timber.i("dropoff 1 ");
-
-//        removeFragment(mFragmentManager
-//                .findFragmentByTag(DriverDropOffFragment.DRIVER_DROP_OFF_FRAGMENT_TAG));
         mMainViewModel.confirmDropOff(passengerRide);
-        Timber.i("make transfer here");
-        //initiate payment
-        //new StripeAsyncTask(createTransferHashMap(passengerRide.getChargeId(),10,
-          //      passengerRide.getDrive().getDriver().getCustomerId()), this, TRANSFER).execute();
     }
 
     @Override
@@ -1570,7 +1558,6 @@ public class MainActivity extends AppCompatActivity implements
 
     // Driver client method
     private void handleRideAborted(String rideId) {
-        droppOffPayment(getPassengerRideFromLocalList(rideId));
         mMainViewModel.removePassengerRide(rideId, task -> {
             handlePassengerCancelled(rideId);
         });
@@ -1678,12 +1665,6 @@ public class MainActivity extends AppCompatActivity implements
             case RESERVE:
                 onChargeAmountReserved(value[0]);
                 break;
-            case TRANSFER:
-                onTransferAmount(value[0]);
-                break;
-            /*case REFUND:
-                onRefundAmount(value[0]);
-                break;*/
             default:
                 break;
         }
@@ -1843,8 +1824,7 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
-    public void reserveChargeAmountInBackground(int price)
-    {
+    public void reserveChargeAmountInBackground(int price) {
         new StripeAsyncTask(createChargeHashMap(mCurrentLoggedInUser.getCustomerId(),price,false),this, RESERVE).execute();
 
     }
@@ -1873,39 +1853,9 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    public  void onTransferAmount(String transferId)
-    {
-        Timber.d("stripe transfer created with id %s", transferId);
-        if(transferId == null) {
-            Toast.makeText(getApplicationContext(),"transfer not successful ", Toast.LENGTH_LONG).show();
-        }
-        else
-        {
-            Toast.makeText(getApplicationContext(),"transfer successful "+ transferId, Toast.LENGTH_LONG).show();
-            //if refund flag is true
-            if(mRefund){
-                mMainViewModel.refundFull(mRefundChargeId);
-                mRefund = false;
-            }
-        }
-    }
-
-    /*public void onRefundAmount(String refundId)
-    {
-        Timber.d("stripe refund created with id %s", refundId);
-        if(refundId == null) {
-            Toast.makeText(getApplicationContext(),"refund not successful ", Toast.LENGTH_LONG).show();
-        }
-        else
-        {
-            Toast.makeText(getApplicationContext(),"refund successful "+ refundId, Toast.LENGTH_LONG).show();
-        }
-    }*/
-
     // Called by Passenger client only
     private void handlePassengerDroppedOff() {
         String passengerId = mActivePassengerRide.getId();
-        droppOffPayment(mActivePassengerRide);
         mMainViewModel.removePassengerRide(passengerId, task -> handlePassengerRideRemoved(passengerId));
     }
 
@@ -1920,13 +1870,5 @@ public class MainActivity extends AppCompatActivity implements
         }
         mActivePassengerRide = null;
     }
-
-    private void droppOffPayment(PassengerRide passengerRide)
-    {
-        Timber.d("isdropoff confirmed");
-        new StripeAsyncTask(createTransferHashMap(passengerRide.getChargeId(),10,
-                passengerRide.getDrive().getDriver().getCustomerId()), this, TRANSFER).execute();
-    }
-
 
 }
