@@ -111,6 +111,9 @@ public class PaymentConstants {
     public static final String CUSTOMER = "customer";
     public static final String ACCOUNT = "account";
     public static final String RESERVE = "reserve";
+    public static final String RETRIEVE = "retrieve";
     public static final String SPLIT_CHAR = ":";
+
+    public static final int PRECISION = 2;
 
 }

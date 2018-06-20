@@ -635,7 +635,7 @@ public class MainActivity extends AppCompatActivity implements
         final LifecycleOwner lifecycleOwner = this;
         mFindMatch = mMainViewModel.findBestDriveMatch(driveRequest, radiusMultiplier,
                 mGoogleApiKey);
-        showMatchingInProgressDialog();
+        showMatchingInProgressDialog(driveRequest.getPrice());
         mTimer = mMainViewModel.setFindMatchTimer();
 
         mMatchObserver = drive -> {
@@ -670,7 +670,7 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
-    private void showMatchingInProgressDialog() {
+    private void showMatchingInProgressDialog(double amount) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         DialogFragment fragment = (DialogFragment) fragmentManager.findFragmentByTag(
                 FindingCarProgressDialog.MATCHING_IN_PROGRESS);
@@ -680,6 +680,7 @@ public class MainActivity extends AppCompatActivity implements
         }
 
         FindingCarProgressDialog findingCarProgressDialog = FindingCarProgressDialog.getInstance();
+        findingCarProgressDialog.setAmount(amount);
         findingCarProgressDialog.show(fragmentManager,
                 FindingCarProgressDialog.MATCHING_IN_PROGRESS);
     }

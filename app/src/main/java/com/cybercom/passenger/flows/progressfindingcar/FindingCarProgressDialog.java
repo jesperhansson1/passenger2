@@ -13,15 +13,20 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cybercom.passenger.R;
+import com.cybercom.passenger.flows.payment.PaymentHelper;
 
 import timber.log.Timber;
+
+import static com.cybercom.passenger.flows.payment.PaymentConstants.PRECISION;
 
 public class FindingCarProgressDialog extends DialogFragment implements View.OnClickListener {
 
     public static final String MATCHING_IN_PROGRESS = "MATCHING_IN_PROGRESS";
+    String mAmount = "0";
 
     public interface FindingCarListener {
         void onCancelFindingCarPressed(Boolean isCancelPressed);
@@ -33,6 +38,10 @@ public class FindingCarProgressDialog extends DialogFragment implements View.OnC
 
     private FindingCarListener mFindingCarListener;
 
+    public void setAmount(double amount)
+    {
+        mAmount = String.valueOf(PaymentHelper.roundToPlace(amount,PRECISION)) + "Kr";
+    }
 
     @Override public void onStart() {
         super.onStart();
@@ -52,7 +61,8 @@ public class FindingCarProgressDialog extends DialogFragment implements View.OnC
         View rootView = inflater.inflate(R.layout.dialog_progress_finding_car, container,
                 false);
 
-
+        TextView priceTextView = rootView.findViewById(R.id.finding_car_price_title);
+        priceTextView.setText("Price : " + mAmount);
         this.getDialog().setCanceledOnTouchOutside(false);
         Button cancelButton = rootView.findViewById(R.id.finding_car_cancel);
         cancelButton.setOnClickListener(this);

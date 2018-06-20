@@ -28,6 +28,7 @@ import static com.cybercom.passenger.flows.payment.PaymentConstants.CUSTOMER;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.FILE_UPLOAD;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.REFUND;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.RESERVE;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.RETRIEVE;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.SPLIT_CHAR;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.STRIPE_API_KEY;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.TOKEN;
@@ -98,6 +99,9 @@ public class StripeAsyncTask extends AsyncTask<String, Void, String> {
                     account.getExternalAccounts().create(external_account_params);
                     Timber.d("stripe account created with card %s", account);
                     break;
+                case RETRIEVE:
+                    Charge charge1 = Charge.retrieve(params[0]);
+                    result = String.valueOf(charge1.getAmount());
                 default:
                     break;
             }
