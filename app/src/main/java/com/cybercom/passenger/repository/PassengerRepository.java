@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import com.cybercom.passenger.flows.main.MainActivity;
+import com.cybercom.passenger.flows.payment.StripeAsyncTask;
 import com.cybercom.passenger.model.Bounds;
 import com.cybercom.passenger.model.Car;
 import com.cybercom.passenger.model.Drive;
@@ -51,7 +52,13 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import timber.log.Timber;
 
-public class PassengerRepository implements PassengerRepositoryInterface {
+import static com.cybercom.passenger.flows.payment.PaymentConstants.REFUND;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.RESERVE;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.RETRIEVE;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.SPLIT_CHAR;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.TRANSFER;
+
+public class PassengerRepository implements PassengerRepositoryInterface, StripeAsyncTask.StripeAsyncTaskDelegate {
 
     private static final String NOTIFICATION_TOKEN_ID = "notificationTokenId";
 
@@ -789,6 +796,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
     public LiveData<DriveRequest> createDriveRequest(long time, Position startLocation,
                                                      Position endLocation, int availableSeats, double price, String chargeId) {
+
+        getAmountInCharge(chargeId);
         final MutableLiveData<DriveRequest> driveRequestMutableLiveData = new MutableLiveData<>();
 
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -1503,5 +1512,30 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         );
         System.out.println(chargeId);
         return chargeId;
+    }
+
+    public void getAmountInCharge(String chargeId)
+    {
+        new StripeAsyncTask(null,this,RETRIEVE).execute(chargeId);
+    }
+
+
+    @Override
+    public void onStripeTaskCompleted(String result) {
+        Timber.d("stripe result is %s", result);
+        String[] value = result.split(SPLIT_CHAR);
+        switch (value[1]){
+            case RETRIEVE:
+                onChargeAmountRetrieved(value[0]);
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    public void onChargeAmountRetrieved(String value)
+    {
+        Timber.d("stripe amount reserved is %s", value);
     }
 }
