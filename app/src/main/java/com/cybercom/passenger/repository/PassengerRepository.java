@@ -141,8 +141,6 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
     public static final long MIN_DURATION = 1800;
     private Drive mMatchedDrive;
     ValueEventListener mBestMatchEventListener;
-    private boolean mRefund = false;
-    private String mRefundChargeId = null;
 
     private static final String FOLDER = "images/";
     private static final String IMAGE_TYPE = ".jpg";
