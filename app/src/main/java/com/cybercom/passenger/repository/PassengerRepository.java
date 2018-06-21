@@ -112,9 +112,14 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
     private static final String DISTANCEM = "distance";
     private static final String DURATIONS = "duration";
 
-    public static final int DEFAULT_DRIVE_REQUEST_RADIUS = 700;
+    // Constants used for matching
+    public static final int DEFAULT_DRIVE_REQUEST_RADIUS = 1000;
     public static final int UNDEFINED_ETA = -1;
-    public static final int ETA_THRESHOLD = 600;
+    public static final int ETA_THRESHOLD = 60 * 10;
+
+    public static final String DISTANCE_TRAVELLED_WITH_PASSENGERS = "distanceTravelledWithPassengers";
+    public static final String TOTAL_DISTANCE_TRAVELLED = "totalDistanceTravelled";
+    public static final String SWEDISH_MILES_NOT_YET_REIMBURSED = "swedishMilesNotYetReimbursed";
 
     private static PassengerRepository sPassengerRepository;
     private DatabaseReference mUsersReference;
@@ -251,7 +256,10 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
                         userLogin.setUserId(user.getUid());
                         userLogin.setNotificationTokenId(getTokenId());
                         userLogin.setPassword(null);
-                        uploadImage(Uri.parse(userLogin.getImageLink()),user.getUid());
+                        String imageUriString = userLogin.getImageLink();
+                        if (imageUriString != null) {
+                            uploadImage(Uri.parse(imageUriString), user.getUid());
+                        }
                         mUsersReference.child(user.getUid()).setValue(userLogin);
                     } else {
                         Timber.w("createUserWithEmail:failure %s", (
@@ -961,11 +969,76 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
     }
 
     public void updateDriveCurrentDuration(@NonNull String driveId, long duration, long distance) {
-        if (driveId != null) {
-            mDrivesReference.child(driveId).child(BOUNDS).child(DURATIONS).setValue(duration);
-            mDrivesReference.child(driveId).child(BOUNDS).child(DISTANCEM).setValue(distance);
-        }
+        mDrivesReference.child(driveId).child(BOUNDS).child(DURATIONS).setValue(duration);
+        mDrivesReference.child(driveId).child(BOUNDS).child(DISTANCEM).setValue(distance);
     }
+
+    public void updateDriveDistanceTravelled(@NonNull String driveId, float totalDistanceTravelled) {
+        mDrivesReference.child(driveId).child(TOTAL_DISTANCE_TRAVELLED).setValue(totalDistanceTravelled);
+    }
+    public void updateDriveDistanceWithPassengers(@NonNull String driveId, float distanceTravelledWithPassengers) {
+        mDrivesReference.child(driveId).child(DISTANCE_TRAVELLED_WITH_PASSENGERS).setValue(distanceTravelledWithPassengers);
+    }
+    public void updateDriveSwedishMilesNotYetReimbursed(@NonNull String driveId, int distanceNotYetReimbursed) {
+        mDrivesReference.child(driveId).child(SWEDISH_MILES_NOT_YET_REIMBURSED).setValue(distanceNotYetReimbursed);
+    }
+
+    public LiveData<Float> getDriveDistanceTravelled(String driveId) {
+        MutableLiveData<Float> distanceTravelledMutableLiveData = new MutableLiveData<>();
+
+        mDrivesReference.child(driveId).child(TOTAL_DISTANCE_TRAVELLED)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        distanceTravelledMutableLiveData.setValue(dataSnapshot.getValue(Float.class));
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                    }
+                });
+
+        return distanceTravelledMutableLiveData;
+    }
+
+    public LiveData<Float> getDriveDistanceWithPassengers(String driveId) {
+        MutableLiveData<Float> distanceTravelledWithPassengersMutableLiveData = new MutableLiveData<>();
+
+        mDrivesReference.child(driveId).child(DISTANCE_TRAVELLED_WITH_PASSENGERS)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        distanceTravelledWithPassengersMutableLiveData
+                                .setValue(dataSnapshot.getValue(Float.class));
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                    }
+                });
+
+        return distanceTravelledWithPassengersMutableLiveData;
+    }
+
+    public LiveData<Integer> getDriveSwedishMilesNotYetReimbursed(String driveId) {
+        MutableLiveData<Integer> swedishMilesNotYetReimbursedLiveData = new MutableLiveData<>();
+
+        mDrivesReference.child(driveId).child(SWEDISH_MILES_NOT_YET_REIMBURSED)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+
+                        swedishMilesNotYetReimbursedLiveData.setValue(dataSnapshot.getValue(Integer.class));
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                    }
+                });
+
+        return swedishMilesNotYetReimbursedLiveData;
+    }
+
 
 
     public void updatePassengerRideCurrentLocation(Location location) {
@@ -1122,6 +1195,30 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
                     }
                 });
         return passengerRidesLiveData;
+    }
+
+    public LiveData<List<PassengerRide>> getPassengerRidesForService(String driveId) {
+        MutableLiveData<List<PassengerRide>> passengerRidesListLiveData =
+                new MutableLiveData<>();
+
+        Timber.i("getPassengerRides %s", driveId);
+        mPassengerRideReference.orderByChild(DRIVE_ID).equalTo(driveId).addValueEventListener(
+                new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        List<PassengerRide> passengerRidesList = new ArrayList<>();
+                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                            passengerRidesList.add(snapshot.getValue(PassengerRide.class));
+                        }
+                        passengerRidesListLiveData.setValue(passengerRidesList);
+
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError error) {
+                    }
+                });
+        return passengerRidesListLiveData;
     }
 
     private ValueEventListener getEventListenerToFetchDriveAndBuildPassengerRide(
@@ -1344,7 +1441,7 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
 
                                 @Override
                                 public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-
+//                                    passengerRideMutableLiveData.setValue(null);
                                 }
 
                                 @Override

@@ -398,8 +398,8 @@ public class MainViewModel extends AndroidViewModel {
         mPassengerRepository.passengerConfirmPickUp(driveId);
     }
 
-    public void confirmDropOff(PassengerRide passengerRide) {
-        mPassengerRepository.confirmDropOff(passengerRide.getId());
+    public void confirmDropOff(String passengerRideId) {
+        mPassengerRepository.confirmDropOff(passengerRideId);
     }
 
     public LiveData<com.cybercom.passenger.repository.databasemodel.PassengerRide>

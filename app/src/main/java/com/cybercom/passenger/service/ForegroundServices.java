@@ -27,6 +27,7 @@ import com.cybercom.passenger.interfaces.OnVelocityCheckedListener;
 import com.cybercom.passenger.model.Position;
 import com.cybercom.passenger.model.Route;
 import com.cybercom.passenger.repository.PassengerRepository;
+import com.cybercom.passenger.repository.databasemodel.PassengerRide;
 import com.cybercom.passenger.repository.networking.DistantMatrixAPIHelper;
 import com.cybercom.passenger.repository.networking.model.DistanceMatrixResponse;
 import com.cybercom.passenger.route.FetchRoute;
@@ -39,7 +40,9 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -58,6 +61,7 @@ public class ForegroundServices extends LifecycleService {
     private static final Float DRIVER_VELOCITY_THRESHOLD = 3f;
     private static final long COUNT_INTERVAL = 1000;
     public static final int SECONDS_DRIVERS_VELOCITY_NEEDS_TO_BE_UNDER_THRESHOLD = 10;
+    public static final int SWEDISH_MILES_FACTOR = 10000;
     private long FIRST_TIME_DETECT_DELAY_MILLIS = 2000;
     private PassengerRepository mPassengerRepository = PassengerRepository.getInstance();
     private FusedLocationProviderClient mFusedLocationClient;
@@ -88,6 +92,7 @@ public class ForegroundServices extends LifecycleService {
     private boolean mCancelAllFlag;
     private String mDriveId;
     private Handler mHandler;
+    private int mSwedishMilesNotYetReimbursed;
 
     private Runnable mUpdateDurationAndDistanceRunnable = new Runnable() {
         @Override
@@ -98,6 +103,12 @@ public class ForegroundServices extends LifecycleService {
             mHandler.postDelayed(this, UPDATE_DRIVE_DURATION_AND_DISTANCE_INTERVAL_MS);
         }
     };
+    private float mDistanceWithPassengers;
+    private float mTotalDistanceTravelled;
+
+    // To avoid that a stale location is used in distance calculations.
+    private boolean mCalcDistanceFlag;
+    private boolean mDriveHasPassengers;
 
     @Override
     public void onCreate() {
@@ -121,7 +132,27 @@ public class ForegroundServices extends LifecycleService {
                     stopLocationUpdates();
                     stopDurationAndDistanceUpdates();
                 }
+
             });
+
+            // These observe on single events, i.e. this will only fire once.
+            mPassengerRepository.getDriveDistanceTravelled(mDriveId).observe( this, distanceTravelled -> {
+                if (distanceTravelled != null) {
+                    mTotalDistanceTravelled = distanceTravelled;
+                }
+            });
+            mPassengerRepository.getDriveDistanceWithPassengers(mDriveId).observe( this, distanceWithPassengers -> {
+                if (distanceWithPassengers != null) {
+                    mDistanceWithPassengers = distanceWithPassengers;
+                }
+            });
+            mPassengerRepository.getDriveSwedishMilesNotYetReimbursed(mDriveId).observe( this, swedishMilesNotYetReimbursed -> {
+                if (swedishMilesNotYetReimbursed != null) {
+                    mSwedishMilesNotYetReimbursed = swedishMilesNotYetReimbursed;
+                }
+            });
+            // -----
+
             mHandler.post(mUpdateDurationAndDistanceRunnable);
             mFusedLocationClient = LocationServices.getFusedLocationProviderClient(
                     getApplicationContext());
@@ -151,6 +182,13 @@ public class ForegroundServices extends LifecycleService {
                     mMyLocationMutableLiveData.setValue(mCurrentLocation);
 
                     float distanceDelta = mCurrentLocation.distanceTo(prevLocation);
+
+                    if (mCalcDistanceFlag) {
+                        updateDistanceAndReimbursementDistance(distanceDelta);
+                    } else {
+                        mCalcDistanceFlag = true;
+                    }
+
                     float timeDelta = Math.abs(mCurrentLocation.getTime() - prevLocation.getTime())
                             / 1000f;
                     float speed = 1;
@@ -167,6 +205,8 @@ public class ForegroundServices extends LifecycleService {
                 }
             };
 
+            observeOnDropOffsToMakePayment();
+
             createLocationRequest();
             startLocationUpdates();
 
@@ -174,7 +214,7 @@ public class ForegroundServices extends LifecycleService {
 
         }
 
-        //Uppdatera Passengers position
+        // Update Passengers position
         if (intent.getAction().equals(Constants.ACTION.STARTFOREGROUND_PASSENGER_CLIENT)) {
 
             PassengerRepository.getInstance().getDriverPosition(mDriveId).observe(this,
@@ -242,6 +282,27 @@ public class ForegroundServices extends LifecycleService {
         return START_STICKY;
     }
 
+    private void updateDistanceAndReimbursementDistance(float distanceDelta) {
+        mTotalDistanceTravelled += distanceDelta;
+        if (mDriveHasPassengers) {
+
+            float swedishMiles = mDistanceWithPassengers / SWEDISH_MILES_FACTOR;
+            float swedishMilesWithDelta = (mDistanceWithPassengers + distanceDelta) / SWEDISH_MILES_FACTOR;
+
+            Timber.i("swedishMiles: %s swedishMilesWithDelta: %s", swedishMiles,
+                    swedishMilesWithDelta);
+
+            if ((Math.ceil(swedishMilesWithDelta) - Math.ceil(swedishMiles)) > 0) {
+                mSwedishMilesNotYetReimbursed++;
+            }
+            mDistanceWithPassengers += distanceDelta;
+        }
+
+        mPassengerRepository.updateDriveDistanceTravelled(mDriveId, mTotalDistanceTravelled);
+        mPassengerRepository.updateDriveDistanceWithPassengers(mDriveId, mDistanceWithPassengers);
+        mPassengerRepository.updateDriveSwedishMilesNotYetReimbursed(mDriveId, mSwedishMilesNotYetReimbursed);
+    }
+
     private void rerouteDriverAtInterval(@NonNull final String driveId) {
         String mGoogleApiKey = getResources().getString(R.string.google_api_key);
         mPassengerRepository.getDrive(driveId).observe(this, drive -> {
@@ -261,6 +322,58 @@ public class ForegroundServices extends LifecycleService {
                                             route.getBounds().getDistance());
                                 } }, mGoogleApiKey));
         });
+    }
+
+    private void observeOnDropOffsToMakePayment() {
+        mPassengerRepository.getPassengerRidesForService(mDriveId).observe(this,
+                passengerRides -> {
+            if (passengerRides.isEmpty()) {
+                return;
+            }
+            if (mDriveHasPassengers && hasAllPassengersBeenDroppedOff(passengerRides)) {
+                makePayments(passengerRides, mDriveId, mSwedishMilesNotYetReimbursed);
+                mSwedishMilesNotYetReimbursed = 0;
+                mDriveHasPassengers = false;
+            } else if (hasAnyPassengersBeenPickedUp(passengerRides)) {
+                mDriveHasPassengers = true;
+            }
+        });
+    }
+
+    private void makePayments(List<PassengerRide>
+                                      passengerRides, String driveId, int distanceToReimburseDriver) {
+        HashMap<String, Double> chargesMap = new HashMap<>();
+        for (com.cybercom.passenger.repository.databasemodel.PassengerRide passengerRide :
+                passengerRides) {
+
+            // TODO: Introduce a hasPayed flag in PassengerDrive?
+            if (!passengerRide.isCancelled()) {
+                chargesMap.put(passengerRide.getChargeId(), passengerRide.getPrice());
+            }
+
+        }
+        mPassengerRepository.paymentTransfer(distanceToReimburseDriver, chargesMap, driveId);
+    }
+
+    private boolean hasAnyPassengersBeenPickedUp(List<PassengerRide> passengerRides) {
+        for (PassengerRide passengerRide : passengerRides) {
+            if (passengerRide.isPickUpConfirmed() && !passengerRide.isDropOffConfirmed() &&
+                    !passengerRide.isCancelled()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean hasAllPassengersBeenDroppedOff(List<PassengerRide> passengerRides) {
+        for (PassengerRide passengerRide : passengerRides) {
+            // TODO: How to handle when a PassengerRide is not dropped off but has been canceled?
+            // TODO: suggestion: Make sure dropped off flag is always set at the same time as cancel flag.
+            if (!passengerRide.isDropOffConfirmed()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void startForegroundService() {

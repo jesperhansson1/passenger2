@@ -114,6 +114,7 @@ public class PassengerRide implements Serializable {
                 ", mDropOffConfirmed=" + mCancelled + '\'' +
                 ", mChargeId=" + mChargeId + '\'' +
                 ", mPrice=" + mPrice + '\'' +
+                ", mCancelled=" + mCancelled + '\'' +
                 '}';
     }
 
