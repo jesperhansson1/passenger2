@@ -773,7 +773,7 @@ public class MainActivity extends AppCompatActivity implements
                     handlePassengerCancelled(passengerRide.getId()));
         } else if (mPassengers.get(passengerRide.getId()) == null) {
             mPassengers.put(passengerRide.getId(), passengerRide);
-            addPassengerFab(passengerRide.getId());
+            addPassengerFab(passengerRide.getId(), passengerRide.getPassenger().getUserId());
         } else if (!mPassengers.get(passengerRide.getId()).isDropOffConfirmed() &&
                 passengerRide.isDropOffConfirmed()) {
             mPassengers.remove(passengerRide.getId());
@@ -829,7 +829,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
 
-    private void addPassengerFab(@NonNull String rideId) {
+    private void addPassengerFab(@NonNull String rideId, String userId) {
 
         if (findPassengerView(rideId) == null) {
             LayoutInflater layoutInflater = LayoutInflater.from(this);
@@ -844,6 +844,12 @@ public class MainActivity extends AppCompatActivity implements
             LinearLayout fabContainer = (LinearLayout)
                     layoutInflater.inflate(R.layout.passanger_fab, null);
             FloatingActionButton fab = fabContainer.findViewById(R.id.passenger_fab);
+            try {
+                fab.setImageURI(mMainViewModel.getImageUri(userId));
+            }
+            catch(Exception e) {
+                Timber.d("failed to load image");
+            }
             fab.setOnClickListener(this);
             fab.setTag(rideId);
             mPassengerContainer.addView(fabContainer);

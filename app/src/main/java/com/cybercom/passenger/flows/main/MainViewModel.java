@@ -8,6 +8,7 @@ import android.arch.lifecycle.MutableLiveData;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -417,6 +418,11 @@ public class MainViewModel extends AndroidViewModel {
     //charge no show fee for passenger customer and refund remaining amount
     public  void noShowPassenger(String chargeId, String customerId){
         mPassengerRepository.transferRefund(chargeId, customerId);
+    }
+
+    public Uri getImageUri(String userId)
+    {
+        return mPassengerRepository.getImageUri(userId);
     }
 
 }

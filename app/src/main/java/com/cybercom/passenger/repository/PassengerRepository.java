@@ -1665,7 +1665,7 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
         }
     }
 
-    public Uri getImage(String userId)
+    public Uri getImageUri(String userId)
     {
         StorageReference ref = getStorageReference().child(FOLDER + userId + IMAGE_TYPE);
         ref.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
