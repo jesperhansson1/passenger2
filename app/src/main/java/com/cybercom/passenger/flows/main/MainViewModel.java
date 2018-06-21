@@ -420,7 +420,7 @@ public class MainViewModel extends AndroidViewModel {
         mPassengerRepository.transferRefund(chargeId, customerId);
     }
 
-    public Uri getImageUri(String userId)
+    public LiveData<Uri> getImageUri(String userId)
     {
         return mPassengerRepository.getImageUri(userId);
     }

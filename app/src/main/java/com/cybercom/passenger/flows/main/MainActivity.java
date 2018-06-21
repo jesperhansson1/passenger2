@@ -816,12 +816,11 @@ public class MainActivity extends AppCompatActivity implements
             LinearLayout fabContainer = (LinearLayout)
                     layoutInflater.inflate(R.layout.passanger_fab, null);
             FloatingActionButton fab = fabContainer.findViewById(R.id.passenger_fab);
-            try {
-                fab.setImageURI(mMainViewModel.getImageUri(userId));
-            }
-            catch(Exception e) {
-                Timber.d("failed to load image");
-            }
+
+            mMainViewModel.getImageUri(userId).observe(this, uri -> {
+                        fab.setImageURI(uri);
+                        Timber.d("image loaded successfully : %s", uri);
+                    });
             fab.setOnClickListener(this);
             fab.setTag(rideId);
             mPassengerContainer.addView(fabContainer);
@@ -1841,6 +1840,10 @@ public class MainActivity extends AppCompatActivity implements
             addCreateDriveFragment();
         }
         mActivePassengerRide = null;
+    }
+
+    public void updateChargeId(String chargeId) {
+        onChargeAmountReserved(chargeId);
     }
 
 }
