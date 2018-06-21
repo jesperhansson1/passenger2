@@ -252,7 +252,9 @@ public class MainActivity extends AppCompatActivity implements
             mMainViewModel.getUser().observe(this, user -> {
                 Timber.i("User: %s logged in", user);
                 mCurrentLoggedInUser = user;
-                Timber.d(" stripe id is " + mCurrentLoggedInUser.getCustomerId() + " type is " + mCurrentLoggedInUser.getType());
+                if(mCurrentLoggedInUser.getCustomerId() != null)
+                    Timber.d(" stripe id is " + mCurrentLoggedInUser.getCustomerId() +
+                            " type is " + mCurrentLoggedInUser.getType());
                 initObservers();
                 setUpGeofencing();
             });
@@ -1436,9 +1438,11 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onPickUpNoShow(PassengerRide passengerRide) {
-        Timber.d("Driver has reported no show. Minimum avgift is charged for customer and refunded remaining amount");
+        Timber.d("Driver has reported no show. Minimum avgift is charged for customer " +
+                "and refunded remaining amount");
         // Driver has reported no show
-        mMainViewModel.noShowPassenger(passengerRide);
+        mMainViewModel.noShowPassenger(passengerRide.getChargeId(),
+                passengerRide.getDrive().getDriver().getCustomerId());
 
     }
 
@@ -1770,7 +1774,7 @@ public class MainActivity extends AppCompatActivity implements
 
     public void getPrice(int seats)
     {
-        double price = 0.0;
+        double price;
         if(mBounds!=null) {
             Timber.d("distance bound %s", mBounds.getDistance());
             CalculatePrice calculatePrice = new CalculatePrice(mBounds.getDistance(), seats);

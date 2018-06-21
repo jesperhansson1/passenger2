@@ -76,8 +76,8 @@ import static com.cybercom.passenger.flows.payment.PaymentHelper.createTransferH
 public class PassengerRepository implements PassengerRepositoryInterface, StripeAsyncTask.StripeAsyncTaskDelegate {
 
     //firebase storage for images
-    FirebaseStorage sFirebaseStorage;
-    StorageReference sStorageReference;
+    private FirebaseStorage sFirebaseStorage;
+    private StorageReference sStorageReference;
 
     private static final String NOTIFICATION_TOKEN_ID = "notificationTokenId";
 
@@ -529,10 +529,7 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
     private boolean isDriveBlackListOk(
             @NonNull DriveRequest driveReq,
             @NonNull com.cybercom.passenger.repository.databasemodel.Drive drive) {
-        if (driveReq.getDriverIdBlackList().contains(drive.getDriverId())) {
-            return false;
-        }
-        return true;
+        return !driveReq.getDriverIdBlackList().contains(drive.getDriverId());
 
     }
 
@@ -567,14 +564,11 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
 
     private boolean isDriveWithinBounds(Bounds bounds, DriveRequest driveRequest,
                                         int radiusMultiplier) {
-        if (bounds == null) {
-            return false;
-        }
+        return bounds != null && Bounds.isPositionWithinBounds(bounds,
+                driveRequest.getStartLocation(), radiusMultiplier) &&
+                Bounds.isPositionWithinBounds(bounds, driveRequest.getEndLocation(),
+                        radiusMultiplier);
 
-        return Bounds.isPositionWithinBounds(bounds, driveRequest.getStartLocation(),
-                radiusMultiplier)
-                && Bounds.isPositionWithinBounds(bounds, driveRequest.getEndLocation(),
-                radiusMultiplier);
     }
 
     public Drive getMatchedDrive() {
@@ -1529,9 +1523,9 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
         Timber.d("stripe amount refunded is %s", value);
     }
 
-    public void transferRefund(com.cybercom.passenger.model.PassengerRide passengerRide){
-        new StripeAsyncTask(createTransferHashMap(passengerRide.getChargeId(), NOSHOW_FEE,
-                passengerRide.getDrive().getDriver().getCustomerId()), this,
+    public void transferRefund(String chargeId, String customerId){
+        new StripeAsyncTask(createTransferHashMap(chargeId, NOSHOW_FEE,
+                customerId), this,
                 TRANSFER_REFUND).execute();
     }
 

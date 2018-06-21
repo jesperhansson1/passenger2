@@ -415,8 +415,8 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     //charge no show fee for passenger customer and refund remaining amount
-    public  void noShowPassenger(PassengerRide passengerRide){
-        mPassengerRepository.transferRefund(passengerRide);
+    public  void noShowPassenger(String chargeId, String customerId){
+        mPassengerRepository.transferRefund(chargeId, customerId);
     }
 
 }
