@@ -1831,6 +1831,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     public void reserveChargeAmountInBackground(int price) {
+        //TODO: Change from asynctask to node.js
         new StripeAsyncTask(createChargeHashMap(mCurrentLoggedInUser.getCustomerId(),price,false),this, RESERVE).execute();
 
     }
