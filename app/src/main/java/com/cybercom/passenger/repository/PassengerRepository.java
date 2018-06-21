@@ -1663,23 +1663,23 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
         }
     }
 
-    public Uri getImageUri(String userId)
+    public LiveData<Uri> getImageUri(String userId)
     {
+        MutableLiveData<Uri> fileUriLiveData = new MutableLiveData();
         StorageReference ref = getStorageReference().child(FOLDER + userId + IMAGE_TYPE);
         ref.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
             @Override
             public void onSuccess(Uri uri) {
                 // Got the download URL for 'users/me/profile.png'
-                mFileUri =  uri;
+                fileUriLiveData.setValue(uri);
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception exception) {
                 // Handle any errors
-                mFileUri = null;
+                Timber.d("Error loading image");
             }
         });
-        Timber.d("file download uri is %s", mFileUri);
-        return mFileUri;
+        return fileUriLiveData;
     }
 }
