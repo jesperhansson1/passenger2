@@ -4,6 +4,8 @@ import android.Manifest;
 import android.app.Activity;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.ComponentName;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -20,6 +22,8 @@ import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -74,6 +78,7 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
     private String mDriver;
     private String mRegisterType;
     private int mType;
+    private String mImageUri;
 
 
     @Override
@@ -238,7 +243,7 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
             }
 
             User userRegister = new User(null, null, mType, phone, personalNumber, fullName,
-                    null, mSaveRadioButtonAnswer, email, password, null);
+                    mImageUri, mSaveRadioButtonAnswer, email, password, null);
 
             Gson gson = new Gson();
             String loginArray = gson.toJson(userRegister);
@@ -421,7 +426,47 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
             yourIntentsList.add(finalIntent);
             info.add(res);
         }
-        openDialog(context);
+        //openDialog(context);
+        openDialog(context,yourIntentsList,info);
+    }
+
+    private static void openDialog(final Activity context, final List<Intent> intents,
+                                   List<ResolveInfo> activitiesInfo) {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(context, R.style.AlertDialogTheme);
+        dialog.setTitle(context.getResources().getString(R.string.select_image_source));
+        final AlertDialog.Builder builder = dialog.setAdapter(buildAdapter(context, activitiesInfo),
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        Intent intent = intents.get(id);
+                        context.startActivityForResult(intent, 1);
+                    }
+                });
+
+        dialog.setNeutralButton(context.getResources().getString(R.string.cancel),
+                new android.content.DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+        dialog.show();
+    }
+
+    private static ArrayAdapter<ResolveInfo> buildAdapter(final Context context, final List<ResolveInfo> activitiesInfo) {
+        return new ArrayAdapter<ResolveInfo>(context, R.layout.image_picker,R.id.textview_imagepicker_title,activitiesInfo){
+            @NonNull
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                View view = super.getView(position, convertView, parent);
+                ResolveInfo res=activitiesInfo.get(position);
+                ImageView image= view.findViewById(R.id.imageview_imagepicker_icon);
+                image.setImageDrawable(res.loadIcon(context.getPackageManager()));
+                TextView textview= view.findViewById(R.id.textview_imagepicker_title);
+                textview.setText(res.loadLabel(context.getPackageManager()).toString());
+                return view;
+            }
+        };
     }
 
     private static void openDialog(final Activity context) {
@@ -439,12 +484,13 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                     Uri selectedImage = imageReturnedIntent.getData();
                     Picasso.with(this)
                             .load(selectedImage).into(mImageViewProfile);
+                    mImageUri = selectedImage.toString();
                 }
              break;
             case 1:
                 if (resultCode == RESULT_OK) {
                     Uri selectedImage = imageReturnedIntent.getData();
-
+                    mImageUri = selectedImage.toString();
                     boolean isCamera = (selectedImage == null);
                     if (isCamera) {
                         Bundle extras = imageReturnedIntent.getExtras();

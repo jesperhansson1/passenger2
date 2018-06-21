@@ -207,11 +207,10 @@ public class PaymentHelper {
         return createHashMap(ojectArrayLegalEntity, CONNECT_ACCOUNT_ARRAY);
     }
 
-    public static double roundToPlace(double value, int places) {
-        if (places < 0) throw new IllegalArgumentException();
-
+    public static double roundToPlace(double value, int nbrOfDecimals) {
+        if (nbrOfDecimals < 0) throw new IllegalArgumentException();
         BigDecimal bd = new BigDecimal(Double.toString(value));
-        bd = bd.setScale(places, RoundingMode.HALF_UP);
+        bd = bd.setScale(nbrOfDecimals, RoundingMode.HALF_UP);
         return bd.doubleValue();
     }
 

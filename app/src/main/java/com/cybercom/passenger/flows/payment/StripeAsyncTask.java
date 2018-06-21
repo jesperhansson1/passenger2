@@ -33,7 +33,9 @@ import static com.cybercom.passenger.flows.payment.PaymentConstants.SPLIT_CHAR;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.STRIPE_API_KEY;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.TOKEN;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.TRANSFER;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.TRANSFER_REFUND;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.TRANSFER_SOURCE_TRANSACTION;
+import static com.cybercom.passenger.flows.payment.PaymentHelper.createRefundHashMap;
 
 public class StripeAsyncTask extends AsyncTask<String, Void, String> {
     private StripeAsyncTaskDelegate mStripeAsyncTaskDelegate;
@@ -102,6 +104,17 @@ public class StripeAsyncTask extends AsyncTask<String, Void, String> {
                 case RETRIEVE:
                     Charge charge1 = Charge.retrieve(params[0]);
                     result = String.valueOf(charge1.getAmount());
+                    break;
+                case TRANSFER_REFUND:
+                    Charge charge2 = Charge.retrieve((String) mMapParams.get(TRANSFER_SOURCE_TRANSACTION));
+                    charge2.capture();
+                    Transfer transfer1 = Transfer.create(mMapParams);
+                    Timber.d("stripe transfer %s", transfer1);
+                    Map<String, Object> refundParams = new HashMap<>();
+                    refundParams.put("charge", charge2.getId());
+                    Refund refund1 = Refund.create(refundParams);
+                    Timber.d("stripe charge refund %s",refund1);
+                    result =  refund1.getId();
                     break;
                 default:
                     break;

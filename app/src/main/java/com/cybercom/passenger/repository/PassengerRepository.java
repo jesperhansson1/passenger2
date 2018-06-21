@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.location.Location;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -26,6 +27,8 @@ import com.cybercom.passenger.route.FetchRoute;
 import com.cybercom.passenger.utils.LocationHelper;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
@@ -38,8 +41,13 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.google.gson.Gson;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -59,11 +67,16 @@ import static com.cybercom.passenger.flows.payment.PaymentConstants.RESERVE;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.RETRIEVE;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.SPLIT_CHAR;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.TRANSFER;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.TRANSFER_REFUND;
 import static com.cybercom.passenger.flows.payment.PaymentHelper.createChargeHashMap;
 import static com.cybercom.passenger.flows.payment.PaymentHelper.createRefundHashMap;
 import static com.cybercom.passenger.flows.payment.PaymentHelper.createTransferHashMap;
 
 public class PassengerRepository implements PassengerRepositoryInterface, StripeAsyncTask.StripeAsyncTaskDelegate {
+
+    //firebase storage for images
+    FirebaseStorage sFirebaseStorage;
+    StorageReference sStorageReference;
 
     private static final String NOTIFICATION_TOKEN_ID = "notificationTokenId";
 
@@ -130,6 +143,10 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
     private boolean mRefund = false;
     private String mRefundChargeId = null;
 
+    private static final String FOLDER = "images/";
+    private static final String IMAGE_TYPE = ".jpg";
+    private Uri mFileUri;
+
     public static PassengerRepository getInstance() {
         if (sPassengerRepository == null) {
             sPassengerRepository = new PassengerRepository();
@@ -146,6 +163,7 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
         mCarsReference = firebaseDatabase.getReference(REFERENCE_CARS);
         mDriveRequestsReference = firebaseDatabase.getReference(REFERENCE_DRIVE_REQUESTS);
         mNotificationsReference = firebaseDatabase.getReference(REFERENCE_NOTIFICATIONS);
+        setStorageCredentials();
     }
 
     public LiveData<Boolean> validateEmail(String email) {
@@ -235,7 +253,7 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
                         userLogin.setUserId(user.getUid());
                         userLogin.setNotificationTokenId(getTokenId());
                         userLogin.setPassword(null);
-
+                        uploadImage(Uri.parse(userLogin.getImageLink()),user.getUid());
                         mUsersReference.child(user.getUid()).setValue(userLogin);
                     } else {
                         Timber.w("createUserWithEmail:failure %s", (
@@ -1557,6 +1575,9 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
             case RESERVE:
                 onReserve(value[0]);
                 break;
+            case TRANSFER_REFUND:
+                onTransferRefund(value[0]);
+                break;
             default:
                 break;
         }
@@ -1571,44 +1592,102 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
     }
 
     public void transferRefund(com.cybercom.passenger.model.PassengerRide passengerRide){
-        mRefund = true;
-        mRefundChargeId = passengerRide.getChargeId();
         new StripeAsyncTask(createTransferHashMap(passengerRide.getChargeId(), NOSHOW_FEE,
                 passengerRide.getDrive().getDriver().getCustomerId()), this,
-                TRANSFER).execute();
+                TRANSFER_REFUND).execute();
     }
 
     private void onTransfer(String value){
         Timber.d("stripe amount transfered is %s", value);
-        if(mRefund){
-            if(mRefundChargeId != null){
-                new StripeAsyncTask(createRefundHashMap(mRefundChargeId),this,REFUND).execute();
-                mRefundChargeId = null;
-            }
-        }
     }
 
     private void onReserve(String value){
         Timber.d("stripe amount reserved is %s", value);
     }
 
+    private void onTransferRefund(String value){
+        Timber.d("stripe transfer refund is %s", value);
+    }
+
     //This method has to be called when the last passenger has been dropped off
-    public void paymentTransfer(int dist, String[] chargeIds, double[] prices, String accountId){
+    public void paymentTransfer(int dist, HashMap<String, Double> chargesMap, String accountId){
         double driverReimbursement = dist * FARE_PER_MILE ;
-        int i = 0;
-        for(double price : prices){
+        Timber.d("stripe payment to driver is %s", driverReimbursement);
+        for(Map.Entry<String, Double> entry : chargesMap.entrySet()) {
+            String chargeId = entry.getKey();
+            double price = entry.getValue();
             if(price > driverReimbursement){
-                new StripeAsyncTask(createTransferHashMap(chargeIds[i], (int)driverReimbursement * 100,
+                new StripeAsyncTask(createTransferHashMap(chargeId, (int)driverReimbursement * 100,
                         accountId), this,
                         TRANSFER).execute();
                 driverReimbursement = 0;
             }else{
-                new StripeAsyncTask(createTransferHashMap(chargeIds[i], (int)price * 100,
+                new StripeAsyncTask(createTransferHashMap(chargeId, (int)price * 100,
                         accountId), this,
                         TRANSFER).execute();
                 driverReimbursement = driverReimbursement - price;
             }
-            i = i + 1;
         }
+    }
+
+    private void setStorageCredentials()
+    {
+        sFirebaseStorage = FirebaseStorage.getInstance();
+        sStorageReference = sFirebaseStorage.getReference();
+    }
+
+    private StorageReference getStorageReference()
+    {
+        return sStorageReference;
+    }
+
+    private void uploadImage(Uri filePath, String userId) {
+        if(filePath != null)
+        {
+            StorageReference ref = getStorageReference().child(FOLDER + userId + IMAGE_TYPE);
+            ref.putFile(filePath)
+                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @SuppressLint("TimberArgCount")
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            Timber.d("upload file successful", taskSnapshot.toString());
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @SuppressLint("TimberArgCount")
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Timber.d("upload file error", e.getMessage());
+                        }
+                    })
+                    .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                            double progress = (100.0*taskSnapshot.getBytesTransferred()/taskSnapshot
+                                    .getTotalByteCount());
+                            Timber.d("Uploaded "+(int)progress+"%");
+                        }
+                    });
+        }
+    }
+
+    public Uri getImage(String userId)
+    {
+        StorageReference ref = getStorageReference().child(FOLDER + userId + IMAGE_TYPE);
+        ref.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+            @Override
+            public void onSuccess(Uri uri) {
+                // Got the download URL for 'users/me/profile.png'
+                mFileUri =  uri;
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                // Handle any errors
+                mFileUri = null;
+            }
+        });
+        Timber.d("file download uri is %s", mFileUri);
+        return mFileUri;
     }
 }
