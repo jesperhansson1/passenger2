@@ -105,14 +105,9 @@ import timber.log.Timber;
 
 import static com.cybercom.passenger.flows.payment.PaymentConstants.CARD_ERROR;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.GOOGLE_API_ERROR;
-import static com.cybercom.passenger.flows.payment.PaymentConstants.NOSHOW_FEE;
-import static com.cybercom.passenger.flows.payment.PaymentConstants.REFUND;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.RESERVE;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.SPLIT_CHAR;
-import static com.cybercom.passenger.flows.payment.PaymentConstants.TRANSFER;
 import static com.cybercom.passenger.flows.payment.PaymentHelper.createChargeHashMap;
-import static com.cybercom.passenger.flows.payment.PaymentHelper.createRefundHashMap;
-import static com.cybercom.passenger.flows.payment.PaymentHelper.createTransferHashMap;
 
 public class MainActivity extends AppCompatActivity implements
         CreateDriveFragment.CreateRideFragmentListener,
@@ -433,7 +428,6 @@ public class MainActivity extends AppCompatActivity implements
                 mActiveDriveIdList.add(drive.getId());
                 mActiveDrive = drive;
                 mMainViewModel.getPassengerRides(drive.getId()).observe(this, passengerRide -> {
-                    Timber.i("isdropoff confirmed here");
                     if (passengerRide != null) {
                         if (isPassengerRideAlreadyAddedToLocalList(passengerRide)) {
                             replacePassengerRide(passengerRide);
@@ -1466,7 +1460,8 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onDropOffConfirmation(PassengerRide passengerRide) {
-        Timber.i("dropoff 1 ");
+        removeFragment(mFragmentManager
+                .findFragmentByTag(DriverDropOffFragment.DRIVER_DROP_OFF_FRAGMENT_TAG));
         mMainViewModel.confirmDropOff(passengerRide);
     }
 
@@ -1581,10 +1576,8 @@ public class MainActivity extends AppCompatActivity implements
     public void onClick(final View view) {
         if (view.getId() == R.id.abort_passenger_button) {
             // The driver has clicked cancel before being picked up
-
             handleRideAborted((String) mPassengerDetailedInformation.getTag());
         } else if (view.getId() == R.id.dropoff_passenger_button) {
-            //passengerride- dropoff- true
             // The driver has clicked drop off before the end of the drive
             handleRideAborted((String) mPassengerDetailedInformation.getTag());
         } else if (view.getId() == R.id.cancel_drive) {

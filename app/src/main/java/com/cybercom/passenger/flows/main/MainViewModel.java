@@ -113,8 +113,7 @@ public class MainViewModel extends AndroidViewModel {
         mPassengerRepository.removeCurrentDrive(driveId, onCompleteListener);
     }
 
-        public void removePassengerRide(String passengerId, OnCompleteListener onCompleteListener) {
-        System.out.println("remove passenger ride");
+    public void removePassengerRide(String passengerId, OnCompleteListener onCompleteListener) {
         mPassengerRepository.removePassengerRide(passengerId, onCompleteListener);
     }
 
@@ -399,7 +398,6 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     public void confirmDropOff(PassengerRide passengerRide) {
-        System.out.println("drop off");
         mPassengerRepository.confirmDropOff(passengerRide.getId());
     }
 
