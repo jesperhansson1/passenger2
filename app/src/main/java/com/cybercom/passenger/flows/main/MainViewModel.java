@@ -8,6 +8,7 @@ import android.arch.lifecycle.MutableLiveData;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -339,9 +340,10 @@ public class MainViewModel extends AndroidViewModel {
     @SuppressLint("MissingPermission")
     public LiveData<PassengerRide> createPassengerRide(Drive drive, Position startPosition,
                                                        Position endPosition, String startAddress,
-                                                       String endAddress) {
+                                                       String endAddress, String chargeId,
+                                                       double price) {
         return mPassengerRepository.createPassengerRide(drive, startPosition, endPosition,
-                startAddress, endAddress);
+                startAddress, endAddress, chargeId, price);
     }
 
     public LiveData<PassengerRide> getPassengerRides(String driveId) {
@@ -400,7 +402,27 @@ public class MainViewModel extends AndroidViewModel {
         mPassengerRepository.confirmDropOff(passengerRide.getId());
     }
 
-    public LiveData<com.cybercom.passenger.repository.databasemodel.PassengerRide> getPassengerRideById(String passengerRideId) {
+    public LiveData<com.cybercom.passenger.repository.databasemodel.PassengerRide>
+        getPassengerRideById(String passengerRideId) {
         return mPassengerRepository.getPassengerRideById(passengerRideId);
     }
+
+    public String getChargeId(Drive drive, String passengerId) {
+        return mPassengerRepository.getChargeIdForRefund(drive,passengerId);
+    }
+
+    public void refundFull(String chargeId){
+        mPassengerRepository.refundFull(chargeId);
+    }
+
+    //charge no show fee for passenger customer and refund remaining amount
+    public  void noShowPassenger(String chargeId, String customerId){
+        mPassengerRepository.transferRefund(chargeId, customerId);
+    }
+
+    public LiveData<Uri> getImageUri(String userId)
+    {
+        return mPassengerRepository.getImageUri(userId);
+    }
+
 }

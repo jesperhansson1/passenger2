@@ -14,6 +14,8 @@ public class PassengerRide implements Serializable {
     private String mStartAddress;
     private String mEndAddress;
     private boolean mCancelled;
+    private String mChargeId;
+    private double mPrice;
 
     public PassengerRide() {
     }
@@ -21,7 +23,7 @@ public class PassengerRide implements Serializable {
     public PassengerRide(String id, Drive drive, User passenger, Position pickUpPosition,
                          Position dropOffPosition, boolean pickUpConfirmed,
                          boolean dropOffConfirmed, String startAddress, String endAddress,
-                         boolean cancelled) {
+                         boolean cancelled, String chargeId, double price) {
         mId = id;
         mDrive = drive;
         mPassenger = passenger;
@@ -33,6 +35,8 @@ public class PassengerRide implements Serializable {
         mStartAddress = startAddress;
         mEndAddress = endAddress;
         mCancelled = cancelled;
+        mChargeId = chargeId;
+        mPrice = price;
     }
 
     public Drive getDrive() {
@@ -125,7 +129,17 @@ public class PassengerRide implements Serializable {
                 ", mDropOffPosition=" + mDropOffPosition + '\'' +
                 ", mDropOffConfirmed=" + mDropOffConfirmed + '\'' +
                 ", mStartAddress=" + mStartAddress + '\'' +
-                ", mEndAddress=" + mEndAddress +
+                ", mEndAddress=" + mEndAddress + '\'' +
+                ", mChargeId=" + mChargeId + '\'' +
+                ", mPrice=" + mPrice + '\'' +
                 '}';
     }
+
+    public String getChargeId() {   return mChargeId;   }
+
+    public void setChargeId(String chargeId) {  mChargeId = chargeId;   }
+
+    public double getPrice() {   return mPrice;   }
+
+    public void setPrice(double price) {  mPrice = price;   }
 }

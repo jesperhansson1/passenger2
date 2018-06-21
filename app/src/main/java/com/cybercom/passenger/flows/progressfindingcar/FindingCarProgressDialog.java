@@ -1,5 +1,6 @@
 package com.cybercom.passenger.flows.progressfindingcar;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -13,18 +14,24 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cybercom.passenger.R;
+import com.cybercom.passenger.flows.payment.PaymentHelper;
 
 import timber.log.Timber;
+
+import static com.cybercom.passenger.flows.payment.PaymentConstants.PRECISION;
 
 public class FindingCarProgressDialog extends DialogFragment implements View.OnClickListener {
 
     public static final String MATCHING_IN_PROGRESS = "MATCHING_IN_PROGRESS";
+    String mAmount = "0";
+    String mChargeId = null;
 
     public interface FindingCarListener {
-        void onCancelFindingCarPressed(Boolean isCancelPressed);
+        void onCancelFindingCarPressed(Boolean isCancelPressed, String chargeId);
     }
 
     public static FindingCarProgressDialog getInstance() {
@@ -33,6 +40,15 @@ public class FindingCarProgressDialog extends DialogFragment implements View.OnC
 
     private FindingCarListener mFindingCarListener;
 
+    public void setAmount(double amount)
+    {
+        mAmount = String.valueOf(PaymentHelper.roundToPlace(amount,PRECISION)) + "Kr";
+    }
+
+    public void setChargeId(String chargeId)
+    {
+        mChargeId = chargeId;
+    }
 
     @Override public void onStart() {
         super.onStart();
@@ -44,6 +60,7 @@ public class FindingCarProgressDialog extends DialogFragment implements View.OnC
         window.setAttributes(windowParams);
     }
 
+    @SuppressLint("SetTextI18n")
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -53,6 +70,9 @@ public class FindingCarProgressDialog extends DialogFragment implements View.OnC
                 false);
 
 
+        TextView priceTextView = rootView.findViewById(R.id.finding_car_price_title);
+        priceTextView.setText(rootView.getContext().getApplicationContext().getResources().
+                getString(R.string.passenger_notification_price_title) + " : " + mAmount);
         this.getDialog().setCanceledOnTouchOutside(false);
         Button cancelButton = rootView.findViewById(R.id.finding_car_cancel);
         cancelButton.setOnClickListener(this);
@@ -92,7 +112,7 @@ public class FindingCarProgressDialog extends DialogFragment implements View.OnC
         switch (v.getId()){
             case R.id.finding_car_cancel:{
                 Timber.i("Finding car cancel button pressed");
-                mFindingCarListener.onCancelFindingCarPressed(true);
+                mFindingCarListener.onCancelFindingCarPressed(true, mChargeId);
                 dismiss();
                 break;
             }

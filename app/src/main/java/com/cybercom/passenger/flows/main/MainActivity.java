@@ -14,10 +14,12 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -93,6 +95,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.iid.FirebaseInstanceId;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -205,6 +208,8 @@ public class MainActivity extends AppCompatActivity implements
     private PassengerRide mActivePassengerRide;
     private Fragment mDriveInformationDialog;
     private String mGoogleApiKey;
+    private boolean mRefund = false; //flag for refund
+    private String mRefundChargeId; //chargeid for which refund has to be done
 
    /* public double mPrice = 0.0;
     public long mTime = 0;
@@ -250,7 +255,9 @@ public class MainActivity extends AppCompatActivity implements
             mMainViewModel.getUser().observe(this, user -> {
                 Timber.i("User: %s logged in", user);
                 mCurrentLoggedInUser = user;
-                Timber.d(" stripe id is " + mCurrentLoggedInUser.getCustomerId() + " type is " + mCurrentLoggedInUser.getType());
+                if(mCurrentLoggedInUser.getCustomerId() != null)
+                    Timber.d(" stripe id is " + mCurrentLoggedInUser.getCustomerId() +
+                            " type is " + mCurrentLoggedInUser.getType());
                 initObservers();
                 setUpGeofencing();
             });
@@ -276,9 +283,10 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void createPassengerRide(Drive drive, Position startPosition, Position endPosition,
-                                     String startAddress, String endAddress) {
+                                     String startAddress, String endAddress, String chargeId,
+                                     double price) {
         mMainViewModel.createPassengerRide(drive, startPosition, endPosition, startAddress,
-                endAddress).observe(this, passengerRide -> {
+                endAddress, chargeId, price).observe(this, passengerRide -> {
                     Timber.d("PassengerRide successfully created: %s", passengerRide);
         });
     }
@@ -468,10 +476,12 @@ public class MainActivity extends AppCompatActivity implements
                     String endAddress = mMainViewModel.getAddressFromLocation(
                             LocationHelper.convertPositionToLocation(
                                     notification.getDriveRequest().getEndLocation()));
+
                     createPassengerRide(notification.getDrive(),
                             notification.getDriveRequest().getStartLocation(),
                             notification.getDriveRequest().getEndLocation(), startAddress,
-                            endAddress);
+                            endAddress, notification.getDriveRequest().getChargeId(),
+                            notification.getDriveRequest().getPrice());
                     mMainViewModel.getNextNotification();
                     break;
                 case Notification.REJECT_PASSENGER:
@@ -634,7 +644,7 @@ public class MainActivity extends AppCompatActivity implements
         final LifecycleOwner lifecycleOwner = this;
         mFindMatch = mMainViewModel.findBestDriveMatch(driveRequest, radiusMultiplier,
                 mGoogleApiKey);
-        showMatchingInProgressDialog();
+        showMatchingInProgressDialog(driveRequest.getPrice(), driveRequest.getChargeId());
         mTimer = mMainViewModel.setFindMatchTimer();
 
         mMatchObserver = drive -> {
@@ -669,7 +679,7 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
-    private void showMatchingInProgressDialog() {
+    private void showMatchingInProgressDialog(double amount, String chargeId) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         DialogFragment fragment = (DialogFragment) fragmentManager.findFragmentByTag(
                 FindingCarProgressDialog.MATCHING_IN_PROGRESS);
@@ -679,6 +689,8 @@ public class MainActivity extends AppCompatActivity implements
         }
 
         FindingCarProgressDialog findingCarProgressDialog = FindingCarProgressDialog.getInstance();
+        findingCarProgressDialog.setAmount(amount);
+        findingCarProgressDialog.setChargeId(chargeId);
         findingCarProgressDialog.show(fragmentManager,
                 FindingCarProgressDialog.MATCHING_IN_PROGRESS);
     }
@@ -764,8 +776,9 @@ public class MainActivity extends AppCompatActivity implements
                     handlePassengerCancelled(passengerRide.getId()));
         } else if (mPassengers.get(passengerRide.getId()) == null) {
             mPassengers.put(passengerRide.getId(), passengerRide);
-            addPassengerFab(passengerRide.getId());
-        } else if (passengerRide.isDropOffConfirmed()) {
+            addPassengerFab(passengerRide.getId(), passengerRide.getPassenger().getUserId());
+        } else if (!mPassengers.get(passengerRide.getId()).isDropOffConfirmed() &&
+                passengerRide.isDropOffConfirmed()) {
             mPassengers.remove(passengerRide.getId());
             removePassengerFab(passengerRide.getId());
         } else {
@@ -819,7 +832,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
 
-    private void addPassengerFab(@NonNull String rideId) {
+    private void addPassengerFab(@NonNull String rideId, String userId) {
 
         if (findPassengerView(rideId) == null) {
             LayoutInflater layoutInflater = LayoutInflater.from(this);
@@ -834,6 +847,17 @@ public class MainActivity extends AppCompatActivity implements
             LinearLayout fabContainer = (LinearLayout)
                     layoutInflater.inflate(R.layout.passanger_fab, null);
             FloatingActionButton fab = fabContainer.findViewById(R.id.passenger_fab);
+
+            mMainViewModel.getImageUri(userId).observe(this, uri -> {
+                //Todo: resize and circular image
+        /*        Picasso.with(getApplicationContext())
+                        .load(uri)
+                        //.placeholder(R.drawable.placeholder)
+                        .resize(16, 16)
+                        .centerCrop()
+                        .into(fab);
+                        Timber.d("image loaded successfully : %s", uri);*/
+                    });
             fab.setOnClickListener(this);
             fab.setTag(rideId);
             mPassengerContainer.addView(fabContainer);
@@ -1256,7 +1280,8 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onCancelFindingCarPressed(Boolean isCancelPressed) {
+    public void onCancelFindingCarPressed(Boolean isCancelPressed, String chargeId) {
+        mMainViewModel.refundFull(chargeId);
         cancelMatchingDrive();
         dismissMatchingInProgressDialog();
         if (!mIsFragmentAdded) {
@@ -1459,7 +1484,11 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onPickUpNoShow(PassengerRide passengerRide) {
+        Timber.d("Driver has reported no show. Minimum avgift is charged for customer " +
+                "and refunded remaining amount");
         // Driver has reported no show
+        mMainViewModel.noShowPassenger(passengerRide.getChargeId(),
+                passengerRide.getDrive().getDriver().getCustomerId());
 
     }
 
@@ -1474,7 +1503,9 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onPickUpNoShow(Drive drive) {
+        Timber.d("passenger has reported no show. Customer will be refunded with entire amount");
         // Passenger has reported no show
+        mMainViewModel.refundFull(mMainViewModel.getChargeId(drive,mUser.getUid()));
     }
 
     @Override
@@ -1597,7 +1628,7 @@ public class MainActivity extends AppCompatActivity implements
             // The driver has clicked cancel before being picked up
             handleRideAborted((String) mPassengerDetailedInformation.getTag());
         } else if (view.getId() == R.id.dropoff_passenger_button) {
-            // The driver has clicked dropp off before the end of the drive
+            // The driver has clicked drop off before the end of the drive
             handleRideAborted((String) mPassengerDetailedInformation.getTag());
         } else if (view.getId() == R.id.cancel_drive) {
             // The driver has clicked the abort floating action button
@@ -1791,7 +1822,7 @@ public class MainActivity extends AppCompatActivity implements
 
     public void getPrice(int seats)
     {
-        double price = 0.0;
+        double price;
         if(mBounds!=null) {
             Timber.d("distance bound %s", mBounds.getDistance());
             CalculatePrice calculatePrice = new CalculatePrice(mBounds.getDistance(), seats);
@@ -1807,8 +1838,8 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
-    public void reserveChargeAmountInBackground(int price)
-    {
+    public void reserveChargeAmountInBackground(int price) {
+        //TODO: Change from asynctask to node.js
         new StripeAsyncTask(createChargeHashMap(mCurrentLoggedInUser.getCustomerId(),price,false),this, RESERVE).execute();
 
     }
@@ -1820,8 +1851,11 @@ public class MainActivity extends AppCompatActivity implements
         }
         else
         {
-            mMainViewModel.createDriveRequest(mPendingDriveRequest.getTime(), mPendingDriveRequest.getStartLocation(), mPendingDriveRequest.getEndLocation(),
-                    mPendingDriveRequest.getExtraPassengers(), mPendingDriveRequest.getPrice(), chargeId).observe(
+            mMainViewModel.createDriveRequest(mPendingDriveRequest.getTime(),
+                    mPendingDriveRequest.getStartLocation(),
+                    mPendingDriveRequest.getEndLocation(),
+                    mPendingDriveRequest.getExtraPassengers(),
+                    mPendingDriveRequest.getPrice(), chargeId).observe(
                     this, driveRequest -> {
                         mMainViewModel.setDriveRequestRadiusMultiplier(
                                 MainViewModel.DRIVE_REQUEST_DEFAULT_MULTIPLIER);
@@ -1833,7 +1867,6 @@ public class MainActivity extends AppCompatActivity implements
                     });
         }
     }
-
 
     // Called by Passenger client only
     private void handlePassengerDroppedOff() {
@@ -1852,4 +1885,9 @@ public class MainActivity extends AppCompatActivity implements
         }
         mActivePassengerRide = null;
     }
+
+    public void updateChargeId(String chargeId) {
+        onChargeAmountReserved(chargeId);
+    }
+
 }

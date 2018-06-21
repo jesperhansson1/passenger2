@@ -4,11 +4,13 @@ import android.annotation.SuppressLint;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.location.Location;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import com.cybercom.passenger.flows.main.MainActivity;
+import com.cybercom.passenger.flows.payment.StripeAsyncTask;
 import com.cybercom.passenger.model.Bounds;
 import com.cybercom.passenger.model.Car;
 import com.cybercom.passenger.model.Drive;
@@ -25,6 +27,8 @@ import com.cybercom.passenger.route.FetchRoute;
 import com.cybercom.passenger.utils.LocationHelper;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
@@ -37,8 +41,13 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.google.gson.Gson;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -51,7 +60,23 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import timber.log.Timber;
 
-public class PassengerRepository implements PassengerRepositoryInterface {
+import static com.cybercom.passenger.flows.payment.PaymentConstants.FARE_PER_MILE;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.NOSHOW_FEE;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.REFUND;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.RESERVE;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.RETRIEVE;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.SPLIT_CHAR;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.TRANSFER;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.TRANSFER_REFUND;
+import static com.cybercom.passenger.flows.payment.PaymentHelper.createChargeHashMap;
+import static com.cybercom.passenger.flows.payment.PaymentHelper.createRefundHashMap;
+import static com.cybercom.passenger.flows.payment.PaymentHelper.createTransferHashMap;
+
+public class PassengerRepository implements PassengerRepositoryInterface, StripeAsyncTask.StripeAsyncTaskDelegate {
+
+    //firebase storage for images
+    private FirebaseStorage sFirebaseStorage;
+    private StorageReference sStorageReference;
 
     private static final String NOTIFICATION_TOKEN_ID = "notificationTokenId";
 
@@ -68,6 +93,9 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
     private static final String DRIVE_ID = "driveId";
     private static final String DRIVER_ID = "driverId";
+
+    private static final String CHARGE_ID = "chargeId";
+    private static final String PASSENGER_ID = "passengerId";
 
     private static final int DRIVE_REQUEST_MATCH_TIME_THRESHOLD = 15 * 60 * 60 * 1000;
     private static final String NOTIFICATION_TYPE_KEY = "type";
@@ -113,6 +141,10 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private Drive mMatchedDrive;
     ValueEventListener mBestMatchEventListener;
 
+    private static final String FOLDER = "images/";
+    private static final String IMAGE_TYPE = ".jpg";
+    private Uri mFileUri;
+
     public static PassengerRepository getInstance() {
         if (sPassengerRepository == null) {
             sPassengerRepository = new PassengerRepository();
@@ -129,6 +161,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         mCarsReference = firebaseDatabase.getReference(REFERENCE_CARS);
         mDriveRequestsReference = firebaseDatabase.getReference(REFERENCE_DRIVE_REQUESTS);
         mNotificationsReference = firebaseDatabase.getReference(REFERENCE_NOTIFICATIONS);
+        setStorageCredentials();
     }
 
     public LiveData<Boolean> validateEmail(String email) {
@@ -218,7 +251,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                         userLogin.setUserId(user.getUid());
                         userLogin.setNotificationTokenId(getTokenId());
                         userLogin.setPassword(null);
-
+                        uploadImage(Uri.parse(userLogin.getImageLink()),user.getUid());
                         mUsersReference.child(user.getUid()).setValue(userLogin);
                     } else {
                         Timber.w("createUserWithEmail:failure %s", (
@@ -494,10 +527,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private boolean isDriveBlackListOk(
             @NonNull DriveRequest driveReq,
             @NonNull com.cybercom.passenger.repository.databasemodel.Drive drive) {
-        if (driveReq.getDriverIdBlackList().contains(drive.getDriverId())) {
-            return false;
-        }
-        return true;
+        return !driveReq.getDriverIdBlackList().contains(drive.getDriverId());
 
     }
 
@@ -532,14 +562,11 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
     private boolean isDriveWithinBounds(Bounds bounds, DriveRequest driveRequest,
                                         int radiusMultiplier) {
-        if (bounds == null) {
-            return false;
-        }
+        return bounds != null && Bounds.isPositionWithinBounds(bounds,
+                driveRequest.getStartLocation(), radiusMultiplier) &&
+                Bounds.isPositionWithinBounds(bounds, driveRequest.getEndLocation(),
+                        radiusMultiplier);
 
-        return Bounds.isPositionWithinBounds(bounds, driveRequest.getStartLocation(),
-                radiusMultiplier)
-                && Bounds.isPositionWithinBounds(bounds, driveRequest.getEndLocation(),
-                radiusMultiplier);
     }
 
     public Drive getMatchedDrive() {
@@ -784,8 +811,18 @@ public class PassengerRepository implements PassengerRepositoryInterface {
         return driveMutableLiveData;
     }
 
+    //reserve charge before driverequest is created
+    public void reserveChargeAmountInBackground(int price, String customerId, DriveRequest pendingDriveRequest){
+       // mPendingDriveRequest = pendingDriveRequest;
+
+        new StripeAsyncTask(createChargeHashMap(customerId, price,false),this, RESERVE).execute();
+    }
+
     public LiveData<DriveRequest> createDriveRequest(long time, Position startLocation,
                                                      Position endLocation, int availableSeats, double price, String chargeId) {
+
+
+        getAmountInCharge(chargeId);
         final MutableLiveData<DriveRequest> driveRequestMutableLiveData = new MutableLiveData<>();
 
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -943,7 +980,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
 
     public LiveData<com.cybercom.passenger.model.PassengerRide> createPassengerRide(
             Drive drive, Position pickUpLocation, Position dropOffLocation, String startAddress,
-            String endAddress) {
+            String endAddress, String chargeId, double price) {
         final MutableLiveData<com.cybercom.passenger.model.PassengerRide>
                 passengerRideMutableLiveData = new MutableLiveData<>();
 
@@ -960,7 +997,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
             final com.cybercom.passenger.repository.databasemodel.PassengerRide dbPassengerRide =
                     new com.cybercom.passenger.repository.databasemodel.PassengerRide(drive.getId(),
                             uId, pickUpLocation, dropOffLocation, false, false, startAddress,
-                            endAddress);
+                            endAddress, chargeId, price);
             final DatabaseReference passengerRideRef = mPassengerRideReference.push();
             final String passengerRideId = passengerRideRef.getKey();
 
@@ -969,7 +1006,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
             mUsersReference.child(firebaseUser.getUid()).addListenerForSingleValueEvent(
                     getEventListenerToBuildPassengerRide(passengerRideId, pickUpLocation,
                             dropOffLocation, drive, passengerRideMutableLiveData, startAddress,
-                            endAddress));
+                            endAddress, chargeId, price));
         }
         return passengerRideMutableLiveData;
     }
@@ -977,7 +1014,8 @@ public class PassengerRepository implements PassengerRepositoryInterface {
     private ValueEventListener getEventListenerToBuildPassengerRide(
             String passengerRideId, Position pickUpLocation, Position dropOffLocation, Drive drive,
             MutableLiveData<com.cybercom.passenger.model.PassengerRide>
-                    passengerRideMutableLiveData, String startAddress, String endAddress) {
+                    passengerRideMutableLiveData, String startAddress, String endAddress,
+            String chargeId, double price) {
         return new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -986,7 +1024,7 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                         new com.cybercom.passenger.model.PassengerRide(
                                 passengerRideId, drive, passenger, pickUpLocation, dropOffLocation,
                                 false, false, startAddress, endAddress,
-                                false);
+                                false, chargeId, price);
                 passengerRideMutableLiveData.setValue(passengerRide);
             }
 
@@ -1120,7 +1158,9 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                                             passengerRide.isDropOffConfirmed(),
                                             passengerRide.getStartAddress(),
                                             passengerRide.getEndAddress(),
-                                            passengerRide.isCancelled());
+                                            passengerRide.isCancelled(),
+                                            passengerRide.getChargeId(),
+                                            passengerRide.getPrice());
                             passengerRideMutableLiveData.setValue(convertedPassengerRide);
                         }
 
@@ -1471,4 +1511,175 @@ public class PassengerRepository implements PassengerRepositoryInterface {
                 true);
     }
 
+    //returns chargeid associated with drive and passenger
+    String mChargeId = null;
+    public String getChargeIdForRefund(Drive drive, String passengerId) {
+
+        Timber.d("getChargeIdForRefund %s", drive.getId() + " " + passengerId);
+        mPassengerRideReference.orderByChild(DRIVE_ID).equalTo(drive.getId()).addListenerForSingleValueEvent(
+                new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                            PassengerRide passengerRide = snapshot.getValue(PassengerRide.class);
+                            Timber.d("result: %s", passengerRide);
+                            if (passengerRide != null) {
+                                if (passengerRide.getPassengerId().equalsIgnoreCase(passengerId)) {
+                                    mChargeId = passengerRide.getChargeId();
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                        Timber.d("error fetching passengerrides %s", drive.getId() + " " + passengerId);
+                    }
+                }
+        );
+        Timber.d("stripe charge with id %s", mChargeId);
+        return mChargeId;
+    }
+
+    public void getAmountInCharge(String chargeId) {
+        new StripeAsyncTask(null,this,RETRIEVE).execute(chargeId);
+    }
+
+    public void refundFull(String chargeId)
+    {
+        new StripeAsyncTask(createRefundHashMap(chargeId),this,REFUND).execute();
+    }
+
+    @Override
+    public void onStripeTaskCompleted(String result) {
+        Timber.d("stripe result is %s", result);
+        String[] value = result.split(SPLIT_CHAR);
+        switch (value[1]){
+            case RETRIEVE:
+                onChargeAmountRetrieved(value[0]);
+                break;
+            case REFUND:
+                onRefund(value[0]);
+                break;
+            case TRANSFER:
+                onTransfer(value[0]);
+                break;
+            case RESERVE:
+                onReserve(value[0]);
+                break;
+            case TRANSFER_REFUND:
+                onTransferRefund(value[0]);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void onChargeAmountRetrieved(String value) {
+        Timber.d("stripe amount reserved is %s", value);
+    }
+
+    private void onRefund(String value) {
+        Timber.d("stripe amount refunded is %s", value);
+    }
+
+    public void transferRefund(String chargeId, String customerId){
+        new StripeAsyncTask(createTransferHashMap(chargeId, NOSHOW_FEE,
+                customerId), this,
+                TRANSFER_REFUND).execute();
+    }
+
+    private void onTransfer(String value){
+        Timber.d("stripe amount transfered is %s", value);
+    }
+
+    private void onReserve(String value){
+        Timber.d("stripe amount reserved is %s", value);
+    }
+
+    private void onTransferRefund(String value){
+        Timber.d("stripe transfer refund is %s", value);
+    }
+
+    //This method has to be called when the last passenger has been dropped off
+    public void paymentTransfer(int dist, HashMap<String, Double> chargesMap, String accountId){
+        double driverReimbursement = dist * FARE_PER_MILE ;
+        Timber.d("stripe payment to driver is %s", driverReimbursement);
+        for(Map.Entry<String, Double> entry : chargesMap.entrySet()) {
+            String chargeId = entry.getKey();
+            double price = entry.getValue();
+            if(price > driverReimbursement){
+                new StripeAsyncTask(createTransferHashMap(chargeId, (int)driverReimbursement * 100,
+                        accountId), this,
+                        TRANSFER).execute();
+                driverReimbursement = 0;
+            }else{
+                new StripeAsyncTask(createTransferHashMap(chargeId, (int)price * 100,
+                        accountId), this,
+                        TRANSFER).execute();
+                driverReimbursement = driverReimbursement - price;
+            }
+        }
+    }
+
+    private void setStorageCredentials()
+    {
+        sFirebaseStorage = FirebaseStorage.getInstance();
+        sStorageReference = sFirebaseStorage.getReference();
+    }
+
+    private StorageReference getStorageReference()
+    {
+        return sStorageReference;
+    }
+
+    private void uploadImage(Uri filePath, String userId) {
+        if(filePath != null)
+        {
+            StorageReference ref = getStorageReference().child(FOLDER + userId + IMAGE_TYPE);
+            ref.putFile(filePath)
+                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @SuppressLint("TimberArgCount")
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            Timber.d("upload file successful", taskSnapshot.toString());
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @SuppressLint("TimberArgCount")
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Timber.d("upload file error", e.getMessage());
+                        }
+                    })
+                    .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                            double progress = (100.0*taskSnapshot.getBytesTransferred()/taskSnapshot
+                                    .getTotalByteCount());
+                            Timber.d("Uploaded "+(int)progress+"%");
+                        }
+                    });
+        }
+    }
+
+    public LiveData<Uri> getImageUri(String userId)
+    {
+        MutableLiveData<Uri> fileUriLiveData = new MutableLiveData();
+        StorageReference ref = getStorageReference().child(FOLDER + userId + IMAGE_TYPE);
+        ref.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+            @Override
+            public void onSuccess(Uri uri) {
+                // Got the download URL for 'users/me/profile.png'
+                fileUriLiveData.setValue(uri);
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                // Handle any errors
+                Timber.d("Error loading image");
+            }
+        });
+        return fileUriLiveData;
+    }
 }

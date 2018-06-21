@@ -28,11 +28,14 @@ import static com.cybercom.passenger.flows.payment.PaymentConstants.CUSTOMER;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.FILE_UPLOAD;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.REFUND;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.RESERVE;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.RETRIEVE;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.SPLIT_CHAR;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.STRIPE_API_KEY;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.TOKEN;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.TRANSFER;
+import static com.cybercom.passenger.flows.payment.PaymentConstants.TRANSFER_REFUND;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.TRANSFER_SOURCE_TRANSACTION;
+import static com.cybercom.passenger.flows.payment.PaymentHelper.createRefundHashMap;
 
 public class StripeAsyncTask extends AsyncTask<String, Void, String> {
     private StripeAsyncTaskDelegate mStripeAsyncTaskDelegate;
@@ -62,16 +65,13 @@ public class StripeAsyncTask extends AsyncTask<String, Void, String> {
                     result =  token.getId();
                     break;
                 case TRANSFER:
-                    Charge charge = Charge.retrieve((String) mMapParams.get(TRANSFER_SOURCE_TRANSACTION));
-                    charge.capture();
-                    Transfer transfer = Transfer.create(mMapParams);
-                    Timber.d("stripe transfer %s", transfer);
-                    result =  transfer.getId();
+                    chargeCapture((String) mMapParams.get(TRANSFER_SOURCE_TRANSACTION));
+                    result = transferAmount(mMapParams);
+                    Timber.d("stripe transfer %s", result);
                     break;
                 case REFUND:
-                    Refund refund = Refund.create(mMapParams);
-                    Timber.d("stripe charge refund %s",refund);
-                    result =  refund.getId();
+                    result =  refundAmount(mMapParams);
+                    Timber.d("stripe charge refund %s",result);
                     break;
                 case FILE_UPLOAD:
                     Stripe.apiKey = STRIPE_API_KEY;
@@ -98,12 +98,86 @@ public class StripeAsyncTask extends AsyncTask<String, Void, String> {
                     account.getExternalAccounts().create(external_account_params);
                     Timber.d("stripe account created with card %s", account);
                     break;
+                case RETRIEVE:
+                    Charge charge1 = Charge.retrieve(params[0]);
+                    result = String.valueOf(charge1.getAmount());
+                    break;
+                case TRANSFER_REFUND:
+                    chargeCapture((String) mMapParams.get(TRANSFER_SOURCE_TRANSACTION));
+                    transferAmount(mMapParams);
+                    Map<String, Object> refundParams = new HashMap<>();
+                    refundParams.put("charge", (String) mMapParams.get(TRANSFER_SOURCE_TRANSACTION));
+                    result =  refundAmount(refundParams);
+                    Timber.d("stripe charge refund %s",result);
+                    break;
                 default:
                     break;
             }
         } catch (APIConnectionException | InvalidRequestException | AuthenticationException |
                 CardException | APIException e) {
             Timber.d("stripe error creating token %s",  e.getLocalizedMessage());
+        }
+        return result;
+    }
+
+    private String chargeCapture(String chargeId){
+        String result = null;
+        try{
+            Charge charge = Charge.retrieve(chargeId);
+            charge.capture();
+            result = charge.getId();
+        } catch (APIConnectionException e) {
+            Timber.d("stripe error charge capture %s",  e.getLocalizedMessage());
+        } catch (InvalidRequestException e) {
+            Timber.d("stripe error charge capture %s",  e.getLocalizedMessage());
+        } catch (AuthenticationException e) {
+            Timber.d("stripe error charge capture %s",  e.getLocalizedMessage());
+        } catch (APIException e) {
+            Timber.d("stripe error charge capture %s",  e.getLocalizedMessage());
+        } catch (CardException e) {
+            Timber.d("stripe error charge capture %s",  e.getLocalizedMessage());
+        }
+        return result;
+    }
+
+    private String transferAmount(Map<String, Object> transferParams)
+    {
+        String result = null;
+        try {
+            Transfer transfer1 = Transfer.create(mMapParams);
+            Timber.d("stripe transfer %s", transfer1);
+            result = transfer1.getId();
+        }catch (APIConnectionException e) {
+            Timber.d("stripe error creating transfer %s",  e.getLocalizedMessage());
+        } catch (InvalidRequestException e) {
+            Timber.d("stripe error creating transfer %s",  e.getLocalizedMessage());
+        } catch (AuthenticationException e) {
+            Timber.d("stripe error creating transfer %s",  e.getLocalizedMessage());
+        } catch (APIException e) {
+            Timber.d("stripe error creating transfer %s",  e.getLocalizedMessage());
+        } catch (CardException e) {
+            Timber.d("stripe error creating transfer %s",  e.getLocalizedMessage());
+        }
+        return result;
+    }
+
+    private String refundAmount(Map<String, Object> refundParams)
+    {
+        String result = null;
+        try {
+            Refund refund = Refund.create(refundParams);
+            Timber.d("stripe refund %s", refund);
+            result = refund.getId();
+        }catch (APIConnectionException e) {
+            Timber.d("stripe error creating transfer %s",  e.getLocalizedMessage());
+        } catch (InvalidRequestException e) {
+            Timber.d("stripe error creating transfer %s",  e.getLocalizedMessage());
+        } catch (AuthenticationException e) {
+            Timber.d("stripe error creating transfer %s",  e.getLocalizedMessage());
+        } catch (APIException e) {
+            Timber.d("stripe error creating transfer %s",  e.getLocalizedMessage());
+        } catch (CardException e) {
+            Timber.d("stripe error creating transfer %s",  e.getLocalizedMessage());
         }
         return result;
     }

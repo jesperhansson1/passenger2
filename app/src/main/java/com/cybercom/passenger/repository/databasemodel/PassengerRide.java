@@ -15,13 +15,16 @@ public class PassengerRide implements Serializable {
     private boolean mCancelled;
     private String mStartAddress;
     private String mEndAddress;
+    private String mChargeId;
+    private double mPrice;
 
     public PassengerRide() {
     }
 
     public PassengerRide(String driveId, String passengerId, Position pickUpPosition,
                          Position dropOffPosition,  boolean pickUpConfirmed,
-                         boolean dropOffConfirmed, String startAddress, String endAddress) {
+                         boolean dropOffConfirmed, String startAddress, String endAddress,
+                         String chargeId, double price) {
         mDriveId = driveId;
         mPassengerId = passengerId;
         mPickUpPosition = pickUpPosition;
@@ -30,6 +33,8 @@ public class PassengerRide implements Serializable {
         mDropOffConfirmed = dropOffConfirmed;
         mStartAddress = startAddress;
         mEndAddress = endAddress;
+        mChargeId = chargeId;
+        mPrice = price;
     }
 
     public String getDriveId() {
@@ -107,6 +112,8 @@ public class PassengerRide implements Serializable {
                 ", mPickUpConfirmed=" + mPickUpConfirmed + '\'' +
                 ", mDropOffConfirmed=" + mDropOffConfirmed + '\'' +
                 ", mDropOffConfirmed=" + mCancelled + '\'' +
+                ", mChargeId=" + mChargeId + '\'' +
+                ", mPrice=" + mPrice + '\'' +
                 '}';
     }
 
@@ -117,4 +124,12 @@ public class PassengerRide implements Serializable {
     public void setCancelled(boolean mCancelled) {
         this.mCancelled = mCancelled;
     }
+
+    public String getChargeId() {   return mChargeId;   }
+
+    public void setChargeId(String chargeId) {  mChargeId = chargeId;   }
+
+    public double getPrice() {   return mPrice;   }
+
+    public void setPrice(double price) {  mPrice = price;   }
 }
