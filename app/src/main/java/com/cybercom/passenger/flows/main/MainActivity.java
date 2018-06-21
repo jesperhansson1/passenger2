@@ -14,10 +14,12 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -94,6 +96,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.iid.FirebaseInstanceId;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -818,8 +821,14 @@ public class MainActivity extends AppCompatActivity implements
             FloatingActionButton fab = fabContainer.findViewById(R.id.passenger_fab);
 
             mMainViewModel.getImageUri(userId).observe(this, uri -> {
-                        fab.setImageURI(uri);
-                        Timber.d("image loaded successfully : %s", uri);
+                //Todo: resize and circular image
+        /*        Picasso.with(getApplicationContext())
+                        .load(uri)
+                        //.placeholder(R.drawable.placeholder)
+                        .resize(16, 16)
+                        .centerCrop()
+                        .into(fab);
+                        Timber.d("image loaded successfully : %s", uri);*/
                     });
             fab.setOnClickListener(this);
             fab.setTag(rideId);
