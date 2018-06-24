@@ -35,6 +35,8 @@ public class DriverPassengerPickUpFragment extends Fragment implements View.OnCl
 
     private PassengerRide mPassengerRide;
     private Drive mDrive;
+    private TextView mTextViewTimeToGoTitle;
+    private TextView mTextViewTimeToGoCountDown;
 
     public interface DriverPassengerPickUpButtonClickListener {
         void onPickUpConfirmed(PassengerRide passengerRide);
@@ -95,6 +97,9 @@ public class DriverPassengerPickUpFragment extends Fragment implements View.OnCl
         mNoShowButton.setEnabled(false);
         mNoShowButton.setOnClickListener(this);
 
+        mTextViewTimeToGoTitle = view.findViewById(R.id.fragment_driver_passenger_pick_up_time_to_go);
+        mTextViewTimeToGoCountDown = view.findViewById(R.id.fragment_driver_passenger_pick_up_countdown);
+
         view.getViewTreeObserver()
                 .addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                     @Override
@@ -125,6 +130,8 @@ public class DriverPassengerPickUpFragment extends Fragment implements View.OnCl
             @Override
             public void onFinish() {
                 mNoShowButton.setEnabled(true);
+                mTextViewTimeToGoTitle.setVisibility(View.GONE);
+                mTextViewTimeToGoCountDown.setVisibility(View.GONE);
             }
         }.start();
 
