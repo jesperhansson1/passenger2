@@ -24,6 +24,7 @@ import android.widget.Toast;
 
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.flows.main.MainViewModel;
+import com.cybercom.passenger.flows.payment.PaymentHelper;
 import com.cybercom.passenger.interfaces.FragmentSizeListener;
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.repository.PassengerRepository;
@@ -40,6 +41,7 @@ public class DriveInformationDialog extends Fragment implements View.OnClickList
 
     private static final String DRIVE_KEY = "DRIVE";
     private static final String PICKUP_CONFIRMED_KEY = "PICK_UP_CONFIRMED";
+    private static final String PRICE_KEY = "PRICE_KEY";
     private static final float SWIPE_MIN_DISTANCE = 20;
     private static final float SWIPE_THRESHOLD_VELOCITY = 60;
 
@@ -57,6 +59,7 @@ public class DriveInformationDialog extends Fragment implements View.OnClickList
     private GestureDetector mGestureDetector;
     private FragmentSizeListener mFragmentSizeListener;
     private ProgressBar mCancelButtonProgressBar;
+    private TextView mPriceTextView;
 
     public interface PassengerNotificationListener {
         void onCancelPassengerRide();
@@ -64,11 +67,13 @@ public class DriveInformationDialog extends Fragment implements View.OnClickList
         void onDropOffPassengerRide();
     }
 
-    public static DriveInformationDialog getInstance(Drive drive, boolean pickedUpConfirmed) {
+    public static DriveInformationDialog getInstance(Drive drive, boolean pickedUpConfirmed,
+                                                     double price) {
         DriveInformationDialog driveInformationDialog = new DriveInformationDialog();
         Bundle args = new Bundle();
         args.putSerializable(DRIVE_KEY, drive);
         args.putSerializable(PICKUP_CONFIRMED_KEY, pickedUpConfirmed);
+        args.putSerializable(PRICE_KEY, price);
         driveInformationDialog.setArguments(args);
         return driveInformationDialog;
     }
@@ -96,6 +101,7 @@ public class DriveInformationDialog extends Fragment implements View.OnClickList
         mETAProgressBar = rootView.findViewById(R.id.passenger_notification_eta_progressbar);
         mCancelButtonProgressBar = rootView.findViewById(R.id.driveinfo_cancelbutton_progressbar);
         mETAText = rootView.findViewById(R.id.passenger_notification_eta_text);
+        mPriceTextView = rootView.findViewById(R.id.passenger_notification_price);
         mYouHaveBeenMatchedText = rootView.findViewById(R.id.passenger_notification_you_have_been_matched);
         mDriveInformationDialog = rootView.findViewById(R.id.drive_information_dialog);
         Button cancelOrEarlyDropOffButton = rootView.findViewById(R.id.passenger_notification_cancel_button);
@@ -109,7 +115,11 @@ public class DriveInformationDialog extends Fragment implements View.OnClickList
             if (getArguments() != null) {
                 mDrive = (Drive) getArguments().getSerializable(DRIVE_KEY);
                 mPickUpConfirmed = getArguments().getBoolean(PICKUP_CONFIRMED_KEY);
+                double price = getArguments().getDouble(PRICE_KEY);
 
+                mPriceTextView.setText(getString(R.string.passenger_notification_price,
+                        PaymentHelper.roundToPlace(price, 2)));
+                
                 TextView passengerNotificationName
                         = rootView.findViewById(R.id.passenger_notification_name);
                 passengerNotificationName.setText(mDrive.getDriver().getFullName());
