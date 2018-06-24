@@ -111,7 +111,7 @@
         android:layout_marginTop="@dimen/activity_margin_half"
         android:background="@drawable/button_corner_round_white"
         android:text="@string/fragment_driver_pick_up_button_text_no_show"
-        android:textColor="@color/colorRed"
+        android:textColor="@color/button_text_color_red"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
