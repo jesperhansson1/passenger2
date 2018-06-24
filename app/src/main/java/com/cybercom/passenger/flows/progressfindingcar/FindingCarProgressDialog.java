@@ -27,7 +27,7 @@ import static com.cybercom.passenger.flows.payment.PaymentConstants.PRECISION;
 public class FindingCarProgressDialog extends DialogFragment implements View.OnClickListener {
 
     public static final String MATCHING_IN_PROGRESS = "MATCHING_IN_PROGRESS";
-    String mAmount = "0";
+    double mAmount;
     String mChargeId = null;
 
     public interface FindingCarListener {
@@ -42,7 +42,7 @@ public class FindingCarProgressDialog extends DialogFragment implements View.OnC
 
     public void setAmount(double amount)
     {
-        mAmount = String.valueOf(PaymentHelper.roundToPlace(amount,PRECISION)) + "Kr";
+        mAmount = PaymentHelper.roundToPlace(amount,PRECISION);
     }
 
     public void setChargeId(String chargeId)
@@ -71,8 +71,8 @@ public class FindingCarProgressDialog extends DialogFragment implements View.OnC
 
 
         TextView priceTextView = rootView.findViewById(R.id.finding_car_price_title);
-        priceTextView.setText(rootView.getContext().getApplicationContext().getResources().
-                getString(R.string.passenger_notification_price_title) + " : " + mAmount);
+        priceTextView.setText(getString(R.string.finding_car_price,
+                mAmount));
         this.getDialog().setCanceledOnTouchOutside(false);
         Button cancelButton = rootView.findViewById(R.id.finding_car_cancel);
         cancelButton.setOnClickListener(this);
