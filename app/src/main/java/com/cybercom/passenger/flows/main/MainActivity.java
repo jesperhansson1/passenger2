@@ -302,7 +302,8 @@ public class MainActivity extends AppCompatActivity implements
         }
         mActivePassengerRide = passengerRide;
         mCreateDriveFragment.hideCreateDialogCompletely();
-        showDriveInformationDialog(passengerRide.getDrive(), mActivePassengerRide.isPickUpConfirmed());
+        showDriveInformationDialog(passengerRide.getDrive(),
+                mActivePassengerRide.isPickUpConfirmed(), mActivePassengerRide.getPrice());
         updateDriversMarkerPosition(passengerRide.getDrive().getId());
         dismissMatchingInProgressDialog();
         startPassengerForegroundService(passengerRide);
@@ -322,7 +323,8 @@ public class MainActivity extends AppCompatActivity implements
                                     .findFragmentByTag(DriverPassengerPickUpFragment
                                             .DRIVER_PASSENGER_PICK_UP_FRAGMENT_TAG));
                             showDriveInformationDialog(mActivePassengerRide.getDrive(),
-                                    passengerRideDatabaseModel.isPickUpConfirmed());
+                                    passengerRideDatabaseModel.isPickUpConfirmed(),
+                                    mActivePassengerRide.getPrice());
                             mActivePassengerRide.setPickUpConfirmed(true);
                         }
                         if (!mActivePassengerRide.isDropOffConfirmed() &&
@@ -1012,11 +1014,11 @@ public class MainActivity extends AppCompatActivity implements
         dFragment.show(getSupportFragmentManager(), AcceptRejectPassengerDialog.TAG);
     }
 
-    private void showDriveInformationDialog(Drive drive, boolean pickUpConfirmed) {
+    private void showDriveInformationDialog(Drive drive, boolean pickUpConfirmed, double price) {
             removeDriveInformationDialog();
 
         mDriveInformationDialog = DriveInformationDialog.getInstance(
-                drive, pickUpConfirmed);
+                drive, pickUpConfirmed, price);
 
         mFragmentManager.beginTransaction().add(R.id.main_activity_dialog_container,
                 mDriveInformationDialog).commit();
