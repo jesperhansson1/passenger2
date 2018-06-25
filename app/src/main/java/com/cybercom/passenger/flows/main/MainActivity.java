@@ -51,9 +51,9 @@ import com.cybercom.passenger.flows.driverconfirmation.AcceptRejectPassengerDial
 import com.cybercom.passenger.flows.dropofffragment.DriverDropOffFragment;
 import com.cybercom.passenger.flows.login.RegisterActivity;
 import com.cybercom.passenger.flows.nomatchfragment.NoMatchFragment;
+import com.cybercom.passenger.flows.passengernotification.DriveInformationDialog;
 import com.cybercom.passenger.flows.payment.CalculatePrice;
 import com.cybercom.passenger.flows.payment.StripeAsyncTask;
-import com.cybercom.passenger.flows.passengernotification.DriveInformationDialog;
 import com.cybercom.passenger.flows.pickupfragment.DriverPassengerPickUpFragment;
 import com.cybercom.passenger.flows.progressfindingcar.FindingCarProgressDialog;
 import com.cybercom.passenger.interfaces.FragmentSizeListener;
@@ -63,9 +63,9 @@ import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Notification;
 import com.cybercom.passenger.model.PassengerRide;
 import com.cybercom.passenger.model.Position;
+import com.cybercom.passenger.model.Route;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.route.FetchRoute;
-import com.cybercom.passenger.model.Route;
 import com.cybercom.passenger.service.Constants;
 import com.cybercom.passenger.service.ForegroundServices;
 import com.cybercom.passenger.service.GeofenceTransitionsIntentService;
@@ -99,7 +99,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
@@ -131,7 +130,7 @@ public class MainActivity extends AppCompatActivity implements
     private static final float PLACE_MARKER_INFO_FADE_OUT_TO = 0.0f;
     private static final float PLACE_MARKER_INFO_FADE_IN_TO = 1.0f;
     private static final float CHANGE_CAMERA_BEARING_SPEED_THRESHOLD = 1.0f;
-    public static final int ZOOM_LEVEL_FOLLOW_DRIVER = 19;
+    public static final int ZOOM_LEVEL_FOLLOW_DRIVER = 18;
     private static final int ZOOM_LEVEL_MY_LOCATION = 17;
     private static final float ZOOM_LEVEL_STREETS = 15;
     private static final String DRIVE_ID = "driveId";
@@ -222,6 +221,8 @@ public class MainActivity extends AppCompatActivity implements
     public int mSeats = 0;*/
 
     DriveRequest mPendingDriveRequest;
+
+    private boolean mActiveDriveZoomFlag = true;
 
 
 
@@ -447,6 +448,7 @@ public class MainActivity extends AppCompatActivity implements
 
                 mActiveDriveIdList.add(drive.getId());
                 mActiveDrive = drive;
+                mActiveDriveZoomFlag = true;
                 mMainViewModel.getPassengerRides(drive.getId()).observe(this, passengerRide -> {
                     if (passengerRide != null && !passengerRide.isCancelled()
                             && !passengerRide.isDropOffConfirmed()) {
@@ -542,19 +544,30 @@ public class MainActivity extends AppCompatActivity implements
 
     private void moveCameraToLocation(Location location) {
         CameraPosition cameraPosition;
+        CameraPosition.Builder cameraPositionBuilder;
 
-        CameraPosition.Builder cameraPositionBuilder = new CameraPosition.Builder()
-                .zoom(ZOOM_LEVEL_FOLLOW_DRIVER);
+        if (mActiveDriveZoomFlag) {
+            cameraPositionBuilder = new CameraPosition.Builder()
+                    .zoom(ZOOM_LEVEL_FOLLOW_DRIVER);
+            cameraPosition = cameraPositionBuilder.target(new LatLng(location.getLatitude(),
+                    location.getLongitude())).build();
+            mGoogleMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 
-        // This is needed to prevent erratic camera updates when car has stopped.
-        if (location.hasSpeed()
-                && location.getSpeed() > CHANGE_CAMERA_BEARING_SPEED_THRESHOLD) {
-            cameraPositionBuilder.bearing(location.getBearing());
+            mActiveDriveZoomFlag = false;
+        } else {
+            cameraPositionBuilder = new CameraPosition.Builder()
+                    .zoom(mGoogleMap.getCameraPosition().zoom);
+            // This is needed to prevent erratic camera updates when car has stopped.
+            if (location.hasSpeed()
+                    && location.getSpeed() > CHANGE_CAMERA_BEARING_SPEED_THRESHOLD) {
+
+                cameraPositionBuilder.bearing(location.getBearing());
+            }
+            cameraPosition = cameraPositionBuilder.target(new LatLng(location.getLatitude(),
+                    location.getLongitude())).build();
+
+            mGoogleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
         }
-
-        cameraPosition = cameraPositionBuilder.target(new LatLng(location.getLatitude(),
-                location.getLongitude())).build();
-        mGoogleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
     }
 
     private void checkIfDriverHasDeviatedFromRoute(Location location) {
@@ -584,7 +597,7 @@ public class MainActivity extends AppCompatActivity implements
         if (!isCloseToRoute) {
             Position driveStartLocation = new Position(null, location.getLatitude(),
                         location.getLongitude());
-
+            mActiveDriveZoomFlag = true;
             rerouteDrive(mActiveDrive, null, driveStartLocation);
         }
     }
@@ -594,6 +607,7 @@ public class MainActivity extends AppCompatActivity implements
      * camera so that the current direction where the car is heading is always upwards.
      */
     private void observerDriverPositionUpdates() {
+        mActiveDriveZoomFlag = true;
 
         mLocationObserverForCameraUpdates = location -> {
             moveCameraToLocation(location);
@@ -1233,7 +1247,7 @@ public class MainActivity extends AppCompatActivity implements
         removeCreateDriveFragment();
     }
 
-    private void removeCreateDriveFragment() {
+        private void removeCreateDriveFragment() {
         mIsFragmentAdded = false;
         mFragmentManager.beginTransaction().remove(mCreateDriveFragment).commit();
     }
@@ -1385,6 +1399,10 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onHeightChanged(int fragmentHeight) {
         mGoogleMap.setPadding(0, 0, 0, fragmentHeight);
+        // When Drive is active the camera should follow the driver
+        if (mActiveDrive != null) {
+            return;
+        }
         if (mMarkerCount == 1) {
             animateToLocation(mStartLocationMarker.getPosition());
         } else {
