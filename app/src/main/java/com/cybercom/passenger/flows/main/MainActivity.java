@@ -1507,26 +1507,21 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onPickUpNoShow(PassengerRide passengerRide) {
-        Timber.d("Driver has reported no show. Minimum fee is charged for customer " +
-                "and remaining amount refunded");
+        removeFragment(mFragmentManager
+                .findFragmentByTag(DriverPassengerPickUpFragment
+                        .DRIVER_PASSENGER_PICK_UP_FRAGMENT_TAG));
         // Driver has reported no show
         if (mCurrentLoggedInUser.getType() == TYPE_DRIVER){
-            removeFragment(mFragmentManager
-                    .findFragmentByTag(DriverPassengerPickUpFragment
-                            .DRIVER_PASSENGER_PICK_UP_FRAGMENT_TAG));
+            Timber.d("Driver has reported no show. Minimum fee is charged for customer and remaining amount refunded");
             mMainViewModel.noShowPassenger(passengerRide.getChargeId(),
                     passengerRide.getDrive().getDriver().getCustomerId());
         }
+        // Passenger has reported no show
         if (mCurrentLoggedInUser.getType() == TYPE_PASSENGER){
-            removeFragment(mFragmentManager
-                    .findFragmentByTag(DriverPassengerPickUpFragment
-                            .DRIVER_PASSENGER_PICK_UP_FRAGMENT_TAG));
+            Timber.d("Passenger has reported no show. Refund full amount to customer");
             addCreateDriveFragment();
             mMainViewModel.refundFull(passengerRide.getChargeId());
-
         }
-
-
     }
 
     @Override
