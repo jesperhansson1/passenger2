@@ -91,6 +91,7 @@ public class CardFragment extends Fragment implements StripeAsyncTask.StripeAsyn
         //after every four digits, add space
         mEditTextCard.addTextChangedListener(new FormattingTextWatcher(4));
         mEditTextExpire = rootView.findViewById(R.id.editText_fragmentcard_expires);
+        mEditTextExpire.addTextChangedListener(new FormattingExpireTextWatcher(2));
         mEditTextCode = rootView.findViewById(R.id.editText_fragmentcard_securitycode);
         mNext = rootView.findViewById(R.id.button_fragmentcard_next);
         mNext.setOnClickListener(view -> nextCardClick());
