@@ -110,6 +110,8 @@ import static com.cybercom.passenger.flows.payment.PaymentConstants.GOOGLE_API_E
 import static com.cybercom.passenger.flows.payment.PaymentConstants.RESERVE;
 import static com.cybercom.passenger.flows.payment.PaymentConstants.SPLIT_CHAR;
 import static com.cybercom.passenger.flows.payment.PaymentHelper.createChargeHashMap;
+import static com.cybercom.passenger.model.User.TYPE_DRIVER;
+import static com.cybercom.passenger.model.User.TYPE_PASSENGER;
 
 public class MainActivity extends AppCompatActivity implements
         CreateDriveFragment.CreateRideFragmentListener,
@@ -404,7 +406,7 @@ public class MainActivity extends AppCompatActivity implements
         observeOnNotifications();
 
         // Drivers could have active drives
-        if (mCurrentLoggedInUser.getType() == User.TYPE_DRIVER) {
+        if (mCurrentLoggedInUser.getType() == TYPE_DRIVER) {
             observeOnActiveDrive();
         }
 
@@ -1248,7 +1250,7 @@ public class MainActivity extends AppCompatActivity implements
     public void onCreateRide(long time, int type, Position startLocation, Position endLocation,
                              int seats) {
         switch (type) {
-            case User.TYPE_DRIVER:
+            case TYPE_DRIVER:
                 if(mBounds == null) {
                     mBounds = new Bounds(0.0,0.0,0.0,0.0, 0, 0);
                 }
@@ -1472,9 +1474,9 @@ public class MainActivity extends AppCompatActivity implements
                 DriverPassengerPickUpFragment.DRIVER_PASSENGER_PICK_UP_FRAGMENT_TAG).commit();
     }
 
-    private void showPassengerPickUpFragment(Drive matchedDrive) {
+    private void showPassengerPickUpFragment(PassengerRide passengerRide) {
         mFragmentManager.beginTransaction().add(R.id.main_activity_dialog_container,
-                DriverPassengerPickUpFragment.newInstance(matchedDrive),
+                DriverPassengerPickUpFragment.newInstance(passengerRide),
                 DriverPassengerPickUpFragment.DRIVER_PASSENGER_PICK_UP_FRAGMENT_TAG).commit();
     }
 
@@ -1508,11 +1510,23 @@ public class MainActivity extends AppCompatActivity implements
         Timber.d("Driver has reported no show. Minimum fee is charged for customer " +
                 "and remaining amount refunded");
         // Driver has reported no show
-        removeFragment(mFragmentManager
-                .findFragmentByTag(DriverPassengerPickUpFragment
-                        .DRIVER_PASSENGER_PICK_UP_FRAGMENT_TAG));
-        mMainViewModel.noShowPassenger(passengerRide.getChargeId(),
-                passengerRide.getDrive().getDriver().getCustomerId());
+        if (mCurrentLoggedInUser.getType() == TYPE_DRIVER){
+            removeFragment(mFragmentManager
+                    .findFragmentByTag(DriverPassengerPickUpFragment
+                            .DRIVER_PASSENGER_PICK_UP_FRAGMENT_TAG));
+            mMainViewModel.noShowPassenger(passengerRide.getChargeId(),
+                    passengerRide.getDrive().getDriver().getCustomerId());
+        }
+        if (mCurrentLoggedInUser.getType() == TYPE_PASSENGER){
+            removeFragment(mFragmentManager
+                    .findFragmentByTag(DriverPassengerPickUpFragment
+                            .DRIVER_PASSENGER_PICK_UP_FRAGMENT_TAG));
+            addCreateDriveFragment();
+            mMainViewModel.refundFull(passengerRide.getChargeId());
+
+        }
+
+
     }
 
     @Override
@@ -1522,17 +1536,6 @@ public class MainActivity extends AppCompatActivity implements
                 .findFragmentByTag(DriverPassengerPickUpFragment
                         .DRIVER_PASSENGER_PICK_UP_FRAGMENT_TAG));
         mMainViewModel.confirmPickUp(drive.getId());
-    }
-
-    @Override
-    public void onPickUpNoShow(Drive drive) {
-        Timber.d("passenger has reported no show. Customer will be refunded with entire amount");
-        // Passenger has reported no show
-        removeFragment(mFragmentManager
-                .findFragmentByTag(DriverPassengerPickUpFragment
-                        .DRIVER_PASSENGER_PICK_UP_FRAGMENT_TAG));
-        addCreateDriveFragment();
-        mMainViewModel.refundFull(mMainViewModel.getChargeId(drive,mUser.getUid()));
     }
 
     @Override
@@ -1810,11 +1813,11 @@ public class MainActivity extends AppCompatActivity implements
                     geoFenceType
                             = geofenceRequestId.substring(geofenceRequestId.length() - 1);
                     if (geoFenceType.equals(GEOFENCE_TYPE_PICK_UP)) {
-                        if (mCurrentLoggedInUser.getType() == User.TYPE_DRIVER) {
+                        if (mCurrentLoggedInUser.getType() == TYPE_DRIVER) {
                             showDriverPickUpFragment(getPassengerRideFromLocalList(passengerRideId));
                         }
                     } else if (geoFenceType.equals(GEOFENCE_TYPE_DROP_OFF)) {
-                        if (mCurrentLoggedInUser.getType() == User.TYPE_DRIVER) {
+                        if (mCurrentLoggedInUser.getType() == TYPE_DRIVER) {
                             showDriverDropOffFragment(getPassengerRideFromLocalList(passengerRideId));
                         }
                         removeGeofence(geofenceRequestId);
@@ -1832,7 +1835,7 @@ public class MainActivity extends AppCompatActivity implements
                 if (intent.getExtras().getInt(DIALOG_TO_SHOW) == TYPE_PICK_UP) {
                     removeDriveInformationDialog();
                     if (mActivePassengerRide != null) {
-                        showPassengerPickUpFragment(mActivePassengerRide.getDrive());
+                        showPassengerPickUpFragment(mActivePassengerRide);
                     }
                 }
                 if (intent.getExtras().getInt(DIALOG_TO_SHOW) == TYPE_DROP_OFF) {
