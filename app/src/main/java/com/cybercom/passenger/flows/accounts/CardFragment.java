@@ -71,6 +71,8 @@ public class CardFragment extends Fragment implements StripeAsyncTask.StripeAsyn
     public static final String FILE_ID = "file_id";
     public static final String TOKEN_ID = "token_id";
     private String mTokenId = null;
+    public static final String WHITE_SPACE = " ";
+    public static final String HASH_SPACE = "/";
 
     public CardFragment() {
         // Required empty public constructor
@@ -89,8 +91,9 @@ public class CardFragment extends Fragment implements StripeAsyncTask.StripeAsyn
         mProgressBar.setVisibility(View.GONE);
         mEditTextCard = rootView.findViewById(R.id.editText_fragmentcard_card);
         //after every four digits, add space
-        mEditTextCard.addTextChangedListener(new FormattingTextWatcher(4));
+        mEditTextCard.addTextChangedListener(new FormattingTextWatcher(4, WHITE_SPACE));
         mEditTextExpire = rootView.findViewById(R.id.editText_fragmentcard_expires);
+        mEditTextExpire.addTextChangedListener(new FormattingTextWatcher(2, HASH_SPACE));
         mEditTextCode = rootView.findViewById(R.id.editText_fragmentcard_securitycode);
         mNext = rootView.findViewById(R.id.button_fragmentcard_next);
         mNext.setOnClickListener(view -> nextCardClick());

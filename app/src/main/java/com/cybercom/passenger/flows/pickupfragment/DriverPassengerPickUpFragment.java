@@ -44,8 +44,6 @@ public class DriverPassengerPickUpFragment extends Fragment implements View.OnCl
         void onPickUpNoShow(PassengerRide passengerRide);
 
         void onPickUpConfirmed(Drive drive);
-
-        void onPickUpNoShow(Drive drive);
     }
 
     public static DriverPassengerPickUpFragment newInstance(Drive drive) {
@@ -165,11 +163,7 @@ public class DriverPassengerPickUpFragment extends Fragment implements View.OnCl
                 break;
             }
             case R.id.fragment_driver_passenger_pick_up_no_show_button: {
-                if (mDrive != null) {
-                    mDriverPassengerPickUpButtonClickListener.onPickUpNoShow(mDrive);
-                } else {
-                    mDriverPassengerPickUpButtonClickListener.onPickUpNoShow(mPassengerRide);
-                }
+                mDriverPassengerPickUpButtonClickListener.onPickUpNoShow(mPassengerRide);
                 mFragmentSizeListener.onHeightChanged(0);
                 break;
             }

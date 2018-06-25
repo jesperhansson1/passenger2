@@ -407,10 +407,6 @@ public class MainViewModel extends AndroidViewModel {
         return mPassengerRepository.getPassengerRideById(passengerRideId);
     }
 
-    public String getChargeId(Drive drive, String passengerId) {
-        return mPassengerRepository.getChargeIdForRefund(drive,passengerId);
-    }
-
     public void refundFull(String chargeId){
         mPassengerRepository.refundFull(chargeId);
     }

@@ -1608,36 +1608,6 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
                 true);
     }
 
-    //returns chargeid associated with drive and passenger
-    String mChargeId = null;
-    public String getChargeIdForRefund(Drive drive, String passengerId) {
-
-        Timber.d("getChargeIdForRefund %s", drive.getId() + " " + passengerId);
-        mPassengerRideReference.orderByChild(DRIVE_ID).equalTo(drive.getId()).addListenerForSingleValueEvent(
-                new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                            PassengerRide passengerRide = snapshot.getValue(PassengerRide.class);
-                            Timber.d("result: %s", passengerRide);
-                            if (passengerRide != null) {
-                                if (passengerRide.getPassengerId().equalsIgnoreCase(passengerId)) {
-                                    mChargeId = passengerRide.getChargeId();
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-                        Timber.d("error fetching passengerrides %s", drive.getId() + " " + passengerId);
-                    }
-                }
-        );
-        Timber.d("stripe charge with id %s", mChargeId);
-        return mChargeId;
-    }
-
     public void getAmountInCharge(String chargeId) {
         new StripeAsyncTask(null,this,RETRIEVE).execute(chargeId);
     }
@@ -1706,13 +1676,13 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
             String chargeId = entry.getKey();
             double price = entry.getValue();
             if(price > driverReimbursement){
-                new StripeAsyncTask(createTransferHashMap(chargeId, (int)driverReimbursement * 100,
-                        accountId), this,
+                new StripeAsyncTask(createTransferHashMap(chargeId, (int)(driverReimbursement * 100),
+                        mCurrentlyLoggedInUser.getCustomerId()), this,
                         TRANSFER).execute();
                 driverReimbursement = 0;
             }else{
-                new StripeAsyncTask(createTransferHashMap(chargeId, (int)price * 100,
-                        accountId), this,
+                new StripeAsyncTask(createTransferHashMap(chargeId, (int)(price * 100),
+                        mCurrentlyLoggedInUser.getCustomerId()), this,
                         TRANSFER).execute();
                 driverReimbursement = driverReimbursement - price;
             }
