@@ -42,7 +42,6 @@ import com.google.android.gms.location.LocationServices;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -331,7 +330,7 @@ public class ForegroundServices extends LifecycleService {
                 return;
             }
             if (mDriveHasPassengers && hasAllPassengersBeenDroppedOff(passengerRides)) {
-                makePayments(passengerRides, mDriveId, mSwedishMilesNotYetReimbursed);
+                makePayments(passengerRides, mSwedishMilesNotYetReimbursed);
                 mSwedishMilesNotYetReimbursed = 0;
                 mDriveHasPassengers = false;
             } else if (hasAnyPassengersBeenPickedUp(passengerRides)) {
@@ -341,7 +340,7 @@ public class ForegroundServices extends LifecycleService {
     }
 
     private void makePayments(List<PassengerRide>
-                                      passengerRides, String driveId, int distanceToReimburseDriver) {
+                                      passengerRides, int distanceToReimburseDriver) {
         HashMap<String, Double> chargesMap = new HashMap<>();
         for (com.cybercom.passenger.repository.databasemodel.PassengerRide passengerRide :
                 passengerRides) {
@@ -352,7 +351,7 @@ public class ForegroundServices extends LifecycleService {
             }
 
         }
-        mPassengerRepository.paymentTransfer(distanceToReimburseDriver, chargesMap, driveId);
+        mPassengerRepository.paymentTransfer(distanceToReimburseDriver, chargesMap);
     }
 
     private boolean hasAnyPassengersBeenPickedUp(List<PassengerRide> passengerRides) {
