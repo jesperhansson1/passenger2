@@ -1669,21 +1669,22 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
     }
 
     //This method has to be called when the last passenger has been dropped off
-    public void paymentTransfer(int dist, HashMap<String, Double> chargesMap, String accountId){
+    public void paymentTransfer(int dist, HashMap<String, Double> chargesMap){
         double driverReimbursement = dist * FARE_PER_MILE ;
-        Timber.d("stripe payment to driver is %s", driverReimbursement);
+        
+        mCurrentlyLoggedInUser.getCustomerId();
+        Timber.d("stripe payment to driver is %s to account id: %s", driverReimbursement,
+                mCurrentlyLoggedInUser.getCustomerId());
         for(Map.Entry<String, Double> entry : chargesMap.entrySet()) {
             String chargeId = entry.getKey();
             double price = entry.getValue();
             if(price > driverReimbursement){
-                new StripeAsyncTask(createTransferHashMap(chargeId, (int)(driverReimbursement * 100),
-                        mCurrentlyLoggedInUser.getCustomerId()), this,
-                        TRANSFER).execute();
+                new StripeAsyncTask(createTransferHashMap(chargeId, (int)driverReimbursement * 100,
+                        mCurrentlyLoggedInUser.getCustomerId()), this, TRANSFER).execute();
                 driverReimbursement = 0;
             }else{
-                new StripeAsyncTask(createTransferHashMap(chargeId, (int)(price * 100),
-                        mCurrentlyLoggedInUser.getCustomerId()), this,
-                        TRANSFER).execute();
+                new StripeAsyncTask(createTransferHashMap(chargeId, (int)price * 100,
+                        mCurrentlyLoggedInUser.getCustomerId()), this, TRANSFER).execute();
                 driverReimbursement = driverReimbursement - price;
             }
         }
