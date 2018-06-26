@@ -14,6 +14,7 @@ public class RoundCornersTransformation implements com.squareup.picasso.Transfor
     private String KEY = "";
     private boolean mTopCorners = true;
     private boolean mBottomCorners = true;
+    public static final int RADIUS = 20;
 
     /**
      * Creates rounded transformation for all corners.
@@ -95,6 +96,8 @@ public class RoundCornersTransformation implements com.squareup.picasso.Transfor
     private static Path RoundedRect(float leftX, float topY, float rightX, float bottomY, float rx,
                                     float ry, boolean topLeft, boolean topRight, boolean
                                             bottomRight, boolean bottomLeft) {
+        bottomLeft = topLeft;
+        bottomRight = topLeft;
         Path path = new Path();
         if (rx < 0) rx = 0;
         if (ry < 0) ry = 0;

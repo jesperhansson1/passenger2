@@ -37,6 +37,8 @@ import java.util.Locale;
 
 import timber.log.Timber;
 
+import static com.cybercom.passenger.utils.RoundCornersTransformation.RADIUS;
+
 public class AcceptRejectPassengerDialog extends DialogFragment implements View.OnClickListener {
 
     private static final String NOTIFICATION_KEY = "NOTIFICATION";
@@ -112,7 +114,8 @@ public class AcceptRejectPassengerDialog extends DialogFragment implements View.
                 URL url = new URL(uri.toString());
                 Timber.d("image url ", url);
                 Picasso.with(getContext()).load(String.valueOf(url)).fit()
-                        .centerCrop().transform(new RoundCornersTransformation(passengerImageView.getWidth(), 0, true, true)).into(passengerImageView);
+                        .centerCrop().transform(new RoundCornersTransformation(RADIUS,
+                        0, true, false)).into(passengerImageView);
 
             } catch (MalformedURLException e) {
                 e.printStackTrace();

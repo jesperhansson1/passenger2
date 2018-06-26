@@ -114,6 +114,7 @@ import static com.cybercom.passenger.flows.payment.PaymentConstants.SPLIT_CHAR;
 import static com.cybercom.passenger.flows.payment.PaymentHelper.createChargeHashMap;
 import static com.cybercom.passenger.model.User.TYPE_DRIVER;
 import static com.cybercom.passenger.model.User.TYPE_PASSENGER;
+import static com.cybercom.passenger.utils.RoundCornersTransformation.RADIUS;
 
 public class MainActivity extends AppCompatActivity implements
         CreateDriveFragment.CreateRideFragmentListener,
@@ -876,7 +877,8 @@ public class MainActivity extends AppCompatActivity implements
                     URL url = new URL(uri.toString());
                     Timber.d("image url ", url);
                     Picasso.with(getApplicationContext()).load(String.valueOf(url)).fit()
-                            .centerCrop().transform(new RoundCornersTransformation(fab.getWidth(), 0, true, true)).into(fab);
+                            .centerCrop().transform(new RoundCornersTransformation(fab.getWidth(),
+                            0, true, true)).into(fab);
                 } catch (MalformedURLException e) {
                     e.printStackTrace();
                 }
@@ -1589,7 +1591,7 @@ public class MainActivity extends AppCompatActivity implements
                 URL url = new URL(uri.toString());
                 Timber.d("image url ", url);
                 Picasso.with(getApplicationContext()).load(String.valueOf(url)).fit().centerCrop()
-                        .transform(new RoundCornersTransformation(passengerImageView.getWidth(), 0, true, true)).into(passengerImageView);
+                        .transform(new RoundCornersTransformation(RADIUS, 0, true, false)).into(passengerImageView);
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             }

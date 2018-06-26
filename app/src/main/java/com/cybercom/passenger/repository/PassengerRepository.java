@@ -1751,4 +1751,29 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
         return fileUriLiveData;
     }
 
+    public LiveData<Car> getCarDetails(String userId){
+        MutableLiveData<Car> carLiveData = new MutableLiveData();
+        mCarsReference.child(userId).orderByChild("model").
+        addValueEventListener(new ValueEventListener() {
+            @SuppressLint("TimberArgCount")
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Timber.d("result ", dataSnapshot);
+                for (DataSnapshot dsp : dataSnapshot.getChildren()) {
+                    Car carDetails = dsp.getValue(Car.class);
+                    Timber.d("result: %s", carDetails);
+                    carLiveData.setValue(carDetails);
+                }
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                Timber.d("result: %s", error);
+            }
+        });
+        return carLiveData;
+    }
+
+
 }
