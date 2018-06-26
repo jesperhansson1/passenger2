@@ -20,6 +20,7 @@ import timber.log.Timber;
 
 import static com.cybercom.passenger.flows.accounts.AccountActivity.CARARRAY;
 import static com.cybercom.passenger.flows.accounts.AccountActivity.LOGINARRAY;
+import static com.cybercom.passenger.flows.accounts.CardFragment.WHITE_SPACE;
 
 public class BankFragment extends Fragment {
 
@@ -48,7 +49,7 @@ public class BankFragment extends Fragment {
         progressBar.setVisibility(View.GONE);
 
         //after every four digits, add space
-        mEditTextAccount.addTextChangedListener(new FormattingTextWatcher(4));
+        mEditTextAccount.addTextChangedListener(new FormattingTextWatcher(4,WHITE_SPACE));
         mNext = rootView.findViewById(R.id.button_fragmentbank_next);
 
         mNext.setOnClickListener(view -> nextClick());
