@@ -9,8 +9,9 @@
         android:id="@+id/passenger_thumbnail"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:gravity="center_vertical"
         android:contentDescription="@string/content_description_passenger_thumbnail"
+        android:gravity="center_vertical"
+        android:padding="@dimen/pad_2dp"
         app:srcCompat="@drawable/ic_person_profile" />
 
     <LinearLayout

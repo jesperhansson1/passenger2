@@ -14,12 +14,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -41,6 +40,7 @@ import android.view.animation.AnimationUtils;
 import android.view.animation.TranslateAnimation;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -53,9 +53,9 @@ import com.cybercom.passenger.flows.driverconfirmation.AcceptRejectPassengerDial
 import com.cybercom.passenger.flows.dropofffragment.DriverDropOffFragment;
 import com.cybercom.passenger.flows.login.RegisterActivity;
 import com.cybercom.passenger.flows.nomatchfragment.NoMatchFragment;
+import com.cybercom.passenger.flows.passengernotification.DriveInformationDialog;
 import com.cybercom.passenger.flows.payment.CalculatePrice;
 import com.cybercom.passenger.flows.payment.StripeAsyncTask;
-import com.cybercom.passenger.flows.passengernotification.DriveInformationDialog;
 import com.cybercom.passenger.flows.pickupfragment.DriverPassengerPickUpFragment;
 import com.cybercom.passenger.flows.progressfindingcar.FindingCarProgressDialog;
 import com.cybercom.passenger.interfaces.FragmentSizeListener;
@@ -65,14 +65,15 @@ import com.cybercom.passenger.model.DriveRequest;
 import com.cybercom.passenger.model.Notification;
 import com.cybercom.passenger.model.PassengerRide;
 import com.cybercom.passenger.model.Position;
+import com.cybercom.passenger.model.Route;
 import com.cybercom.passenger.model.User;
 import com.cybercom.passenger.route.FetchRoute;
-import com.cybercom.passenger.model.Route;
 import com.cybercom.passenger.service.Constants;
 import com.cybercom.passenger.service.ForegroundServices;
 import com.cybercom.passenger.service.GeofenceTransitionsIntentService;
 import com.cybercom.passenger.utils.LocationHelper;
 import com.cybercom.passenger.utils.NotificationHelper;
+import com.cybercom.passenger.utils.RoundCornersTransformation;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingClient;
 import com.google.android.gms.location.GeofencingRequest;
@@ -102,7 +103,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
 
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
@@ -876,7 +876,7 @@ public class MainActivity extends AppCompatActivity implements
                     URL url = new URL(uri.toString());
                     Timber.d("image url ", url);
                     Picasso.with(getApplicationContext()).load(String.valueOf(url)).fit()
-                            .centerInside() .into(fab);
+                            .centerCrop().transform(new RoundCornersTransformation(fab.getWidth(), 0, true, true)).into(fab);
                 } catch (MalformedURLException e) {
                     e.printStackTrace();
                 }
@@ -1574,10 +1574,27 @@ public class MainActivity extends AppCompatActivity implements
         updatePassengerDetailedInformation(passengerRide);
     }
 
+    @SuppressLint("TimberArgCount")
     private void updatePassengerDetailedInformation(PassengerRide passengerRide) {
         if (passengerRide == null) {
             return;
         }
+
+        ImageView passengerImageView = (ImageView)findViewById(R.id.passenger_thumbnail);
+
+        LiveData<Uri> imageUri = mMainViewModel.getImageUri(passengerRide.getPassenger().getUserId());
+        imageUri.observe(this,uri -> {
+            Timber.d("image uri ", uri.toString());
+            try {
+                URL url = new URL(uri.toString());
+                Timber.d("image url ", url);
+                Picasso.with(getApplicationContext()).load(String.valueOf(url)).fit().centerCrop()
+                        .transform(new RoundCornersTransformation(passengerImageView.getWidth(), 0, true, true)).into(passengerImageView);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+        });
+
         ((TextView)mPassengerDetailedInformation.findViewById(R.id.passenger_name)).setText(
                 passengerRide.getPassenger().getFullName());
         //TODO add rating to PassengerRide

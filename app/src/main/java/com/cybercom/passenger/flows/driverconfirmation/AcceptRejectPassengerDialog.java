@@ -2,7 +2,6 @@ package com.cybercom.passenger.flows.driverconfirmation;
 
 import android.annotation.SuppressLint;
 import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.MutableLiveData;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -27,9 +26,9 @@ import com.cybercom.passenger.R;
 import com.cybercom.passenger.model.Notification;
 import com.cybercom.passenger.repository.PassengerRepository;
 import com.cybercom.passenger.utils.LocationHelper;
+import com.cybercom.passenger.utils.RoundCornersTransformation;
 import com.squareup.picasso.Picasso;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -113,11 +112,14 @@ public class AcceptRejectPassengerDialog extends DialogFragment implements View.
                 URL url = new URL(uri.toString());
                 Timber.d("image url ", url);
                 Picasso.with(getContext()).load(String.valueOf(url)).fit()
-                        .centerInside() .into(passengerImageView);
+                        .centerCrop().transform(new RoundCornersTransformation(passengerImageView.getWidth(), 0, true, true)).into(passengerImageView);
+
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             }
         });
+
+
 
 
 
