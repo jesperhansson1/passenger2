@@ -1,11 +1,15 @@
 package com.cybercom.passenger.flows.driverconfirmation;
 
+import android.annotation.SuppressLint;
+import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.MutableLiveData;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -21,10 +25,14 @@ import android.widget.Toast;
 
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.model.Notification;
+import com.cybercom.passenger.repository.PassengerRepository;
 import com.cybercom.passenger.utils.LocationHelper;
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 import java.util.Locale;
 
@@ -50,6 +58,7 @@ public class AcceptRejectPassengerDialog extends DialogFragment implements View.
 
     private ConfirmationListener mConfirmationListener;
 
+    @SuppressLint("TimberArgCount")
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -94,6 +103,23 @@ public class AcceptRejectPassengerDialog extends DialogFragment implements View.
                     .setText(getAddressFromLocation(LocationHelper
                             .convertPositionToLocation(mNotification.getDriveRequest().getEndLocation())));
         }
+
+        ImageView passengerImageView = rootView.findViewById(R.id.driver_confirmation_passenger_thumbnail);
+
+        LiveData<Uri> imageUri = PassengerRepository.getInstance().getImageUri(mNotification.getDriveRequest().getPassenger().getUserId());
+        imageUri.observe(this,uri -> {
+            Timber.d("image uri ", uri.toString());
+            try {
+                URL url = new URL(uri.toString());
+                Timber.d("image url ", url);
+                Picasso.with(getContext()).load(String.valueOf(url)).fit()
+                        .centerInside() .into(passengerImageView);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+        });
+
+
 
         return rootView;
     }

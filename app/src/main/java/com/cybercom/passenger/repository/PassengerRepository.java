@@ -90,6 +90,7 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
     private static final String REFERENCE_DRIVER_ID_BLACK_LIST = "driverIdBlackList";
     private static final String REFERENCE_PASSENGER_RIDE = "passengerRide";
     private static final String REFERENCE_PASSENGER_POSITION = "passengerPosition";
+    private static final String IMAGE_LINK = "imageLink";
 
     private static final String DRIVE_ID = "driveId";
     private static final String DRIVER_ID = "driverId";
@@ -1749,4 +1750,5 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
         });
         return fileUriLiveData;
     }
+
 }

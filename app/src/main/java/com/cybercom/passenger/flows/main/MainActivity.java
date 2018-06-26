@@ -97,6 +97,8 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.squareup.picasso.Picasso;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -850,6 +852,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
 
+    @SuppressLint("TimberArgCount")
     private void addPassengerFab(@NonNull String rideId, String userId) {
 
         if (findPassengerView(rideId) == null) {
@@ -868,14 +871,16 @@ public class MainActivity extends AppCompatActivity implements
 
             mMainViewModel.getImageUri(userId).observe(this, uri -> {
                 //Todo: resize and circular image
-        /*        Picasso.with(getApplicationContext())
-                        .load(uri)
-                        //.placeholder(R.drawable.placeholder)
-                        .resize(16, 16)
-                        .centerCrop()
-                        .into(fab);
-                        Timber.d("image loaded successfully : %s", uri);*/
-                    });
+                Timber.d("image uri ", uri.toString());
+                try {
+                    URL url = new URL(uri.toString());
+                    Timber.d("image url ", url);
+                    Picasso.with(getApplicationContext()).load(String.valueOf(url)).fit()
+                            .centerInside() .into(fab);
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }
+            });
             fab.setOnClickListener(this);
             fab.setTag(rideId);
             mPassengerContainer.addView(fabContainer);
