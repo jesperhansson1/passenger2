@@ -386,7 +386,7 @@ public class MainViewModel extends AndroidViewModel {
         return mPassengerRepository.getMatchedDrive();
     }
 
-    public void confirmPickUp(PassengerRide passengerRide) {
+    public void confirmPickUp(PassengerRide passengerRide, Bundle args) {
         mPassengerRepository.confirmPickUp(passengerRide.getId());
     }
 

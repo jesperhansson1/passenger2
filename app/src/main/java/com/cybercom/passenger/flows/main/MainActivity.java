@@ -1475,15 +1475,15 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    private void showDriverPickUpFragment(PassengerRide passengerRide) {
+    private void showDriverPickUpFragment(PassengerRide passengerRide, Bundle args) {
         mFragmentManager.beginTransaction().add(R.id.main_activity_dialog_container,
-                DriverPassengerPickUpFragment.newInstance(passengerRide),
+                DriverPassengerPickUpFragment.newInstance(passengerRide, args),
                 DriverPassengerPickUpFragment.DRIVER_PASSENGER_PICK_UP_FRAGMENT_TAG).commit();
     }
 
-    private void showPassengerPickUpFragment(PassengerRide passengerRide) {
+    private void showPassengerPickUpFragment(PassengerRide passengerRide, Bundle args) {
         mFragmentManager.beginTransaction().add(R.id.main_activity_dialog_container,
-                DriverPassengerPickUpFragment.newInstance(passengerRide),
+                DriverPassengerPickUpFragment.newInstance(passengerRide, args),
                 DriverPassengerPickUpFragment.DRIVER_PASSENGER_PICK_UP_FRAGMENT_TAG).commit();
     }
 
@@ -1504,12 +1504,12 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onPickUpConfirmed(PassengerRide passengerRide) {
+    public void onPickUpConfirmed(PassengerRide passengerRide, Bundle args) {
         // Driver has confirmed pick up
         removeFragment(mFragmentManager
                 .findFragmentByTag(DriverPassengerPickUpFragment
                         .DRIVER_PASSENGER_PICK_UP_FRAGMENT_TAG));
-        mMainViewModel.confirmPickUp(passengerRide);
+        mMainViewModel.confirmPickUp(passengerRide, args);
     }
 
     @Override
@@ -1529,15 +1529,6 @@ public class MainActivity extends AppCompatActivity implements
             addCreateDriveFragment();
             mMainViewModel.refundFull(passengerRide.getChargeId());
         }
-    }
-
-    @Override
-    public void onPickUpConfirmed(Drive drive) {
-        // Passenger has confirmed pick up
-        removeFragment(mFragmentManager
-                .findFragmentByTag(DriverPassengerPickUpFragment
-                        .DRIVER_PASSENGER_PICK_UP_FRAGMENT_TAG));
-        mMainViewModel.confirmPickUp(drive.getId());
     }
 
     @Override
@@ -1833,7 +1824,7 @@ public class MainActivity extends AppCompatActivity implements
                             = geofenceRequestId.substring(geofenceRequestId.length() - 1);
                     if (geoFenceType.equals(GEOFENCE_TYPE_PICK_UP)) {
                         if (mCurrentLoggedInUser.getType() == TYPE_DRIVER) {
-                            showDriverPickUpFragment(getPassengerRideFromLocalList(passengerRideId));
+                            showDriverPickUpFragment(getPassengerRideFromLocalList(passengerRideId),intent.getExtras());
                         }
                     } else if (geoFenceType.equals(GEOFENCE_TYPE_DROP_OFF)) {
                         if (mCurrentLoggedInUser.getType() == TYPE_DRIVER) {
@@ -1854,7 +1845,7 @@ public class MainActivity extends AppCompatActivity implements
                 if (intent.getExtras().getInt(DIALOG_TO_SHOW) == TYPE_PICK_UP) {
                     removeDriveInformationDialog();
                     if (mActivePassengerRide != null) {
-                        showPassengerPickUpFragment(mActivePassengerRide);
+                        showPassengerPickUpFragment(mActivePassengerRide, intent.getExtras());
                     }
                 }
                 if (intent.getExtras().getInt(DIALOG_TO_SHOW) == TYPE_DROP_OFF) {

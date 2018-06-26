@@ -1,6 +1,9 @@
 package com.cybercom.passenger.flows.pickupfragment;
 
+import android.annotation.SuppressLint;
+import android.arch.lifecycle.LiveData;
 import android.content.Context;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
@@ -11,12 +14,24 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.interfaces.FragmentSizeListener;
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.model.PassengerRide;
+import com.cybercom.passenger.model.User;
+import com.cybercom.passenger.repository.PassengerRepository;
+import com.cybercom.passenger.utils.RoundCornersTransformation;
+import com.squareup.picasso.Picasso;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import timber.log.Timber;
+
+import static com.cybercom.passenger.utils.RoundCornersTransformation.RADIUS;
 
 public class DriverPassengerPickUpFragment extends Fragment implements View.OnClickListener {
 
@@ -27,7 +42,6 @@ public class DriverPassengerPickUpFragment extends Fragment implements View.OnCl
     public static final int TIME_BEFORE_PASSENGER_NEEDS_TO_COME_TO_THE_CAR_IN_MILLISECONDS = 120000;
     public static final int COUNT_DOWN_INTERVAL = 1000;
 
-
     private FragmentSizeListener mFragmentSizeListener;
     private DriverPassengerPickUpButtonClickListener mDriverPassengerPickUpButtonClickListener;
 
@@ -37,31 +51,21 @@ public class DriverPassengerPickUpFragment extends Fragment implements View.OnCl
     private Drive mDrive;
     private TextView mTextViewTimeToGoTitle;
     private TextView mTextViewTimeToGoCountDown;
+    Bundle mArgs = new Bundle();
 
     public interface DriverPassengerPickUpButtonClickListener {
-        void onPickUpConfirmed(PassengerRide passengerRide);
+        void onPickUpConfirmed(PassengerRide passengerRide, Bundle args);
 
         void onPickUpNoShow(PassengerRide passengerRide);
-
-        void onPickUpConfirmed(Drive drive);
     }
 
-    public static DriverPassengerPickUpFragment newInstance(Drive drive) {
-        Bundle args = new Bundle();
-        args.putSerializable(DRIVER_RIDE_KEY, drive);
+    public static DriverPassengerPickUpFragment newInstance(PassengerRide passengerRide, Bundle args) {
         DriverPassengerPickUpFragment fragment = new DriverPassengerPickUpFragment();
         fragment.setArguments(args);
         return fragment;
     }
 
-    public static DriverPassengerPickUpFragment newInstance(PassengerRide passengerRide) {
-        Bundle args = new Bundle();
-        args.putSerializable(PASSENGER_RIDE_KEY, passengerRide);
-        DriverPassengerPickUpFragment fragment = new DriverPassengerPickUpFragment();
-        fragment.setArguments(args);
-        return fragment;
-    }
-
+    @SuppressLint("TimberArgCount")
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -70,18 +74,49 @@ public class DriverPassengerPickUpFragment extends Fragment implements View.OnCl
         View view = inflater.inflate(R.layout.fragment_driver_passenger_pick_up, container, false);
 
         TextView name = view.findViewById(R.id.fragment_driver_passenger_pick_up_name);
+        ImageView passengerImageView = view.findViewById(R.id.fragment_driver_passenger_pick_up_profile_image);
+
         if (getArguments() != null) {
             if (getArguments().getSerializable(DRIVER_RIDE_KEY) != null) {
                 mDrive = (Drive) getArguments().getSerializable(DRIVER_RIDE_KEY);
                 if (mDrive != null) {
                     name.setText(mDrive.getDriver().getFullName());
+
+                    LiveData<Uri> imageUri = PassengerRepository.getInstance().getImageUri(mDrive.getDriver().getUserId());
+                    imageUri.observe(this,uri -> {
+                        Timber.d("image uri ", uri.toString());
+                        try {
+                            URL url = new URL(uri.toString());
+                            Timber.d("image url ", url);
+                            Picasso.with(getContext()).load(String.valueOf(url)).fit()
+                                    .centerCrop().transform(new RoundCornersTransformation(RADIUS,
+                                    0, true, false)).into(passengerImageView);
+
+                        } catch (MalformedURLException e) {
+                            e.printStackTrace();
+                        }
+                    });
                 }
             }
 
             if (getArguments().getSerializable(PASSENGER_RIDE_KEY) != null) {
                 mPassengerRide = (PassengerRide) getArguments().getSerializable(PASSENGER_RIDE_KEY);
                 if (mPassengerRide != null) {
-                    name.setText(mPassengerRide.getPassenger().getFullName());
+                    name.setText(mPassengerRide.getDrive().getDriver().getFullName());
+                    LiveData<Uri> imageUri = PassengerRepository.getInstance().getImageUri(mPassengerRide.getDrive().getDriver().getUserId());
+                    imageUri.observe(this,uri -> {
+                        Timber.d("image uri ", uri.toString());
+                        try {
+                            URL url = new URL(uri.toString());
+                            Timber.d("image url ", url);
+                            Picasso.with(getContext()).load(String.valueOf(url)).fit()
+                                    .centerCrop().transform(new RoundCornersTransformation(RADIUS,
+                                    0, true, false)).into(passengerImageView);
+
+                        } catch (MalformedURLException e) {
+                            e.printStackTrace();
+                        }
+                    });
                 }
             }
 
@@ -133,6 +168,9 @@ public class DriverPassengerPickUpFragment extends Fragment implements View.OnCl
             }
         }.start();
 
+
+
+
         return view;
     }
 
@@ -154,11 +192,17 @@ public class DriverPassengerPickUpFragment extends Fragment implements View.OnCl
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.fragment_driver_passenger_pick_up_confirmation_button: {
-                if (mDrive != null) {
-                    mDriverPassengerPickUpButtonClickListener.onPickUpConfirmed(mDrive);
-                } else {
-                    mDriverPassengerPickUpButtonClickListener.onPickUpConfirmed(mPassengerRide);
-                }
+                PassengerRepository.getInstance().getUser().observe(this, myUser -> {
+
+                    if(myUser.getType() == User.TYPE_PASSENGER){
+                        mArgs.putSerializable(PASSENGER_RIDE_KEY, mPassengerRide);
+                    }
+                    else
+                    {
+                        mArgs.putSerializable(DRIVER_RIDE_KEY, mPassengerRide.getDrive());
+                    }
+                });
+                mDriverPassengerPickUpButtonClickListener.onPickUpConfirmed(mPassengerRide, mArgs);
                 mFragmentSizeListener.onHeightChanged(0);
                 break;
             }
