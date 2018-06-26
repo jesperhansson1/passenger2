@@ -14,12 +14,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -95,9 +93,9 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.iid.FirebaseInstanceId;
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -148,7 +146,8 @@ public class MainActivity extends AppCompatActivity implements
     public static final String DIALOG_TO_SHOW = "DIALOG_TO_SHOW";
     private static final int ROUTE_WIDTH = 10;
     private static final int ROUTE_COLOR = Color.rgb(6, 182, 239);
-
+    private static final int DEVIATE_FROM_ROUTE_REROUTE_DISTANCE_M = 150;
+    private static final int TEN_SEC_DELAY_FOR_DEVIATION_CALC = 10000;
 
     private FirebaseUser mUser;
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 0;
@@ -186,6 +185,8 @@ public class MainActivity extends AppCompatActivity implements
     private List<Geofence> mGeofenceList;
     private PendingIntent mGeofencePendingIntent;
 
+    private Date mLatestDriveDeviationCheck = new Date();
+
     // TODO remove this or the other one..
     // Driver client member
     private List<PassengerRide> mPassengerRides = new ArrayList<>();
@@ -219,6 +220,7 @@ public class MainActivity extends AppCompatActivity implements
     public int mSeats = 0;*/
 
     DriveRequest mPendingDriveRequest;
+
 
 
     @Override
@@ -535,27 +537,65 @@ public class MainActivity extends AppCompatActivity implements
         return false;
     }
 
+
+    private void moveCameraToLocation(Location location) {
+        CameraPosition cameraPosition;
+
+        CameraPosition.Builder cameraPositionBuilder = new CameraPosition.Builder()
+                .zoom(ZOOM_LEVEL_FOLLOW_DRIVER);
+
+        // This is needed to prevent erratic camera updates when car has stopped.
+        if (location.hasSpeed()
+                && location.getSpeed() > CHANGE_CAMERA_BEARING_SPEED_THRESHOLD) {
+            cameraPositionBuilder.bearing(location.getBearing());
+        }
+
+        cameraPosition = cameraPositionBuilder.target(new LatLng(location.getLatitude(),
+                location.getLongitude())).build();
+        mGoogleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+    }
+
+    private void checkIfDriverHasDeviatedFromRoute(Location location) {
+        if (mRoute == null) {
+            return;
+        }
+        Date currentDate = new Date(System.currentTimeMillis());
+        if (mLatestDriveDeviationCheck.getTime() - currentDate.getTime()
+                > TEN_SEC_DELAY_FOR_DEVIATION_CALC) {
+            return;
+        }
+
+        mLatestDriveDeviationCheck = currentDate;
+
+        List<LatLng> routePoints = mRoute.getPoints();
+        boolean isCloseToRoute = false;
+
+        for (LatLng routePoint : routePoints) {
+            Location routeLocation = new Location("routePoint");
+            routeLocation.setLatitude(routePoint.latitude);
+            routeLocation.setLongitude(routePoint.longitude);
+            if (DEVIATE_FROM_ROUTE_REROUTE_DISTANCE_M > location.distanceTo(routeLocation)) {
+                isCloseToRoute = true;
+                break;
+            }
+        }
+        if (!isCloseToRoute) {
+            Position driveStartLocation = new Position(null, location.getLatitude(),
+                        location.getLongitude());
+
+            rerouteDrive(mActiveDrive, null, driveStartLocation);
+        }
+    }
+
     /**
      * Start moving the camera to center the current position (the driver's) and also turn the
      * camera so that the current direction where the car is heading is always upwards.
      */
-    private void moveCameraOnPositionUpdates() {
+    private void observerDriverPositionUpdates() {
 
         mLocationObserverForCameraUpdates = location -> {
-            CameraPosition cameraPosition;
-
-            CameraPosition.Builder cameraPositionBuilder = new CameraPosition.Builder()
-                    .zoom(ZOOM_LEVEL_FOLLOW_DRIVER);
-
-            // This is needed to prevent erratic camera updates when car has stopped.
-            if (location.hasSpeed()
-                    && location.getSpeed() > CHANGE_CAMERA_BEARING_SPEED_THRESHOLD) {
-                cameraPositionBuilder.bearing(location.getBearing());
-            }
-
-            cameraPosition = cameraPositionBuilder.target(new LatLng(location.getLatitude(),
-                    location.getLongitude())).build();
-            mGoogleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+            moveCameraToLocation(location);
+            checkIfDriverHasDeviatedFromRoute(location);
         };
 
         mDriverCurrentLocationLiveData = mMainViewModel.getDriverCurrentLocation();
@@ -809,16 +849,28 @@ public class MainActivity extends AppCompatActivity implements
             mPassengers.put(passengerRide.getId(), passengerRide);
             updatePassengerDetailedInformation(passengerRide);
         }
-        Drive drive = passengerRide.getDrive();
+        rerouteDrive(passengerRide.getDrive(), passengerRide,
+                passengerRide.getDrive().getCurrentPosition());
+    }
+
+    private void rerouteDrive(@NonNull Drive drive, @Nullable PassengerRide passengerRide,
+                              @Nullable Position currentDriverLocation) {
+
         Position driveStartLocation = drive.getStartLocation();
         Position driveEndLocation = drive.getEndLocation();
+        if (currentDriverLocation != null) {
+            driveStartLocation = currentDriverLocation;
+        }
         List<LatLng> latLngPointsList = new ArrayList();
 
-        latLngPointsList.addAll(getLatLngsFromPassengerRide(passengerRide));
+        if (passengerRide != null) {
+            latLngPointsList.addAll(getLatLngsFromPassengerRide(passengerRide));
+        }
 
         for (PassengerRide onBoardedPassenger : mPassengers.values()) {
             latLngPointsList.addAll(getLatLngsFromPassengerRide(onBoardedPassenger));
         }
+
         reRoute(createLatLngFromPosition(driveStartLocation),
                 createLatLngFromPosition(driveEndLocation), latLngPointsList);
     }
@@ -959,10 +1011,6 @@ public class MainActivity extends AppCompatActivity implements
             if (mMainViewModel.getStartMarkerLocation().getValue() != null
                     && mMainViewModel.getEndMarkerLocation().getValue() != null) {
 
-                if (mRoute != null) {
-                    mRoute.remove();
-                }
-
                 LatLng origin = new LatLng(
                         mMainViewModel.getStartMarkerLocation().getValue().getLatitude(),
                         mMainViewModel.getStartMarkerLocation().getValue().getLongitude());
@@ -977,9 +1025,6 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void reRoute(LatLng origin, LatLng destination, List<LatLng> latLngs) {
-        if (mRoute != null) {
-            mRoute.remove();
-        }
         new FetchRoute(origin, destination, latLngs, this, mGoogleApiKey);
     }
 
@@ -1239,7 +1284,6 @@ public class MainActivity extends AppCompatActivity implements
                     // permission denied
                     // Disable the functionality that depends on this permission.
                 }
-                return;
             }
         }
     }
@@ -1268,7 +1312,7 @@ public class MainActivity extends AppCompatActivity implements
     private void handleOnGoingDrive(Drive drive) {
         if (drive != null) {
             startDriverForegroundService(drive);
-            moveCameraOnPositionUpdates();
+            observerDriverPositionUpdates();
             updatePassengersMarkerPosition(drive.getId());
             updateCancelDriveButtonsVisibility();
             mCreateDriveFragment.hideCreateDialogCompletely();
