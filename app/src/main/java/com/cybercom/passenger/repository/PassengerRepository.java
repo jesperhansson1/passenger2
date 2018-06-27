@@ -449,34 +449,36 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
         latLngList.addAll(passengerLatLngList);
         new FetchRoute(currentPosition, endLocation, latLngList,
                 routes -> {
-                    Route route = routes.get(0);
-                    long eta = route.getBounds().getDuration();
+                    if (routes.size() > 0) {
+                        Route route = routes.get(0);
+                        long eta = route.getBounds().getDuration();
 
-                    // TODO this is the initial duration.. needs to be updated!!
-                    long driveDuration = bounds.getDuration();
+                        // TODO this is the initial duration.. needs to be updated!!
+                        long driveDuration = bounds.getDuration();
 
-                    if (eta < driveDuration + ETA_THRESHOLD) {
-                        mUsersReference.child(drive.getDriverId()).
-                                addListenerForSingleValueEvent(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                User driver = dataSnapshot.getValue(User.class);
-                                mMatchedDrive = new Drive(driveId, driver, drive.getTime(),
-                                        drive.getStartLocation(), drive.getEndLocation(),
-                                        drive.getAvailableSeats(), drive.getCurrentPosition(),
-                                        drive.getCurrentVelocity());
-                                matchedDriveLiveData.setValue(mMatchedDrive);
-                            }
+                        if (eta < driveDuration + ETA_THRESHOLD) {
+                            mUsersReference.child(drive.getDriverId()).
+                                    addListenerForSingleValueEvent(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(DataSnapshot dataSnapshot) {
+                                            User driver = dataSnapshot.getValue(User.class);
+                                            mMatchedDrive = new Drive(driveId, driver, drive.getTime(),
+                                                    drive.getStartLocation(), drive.getEndLocation(),
+                                                    drive.getAvailableSeats(), drive.getCurrentPosition(),
+                                                    drive.getCurrentVelocity());
+                                            matchedDriveLiveData.setValue(mMatchedDrive);
+                                        }
 
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {
+                                        @Override
+                                        public void onCancelled(DatabaseError databaseError) {
 
-                            }
-                        });
-                    } else {
-                        checkEtaForPossibleDrives(index + 1, boundsList, latLngList,
-                                candidateDrives, candidateDriveIdList,
-                                matchedDriveLiveData, googleApiKey);
+                                        }
+                                    });
+                        } else {
+                            checkEtaForPossibleDrives(index + 1, boundsList, latLngList,
+                                    candidateDrives, candidateDriveIdList,
+                                    matchedDriveLiveData, googleApiKey);
+                        }
                     }
                 }, googleApiKey);
     }
@@ -1123,6 +1125,9 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
 
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     PassengerRide passengerRide = snapshot.getValue(PassengerRide.class);
+                    if (passengerRide.isCancelled()) {
+                        continue;
+                    }
                     if (!passengerRide.isPickUpConfirmed()) {
                         passangersLatLngList.add(MainActivity.createLatLngFromPosition(
                                 passengerRide.getPickUpPosition()));
