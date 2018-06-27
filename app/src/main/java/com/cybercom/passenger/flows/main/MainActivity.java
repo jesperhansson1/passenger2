@@ -1475,15 +1475,15 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    private void showDriverPickUpFragment(PassengerRide passengerRide, Bundle args) {
+    private void showDriverPickUpFragment(PassengerRide passengerRide) {
         mFragmentManager.beginTransaction().add(R.id.main_activity_dialog_container,
-                DriverPassengerPickUpFragment.newInstance(passengerRide, args),
+                DriverPassengerPickUpFragment.newInstance(passengerRide),
                 DriverPassengerPickUpFragment.DRIVER_PASSENGER_PICK_UP_FRAGMENT_TAG).commit();
     }
 
-    private void showPassengerPickUpFragment(PassengerRide passengerRide, Bundle args) {
+    private void showPassengerPickUpFragment(PassengerRide passengerRide) {
         mFragmentManager.beginTransaction().add(R.id.main_activity_dialog_container,
-                DriverPassengerPickUpFragment.newInstance(passengerRide, args),
+                DriverPassengerPickUpFragment.newInstance(passengerRide),
                 DriverPassengerPickUpFragment.DRIVER_PASSENGER_PICK_UP_FRAGMENT_TAG).commit();
     }
 
@@ -1504,12 +1504,12 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onPickUpConfirmed(PassengerRide passengerRide, Bundle args) {
+    public void onPickUpConfirmed(PassengerRide passengerRide) {
         // Driver has confirmed pick up
         removeFragment(mFragmentManager
                 .findFragmentByTag(DriverPassengerPickUpFragment
                         .DRIVER_PASSENGER_PICK_UP_FRAGMENT_TAG));
-        mMainViewModel.confirmPickUp(passengerRide, args);
+        mMainViewModel.confirmPickUp(passengerRide);
     }
 
     @Override
@@ -1824,7 +1824,7 @@ public class MainActivity extends AppCompatActivity implements
                             = geofenceRequestId.substring(geofenceRequestId.length() - 1);
                     if (geoFenceType.equals(GEOFENCE_TYPE_PICK_UP)) {
                         if (mCurrentLoggedInUser.getType() == TYPE_DRIVER) {
-                            showDriverPickUpFragment(getPassengerRideFromLocalList(passengerRideId),intent.getExtras());
+                            showDriverPickUpFragment(getPassengerRideFromLocalList(passengerRideId));
                         }
                     } else if (geoFenceType.equals(GEOFENCE_TYPE_DROP_OFF)) {
                         if (mCurrentLoggedInUser.getType() == TYPE_DRIVER) {
@@ -1845,7 +1845,7 @@ public class MainActivity extends AppCompatActivity implements
                 if (intent.getExtras().getInt(DIALOG_TO_SHOW) == TYPE_PICK_UP) {
                     removeDriveInformationDialog();
                     if (mActivePassengerRide != null) {
-                        showPassengerPickUpFragment(mActivePassengerRide, intent.getExtras());
+                        showPassengerPickUpFragment(mActivePassengerRide);
                     }
                 }
                 if (intent.getExtras().getInt(DIALOG_TO_SHOW) == TYPE_DROP_OFF) {
