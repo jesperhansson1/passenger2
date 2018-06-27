@@ -6,6 +6,8 @@ public class Car {
     private String mYear;
     private String mColor;
 
+    public Car(){}
+
     public Car(String number, String model, String year, String colour){//}, String carId, String userId) {
         mNumber = number;
         mModel = model;

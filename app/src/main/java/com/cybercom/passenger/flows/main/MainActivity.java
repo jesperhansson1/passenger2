@@ -16,6 +16,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -39,6 +40,7 @@ import android.view.animation.AnimationUtils;
 import android.view.animation.TranslateAnimation;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -71,6 +73,7 @@ import com.cybercom.passenger.service.ForegroundServices;
 import com.cybercom.passenger.service.GeofenceTransitionsIntentService;
 import com.cybercom.passenger.utils.LocationHelper;
 import com.cybercom.passenger.utils.NotificationHelper;
+import com.cybercom.passenger.utils.RoundCornersTransformation;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingClient;
 import com.google.android.gms.location.GeofencingRequest;
@@ -94,6 +97,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.iid.FirebaseInstanceId;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -109,6 +114,7 @@ import static com.cybercom.passenger.flows.payment.PaymentConstants.SPLIT_CHAR;
 import static com.cybercom.passenger.flows.payment.PaymentHelper.createChargeHashMap;
 import static com.cybercom.passenger.model.User.TYPE_DRIVER;
 import static com.cybercom.passenger.model.User.TYPE_PASSENGER;
+import static com.cybercom.passenger.utils.RoundCornersTransformation.RADIUS;
 
 public class MainActivity extends AppCompatActivity implements
         CreateDriveFragment.CreateRideFragmentListener,
@@ -916,6 +922,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
 
+    @SuppressLint("TimberArgCount")
     private void addPassengerFab(@NonNull String rideId, String userId) {
 
         if (findPassengerView(rideId) == null) {
@@ -934,14 +941,17 @@ public class MainActivity extends AppCompatActivity implements
 
             mMainViewModel.getImageUri(userId).observe(this, uri -> {
                 //Todo: resize and circular image
-        /*        Picasso.with(getApplicationContext())
-                        .load(uri)
-                        //.placeholder(R.drawable.placeholder)
-                        .resize(16, 16)
-                        .centerCrop()
-                        .into(fab);
-                        Timber.d("image loaded successfully : %s", uri);*/
-                    });
+                Timber.d("image uri ", uri.toString());
+                try {
+                    URL url = new URL(uri.toString());
+                    Timber.d("image url ", url);
+                    Picasso.with(getApplicationContext()).load(String.valueOf(url)).fit()
+                            .centerCrop().transform(new RoundCornersTransformation(fab.getWidth(),
+                            0, true, true)).into(fab);
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }
+            });
             fab.setOnClickListener(this);
             fab.setTag(rideId);
             mPassengerContainer.addView(fabContainer);
@@ -1318,7 +1328,7 @@ public class MainActivity extends AppCompatActivity implements
                         });
                 break;
             case User.TYPE_PASSENGER:
-                mPendingDriveRequest = new DriveRequest(null,null,time,startLocation,endLocation,seats,0.0,null,null);
+                mPendingDriveRequest = new DriveRequest(null,null,time,startLocation,endLocation,seats,0.0,null,null, 0.0);
                 getPrice(seats);
                 break;
         }
@@ -1587,15 +1597,6 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onPickUpConfirmed(Drive drive) {
-        // Passenger has confirmed pick up
-        removeFragment(mFragmentManager
-                .findFragmentByTag(DriverPassengerPickUpFragment
-                        .DRIVER_PASSENGER_PICK_UP_FRAGMENT_TAG));
-        mMainViewModel.confirmPickUp(drive.getId());
-    }
-
-    @Override
     public void onDropOffConfirmation(PassengerRide passengerRide) {
         removeFragment(mFragmentManager
                 .findFragmentByTag(DriverDropOffFragment.DRIVER_DROP_OFF_FRAGMENT_TAG));
@@ -1631,10 +1632,27 @@ public class MainActivity extends AppCompatActivity implements
         updatePassengerDetailedInformation(passengerRide);
     }
 
+    @SuppressLint("TimberArgCount")
     private void updatePassengerDetailedInformation(PassengerRide passengerRide) {
         if (passengerRide == null) {
             return;
         }
+
+        ImageView passengerImageView = (ImageView)findViewById(R.id.passenger_thumbnail);
+
+        LiveData<Uri> imageUri = mMainViewModel.getImageUri(passengerRide.getPassenger().getUserId());
+        imageUri.observe(this,uri -> {
+            Timber.d("image uri ", uri.toString());
+            try {
+                URL url = new URL(uri.toString());
+                Timber.d("image url ", url);
+                Picasso.with(getApplicationContext()).load(String.valueOf(url)).fit().centerCrop()
+                        .transform(new RoundCornersTransformation(RADIUS, 0, true, false)).into(passengerImageView);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+        });
+
         ((TextView)mPassengerDetailedInformation.findViewById(R.id.passenger_name)).setText(
                 passengerRide.getPassenger().getFullName());
         //TODO add rating to PassengerRide
@@ -1908,6 +1926,8 @@ public class MainActivity extends AppCompatActivity implements
         if(mBounds!=null) {
             Timber.d("distance bound %s", mBounds.getDistance());
             CalculatePrice calculatePrice = new CalculatePrice(mBounds.getDistance(), seats);
+            mPendingDriveRequest.setDistance(((double)mBounds.getDistance())/10000);
+            Timber.d("long to double " + ((double)mBounds.getDistance()));
             price = calculatePrice.getPrice();
             mPendingDriveRequest.setPrice(price);
             Timber.d("price is " + price + " " + (int) (price * 100) );
@@ -1937,7 +1957,8 @@ public class MainActivity extends AppCompatActivity implements
                     mPendingDriveRequest.getStartLocation(),
                     mPendingDriveRequest.getEndLocation(),
                     mPendingDriveRequest.getExtraPassengers(),
-                    mPendingDriveRequest.getPrice(), chargeId).observe(
+                    mPendingDriveRequest.getPrice(), chargeId,
+                    mPendingDriveRequest.getDistance()).observe(
                     this, driveRequest -> {
                         mMainViewModel.setDriveRequestRadiusMultiplier(
                                 MainViewModel.DRIVE_REQUEST_DEFAULT_MULTIPLIER);

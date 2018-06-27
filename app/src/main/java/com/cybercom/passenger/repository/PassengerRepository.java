@@ -90,6 +90,7 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
     private static final String REFERENCE_DRIVER_ID_BLACK_LIST = "driverIdBlackList";
     private static final String REFERENCE_PASSENGER_RIDE = "passengerRide";
     private static final String REFERENCE_PASSENGER_POSITION = "passengerPosition";
+    private static final String IMAGE_LINK = "imageLink";
 
     private static final String DRIVE_ID = "driveId";
     private static final String DRIVER_ID = "driverId";
@@ -734,7 +735,7 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
                         passenger, dbDriveRequest.getTime(), dbDriveRequest.getStartLocation(),
                         dbDriveRequest.getEndLocation(), dbDriveRequest.getExtraPassengers(),
                         dbDriveRequest.getPrice(), dbDriveRequest.getChargeId(),
-                        dbDriveRequest.getDriverIdBlackList());
+                        dbDriveRequest.getDriverIdBlackList(), dbDriveRequest.getDistance());
                 addToNotificationQueue(new Notification(Integer.parseInt(
                         payload.get(NOTIFICATION_TYPE_KEY)), driveRequest, drive));
             }
@@ -829,7 +830,7 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
     }
 
     public LiveData<DriveRequest> createDriveRequest(long time, Position startLocation,
-                                                     Position endLocation, int availableSeats, double price, String chargeId) {
+                                                     Position endLocation, int availableSeats, double price, String chargeId, double distance) {
 
 
         getAmountInCharge(chargeId);
@@ -847,7 +848,7 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
 
         final com.cybercom.passenger.repository.databasemodel.DriveRequest dbDriveRequest =
                 new com.cybercom.passenger.repository.databasemodel.DriveRequest(uId, time,
-                        startLocation, endLocation, availableSeats, price, chargeId, new ArrayList<>());
+                        startLocation, endLocation, availableSeats, price, chargeId, new ArrayList<>(), distance);
         final DatabaseReference ref = mDriveRequestsReference.push();
         final String driveRequestId = ref.getKey();
         ref.setValue(dbDriveRequest);
@@ -862,7 +863,8 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
                                 dbDriveRequest.getEndLocation(), dbDriveRequest.getExtraPassengers(),
                                 dbDriveRequest.getPrice(),
                                 dbDriveRequest.getChargeId(),
-                                dbDriveRequest.getDriverIdBlackList());
+                                dbDriveRequest.getDriverIdBlackList(),
+                                dbDriveRequest.getDistance());
                         driveRequestMutableLiveData.setValue(driveRequest);
                     }
 
@@ -1755,4 +1757,30 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
         });
         return fileUriLiveData;
     }
+
+    public LiveData<Car> getCarDetails(String userId){
+        MutableLiveData<Car> carLiveData = new MutableLiveData();
+        mCarsReference.child(userId).orderByChild("model").
+        addValueEventListener(new ValueEventListener() {
+            @SuppressLint("TimberArgCount")
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Timber.d("result ", dataSnapshot);
+                for (DataSnapshot dsp : dataSnapshot.getChildren()) {
+                    Car carDetails = dsp.getValue(Car.class);
+                    Timber.d("result: %s", carDetails);
+                    carLiveData.setValue(carDetails);
+                }
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                Timber.d("result: %s", error);
+            }
+        });
+        return carLiveData;
+    }
+
+
 }

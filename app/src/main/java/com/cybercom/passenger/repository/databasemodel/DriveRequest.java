@@ -16,12 +16,13 @@ public class DriveRequest implements Serializable {
     private List<Object> mDriverIdBlackList;
     private double mPrice;
     private String mChargeId;
+    private double mDistance;
 
     public DriveRequest(){
     }
 
     public DriveRequest(String passengerId, long time, Position startLocation, Position endLocation,
-                        int extraPassengers, double price, String chargeId, List<Object> driverIdBlacklist) {
+                        int extraPassengers, double price, String chargeId, List<Object> driverIdBlacklist, double distance) {
         mPassengerId = passengerId;
         mTime = time;
         mStartLocation = startLocation;
@@ -30,6 +31,7 @@ public class DriveRequest implements Serializable {
         mDriverIdBlackList = driverIdBlacklist;
         mPrice = price;
         mChargeId = chargeId;
+        mDistance = distance;
     }
 
     public String getPassengerId() {
@@ -86,6 +88,7 @@ public class DriveRequest implements Serializable {
                 ", mExtraPassengers=" + mExtraPassengers +
                 ", mPrice=" + mPrice +
                 ", mChargeId=" + mChargeId +
+                ", mDistance=" + mDistance +
                 '}';
     }
 
@@ -111,5 +114,13 @@ public class DriveRequest implements Serializable {
 
     public void setChargeId(String chargeId) {
         mChargeId = chargeId;
+    }
+
+    public double getDistance() {
+        return mDistance;
+    }
+
+    public void setDistance(double distance) {
+        mDistance = distance;
     }
 }

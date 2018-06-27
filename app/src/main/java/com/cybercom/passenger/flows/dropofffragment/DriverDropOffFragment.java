@@ -1,6 +1,9 @@
 package com.cybercom.passenger.flows.dropofffragment;
 
+import android.annotation.SuppressLint;
+import android.arch.lifecycle.LiveData;
 import android.content.Context;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -9,10 +12,21 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.cybercom.passenger.R;
 import com.cybercom.passenger.model.PassengerRide;
+import com.cybercom.passenger.repository.PassengerRepository;
+import com.cybercom.passenger.utils.RoundCornersTransformation;
+import com.squareup.picasso.Picasso;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import timber.log.Timber;
+
+import static com.cybercom.passenger.utils.RoundCornersTransformation.RADIUS;
 
 public class DriverDropOffFragment extends Fragment implements View.OnClickListener {
 
@@ -41,6 +55,7 @@ public class DriverDropOffFragment extends Fragment implements View.OnClickListe
         return fragment;
     }
 
+    @SuppressLint("TimberArgCount")
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -59,6 +74,21 @@ public class DriverDropOffFragment extends Fragment implements View.OnClickListe
                 TextView passengerName
                         = view.findViewById(R.id.fragment_driver_drop_off_passenger_name);
                 passengerName.setText(mPassengerRide.getPassenger().getFullName());
+                ImageView passengerImageView = view.findViewById(R.id.fragment_driver_drop_off_passenger_image);
+                LiveData<Uri> imageUri = PassengerRepository.getInstance().getImageUri(mPassengerRide.getPassenger().getUserId());
+                imageUri.observe(this,uri -> {
+                    Timber.d("image uri ", uri.toString());
+                    try {
+                        URL url = new URL(uri.toString());
+                        Timber.d("image url ", url);
+                        Picasso.with(getContext()).load(String.valueOf(url)).fit()
+                                .centerCrop().transform(new RoundCornersTransformation(RADIUS,
+                                0, true, false)).into(passengerImageView);
+
+                    } catch (MalformedURLException e) {
+                        e.printStackTrace();
+                    }
+                });
             }
         }
 
@@ -66,6 +96,8 @@ public class DriverDropOffFragment extends Fragment implements View.OnClickListe
         confirmDropOff.setOnClickListener(this);
         Button cancelDropOff = view.findViewById(R.id.fragment_driver_drop_off_button_cancel);
         cancelDropOff.setOnClickListener(this);
+
+
 
         return view;
     }

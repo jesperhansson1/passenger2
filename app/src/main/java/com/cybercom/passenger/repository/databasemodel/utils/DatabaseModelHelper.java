@@ -33,7 +33,7 @@ public class DatabaseModelHelper {
         return new com.cybercom.passenger.repository.databasemodel.DriveRequest(driveRequest.getPassenger().getUserId(),
                 driveRequest.getTime(), driveRequest.getStartLocation(),
                 driveRequest.getEndLocation(), driveRequest.getExtraPassengers(),driveRequest.getPrice(),driveRequest.getChargeId(),
-                new ArrayList<>());
+                new ArrayList<>(), driveRequest.getDistance());
     }
 
     public static com.cybercom.passenger.repository.databasemodel.Notification convertNotification(

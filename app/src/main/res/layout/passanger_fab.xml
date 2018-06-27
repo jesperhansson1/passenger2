@@ -12,11 +12,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        app:elevation="6dp"
-        app:borderWidth="4dp"
-        app:fabSize="normal"
         android:layout_margin="@dimen/pad_8dp"
-        app:backgroundTint="@color/colorWhite"
         android:src="@drawable/ic_male_blue"
-        app:pressedTranslationZ="12dp"/>
+        app:backgroundTint="@color/colorWhite"
+        app:borderWidth="4dp"
+        app:elevation="6dp"
+        app:fabSize="normal"
+
+        app:pressedTranslationZ="12dp" />
 </LinearLayout>

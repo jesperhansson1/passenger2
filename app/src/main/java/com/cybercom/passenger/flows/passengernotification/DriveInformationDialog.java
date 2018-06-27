@@ -5,6 +5,7 @@ import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -18,6 +19,7 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -28,6 +30,15 @@ import com.cybercom.passenger.flows.payment.PaymentHelper;
 import com.cybercom.passenger.interfaces.FragmentSizeListener;
 import com.cybercom.passenger.model.Drive;
 import com.cybercom.passenger.repository.PassengerRepository;
+import com.cybercom.passenger.utils.RoundCornersTransformation;
+import com.squareup.picasso.Picasso;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import timber.log.Timber;
+
+import static com.cybercom.passenger.utils.RoundCornersTransformation.RADIUS;
 
 public class DriveInformationDialog extends Fragment implements View.OnClickListener,
         GestureDetector.OnGestureListener{
@@ -60,6 +71,8 @@ public class DriveInformationDialog extends Fragment implements View.OnClickList
     private FragmentSizeListener mFragmentSizeListener;
     private ProgressBar mCancelButtonProgressBar;
     private TextView mPriceTextView;
+    private TextView mCarModelTextView;
+    private TextView mCarLicenseTextView;
 
     public interface PassengerNotificationListener {
         void onCancelPassengerRide();
@@ -89,7 +102,7 @@ public class DriveInformationDialog extends Fragment implements View.OnClickList
         }
     }
 
-    @SuppressLint("ClickableViewAccessibility")
+    @SuppressLint({"ClickableViewAccessibility", "TimberArgCount"})
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -104,6 +117,9 @@ public class DriveInformationDialog extends Fragment implements View.OnClickList
         mPriceTextView = rootView.findViewById(R.id.passenger_notification_price);
         mYouHaveBeenMatchedText = rootView.findViewById(R.id.passenger_notification_you_have_been_matched);
         mDriveInformationDialog = rootView.findViewById(R.id.drive_information_dialog);
+        mCarModelTextView = rootView.findViewById(R.id.passenger_notification_car_model);
+        mCarLicenseTextView = rootView.findViewById(R.id.passenger_notification_license_plate);
+
         Button cancelOrEarlyDropOffButton = rootView.findViewById(R.id.passenger_notification_cancel_button);
 
         mShowAndHideArrow = rootView.findViewById(R.id.container_driveinfodialog_arrow);
@@ -123,6 +139,15 @@ public class DriveInformationDialog extends Fragment implements View.OnClickList
                 TextView passengerNotificationName
                         = rootView.findViewById(R.id.passenger_notification_name);
                 passengerNotificationName.setText(mDrive.getDriver().getFullName());
+
+                PassengerRepository.getInstance().getCarDetails(mDrive.getDriver().getUserId()).observe(this, myCar -> {
+                    if(myCar != null){
+                        Timber.d("car  ", myCar);
+                        mCarModelTextView.setText(myCar.getModel());
+                        mCarLicenseTextView.setText(myCar.getNumber());
+                    }
+                });
+
             }
 
             mETAObserver = integer -> {
@@ -169,6 +194,23 @@ public class DriveInformationDialog extends Fragment implements View.OnClickList
                 }
             });
 
+
+        ImageView passengerImageView = rootView.findViewById(R.id.passenger_notification_thumbnail);
+
+        LiveData<Uri> imageUri = PassengerRepository.getInstance().getImageUri(mDrive.getDriver().getUserId());
+        imageUri.observe(this,uri -> {
+            Timber.d("image uri ", uri.toString());
+            try {
+                URL url = new URL(uri.toString());
+                Timber.d("image url ", url);
+                Picasso.with(getContext()).load(String.valueOf(url)).fit()
+                        .centerCrop().transform(new RoundCornersTransformation(RADIUS,
+                        0, true, false)).into(passengerImageView);
+
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+        });
 
         return rootView;
     }
