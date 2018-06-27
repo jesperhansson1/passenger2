@@ -1267,7 +1267,7 @@ public class MainActivity extends AppCompatActivity implements
                         });
                 break;
             case User.TYPE_PASSENGER:
-                mPendingDriveRequest = new DriveRequest(null,null,time,startLocation,endLocation,seats,0.0,null,null);
+                mPendingDriveRequest = new DriveRequest(null,null,time,startLocation,endLocation,seats,0.0,null,null, 0.0);
                 getPrice(seats);
                 break;
         }
@@ -1861,6 +1861,8 @@ public class MainActivity extends AppCompatActivity implements
         if(mBounds!=null) {
             Timber.d("distance bound %s", mBounds.getDistance());
             CalculatePrice calculatePrice = new CalculatePrice(mBounds.getDistance(), seats);
+            mPendingDriveRequest.setDistance(((double)mBounds.getDistance())/10000);
+            Timber.d("long to double " + ((double)mBounds.getDistance()));
             price = calculatePrice.getPrice();
             mPendingDriveRequest.setPrice(price);
             Timber.d("price is " + price + " " + (int) (price * 100) );
@@ -1890,7 +1892,8 @@ public class MainActivity extends AppCompatActivity implements
                     mPendingDriveRequest.getStartLocation(),
                     mPendingDriveRequest.getEndLocation(),
                     mPendingDriveRequest.getExtraPassengers(),
-                    mPendingDriveRequest.getPrice(), chargeId).observe(
+                    mPendingDriveRequest.getPrice(), chargeId,
+                    mPendingDriveRequest.getDistance()).observe(
                     this, driveRequest -> {
                         mMainViewModel.setDriveRequestRadiusMultiplier(
                                 MainViewModel.DRIVE_REQUEST_DEFAULT_MULTIPLIER);

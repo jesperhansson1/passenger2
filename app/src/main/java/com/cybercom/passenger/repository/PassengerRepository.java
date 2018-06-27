@@ -733,7 +733,7 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
                         passenger, dbDriveRequest.getTime(), dbDriveRequest.getStartLocation(),
                         dbDriveRequest.getEndLocation(), dbDriveRequest.getExtraPassengers(),
                         dbDriveRequest.getPrice(), dbDriveRequest.getChargeId(),
-                        dbDriveRequest.getDriverIdBlackList());
+                        dbDriveRequest.getDriverIdBlackList(), dbDriveRequest.getDistance());
                 addToNotificationQueue(new Notification(Integer.parseInt(
                         payload.get(NOTIFICATION_TYPE_KEY)), driveRequest, drive));
             }
@@ -828,7 +828,7 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
     }
 
     public LiveData<DriveRequest> createDriveRequest(long time, Position startLocation,
-                                                     Position endLocation, int availableSeats, double price, String chargeId) {
+                                                     Position endLocation, int availableSeats, double price, String chargeId, double distance) {
 
 
         getAmountInCharge(chargeId);
@@ -846,7 +846,7 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
 
         final com.cybercom.passenger.repository.databasemodel.DriveRequest dbDriveRequest =
                 new com.cybercom.passenger.repository.databasemodel.DriveRequest(uId, time,
-                        startLocation, endLocation, availableSeats, price, chargeId, new ArrayList<>());
+                        startLocation, endLocation, availableSeats, price, chargeId, new ArrayList<>(), distance);
         final DatabaseReference ref = mDriveRequestsReference.push();
         final String driveRequestId = ref.getKey();
         ref.setValue(dbDriveRequest);
@@ -861,7 +861,8 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
                                 dbDriveRequest.getEndLocation(), dbDriveRequest.getExtraPassengers(),
                                 dbDriveRequest.getPrice(),
                                 dbDriveRequest.getChargeId(),
-                                dbDriveRequest.getDriverIdBlackList());
+                                dbDriveRequest.getDriverIdBlackList(),
+                                dbDriveRequest.getDistance());
                         driveRequestMutableLiveData.setValue(driveRequest);
                     }
 

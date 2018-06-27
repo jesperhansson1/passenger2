@@ -37,6 +37,7 @@ import java.util.Locale;
 
 import timber.log.Timber;
 
+import static com.cybercom.passenger.flows.payment.PaymentConstants.FARE_PER_MILE;
 import static com.cybercom.passenger.utils.RoundCornersTransformation.RADIUS;
 
 public class AcceptRejectPassengerDialog extends DialogFragment implements View.OnClickListener {
@@ -103,6 +104,9 @@ public class AcceptRejectPassengerDialog extends DialogFragment implements View.
             driverConfirmationPassengerEndLocation
                     .setText(getAddressFromLocation(LocationHelper
                             .convertPositionToLocation(mNotification.getDriveRequest().getEndLocation())));
+
+            TextView driverConfirmationDriveCost = rootView.findViewById(R.id.driver_confirmation_drive_cost);
+            driverConfirmationDriveCost.setText(String.valueOf((mNotification.getDriveRequest().getDistance()) * FARE_PER_MILE));
         }
 
         ImageView passengerImageView = rootView.findViewById(R.id.driver_confirmation_passenger_thumbnail);
@@ -121,10 +125,6 @@ public class AcceptRejectPassengerDialog extends DialogFragment implements View.
                 e.printStackTrace();
             }
         });
-
-
-
-
 
         return rootView;
     }
