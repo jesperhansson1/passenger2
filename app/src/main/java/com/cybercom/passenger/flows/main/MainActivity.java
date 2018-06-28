@@ -1223,7 +1223,11 @@ public class MainActivity extends AppCompatActivity implements
             mRoute.remove();
         }
         mRoute = mGoogleMap.addPolyline(polylineOptions);
-        zoomToFitRoute();
+
+        // Only zoom to fit when no drive or ride is active
+        if (mActiveDrive == null && mActivePassengerRide == null) {
+            zoomToFitRoute();
+        }
     }
 
     @Override
