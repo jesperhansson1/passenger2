@@ -14,10 +14,10 @@
         android:layout_gravity="center"
         android:layout_margin="@dimen/pad_8dp"
         android:src="@drawable/ic_male_blue"
+        android:scaleType="center"
         app:backgroundTint="@color/colorWhite"
         app:borderWidth="4dp"
         app:elevation="6dp"
         app:fabSize="normal"
-
         app:pressedTranslationZ="12dp" />
 </LinearLayout>
