@@ -298,6 +298,10 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
                             userLogin.setUserId(user.getUid());
                             userLogin.setNotificationTokenId(getTokenId());
                             userLogin.setPassword(null);
+                            String imageUriString = userLogin.getImageLink();
+                            if (imageUriString != null) {
+                                uploadImage(Uri.parse(imageUriString), user.getUid());
+                            }
                             mUsersReference.child(user.getUid()).setValue(userLogin);
                             createCar(newCar.getNumber(), user.getUid(), newCar);
                         }
