@@ -83,6 +83,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
@@ -156,6 +157,10 @@ public class MainActivity extends AppCompatActivity implements
     private static final int ROUTE_COLOR = Color.rgb(6, 182, 239);
     private static final int DEVIATE_FROM_ROUTE_REROUTE_DISTANCE_M = 150;
     private static final int TEN_SEC_DELAY_FOR_DEVIATION_CALC = 10000;
+    public static final int MARKER_COLOR_GREEN = 0;
+    public static final int MARKER_COLOR_ORANGE = 1;
+    public static final int MARKER_COLOR_VIOLETTE = 2;
+    public static final int MARKER_COLOR_YELLOW = 3;
 
     private FirebaseUser mUser;
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 0;
@@ -231,6 +236,11 @@ public class MainActivity extends AppCompatActivity implements
 
     private boolean mActiveDriveZoomFlag = true;
 
+    private HashMap<String, Marker> mPickUpMarkerMap = new HashMap<>();
+    private HashMap<String, Marker> mDropOffMarkerMap = new HashMap<>();
+    private HashMap<String, Integer> mPickUpDropOffMarkerColorMap = new HashMap<>();
+    private List<Integer> mColorList = new ArrayList<>();
+    private int mNextColorIndex;
 
 
     @Override
@@ -263,6 +273,7 @@ public class MainActivity extends AppCompatActivity implements
         mUser = FirebaseAuth.getInstance().getCurrentUser();
 
         initUI();
+        initAvailableIconColors();
         if (mUser != null) {
             mMainViewModel.refreshToken(FirebaseInstanceId.getInstance().getToken());
             mMainViewModel.getUser().observe(this, user -> {
@@ -861,6 +872,7 @@ public class MainActivity extends AppCompatActivity implements
         } else if (passengerRide.isDropOffConfirmed() || passengerRide.isCancelled()) {
             mPassengers.remove(passengerRide.getId());
             removePassengerFab(passengerRide.getId());
+            removePickUpDropOffMarkers(passengerRide);
         } else {
             if (!mPassengers.get(passengerRide.getId()).isPickUpConfirmed() &&
                     passengerRide.isPickUpConfirmed()) {
@@ -873,8 +885,98 @@ public class MainActivity extends AppCompatActivity implements
             mPassengers.put(passengerRide.getId(), passengerRide);
             updatePassengerDetailedInformation(passengerRide);
         }
+        updatePassengerRidePickUpDropOffMarkers(passengerRide);
         rerouteDrive(passengerRide.getDrive(), passengerRide,
                 passengerRide.getDrive().getCurrentPosition());
+    }
+
+    private void removePickUpDropOffMarkers(PassengerRide passengerRide) {
+        Marker pickUpMarker = mPickUpMarkerMap.get(passengerRide.getId());
+        Marker dropOffMarker = mDropOffMarkerMap.get(passengerRide.getId());
+        if (pickUpMarker != null) {
+            pickUpMarker.remove();
+        }
+        if (dropOffMarker != null) {
+            dropOffMarker.remove();
+        }
+    }
+
+    private void updatePassengerRidePickUpDropOffMarkers(PassengerRide passengerRide) {
+        if (passengerRide == null || passengerRide.isCancelled()) {
+            return;
+        }
+
+        if (!mPickUpDropOffMarkerColorMap.containsKey(passengerRide.getId())) {
+            mPickUpDropOffMarkerColorMap.put(passengerRide.getId(), getNextIconColor());
+        }
+        if (mPickUpMarkerMap.containsKey(passengerRide.getId()) && passengerRide.isPickUpConfirmed()) {
+            mPickUpMarkerMap.get(passengerRide.getId()).remove();
+        } else if (!mPickUpMarkerMap.containsKey(passengerRide.getId())
+                && !passengerRide.isPickUpConfirmed()) {
+            Marker marker = mGoogleMap.addMarker(new MarkerOptions()
+                    .position(createLatLngFromPosition(passengerRide.getPickUpPosition()))
+                    .title("PickUp: " + passengerRide.getId())
+                    .icon(getPickUpLocationIcon(mPickUpDropOffMarkerColorMap.get(passengerRide.getId())))
+                    .anchor(0.5f, 0.5f)
+                    .draggable(false));
+            mPickUpMarkerMap.put(passengerRide.getId(), marker);
+        }
+
+        if (mPickUpMarkerMap.containsKey(passengerRide.getId()) && passengerRide.isDropOffConfirmed()) {
+            mDropOffMarkerMap.get(passengerRide.getId()).remove();
+        } else if (!mDropOffMarkerMap.containsKey(passengerRide.getId()) && !passengerRide.isDropOffConfirmed()) {
+            Marker marker = mGoogleMap.addMarker(new MarkerOptions()
+                    .position(createLatLngFromPosition(passengerRide.getDropOffPosition()))
+                    .title("DropOff: " + passengerRide.getId())
+                    .icon(getDropOffLocationIcon(mPickUpDropOffMarkerColorMap.get(passengerRide.getId())))
+                    .anchor(0.5f, 0.5f)
+                    .draggable(false));
+            mDropOffMarkerMap.put(passengerRide.getId(), marker);
+        }
+    }
+
+    private BitmapDescriptor getDropOffLocationIcon(Integer integer) {
+        switch (integer) {
+            case MARKER_COLOR_GREEN:
+                return BitmapDescriptorFactory.fromResource(R.drawable.map_marker_end_green);
+            case MARKER_COLOR_ORANGE:
+                return BitmapDescriptorFactory.fromResource(R.drawable.map_marker_end_orange);
+            case MARKER_COLOR_VIOLETTE:
+                return BitmapDescriptorFactory.fromResource(R.drawable.map_marker_end_violette);
+            case MARKER_COLOR_YELLOW:
+                return BitmapDescriptorFactory.fromResource(R.drawable.map_marker_end_yellow);
+            default:
+                return BitmapDescriptorFactory.fromResource(R.drawable.map_marker_end_green);
+        }
+    }
+
+    private BitmapDescriptor getPickUpLocationIcon(Integer integer) {
+        switch (integer) {
+            case MARKER_COLOR_GREEN:
+                return BitmapDescriptorFactory.fromResource(R.drawable.map_marker_start_green);
+            case MARKER_COLOR_ORANGE:
+                return BitmapDescriptorFactory.fromResource(R.drawable.map_marker_start_orange);
+            case MARKER_COLOR_VIOLETTE:
+                return BitmapDescriptorFactory.fromResource(R.drawable.map_marker_start_violette);
+            case MARKER_COLOR_YELLOW:
+                return BitmapDescriptorFactory.fromResource(R.drawable.map_marker_start_yellow);
+            default:
+                return BitmapDescriptorFactory.fromResource(R.drawable.map_marker_start_green);
+        }
+    }
+
+    private int getNextIconColor() {
+        int result = mColorList.get(mNextColorIndex);
+        mNextColorIndex = (mNextColorIndex + 1) % (mColorList.size() - 1);
+
+        return result;
+    }
+
+    public void initAvailableIconColors() {
+        mColorList.add(MARKER_COLOR_GREEN);
+        mColorList.add(MARKER_COLOR_ORANGE);
+        mColorList.add(MARKER_COLOR_VIOLETTE);
+        mColorList.add(MARKER_COLOR_YELLOW);
     }
 
     private void rerouteDrive(@NonNull Drive drive, @Nullable PassengerRide passengerRide,
