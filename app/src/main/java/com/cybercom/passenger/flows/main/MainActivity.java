@@ -559,6 +559,7 @@ public class MainActivity extends AppCompatActivity implements
                     location.getLongitude())).build();
             mGoogleMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 
+            mMainViewModel.setInitialZoomDone(true);
             mActiveDriveZoomFlag = false;
         } else {
             cameraPositionBuilder = new CameraPosition.Builder()
