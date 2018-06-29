@@ -1509,6 +1509,9 @@ public class MainActivity extends AppCompatActivity implements
             }
             case NoMatchFragment.BUTTON_CANCEL: {
                 dismissNoMatchDialog();
+                if (!mIsFragmentAdded) {
+                    addCreateDriveFragment();
+                }
                 break;
             }
         }
