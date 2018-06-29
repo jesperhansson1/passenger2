@@ -23,6 +23,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cybercom.passenger.R;
+import com.cybercom.passenger.flows.payment.PaymentHelper;
 import com.cybercom.passenger.model.Notification;
 import com.cybercom.passenger.repository.PassengerRepository;
 import com.cybercom.passenger.utils.LocationHelper;
@@ -106,7 +107,8 @@ public class AcceptRejectPassengerDialog extends DialogFragment implements View.
                             .convertPositionToLocation(mNotification.getDriveRequest().getEndLocation())));
 
             TextView driverConfirmationDriveCost = rootView.findViewById(R.id.driver_confirmation_drive_cost);
-            driverConfirmationDriveCost.setText(String.valueOf((mNotification.getDriveRequest().getDistance()) * FARE_PER_MILE));
+            driverConfirmationDriveCost.setText(getString(R.string.passenger_notification_price,
+                    PaymentHelper.roundToPlace(((Math.ceil(mNotification.getDriveRequest().getDistance())) * FARE_PER_MILE), 2)));
         }
 
         ImageView passengerImageView = rootView.findViewById(R.id.driver_confirmation_passenger_thumbnail);
