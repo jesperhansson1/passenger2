@@ -47,7 +47,6 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.google.gson.Gson;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -133,7 +132,7 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
     private DatabaseReference mCarsReference;
     private MutableLiveData<List<Car>> mCarList;
     private BlockingQueue<Notification> mNotificationQueue = new LinkedBlockingQueue<>();
-    private MutableLiveData<Notification> mNotification = new MutableLiveData<>();
+    private MutableLiveData<Notification> mNotificationLiveData = new MutableLiveData<>();
     private MutableLiveData<Integer> mEtaLiveData = new MutableLiveData<>();
     private User mCurrentlyLoggedInUser;
     private MutableLiveData<Location> mDriverCurrentLocation = new MutableLiveData<>();
@@ -596,7 +595,7 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
     }
 
     public LiveData<Notification> receiveIncomingNotifications() {
-        return mNotification;
+        return mNotificationLiveData;
     }
 
     /**
@@ -609,8 +608,6 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
 
         final String driveId = payload.get(KEY_PAYLOAD_DRIVE_ID);
         final String driveRequestId = payload.get(KEY_PAYLOAD_DRIVE_REQUEST_ID);
-
-        Timber.i("notification recevied %s", payload.toString());
 
         // Fetch the Drive
         DatabaseReference drive = mDrivesReference.child(driveId);
@@ -757,14 +754,14 @@ public class PassengerRepository implements PassengerRepositoryInterface, Stripe
         Timber.d("Add %s to notification queue", notification.toString());
         mNotificationQueue.add(notification);
         if (mNotificationQueue.size() == 1) {
-            mNotification.postValue(mNotificationQueue.peek());
+            mNotificationLiveData.postValue(mNotificationQueue.peek());
         }
         Timber.d("Notifcation queue size after add: %d", mNotificationQueue.size());
     }
 
     public void getNextNotification() {
         Notification n = mNotificationQueue.poll();
-        mNotification.postValue(mNotificationQueue.peek());
+        mNotificationLiveData.postValue(mNotificationQueue.peek());
         Timber.d("Notifcation queue size after get: %d", mNotificationQueue.size());
     }
 

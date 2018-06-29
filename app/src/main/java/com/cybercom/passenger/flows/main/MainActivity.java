@@ -915,9 +915,8 @@ public class MainActivity extends AppCompatActivity implements
                 && !passengerRide.isPickUpConfirmed()) {
             Marker marker = mGoogleMap.addMarker(new MarkerOptions()
                     .position(createLatLngFromPosition(passengerRide.getPickUpPosition()))
-                    .title("PickUp: " + passengerRide.getId())
+//                    .title("PickUp: " + passengerRide.getId())
                     .icon(getPickUpLocationIcon(mPickUpDropOffMarkerColorMap.get(passengerRide.getId())))
-                    .anchor(0.5f, 0.5f)
                     .draggable(false));
             mPickUpMarkerMap.put(passengerRide.getId(), marker);
         }
@@ -927,9 +926,8 @@ public class MainActivity extends AppCompatActivity implements
         } else if (!mDropOffMarkerMap.containsKey(passengerRide.getId()) && !passengerRide.isDropOffConfirmed()) {
             Marker marker = mGoogleMap.addMarker(new MarkerOptions()
                     .position(createLatLngFromPosition(passengerRide.getDropOffPosition()))
-                    .title("DropOff: " + passengerRide.getId())
+//                    .title("DropOff: " + passengerRide.getId())
                     .icon(getDropOffLocationIcon(mPickUpDropOffMarkerColorMap.get(passengerRide.getId())))
-                    .anchor(0.5f, 0.5f)
                     .draggable(false));
             mDropOffMarkerMap.put(passengerRide.getId(), marker);
         }
@@ -1118,7 +1116,10 @@ public class MainActivity extends AppCompatActivity implements
                     LatLng initialZoom = new LatLng(location.getLatitude(),
                             location.getLongitude());
                     animateToLocation(initialZoom);
-                    mMainViewModel.setInitialZoomDone(true);
+
+                    if (mActiveDrive == null) {
+                        mMainViewModel.setInitialZoomDone(true);
+                    }
                 }
             });
         }
@@ -1215,6 +1216,9 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onMapLongClick(LatLng latLng) {
+        if (mActivePassengerRide != null || mActiveDrive != null) {
+            return;
+        }
         if (mMainViewModel.getWhichMarkerToAdd() == MainViewModel.PLACE_START_MARKER) {
             mMainViewModel.setStartMarkerLocation(LocationHelper.convertLatLngToLocation(latLng));
             placeStartLocationMarker();
